@@ -1,0 +1,16 @@
+node_modules
+.next
+.git
+.gitignore
+.env
+.env.local
+.env.*.local
+README.md
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+*.log
+.DS_Store
+coverage
+.vscode
+.idea
