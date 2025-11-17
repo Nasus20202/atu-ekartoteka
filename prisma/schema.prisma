@@ -1,15 +1,70 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  TENANT
+}
+
+enum AccountStatus {
+  PENDING    // Waiting for approval
+  APPROVED   // Approved by admin
+  REJECTED   // Rejected
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      UserRole @default(TENANT)
+  status    AccountStatus @default(PENDING)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relationship with apartments
+  apartment   Apartment? @relation(fields: [apartmentId], references: [id])
+  apartmentId String?    @unique
+  
+  @@index([email])
+  @@index([role])
+  @@index([status])
+}
+
+model Apartment {
+  id          String   @id @default(cuid())
+  
+  // Data from lok.txt file
+  externalId  String   @unique  // e.g. "W00016"
+  owner       String?            // owner
+  address     String?            // street
+  building    String?            // building number
+  number      String             // apartment number (can be "3A")
+  postalCode  String?
+  city        String?
+  area        Float?             // surface area
+  height      Float?             // height (from lokal_ost_wys.wmb)
+  
+  // Activity status
+  isActive    Boolean  @default(true)  // whether apartment is in current file
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relationship with users
+  user        User?
+  
+  @@index([externalId])
+  @@index([isActive])
 }
