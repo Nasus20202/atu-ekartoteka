@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
+import { useConfirm } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -28,6 +29,7 @@ import { AccountStatus, Apartment, UserWithApartment } from '@/lib/types';
 type User = UserWithApartment;
 
 export default function AdminUsersPage() {
+  const confirm = useConfirm();
   const [users, setUsers] = useState<User[]>([]);
   const [apartments, setApartments] = useState<Apartment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -203,9 +205,9 @@ export default function AdminUsersPage() {
   ).length;
 
   return (
-    <div className="min-h-screen bg-background p-8">
+    <div className="min-h-screen bg-background p-8 animate-fade-in">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex items-center justify-between animate-slide-in-top">
           <div>
             <h1 className="text-3xl font-bold">Użytkownicy</h1>
             {pendingCount > 0 && (
@@ -266,8 +268,12 @@ export default function AdminUsersPage() {
           </Card>
         ) : (
           <div className="grid gap-4">
-            {users.map((user) => (
-              <Card key={user.id}>
+            {users.map((user, index) => (
+              <Card
+                key={user.id}
+                className="animate-scale-in"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
@@ -307,12 +313,16 @@ export default function AdminUsersPage() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => {
-                              if (
-                                confirm(
-                                  'Czy na pewno chcesz usunąć przypisanie mieszkania?'
-                                )
-                              ) {
+                            onClick={async () => {
+                              const confirmed = await confirm({
+                                title: 'Usuń przypisanie mieszkania',
+                                description:
+                                  'Czy na pewno chcesz usunąć przypisanie mieszkania?',
+                                confirmText: 'Usuń',
+                                cancelText: 'Anuluj',
+                                variant: 'destructive',
+                              });
+                              if (confirmed) {
                                 handleRemoveApartment(
                                   user.id,
                                   AccountStatus.APPROVED
@@ -408,8 +418,8 @@ export default function AdminUsersPage() {
         )}
 
         {selectedUser && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <Card className="max-h-[80vh] w-full max-w-2xl overflow-auto">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 animate-fade-in">
+            <Card className="max-h-[80vh] w-full max-w-2xl overflow-auto animate-scale-in">
               <CardHeader>
                 <CardTitle>
                   {editMode === 'approve' && 'Zatwierdź konto'}
@@ -447,7 +457,7 @@ export default function AdminUsersPage() {
                         <button
                           type="button"
                           onClick={() => setSelectedApartment('')}
-                          className={`w-full rounded-lg border p-3 text-left transition-colors hover:bg-muted ${
+                          className={`w-full rounded-lg border p-3 text-left transition-all duration-200 hover:bg-muted hover:scale-[1.02] ${
                             selectedApartment === ''
                               ? 'border-primary bg-primary/5'
                               : ''
@@ -465,7 +475,7 @@ export default function AdminUsersPage() {
                           key={apt.id}
                           type="button"
                           onClick={() => setSelectedApartment(apt.id)}
-                          className={`w-full rounded-lg border p-3 text-left transition-colors hover:bg-muted ${
+                          className={`w-full rounded-lg border p-3 text-left transition-all duration-200 hover:bg-muted hover:scale-[1.02] ${
                             selectedApartment === apt.id
                               ? 'border-primary bg-primary/5'
                               : ''
@@ -561,13 +571,17 @@ export default function AdminUsersPage() {
                               : 'outline'
                           }
                           className="w-full justify-start"
-                          onClick={() => {
+                          onClick={async () => {
                             if (selectedUser.apartment) {
-                              if (
-                                confirm(
-                                  'Odrzucenie użytkownika usunie przypisanie mieszkania. Kontynuować?'
-                                )
-                              ) {
+                              const confirmed = await confirm({
+                                title: 'Odrzuć użytkownika',
+                                description:
+                                  'Odrzucenie użytkownika usunie przypisanie mieszkania. Kontynuować?',
+                                confirmText: 'Odrzuć',
+                                cancelText: 'Anuluj',
+                                variant: 'destructive',
+                              });
+                              if (confirmed) {
                                 handleUpdateUser(
                                   selectedUser.id,
                                   AccountStatus.REJECTED

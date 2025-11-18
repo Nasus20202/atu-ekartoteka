@@ -3,6 +3,7 @@ import '@/app/globals.css';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 
+import { ConfirmProvider } from '@/components/confirm-dialog';
 import { ThemeProvider } from '@/components/theme-provider';
 
 const geistSans = Geist({
@@ -30,12 +31,8 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          enableSystem={true}
-          disableTransitionOnChange
-        >
-          {children}
+        <ThemeProvider attribute="class" enableSystem={true}>
+          <ConfirmProvider>{children}</ConfirmProvider>
         </ThemeProvider>
       </body>
     </html>

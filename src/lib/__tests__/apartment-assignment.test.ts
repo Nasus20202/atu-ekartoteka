@@ -39,6 +39,7 @@ describe('Apartment Assignment', () => {
 
       const mockApartment = {
         id: 'apt1',
+        homeownersAssociationId: 'hoa1',
         externalId: 'EXT1',
         owner: 'John Doe',
         address: 'Main Street 1',
@@ -72,6 +73,7 @@ describe('Apartment Assignment', () => {
     it('should prevent assigning inactive apartment', async () => {
       const mockApartment = {
         id: 'apt1',
+        homeownersAssociationId: 'hoa1',
         externalId: 'EXT1',
         owner: 'John Doe',
         address: 'Main Street 1',
@@ -111,6 +113,7 @@ describe('Apartment Assignment', () => {
 
       const mockApartment = {
         id: 'apt1',
+        homeownersAssociationId: 'hoa1',
         externalId: 'EXT1',
         owner: 'John Doe',
         address: 'Main Street 1',
@@ -156,6 +159,7 @@ describe('Apartment Assignment', () => {
 
       const mockApartment = {
         id: 'apt1',
+        homeownersAssociationId: 'hoa1',
         externalId: 'EXT1',
         owner: 'John Doe',
         address: 'Main Street 1',
@@ -188,6 +192,7 @@ describe('Apartment Assignment', () => {
       const mockApartments = [
         {
           id: 'apt1',
+          homeownersAssociationId: 'hoa1',
           externalId: 'EXT1',
           owner: 'Owner 1',
           address: 'Street 1',
@@ -203,6 +208,7 @@ describe('Apartment Assignment', () => {
         },
         {
           id: 'apt2',
+          homeownersAssociationId: 'hoa1',
           externalId: 'EXT2',
           owner: 'Owner 2',
           address: 'Street 2',
@@ -246,6 +252,7 @@ describe('Apartment Assignment', () => {
       const mockApartments = [
         {
           id: 'apt1',
+          homeownersAssociationId: 'hoa1',
           externalId: 'EXT1',
           owner: 'Owner 1',
           address: 'Street 1',
@@ -262,6 +269,7 @@ describe('Apartment Assignment', () => {
         },
         {
           id: 'apt2',
+          homeownersAssociationId: 'hoa1',
           externalId: 'EXT2',
           owner: 'Owner 2',
           address: 'Street 2',
@@ -400,6 +408,7 @@ describe('Apartment Assignment', () => {
 
       const mockApartment = {
         id: 'apt1',
+        homeownersAssociationId: 'hoa1',
         externalId: 'EXT1',
         owner: 'Owner',
         address: 'Street',

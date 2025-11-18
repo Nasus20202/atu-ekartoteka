@@ -37,6 +37,9 @@ const eslintConfig = defineConfig([
         },
       ],
 
+      // Prevent duplicate imports and merge them
+      'import/no-duplicates': ['error', { 'prefer-inline': true }],
+
       // Forbid relative imports - enforce @ alias
       'no-restricted-imports': [
         'error',

@@ -206,6 +206,7 @@ describe('Admin Users API', () => {
 
       const mockApartment = {
         id: 'apt1',
+        homeownersAssociationId: 'hoa1',
         externalId: 'EXT1',
         owner: 'Owner',
         address: 'Street',
@@ -306,6 +307,7 @@ describe('Admin Users API', () => {
 
       const occupiedApartment = {
         id: 'apt1',
+        homeownersAssociationId: 'hoa1',
         externalId: 'EXT1',
         owner: 'Owner',
         address: 'Street',

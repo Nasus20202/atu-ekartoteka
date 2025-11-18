@@ -88,11 +88,15 @@ export default function HOAApartmentsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-8">
+    <div className="min-h-screen bg-background p-8 animate-fade-in">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-6">
+        <div className="mb-6 animate-slide-in-top">
           <Link href="/admin/apartments">
-            <Button variant="ghost" size="sm" className="mb-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mb-4 transition-all duration-200 hover:-translate-x-1"
+            >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Powrót do wspólnot
             </Button>
@@ -159,10 +163,11 @@ export default function HOAApartmentsPage() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              {apartments.map((apartment) => (
+              {apartments.map((apartment, index) => (
                 <Card
                   key={apartment.id}
-                  className={!apartment.isActive ? 'opacity-60 grayscale' : ''}
+                  className={`animate-scale-in transition-all duration-300 hover:shadow-lg ${!apartment.isActive ? 'opacity-60 grayscale' : ''}`}
+                  style={{ animationDelay: `${index * 30}ms` }}
                 >
                   <CardHeader>
                     <div className="flex items-start justify-between">

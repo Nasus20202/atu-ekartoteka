@@ -86,11 +86,13 @@ export default function AdminImportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-8">
+    <div className="min-h-screen bg-background p-8 animate-fade-in">
       <div className="mx-auto max-w-4xl">
-        <h1 className="mb-6 text-3xl font-bold">Import mieszkań</h1>
+        <h1 className="mb-6 text-3xl font-bold animate-slide-in-top">
+          Import mieszkań
+        </h1>
 
-        <Card>
+        <Card className="animate-scale-in">
           <CardHeader>
             <CardTitle>Importuj dane</CardTitle>
             <CardDescription>
@@ -173,8 +175,12 @@ export default function AdminImportPage() {
                   </div>
                 )}
 
-                {response.results.map((result) => (
-                  <Card key={result.hoaId}>
+                {response.results.map((result, index) => (
+                  <Card
+                    key={result.hoaId}
+                    className="animate-scale-in"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
                     <CardHeader>
                       <CardTitle className="text-lg">
                         Wspólnota: {result.hoaId}

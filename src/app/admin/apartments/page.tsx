@@ -93,9 +93,9 @@ export default function ApartmentsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-8">
+    <div className="min-h-screen bg-background p-8 animate-fade-in">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-6">
+        <div className="mb-6 animate-slide-in-top">
           <h1 className="text-3xl font-bold">Wspólnoty mieszkaniowe</h1>
           <p className="mt-2 text-muted-foreground">
             Wybierz wspólnotę, aby zobaczyć mieszkania
@@ -137,10 +137,11 @@ export default function ApartmentsPage() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {hoas.map((hoa) => (
+              {hoas.map((hoa, index) => (
                 <Card
                   key={hoa.id}
-                  className="hover:shadow-lg transition-shadow"
+                  className="hover:shadow-lg transition-all duration-300 animate-scale-in"
+                  style={{ animationDelay: `${index * 50}ms` }}
                 >
                   <CardHeader>
                     <div className="flex items-start justify-between gap-2">

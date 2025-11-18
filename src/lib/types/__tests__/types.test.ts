@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import type {
-  Apartment,
-  ApartmentWithUser,
-  User,
-  UserWithApartment,
+import {
+  AccountStatus,
+  type Apartment,
+  type ApartmentWithUser,
+  type User,
+  UserRole,
+  type UserWithApartment,
 } from '@/lib/types';
-import { AccountStatus, UserRole } from '@/lib/types';
 
 describe('Type definitions', () => {
   describe('User type', () => {
@@ -59,6 +60,7 @@ describe('Type definitions', () => {
         apartmentId: 'apt-1',
         apartment: {
           id: 'apt-1',
+          homeownersAssociationId: 'hoa-1',
           externalId: 'EXT123',
           owner: 'Owner Name',
           address: 'Test St',
@@ -100,6 +102,7 @@ describe('Type definitions', () => {
     it('should accept valid Apartment object', () => {
       const apartment: Apartment = {
         id: 'apt-1',
+        homeownersAssociationId: 'hoa-1',
         externalId: 'EXT123',
         owner: 'Owner Name',
         address: 'Test Street 1',
@@ -122,6 +125,7 @@ describe('Type definitions', () => {
     it('should accept inactive apartment', () => {
       const apartment: Apartment = {
         id: 'apt-2',
+        homeownersAssociationId: 'hoa-1',
         externalId: 'EXT456',
         owner: 'Another Owner',
         address: 'Different St',
@@ -144,6 +148,7 @@ describe('Type definitions', () => {
     it('should accept Apartment with user', () => {
       const aptWithUser: ApartmentWithUser = {
         id: 'apt-1',
+        homeownersAssociationId: 'hoa-1',
         externalId: 'EXT123',
         owner: 'Owner Name',
         address: 'Test St',
@@ -175,6 +180,7 @@ describe('Type definitions', () => {
     it('should accept Apartment without user (null)', () => {
       const aptWithoutUser: ApartmentWithUser = {
         id: 'apt-1',
+        homeownersAssociationId: 'hoa-1',
         externalId: 'EXT123',
         owner: 'Owner Name',
         address: 'Test St',

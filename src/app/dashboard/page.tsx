@@ -51,8 +51,8 @@ export default async function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="border-b bg-card">
+    <div className="min-h-screen bg-background animate-fade-in">
+      <nav className="border-b bg-card animate-slide-in-top">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-8">
@@ -86,7 +86,7 @@ export default async function DashboardPage() {
 
           <div className="space-y-6">
             {/* Account Status Card */}
-            <Card>
+            <Card className="animate-scale-in">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <User className="h-5 w-5" />
@@ -184,7 +184,10 @@ export default async function DashboardPage() {
 
             {/* Apartment Card */}
             {user.status === 'APPROVED' && (
-              <Card>
+              <Card
+                className="animate-scale-in"
+                style={{ animationDelay: '100ms' }}
+              >
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Building2 className="h-5 w-5" />

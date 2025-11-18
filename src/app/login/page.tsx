@@ -48,11 +48,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="absolute right-4 top-4">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4 animate-fade-in">
+      <div className="absolute right-4 top-4 animate-slide-in-top">
         <ThemeToggle />
       </div>
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md animate-scale-in">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold tracking-tight">
             ATU Ekartoteka

@@ -97,8 +97,8 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md">
+      <div className="flex min-h-screen items-center justify-center bg-background p-4 animate-fade-in">
+        <Card className="w-full max-w-md animate-scale-in">
           <CardHeader>
             <div className="mb-4 flex justify-center">
               <div className="rounded-full bg-green-100 p-3 dark:bg-green-900">
@@ -122,8 +122,8 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4 animate-fade-in">
+      <Card className="w-full max-w-md animate-scale-in">
         <CardHeader>
           <CardTitle>Rejestracja</CardTitle>
           <CardDescription>

@@ -27,7 +27,7 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="border-b bg-card">
+      <nav className="border-b bg-card animate-slide-in-top">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-8">
@@ -41,7 +41,7 @@ export default async function AdminLayout({
                     <Link
                       key={item.name}
                       href={item.href}
-                      className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+                      className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 hover:bg-accent hover:text-accent-foreground"
                     >
                       <Icon className="h-4 w-4" />
                       {item.name}
