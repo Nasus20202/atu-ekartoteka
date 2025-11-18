@@ -80,8 +80,41 @@ model Apartment {
   user        User?   @relation(fields: [userId], references: [id])
   userId      String?
   
+  // Charges for this apartment
+  charges     Charge[]
+  
   @@index([externalId])
   @@index([isActive])
   @@index([homeownersAssociationId])
   @@index([userId])
+}
+
+model Charge {
+  id              String   @id @default(cuid())
+  externalId      String   // from original file
+  externalLineNo  Int      // line number from file
+  
+  // Apartment relation
+  apartment       Apartment @relation(fields: [apartmentId], references: [id])
+  apartmentId     String
+  
+  // Dates and period
+  dateFrom        DateTime
+  dateTo          DateTime
+  period          String   // e.g. "202501"
+  
+  // Charge details
+  description     String
+  quantity        Float
+  unit            String   // e.g. "szt", "m2"
+  unitPrice       Float
+  totalAmount     Float
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([apartmentId, period, externalLineNo])
+  @@index([apartmentId])
+  @@index([period])
+  @@index([dateFrom])
 }

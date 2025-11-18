@@ -16,11 +16,18 @@ vi.mock('@/lib/prisma', () => ({
     },
     apartment: {
       findUnique: vi.fn(),
+      findMany: vi.fn(),
       create: vi.fn(),
+      createMany: vi.fn(),
       update: vi.fn(),
       updateMany: vi.fn(),
     },
+    $transaction: vi.fn(),
   },
+}));
+
+vi.mock('@/lib/charge-import', () => ({
+  importChargesFromBuffer: vi.fn(),
 }));
 
 const { prisma } = await import('@/lib/prisma');
@@ -81,24 +88,8 @@ describe('apartment-import', () => {
       vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValue(
         mockHOA
       );
-      vi.mocked(prisma.apartment.findUnique).mockResolvedValue(null);
-      vi.mocked(prisma.apartment.create).mockResolvedValue({
-        id: '1',
-        externalId: 'EXT1',
-        owner: 'Jan Kowalski',
-        address: 'ul. Testowa 1',
-        building: 'B1',
-        number: '1',
-        postalCode: '00-001',
-        city: 'Warszawa',
-        area: 50.5,
-        height: 2.5,
-        isActive: true,
-        homeownersAssociationId: 'hoa1',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        userId: null,
-      });
+      vi.mocked(prisma.apartment.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.apartment.createMany).mockResolvedValue({ count: 1 });
       vi.mocked(prisma.apartment.updateMany).mockResolvedValue({ count: 0 });
 
       const buffer = Buffer.from('mock data');
@@ -108,20 +99,23 @@ describe('apartment-import', () => {
       expect(result.updated).toBe(0);
       expect(result.total).toBe(1);
       expect(result.errors).toHaveLength(0);
-      expect(prisma.apartment.create).toHaveBeenCalledWith({
-        data: {
-          externalId: 'EXT1',
-          owner: 'Jan Kowalski',
-          address: 'ul. Testowa 1',
-          building: 'B1',
-          number: '1',
-          postalCode: '00-001',
-          city: 'Warszawa',
-          area: 50.5,
-          height: 2.5,
-          isActive: true,
-          homeownersAssociationId: 'hoa1',
-        },
+      expect(prisma.apartment.createMany).toHaveBeenCalledWith({
+        data: [
+          {
+            externalId: 'EXT1',
+            owner: 'Jan Kowalski',
+            address: 'ul. Testowa 1',
+            building: 'B1',
+            number: '1',
+            postalCode: '00-001',
+            city: 'Warszawa',
+            area: 50.5,
+            height: 2.5,
+            isActive: true,
+            homeownersAssociationId: 'hoa1',
+          },
+        ],
+        skipDuplicates: true,
       });
     });
 
@@ -145,6 +139,44 @@ describe('apartment-import', () => {
       vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValue(
         mockHOA
       );
+      vi.mocked(prisma.apartment.findMany).mockResolvedValue([
+        {
+          externalId: 'EXT1',
+          id: '1',
+          number: '1',
+          owner: null,
+          address: null,
+          building: null,
+          postalCode: null,
+          city: null,
+          area: null,
+          height: null,
+          isActive: true,
+          homeownersAssociationId: 'hoa-id',
+          userId: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ]);
+      vi.mocked(prisma.$transaction).mockResolvedValue([
+        {
+          id: '1',
+          externalId: 'EXT1',
+          owner: 'Jan Nowak',
+          address: 'ul. Testowa 2',
+          building: 'B2',
+          number: '2',
+          postalCode: '00-002',
+          city: 'Kraków',
+          area: 60.0,
+          height: 2.6,
+          isActive: true,
+          homeownersAssociationId: 'hoa1',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          userId: null,
+        },
+      ]);
       vi.mocked(prisma.apartment.findUnique).mockResolvedValue({
         id: '1',
         externalId: 'EXT1',
@@ -162,23 +194,6 @@ describe('apartment-import', () => {
         updatedAt: new Date(),
         userId: null,
       });
-      vi.mocked(prisma.apartment.update).mockResolvedValue({
-        id: '1',
-        externalId: 'EXT1',
-        owner: 'Jan Nowak',
-        address: 'ul. Testowa 2',
-        building: 'B2',
-        number: '2',
-        postalCode: '00-002',
-        city: 'Kraków',
-        area: 60.0,
-        height: 2.6,
-        isActive: true,
-        homeownersAssociationId: 'hoa1',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        userId: null,
-      });
       vi.mocked(prisma.apartment.updateMany).mockResolvedValue({ count: 0 });
 
       const buffer = Buffer.from('mock data');
@@ -188,6 +203,7 @@ describe('apartment-import', () => {
       expect(result.updated).toBe(1);
       expect(result.total).toBe(1);
       expect(result.errors).toHaveLength(0);
+      expect(prisma.$transaction).toHaveBeenCalled();
       expect(prisma.apartment.update).toHaveBeenCalledWith({
         where: { externalId: 'EXT1' },
         data: {
@@ -214,24 +230,8 @@ describe('apartment-import', () => {
       vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValue(
         mockHOA
       );
-      vi.mocked(prisma.apartment.findUnique).mockResolvedValue(null);
-      vi.mocked(prisma.apartment.create).mockResolvedValue({
-        id: '1',
-        externalId: 'EXT1',
-        owner: 'Jan Kowalski',
-        address: 'ul. Testowa 1',
-        building: 'B1',
-        number: '1',
-        postalCode: '00-001',
-        city: 'Warszawa',
-        area: 50.5,
-        height: 2.5,
-        isActive: true,
-        homeownersAssociationId: 'hoa1',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        userId: null,
-      });
+      vi.mocked(prisma.apartment.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.apartment.createMany).mockResolvedValue({ count: 1 });
       vi.mocked(prisma.apartment.updateMany).mockResolvedValue({ count: 2 });
 
       const buffer = Buffer.from('mock data');
@@ -274,9 +274,10 @@ describe('apartment-import', () => {
       vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValue(
         mockHOA
       );
-      vi.mocked(prisma.apartment.findUnique)
-        .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce(null);
+      vi.mocked(prisma.apartment.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.apartment.createMany).mockRejectedValue(
+        new Error('Database error')
+      );
       vi.mocked(prisma.apartment.create)
         .mockRejectedValueOnce(new Error('Database error'))
         .mockResolvedValueOnce({
@@ -305,6 +306,43 @@ describe('apartment-import', () => {
       expect(result.errors.length).toBe(1);
       expect(result.errors[0]).toContain('Failed to import EXT1');
       expect(result.total).toBe(2);
+    });
+
+    it('should import charges when chargesBuffer is provided', async () => {
+      const mockEntries = [createMockLokEntry()];
+
+      vi.spyOn(lokParser, 'parseLokBuffer').mockResolvedValue(mockEntries);
+      vi.spyOn(lokParser, 'getUniqueApartments').mockReturnValue(mockEntries);
+
+      vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValue(
+        mockHOA
+      );
+      vi.mocked(prisma.apartment.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.apartment.createMany).mockResolvedValue({ count: 1 });
+      vi.mocked(prisma.apartment.updateMany).mockResolvedValue({ count: 0 });
+
+      const { importChargesFromBuffer } = await import('@/lib/charge-import');
+      vi.mocked(importChargesFromBuffer).mockResolvedValue({
+        created: 5,
+        updated: 2,
+        skipped: 1,
+        total: 8,
+        errors: [],
+      });
+
+      const apartmentBuffer = Buffer.from('apartment data');
+      const chargesBuffer = Buffer.from('charges data');
+      const result = await importApartmentsFromBuffer(
+        apartmentBuffer,
+        'HOA001',
+        chargesBuffer
+      );
+
+      expect(result.charges).toBeDefined();
+      expect(result.charges?.created).toBe(5);
+      expect(result.charges?.updated).toBe(2);
+      expect(result.charges?.skipped).toBe(1);
+      expect(result.charges?.total).toBe(8);
     });
   });
 });

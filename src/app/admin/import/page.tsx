@@ -21,6 +21,12 @@ interface ImportResult {
   deactivated: number;
   total: number;
   errors: string[];
+  charges?: {
+    created: number;
+    updated: number;
+    skipped: number;
+    total: number;
+  };
 }
 
 interface ImportResponse {
@@ -89,7 +95,7 @@ export default function AdminImportPage() {
     <div className="min-h-screen bg-background p-8 animate-fade-in">
       <div className="mx-auto max-w-4xl">
         <h1 className="mb-6 text-3xl font-bold animate-slide-in-top">
-          Import mieszkań
+          Import danych
         </h1>
 
         <Card className="animate-scale-in">
@@ -187,43 +193,93 @@ export default function AdminImportPage() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        <div className="rounded-lg border p-4">
-                          <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                            {result.created}
+                      <div className="mb-6">
+                        <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
+                          Mieszkania
+                        </h3>
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                          <div className="rounded-lg border p-4">
+                            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                              {result.created}
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              Utworzonych
+                            </p>
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            Utworzonych
-                          </p>
-                        </div>
 
-                        <div className="rounded-lg border p-4">
-                          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                            {result.updated}
+                          <div className="rounded-lg border p-4">
+                            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                              {result.updated}
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              Zaktualizowanych
+                            </p>
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            Zaktualizowanych
-                          </p>
-                        </div>
 
-                        <div className="rounded-lg border p-4">
-                          <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                            {result.deactivated}
+                          <div className="rounded-lg border p-4">
+                            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                              {result.deactivated}
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              Dezaktywowanych
+                            </p>
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            Dezaktywowanych
-                          </p>
-                        </div>
 
-                        <div className="rounded-lg border p-4">
-                          <div className="text-2xl font-bold">
-                            {result.total}
+                          <div className="rounded-lg border p-4">
+                            <div className="text-2xl font-bold">
+                              {result.total}
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              Razem w pliku
+                            </p>
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            Razem w pliku
-                          </p>
                         </div>
                       </div>
+
+                      {result.charges && (
+                        <div className="mb-6">
+                          <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
+                            Naliczenia
+                          </h3>
+                          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            <div className="rounded-lg border p-4">
+                              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                                {result.charges.created}
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Utworzonych
+                              </p>
+                            </div>
+
+                            <div className="rounded-lg border p-4">
+                              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                                {result.charges.updated}
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Zaktualizowanych
+                              </p>
+                            </div>
+
+                            <div className="rounded-lg border p-4">
+                              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                                {result.charges.skipped}
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Pominiętych
+                              </p>
+                            </div>
+
+                            <div className="rounded-lg border p-4">
+                              <div className="text-2xl font-bold">
+                                {result.charges.total}
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Razem w pliku
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
 
                       {result.errors.length > 0 && (
                         <div className="mt-4 rounded-lg border border-orange-200 bg-orange-50 p-3 dark:border-orange-800 dark:bg-orange-950">

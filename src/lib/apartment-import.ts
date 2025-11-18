@@ -1,3 +1,4 @@
+import { importChargesFromBuffer } from '@/lib/charge-import';
 import { getUniqueApartments, parseLokBuffer } from '@/lib/lok-parser';
 import { prisma } from '@/lib/prisma';
 
@@ -7,6 +8,12 @@ export interface ImportResult {
   deactivated: number;
   total: number;
   errors: string[];
+  charges?: {
+    created: number;
+    updated: number;
+    skipped: number;
+    total: number;
+  };
 }
 
 export interface FileWithHOA {
@@ -28,7 +35,8 @@ export async function importApartmentsFromFile(
 
 export async function importApartmentsFromBuffer(
   buffer: Buffer,
-  hoaId: string
+  hoaId: string,
+  chargesBuffer?: Buffer
 ): Promise<ImportResult> {
   const result: ImportResult = {
     created: 0,
@@ -58,51 +66,129 @@ export async function importApartmentsFromBuffer(
 
     const externalIdsInFile = new Set(apartments.map((a) => a.externalId));
 
-    for (const apartment of apartments) {
-      try {
-        const existing = await prisma.apartment.findUnique({
-          where: { externalId: apartment.externalId },
-        });
+    // Fetch all existing apartments for this HOA at once
+    const existingApartments = await prisma.apartment.findMany({
+      where: {
+        externalId: { in: apartments.map((a) => a.externalId) },
+      },
+      select: {
+        externalId: true,
+      },
+    });
 
-        if (existing) {
-          await prisma.apartment.update({
-            where: { externalId: apartment.externalId },
-            data: {
-              owner: apartment.owner,
-              address: apartment.address,
-              building: apartment.building,
-              number: apartment.number,
-              postalCode: apartment.postalCode,
-              city: apartment.city,
-              area: apartment.area,
-              height: apartment.height,
-              isActive: true,
-              homeownersAssociationId: hoa.id,
-            },
-          });
-          result.updated++;
-        } else {
-          await prisma.apartment.create({
-            data: {
-              externalId: apartment.externalId,
-              owner: apartment.owner,
-              address: apartment.address,
-              building: apartment.building,
-              number: apartment.number,
-              postalCode: apartment.postalCode,
-              city: apartment.city,
-              area: apartment.area,
-              height: apartment.height,
-              isActive: true,
-              homeownersAssociationId: hoa.id,
-            },
-          });
-          result.created++;
+    const existingIds = new Set(
+      existingApartments.map((apt) => apt.externalId)
+    );
+
+    // Separate into create and update batches
+    const toCreate = [];
+    const toUpdate = [];
+
+    for (const apartment of apartments) {
+      const apartmentData = {
+        owner: apartment.owner,
+        address: apartment.address,
+        building: apartment.building,
+        number: apartment.number,
+        postalCode: apartment.postalCode,
+        city: apartment.city,
+        area: apartment.area,
+        height: apartment.height,
+        isActive: true,
+        homeownersAssociationId: hoa.id,
+      };
+
+      if (existingIds.has(apartment.externalId)) {
+        toUpdate.push({
+          externalId: apartment.externalId,
+          ...apartmentData,
+        });
+      } else {
+        toCreate.push({
+          externalId: apartment.externalId,
+          ...apartmentData,
+        });
+      }
+    }
+
+    // Bulk create new apartments
+    if (toCreate.length > 0) {
+      try {
+        await prisma.apartment.createMany({
+          data: toCreate,
+          skipDuplicates: true,
+        });
+        result.created = toCreate.length;
+      } catch {
+        // Fallback to individual creates on bulk error
+        for (const apt of toCreate) {
+          try {
+            await prisma.apartment.create({
+              data: apt,
+            });
+            result.created++;
+          } catch (err) {
+            result.errors.push(
+              `Failed to import ${apt.externalId}: ${err instanceof Error ? err.message : 'Unknown error'}`
+            );
+          }
         }
-      } catch (error) {
-        result.errors.push(
-          `Failed to import ${apartment.externalId}: ${error instanceof Error ? error.message : 'Unknown error'}`
-        );
+      }
+    }
+
+    // Bulk update existing apartments in batches
+    if (toUpdate.length > 0) {
+      const BATCH_SIZE = 100;
+      for (let i = 0; i < toUpdate.length; i += BATCH_SIZE) {
+        const batch = toUpdate.slice(i, i + BATCH_SIZE);
+        try {
+          await prisma.$transaction(
+            batch.map((apt) =>
+              prisma.apartment.update({
+                where: { externalId: apt.externalId },
+                data: {
+                  owner: apt.owner,
+                  address: apt.address,
+                  building: apt.building,
+                  number: apt.number,
+                  postalCode: apt.postalCode,
+                  city: apt.city,
+                  area: apt.area,
+                  height: apt.height,
+                  isActive: apt.isActive,
+                  homeownersAssociationId: apt.homeownersAssociationId,
+                },
+              })
+            )
+          );
+          result.updated += batch.length;
+        } catch {
+          // Fallback to individual updates on batch error
+          for (const apt of batch) {
+            try {
+              await prisma.apartment.update({
+                where: { externalId: apt.externalId },
+                data: {
+                  owner: apt.owner,
+                  address: apt.address,
+                  building: apt.building,
+                  number: apt.number,
+                  postalCode: apt.postalCode,
+                  city: apt.city,
+                  area: apt.area,
+                  height: apt.height,
+                  isActive: apt.isActive,
+                  homeownersAssociationId: apt.homeownersAssociationId,
+                },
+              });
+              result.updated++;
+            } catch (err) {
+              result.errors.push(
+                `Failed to import ${apt.externalId}: ${err instanceof Error ? err.message : 'Unknown error'}`
+              );
+            }
+          }
+        }
       }
     }
 
@@ -121,6 +207,37 @@ export async function importApartmentsFromBuffer(
 
     result.deactivated = deactivated.count;
     result.total = apartments.length;
+
+    console.log(
+      `Apartment import completed for HOA ${hoaId}: ${result.created} created, ${result.updated} updated, ${result.deactivated} deactivated`
+    );
+
+    // Import charges if buffer provided
+    if (chargesBuffer) {
+      console.log(`Starting charge import for HOA ${hoaId}...`);
+      try {
+        const chargeResult = await importChargesFromBuffer(
+          chargesBuffer,
+          hoaId
+        );
+        result.charges = {
+          created: chargeResult.created,
+          updated: chargeResult.updated,
+          skipped: chargeResult.skipped,
+          total: chargeResult.total,
+        };
+        console.log(
+          `Charge import completed: ${chargeResult.created} created, ${chargeResult.updated} updated, ${chargeResult.skipped} skipped`
+        );
+        if (chargeResult.errors.length > 0) {
+          result.errors.push(...chargeResult.errors);
+        }
+      } catch (error) {
+        const errorMsg = `Failed to import charges: ${error instanceof Error ? error.message : 'Unknown error'}`;
+        console.error(errorMsg);
+        result.errors.push(errorMsg);
+      }
+    }
 
     return result;
   } catch (error) {
