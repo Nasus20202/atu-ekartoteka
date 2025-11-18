@@ -13,7 +13,7 @@
 - **Feel free to ask**: If unsure about any requirement or implementation detail, ask for clarification
 - **Breaking changes**: Always ask before making changes that modify existing behavior
 - **Testing during development**: Verify that everything is working while implementing features
-- **Business logic tests**: Write tests for all business logic
+- **Business logic tests**: Write tests for all business logic, put them in the `__tests__` folder next to the implementation files
 
 ## Code Style & Quality
 

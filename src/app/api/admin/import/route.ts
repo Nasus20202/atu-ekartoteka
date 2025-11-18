@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
-import { importApartmentsFromFile } from '@/lib/apartment-import';
+import { importApartmentsFromBuffer } from '@/lib/apartment-import';
+import { UserRole } from '@/lib/constants';
 
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
 
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session || session.user.role !== UserRole.ADMIN) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -22,10 +21,7 @@ export async function POST(req: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const tempPath = join(process.cwd(), 'data', 'temp_lok.txt');
-    await writeFile(tempPath, buffer);
-
-    const result = await importApartmentsFromFile(tempPath);
+    const result = await importApartmentsFromBuffer(buffer);
 
     return NextResponse.json({
       success: true,

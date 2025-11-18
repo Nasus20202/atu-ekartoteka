@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { importApartmentsFromFile } from '../apartment-import';
+import { importApartmentsFromBuffer } from '../apartment-import';
 import * as lokParser from '../lok-parser';
 
 vi.mock('@/lib/prisma', () => ({
@@ -20,7 +20,7 @@ describe('apartment-import', () => {
     vi.clearAllMocks();
   });
 
-  describe('importApartmentsFromFile', () => {
+  describe('importApartmentsFromBuffer', () => {
     it('should create new apartments when they do not exist', async () => {
       const mockEntries = [
         {
@@ -38,7 +38,7 @@ describe('apartment-import', () => {
         },
       ];
 
-      vi.spyOn(lokParser, 'parseLokFile').mockResolvedValue(mockEntries);
+      vi.spyOn(lokParser, 'parseLokBuffer').mockResolvedValue(mockEntries);
       vi.spyOn(lokParser, 'getUniqueApartments').mockReturnValue(mockEntries);
 
       vi.mocked(prisma.apartment.findUnique).mockResolvedValue(null);
@@ -59,7 +59,8 @@ describe('apartment-import', () => {
       });
       vi.mocked(prisma.apartment.updateMany).mockResolvedValue({ count: 0 });
 
-      const result = await importApartmentsFromFile('/path/to/file.txt');
+      const buffer = Buffer.from('mock data');
+      const result = await importApartmentsFromBuffer(buffer);
 
       expect(result.created).toBe(1);
       expect(result.updated).toBe(0);
@@ -98,7 +99,7 @@ describe('apartment-import', () => {
         },
       ];
 
-      vi.spyOn(lokParser, 'parseLokFile').mockResolvedValue(mockEntries);
+      vi.spyOn(lokParser, 'parseLokBuffer').mockResolvedValue(mockEntries);
       vi.spyOn(lokParser, 'getUniqueApartments').mockReturnValue(mockEntries);
 
       vi.mocked(prisma.apartment.findUnique).mockResolvedValue({
@@ -133,7 +134,8 @@ describe('apartment-import', () => {
       });
       vi.mocked(prisma.apartment.updateMany).mockResolvedValue({ count: 0 });
 
-      const result = await importApartmentsFromFile('/path/to/file.txt');
+      const buffer = Buffer.from('mock data');
+      const result = await importApartmentsFromBuffer(buffer);
 
       expect(result.created).toBe(0);
       expect(result.updated).toBe(1);
@@ -172,7 +174,7 @@ describe('apartment-import', () => {
         },
       ];
 
-      vi.spyOn(lokParser, 'parseLokFile').mockResolvedValue(mockEntries);
+      vi.spyOn(lokParser, 'parseLokBuffer').mockResolvedValue(mockEntries);
       vi.spyOn(lokParser, 'getUniqueApartments').mockReturnValue(mockEntries);
 
       vi.mocked(prisma.apartment.findUnique).mockResolvedValue(null);
@@ -193,7 +195,8 @@ describe('apartment-import', () => {
       });
       vi.mocked(prisma.apartment.updateMany).mockResolvedValue({ count: 2 });
 
-      const result = await importApartmentsFromFile('/path/to/file.txt');
+      const buffer = Buffer.from('mock data');
+      const result = await importApartmentsFromBuffer(buffer);
 
       expect(result.deactivated).toBe(2);
       expect(prisma.apartment.updateMany).toHaveBeenCalledWith({
@@ -210,11 +213,12 @@ describe('apartment-import', () => {
     });
 
     it('should handle errors gracefully', async () => {
-      vi.spyOn(lokParser, 'parseLokFile').mockRejectedValue(
-        new Error('File not found')
+      vi.spyOn(lokParser, 'parseLokBuffer').mockRejectedValue(
+        new Error('Parse error')
       );
 
-      const result = await importApartmentsFromFile('/invalid/path.txt');
+      const buffer = Buffer.from('invalid data');
+      const result = await importApartmentsFromBuffer(buffer);
 
       expect(result.errors.length).toBeGreaterThan(0);
       expect(result.errors[0]).toContain('Failed to parse file');
@@ -251,7 +255,7 @@ describe('apartment-import', () => {
         },
       ];
 
-      vi.spyOn(lokParser, 'parseLokFile').mockResolvedValue(mockEntries);
+      vi.spyOn(lokParser, 'parseLokBuffer').mockResolvedValue(mockEntries);
       vi.spyOn(lokParser, 'getUniqueApartments').mockReturnValue(mockEntries);
 
       vi.mocked(prisma.apartment.findUnique)
@@ -276,7 +280,8 @@ describe('apartment-import', () => {
         });
       vi.mocked(prisma.apartment.updateMany).mockResolvedValue({ count: 0 });
 
-      const result = await importApartmentsFromFile('/path/to/file.txt');
+      const buffer = Buffer.from('mock data');
+      const result = await importApartmentsFromBuffer(buffer);
 
       expect(result.created).toBe(1);
       expect(result.errors.length).toBe(1);

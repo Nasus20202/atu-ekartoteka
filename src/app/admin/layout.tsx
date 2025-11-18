@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { ThemeToggle } from '@/components/theme-toggle';
 import Link from 'next/link';
 import { Building2, Upload, Users, Home } from 'lucide-react';
+import { UserRole } from '@/lib/constants';
 
 export default async function AdminLayout({
   children,
@@ -11,7 +12,7 @@ export default async function AdminLayout({
 }) {
   const session = await auth();
 
-  if (!session || session.user.role !== 'ADMIN') {
+  if (!session || session.user.role !== UserRole.ADMIN) {
     redirect('/login');
   }
 

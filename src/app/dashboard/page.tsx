@@ -2,6 +2,9 @@ import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { UserRole } from '@/lib/constants';
+import Link from 'next/link';
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -26,7 +29,14 @@ export default async function DashboardPage() {
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Panel mieszkańca</h1>
-          <ThemeToggle />
+          <div className="flex items-center gap-4">
+            {session.user.role === UserRole.ADMIN && (
+              <Link href="/admin">
+                <Button variant="outline">Panel administratora</Button>
+              </Link>
+            )}
+            <ThemeToggle />
+          </div>
         </div>
         <Card>
           <CardHeader>
