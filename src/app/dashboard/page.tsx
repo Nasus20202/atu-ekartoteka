@@ -245,7 +245,10 @@ export default async function DashboardPage() {
                                 Powierzchnia
                               </dt>
                               <dd className="font-medium">
-                                {user.apartment.area} m²
+                                {user.apartment.area
+                                  ? user.apartment.area / 100
+                                  : '-'}{' '}
+                                m²
                               </dd>
                             </div>
                           )}
@@ -255,7 +258,10 @@ export default async function DashboardPage() {
                                 Wysokość
                               </dt>
                               <dd className="font-medium">
-                                {user.apartment.height} cm
+                                {user.apartment.height
+                                  ? user.apartment.height / 100
+                                  : '-'}{' '}
+                                cm
                               </dd>
                             </div>
                           )}

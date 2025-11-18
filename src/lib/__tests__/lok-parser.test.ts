@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { createMockLokEntry, mockLokEntries } from '@/__tests__/fixtures';
 import {
   getUniqueApartments,
   LokEntry,
@@ -83,32 +84,13 @@ describe('lok-parser', () => {
   describe('getUniqueApartments', () => {
     it('should filter only owner entries', () => {
       const entries: LokEntry[] = [
-        {
-          id: 'W1',
+        createMockLokEntry({
           owner: 'Owner 1',
-          externalId: 'EXT1',
           address: 'Address 1',
-          building: 'B1',
-          number: '1',
-          postalCode: '00-001',
-          city: 'Warsaw',
           area: 50,
           height: 2.5,
-          isOwner: true,
-        },
-        {
-          id: 'L1',
-          owner: 'Tenant 1',
-          externalId: 'EXT1',
-          address: 'Address 1',
-          building: 'B1',
-          number: '1',
-          postalCode: '00-001',
-          city: 'Warsaw',
-          area: 50,
-          height: 2.5,
-          isOwner: false,
-        },
+        }),
+        mockLokEntries.tenant,
       ];
 
       const unique = getUniqueApartments(entries);
@@ -120,45 +102,20 @@ describe('lok-parser', () => {
 
     it('should return unique apartments by externalId', () => {
       const entries: LokEntry[] = [
-        {
-          id: 'W1',
+        createMockLokEntry({
           owner: 'Owner 1',
-          externalId: 'EXT1',
           address: 'Address 1',
-          building: 'B1',
-          number: '1',
-          postalCode: '00-001',
-          city: 'Warsaw',
           area: 50,
           height: 2.5,
-          isOwner: true,
-        },
-        {
+        }),
+        createMockLokEntry({
           id: 'W2',
           owner: 'Owner 2',
-          externalId: 'EXT1',
           address: 'Address 1',
-          building: 'B1',
-          number: '1',
-          postalCode: '00-001',
-          city: 'Warsaw',
           area: 50,
           height: 2.5,
-          isOwner: true,
-        },
-        {
-          id: 'W3',
-          owner: 'Owner 3',
-          externalId: 'EXT2',
-          address: 'Address 2',
-          building: 'B2',
-          number: '2',
-          postalCode: '00-002',
-          city: 'Warsaw',
-          area: 60,
-          height: 2.6,
-          isOwner: true,
-        },
+        }),
+        mockLokEntries.secondOwner,
       ];
 
       const unique = getUniqueApartments(entries);
@@ -169,21 +126,7 @@ describe('lok-parser', () => {
     });
 
     it('should return empty array when no owner entries exist', () => {
-      const entries: LokEntry[] = [
-        {
-          id: 'L1',
-          owner: 'Tenant 1',
-          externalId: 'EXT1',
-          address: 'Address 1',
-          building: 'B1',
-          number: '1',
-          postalCode: '00-001',
-          city: 'Warsaw',
-          area: 50,
-          height: 2.5,
-          isOwner: false,
-        },
-      ];
+      const entries: LokEntry[] = [mockLokEntries.tenant];
 
       const unique = getUniqueApartments(entries);
 

@@ -202,11 +202,15 @@ export default function HOAApartmentsPage() {
                       </div>
                       <div className="flex justify-between">
                         <dt className="text-muted-foreground">Powierzchnia:</dt>
-                        <dd className="font-medium">{apartment.area} m²</dd>
+                        <dd className="font-medium">
+                          {apartment.area ? apartment.area / 100 : '-'} m²
+                        </dd>
                       </div>
                       <div className="flex justify-between">
                         <dt className="text-muted-foreground">Wysokość:</dt>
-                        <dd className="font-medium">{apartment.height} cm</dd>
+                        <dd className="font-medium">
+                          {apartment.height ? apartment.height / 100 : '-'} cm
+                        </dd>
                       </div>
                       <div className="flex justify-between">
                         <dt className="text-muted-foreground">

@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { AccountStatus, UserRole } from '@/generated/prisma';
+import {
+  createMockApartment,
+  createMockUser,
+  mockApartments,
+} from '@/__tests__/fixtures';
+import { AccountStatus } from '@/generated/prisma';
 import type { Apartment } from '@/lib/types';
 
 vi.mock('@/lib/prisma', () => ({
@@ -25,35 +30,12 @@ describe('Apartment Assignment', () => {
 
   describe('Assignment Validation', () => {
     it('should allow assigning available apartment to approved user', async () => {
-      const mockUser = {
+      const mockUser = createMockUser({
         id: 'user1',
         email: 'user@example.com',
-        password: 'hashedpassword',
-        name: 'Test User',
-        role: UserRole.TENANT,
-        status: AccountStatus.APPROVED,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        apartmentId: null,
-      };
+      });
 
-      const mockApartment = {
-        id: 'apt1',
-        homeownersAssociationId: 'hoa1',
-        externalId: 'EXT1',
-        owner: 'John Doe',
-        address: 'Main Street 1',
-        building: 'A',
-        number: '101',
-        postalCode: '00-001',
-        city: 'Warsaw',
-        area: 55.5,
-        height: 2.7,
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        user: null,
-      };
+      const mockApartment = createMockApartment();
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
       vi.mocked(prisma.apartment.findUnique).mockResolvedValue(mockApartment);
@@ -71,23 +53,7 @@ describe('Apartment Assignment', () => {
     });
 
     it('should prevent assigning inactive apartment', async () => {
-      const mockApartment = {
-        id: 'apt1',
-        homeownersAssociationId: 'hoa1',
-        externalId: 'EXT1',
-        owner: 'John Doe',
-        address: 'Main Street 1',
-        building: 'A',
-        number: '101',
-        postalCode: '00-001',
-        city: 'Warsaw',
-        area: 55.5,
-        height: 2.7,
-        isActive: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        user: null,
-      };
+      const mockApartment = createMockApartment({ isActive: false });
 
       vi.mocked(prisma.apartment.findUnique).mockResolvedValue(mockApartment);
 
@@ -99,35 +65,14 @@ describe('Apartment Assignment', () => {
     });
 
     it('should prevent assigning occupied apartment to different user', async () => {
-      const existingUser = {
+      const existingUser = createMockUser({
         id: 'user1',
         email: 'existing@example.com',
-        password: 'hashedpassword',
         name: 'Existing User',
-        role: UserRole.TENANT,
-        status: AccountStatus.APPROVED,
-        createdAt: new Date(),
-        updatedAt: new Date(),
         apartmentId: 'apt1',
-      };
+      });
 
-      const mockApartment = {
-        id: 'apt1',
-        homeownersAssociationId: 'hoa1',
-        externalId: 'EXT1',
-        owner: 'John Doe',
-        address: 'Main Street 1',
-        building: 'A',
-        number: '101',
-        postalCode: '00-001',
-        city: 'Warsaw',
-        area: 55.5,
-        height: 2.7,
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        user: existingUser,
-      };
+      const mockApartment = createMockApartment({ user: existingUser });
 
       vi.mocked(prisma.apartment.findUnique).mockResolvedValue(mockApartment);
 
@@ -145,35 +90,13 @@ describe('Apartment Assignment', () => {
     });
 
     it('should allow reassigning same apartment to same user', async () => {
-      const mockUser = {
+      const mockUser = createMockUser({
         id: 'user1',
         email: 'user@example.com',
-        password: 'hashedpassword',
-        name: 'Test User',
-        role: UserRole.TENANT,
-        status: AccountStatus.APPROVED,
-        createdAt: new Date(),
-        updatedAt: new Date(),
         apartmentId: 'apt1',
-      };
+      });
 
-      const mockApartment = {
-        id: 'apt1',
-        homeownersAssociationId: 'hoa1',
-        externalId: 'EXT1',
-        owner: 'John Doe',
-        address: 'Main Street 1',
-        building: 'A',
-        number: '101',
-        postalCode: '00-001',
-        city: 'Warsaw',
-        area: 55.5,
-        height: 2.7,
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        user: mockUser,
-      };
+      const mockApartment = createMockApartment({ user: mockUser });
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
       vi.mocked(prisma.apartment.findUnique).mockResolvedValue(mockApartment);
@@ -189,42 +112,17 @@ describe('Apartment Assignment', () => {
 
   describe('Apartment Availability', () => {
     it('should list only active apartments', async () => {
-      const mockApartments = [
-        {
-          id: 'apt1',
-          homeownersAssociationId: 'hoa1',
-          externalId: 'EXT1',
+      const mockApartmentList = [
+        createMockApartment({
           owner: 'Owner 1',
           address: 'Street 1',
-          building: 'A',
-          number: '101',
-          postalCode: '00-001',
-          city: 'Warsaw',
           area: 50,
           height: 2.5,
-          isActive: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: 'apt2',
-          homeownersAssociationId: 'hoa1',
-          externalId: 'EXT2',
-          owner: 'Owner 2',
-          address: 'Street 2',
-          building: 'B',
-          number: '202',
-          postalCode: '00-002',
-          city: 'Warsaw',
-          area: 60,
-          height: 2.6,
-          isActive: false,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
+        }),
+        mockApartments.inactive,
       ];
 
-      vi.mocked(prisma.apartment.findMany).mockResolvedValue(mockApartments);
+      vi.mocked(prisma.apartment.findMany).mockResolvedValue(mockApartmentList);
 
       const apartments = await prisma.apartment.findMany();
       const activeApartments = apartments.filter(
@@ -237,61 +135,30 @@ describe('Apartment Assignment', () => {
     });
 
     it('should list unassigned apartments', async () => {
-      const user1 = {
+      const user1 = createMockUser({
         id: 'user1',
         email: 'user1@example.com',
-        password: 'hashedpassword',
         name: 'User 1',
-        role: UserRole.TENANT,
-        status: AccountStatus.APPROVED,
-        createdAt: new Date(),
-        updatedAt: new Date(),
         apartmentId: 'apt1',
-      };
+      });
 
-      const mockApartments = [
-        {
-          id: 'apt1',
-          homeownersAssociationId: 'hoa1',
-          externalId: 'EXT1',
+      const mockApartmentList = [
+        createMockApartment({
           owner: 'Owner 1',
           address: 'Street 1',
-          building: 'A',
-          number: '101',
-          postalCode: '00-001',
-          city: 'Warsaw',
           area: 50,
           height: 2.5,
-          isActive: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
           user: user1,
-        },
-        {
-          id: 'apt2',
-          homeownersAssociationId: 'hoa1',
-          externalId: 'EXT2',
-          owner: 'Owner 2',
-          address: 'Street 2',
-          building: 'B',
-          number: '202',
-          postalCode: '00-002',
-          city: 'Warsaw',
-          area: 60,
-          height: 2.6,
-          isActive: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          user: null,
-        },
+        }),
+        mockApartments.inactive,
       ];
 
       vi.mocked(prisma.apartment.findMany).mockResolvedValue(
-        mockApartments as never
+        mockApartmentList as never
       );
 
       const apartments =
-        (await prisma.apartment.findMany()) as typeof mockApartments;
+        (await prisma.apartment.findMany()) as typeof mockApartmentList;
       const unassignedApartments = apartments.filter((apt) => !apt.user);
 
       expect(apartments).toHaveLength(2);
@@ -302,17 +169,11 @@ describe('Apartment Assignment', () => {
 
   describe('User Status and Apartment', () => {
     it('should remove apartment when user is rejected', async () => {
-      const mockUser = {
+      const mockUser = createMockUser({
         id: 'user1',
         email: 'user@example.com',
-        password: 'hashedpassword',
-        name: 'Test User',
-        role: UserRole.TENANT,
-        status: AccountStatus.APPROVED,
-        createdAt: new Date(),
-        updatedAt: new Date(),
         apartmentId: 'apt1',
-      };
+      });
 
       const updatedUser = {
         ...mockUser,
@@ -342,15 +203,10 @@ describe('Apartment Assignment', () => {
 
     it('should allow approved user to have no apartment', async () => {
       const mockUser = {
-        id: 'user1',
-        email: 'user@example.com',
-        password: 'hashedpassword',
-        name: 'Test User',
-        role: UserRole.TENANT,
-        status: AccountStatus.APPROVED,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        apartmentId: null,
+        ...createMockUser({
+          id: 'user1',
+          email: 'user@example.com',
+        }),
         apartment: null,
       };
 
@@ -368,15 +224,11 @@ describe('Apartment Assignment', () => {
 
     it('should not allow pending user to have apartment', async () => {
       const mockUser = {
-        id: 'user1',
-        email: 'user@example.com',
-        password: 'hashedpassword',
-        name: 'Test User',
-        role: UserRole.TENANT,
-        status: AccountStatus.PENDING,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        apartmentId: null,
+        ...createMockUser({
+          id: 'user1',
+          email: 'user@example.com',
+          status: AccountStatus.PENDING,
+        }),
         apartment: null,
       };
 
@@ -394,35 +246,19 @@ describe('Apartment Assignment', () => {
 
   describe('Data Consistency', () => {
     it('should maintain one-to-one relationship between user and apartment', async () => {
-      const mockUser = {
+      const mockUser = createMockUser({
         id: 'user1',
         email: 'user@example.com',
-        password: 'hashedpassword',
-        name: 'Test User',
-        role: UserRole.TENANT,
-        status: AccountStatus.APPROVED,
-        createdAt: new Date(),
-        updatedAt: new Date(),
         apartmentId: 'apt1',
-      };
+      });
 
-      const mockApartment = {
-        id: 'apt1',
-        homeownersAssociationId: 'hoa1',
-        externalId: 'EXT1',
+      const mockApartment = createMockApartment({
         owner: 'Owner',
         address: 'Street',
-        building: 'A',
-        number: '101',
-        postalCode: '00-001',
-        city: 'Warsaw',
         area: 50,
         height: 2.5,
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
         user: mockUser,
-      };
+      });
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
       vi.mocked(prisma.apartment.findUnique).mockResolvedValue(mockApartment);

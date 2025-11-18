@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import {
+  createMockLokEntry,
+  mockHOA,
+  mockLokEntries,
+} from '@/__tests__/fixtures';
 import { importApartmentsFromBuffer } from '@/lib/apartment-import';
 import * as lokParser from '@/lib/lok-parser';
 
@@ -27,21 +32,7 @@ describe('apartment-import', () => {
 
   describe('importApartmentsFromBuffer', () => {
     it('should create HOA if it does not exist', async () => {
-      const mockEntries = [
-        {
-          id: 'W1',
-          owner: 'Jan Kowalski',
-          externalId: 'EXT1',
-          address: 'ul. Testowa 1',
-          building: 'B1',
-          number: '1',
-          postalCode: '00-001',
-          city: 'Warszawa',
-          area: 50.5,
-          height: 2.5,
-          isOwner: true,
-        },
-      ];
+      const mockEntries = [createMockLokEntry()];
 
       vi.spyOn(lokParser, 'parseLokBuffer').mockResolvedValue(mockEntries);
       vi.spyOn(lokParser, 'getUniqueApartments').mockReturnValue(mockEntries);
@@ -49,13 +40,7 @@ describe('apartment-import', () => {
       vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValue(
         null
       );
-      vi.mocked(prisma.homeownersAssociation.create).mockResolvedValue({
-        id: 'hoa1',
-        externalId: 'HOA001',
-        name: 'HOA001',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+      vi.mocked(prisma.homeownersAssociation.create).mockResolvedValue(mockHOA);
       vi.mocked(prisma.apartment.findUnique).mockResolvedValue(null);
       vi.mocked(prisma.apartment.create).mockResolvedValue({
         id: '1',
@@ -87,29 +72,7 @@ describe('apartment-import', () => {
     });
 
     it('should create new apartments when they do not exist', async () => {
-      const mockHOA = {
-        id: 'hoa1',
-        externalId: 'HOA001',
-        name: 'HOA001',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      const mockEntries = [
-        {
-          id: 'W1',
-          owner: 'Jan Kowalski',
-          externalId: 'EXT1',
-          address: 'ul. Testowa 1',
-          building: 'B1',
-          number: '1',
-          postalCode: '00-001',
-          city: 'Warszawa',
-          area: 50.5,
-          height: 2.5,
-          isOwner: true,
-        },
-      ];
+      const mockEntries = [createMockLokEntry()];
 
       vi.spyOn(lokParser, 'parseLokBuffer').mockResolvedValue(mockEntries);
       vi.spyOn(lokParser, 'getUniqueApartments').mockReturnValue(mockEntries);
@@ -161,19 +124,9 @@ describe('apartment-import', () => {
     });
 
     it('should update existing apartments', async () => {
-      const mockHOA = {
-        id: 'hoa1',
-        externalId: 'HOA001',
-        name: 'HOA001',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
       const mockEntries = [
-        {
-          id: 'W1',
+        createMockLokEntry({
           owner: 'Jan Nowak',
-          externalId: 'EXT1',
           address: 'ul. Testowa 2',
           building: 'B2',
           number: '2',
@@ -181,8 +134,7 @@ describe('apartment-import', () => {
           city: 'Kraków',
           area: 60.0,
           height: 2.6,
-          isOwner: true,
-        },
+        }),
       ];
 
       vi.spyOn(lokParser, 'parseLokBuffer').mockResolvedValue(mockEntries);
@@ -250,29 +202,7 @@ describe('apartment-import', () => {
     });
 
     it('should deactivate apartments not in the file', async () => {
-      const mockHOA = {
-        id: 'hoa1',
-        externalId: 'HOA001',
-        name: 'HOA001',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      const mockEntries = [
-        {
-          id: 'W1',
-          owner: 'Jan Kowalski',
-          externalId: 'EXT1',
-          address: 'ul. Testowa 1',
-          building: 'B1',
-          number: '1',
-          postalCode: '00-001',
-          city: 'Warszawa',
-          area: 50.5,
-          height: 2.5,
-          isOwner: true,
-        },
-      ];
+      const mockEntries = [createMockLokEntry()];
 
       vi.spyOn(lokParser, 'parseLokBuffer').mockResolvedValue(mockEntries);
       vi.spyOn(lokParser, 'getUniqueApartments').mockReturnValue(mockEntries);
@@ -331,42 +261,7 @@ describe('apartment-import', () => {
     });
 
     it('should continue processing on individual apartment errors', async () => {
-      const mockHOA = {
-        id: 'hoa1',
-        externalId: 'HOA001',
-        name: 'HOA001',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      const mockEntries = [
-        {
-          id: 'W1',
-          owner: 'Jan Kowalski',
-          externalId: 'EXT1',
-          address: 'ul. Testowa 1',
-          building: 'B1',
-          number: '1',
-          postalCode: '00-001',
-          city: 'Warszawa',
-          area: 50.5,
-          height: 2.5,
-          isOwner: true,
-        },
-        {
-          id: 'W2',
-          owner: 'Anna Nowak',
-          externalId: 'EXT2',
-          address: 'ul. Testowa 2',
-          building: 'B2',
-          number: '2',
-          postalCode: '00-002',
-          city: 'Kraków',
-          area: 60.0,
-          height: 2.6,
-          isOwner: true,
-        },
-      ];
+      const mockEntries = [mockLokEntries.owner, mockLokEntries.secondOwner];
 
       vi.spyOn(lokParser, 'parseLokBuffer').mockResolvedValue(mockEntries);
       vi.spyOn(lokParser, 'getUniqueApartments').mockReturnValue(mockEntries);

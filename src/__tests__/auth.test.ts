@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { createMockUser, mockUsers } from '@/__tests__/fixtures';
 import { $Enums } from '@/generated/prisma';
 import { prisma } from '@/lib/prisma';
 
@@ -74,17 +75,7 @@ describe('User Login Authentication', () => {
     });
 
     it('should find user by email', async () => {
-      const mockUser = {
-        id: 'user-123',
-        email: 'test@example.com',
-        password: 'hashed_password',
-        name: 'Test User',
-        role: UserRole.TENANT,
-        status: AccountStatus.APPROVED,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        apartmentId: null,
-      };
+      const mockUser = createMockUser();
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
 
@@ -134,17 +125,7 @@ describe('User Login Authentication', () => {
 
   describe('Successful authentication', () => {
     it('should return user object on successful login', async () => {
-      const mockUser = {
-        id: 'user-123',
-        email: 'test@example.com',
-        password: 'hashed_password',
-        name: 'Test User',
-        role: UserRole.TENANT,
-        status: AccountStatus.APPROVED,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        apartmentId: null,
-      };
+      const mockUser = createMockUser();
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
       vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
@@ -167,17 +148,7 @@ describe('User Login Authentication', () => {
     });
 
     it('should return admin user on successful login', async () => {
-      const mockAdminUser = {
-        id: 'admin-456',
-        email: 'admin@example.com',
-        password: 'hashed_password',
-        name: 'Admin User',
-        role: UserRole.ADMIN,
-        status: AccountStatus.APPROVED,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        apartmentId: null,
-      };
+      const mockAdminUser = mockUsers.admin;
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue(mockAdminUser);
       vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
@@ -199,17 +170,7 @@ describe('User Login Authentication', () => {
 
   describe('Account status validation', () => {
     it('should allow login for approved user', async () => {
-      const mockUser = {
-        id: 'user-123',
-        email: 'approved@example.com',
-        password: 'hashed_password',
-        name: 'Approved User',
-        role: UserRole.TENANT,
-        status: AccountStatus.APPROVED,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        apartmentId: null,
-      };
+      const mockUser = mockUsers.approved;
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
 
@@ -221,17 +182,7 @@ describe('User Login Authentication', () => {
     });
 
     it('should identify pending user', async () => {
-      const mockUser = {
-        id: 'user-456',
-        email: 'pending@example.com',
-        password: 'hashed_password',
-        name: 'Pending User',
-        role: UserRole.TENANT,
-        status: AccountStatus.PENDING,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        apartmentId: null,
-      };
+      const mockUser = mockUsers.pending;
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
 
@@ -243,17 +194,7 @@ describe('User Login Authentication', () => {
     });
 
     it('should identify rejected user', async () => {
-      const mockUser = {
-        id: 'user-789',
-        email: 'rejected@example.com',
-        password: 'hashed_password',
-        name: 'Rejected User',
-        role: UserRole.TENANT,
-        status: AccountStatus.REJECTED,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        apartmentId: null,
-      };
+      const mockUser = mockUsers.rejected;
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
 
@@ -289,17 +230,7 @@ describe('User Login Authentication', () => {
     });
 
     it('should handle user with null name', async () => {
-      const mockUser = {
-        id: 'user-123',
-        email: 'test@example.com',
-        password: 'hashed_password',
-        name: null,
-        role: UserRole.TENANT,
-        status: AccountStatus.APPROVED,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        apartmentId: null,
-      };
+      const mockUser = createMockUser({ name: null });
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
 
@@ -326,17 +257,7 @@ describe('User Login Authentication', () => {
 
   describe('Session data structure', () => {
     it('should return correct user structure for session', async () => {
-      const mockUser = {
-        id: 'user-123',
-        email: 'test@example.com',
-        password: 'hashed_password',
-        name: 'Test User',
-        role: UserRole.TENANT,
-        status: AccountStatus.APPROVED,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        apartmentId: null,
-      };
+      const mockUser = createMockUser();
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
       vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
@@ -367,17 +288,7 @@ describe('User Login Authentication', () => {
 
   describe('User with apartment', () => {
     it('should handle user with assigned apartment', async () => {
-      const mockUser = {
-        id: 'user-123',
-        email: 'test@example.com',
-        password: 'hashed_password',
-        name: 'Test User',
-        role: UserRole.TENANT,
-        status: AccountStatus.APPROVED,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        apartmentId: 'apt-456',
-      };
+      const mockUser = mockUsers.withApartment;
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
 
@@ -389,17 +300,7 @@ describe('User Login Authentication', () => {
     });
 
     it('should handle user without assigned apartment', async () => {
-      const mockUser = {
-        id: 'user-123',
-        email: 'test@example.com',
-        password: 'hashed_password',
-        name: 'Test User',
-        role: UserRole.TENANT,
-        status: AccountStatus.APPROVED,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        apartmentId: null,
-      };
+      const mockUser = createMockUser();
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
 
