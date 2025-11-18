@@ -34,8 +34,7 @@ describe('Admin Users API', () => {
           status: AccountStatus.PENDING,
           createdAt: new Date(),
           updatedAt: new Date(),
-          apartmentId: null,
-          apartment: null,
+          apartments: [],
         },
         {
           id: '2',
@@ -46,22 +45,23 @@ describe('Admin Users API', () => {
           status: AccountStatus.APPROVED,
           createdAt: new Date(),
           updatedAt: new Date(),
-          apartmentId: '1',
-          apartment: {
-            id: '1',
-            externalId: 'EXT1',
-            owner: 'Owner Name',
-            address: 'Test Street',
-            building: 'B1',
-            number: '1',
-            postalCode: '00-001',
-            city: 'Warsaw',
-            area: 50,
-            height: 2.5,
-            isActive: true,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
+          apartments: [
+            {
+              id: '1',
+              externalId: 'EXT1',
+              owner: 'Owner Name',
+              address: 'Test Street',
+              building: 'B1',
+              number: '1',
+              postalCode: '00-001',
+              city: 'Warsaw',
+              area: 50,
+              height: 2.5,
+              isActive: true,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+          ],
         },
       ];
 
@@ -69,13 +69,13 @@ describe('Admin Users API', () => {
 
       const result = await prisma.user.findMany({
         where: { role: UserRole.TENANT },
-        include: { apartment: true },
+        include: { apartments: true },
         orderBy: [{ createdAt: 'desc' }],
       });
 
       expect(result).toHaveLength(2);
       expect(result[0].role).toBe(UserRole.TENANT);
-      expect(result[1].apartment).not.toBeNull();
+      expect(result[1].apartments).toBeDefined();
     });
 
     it('should filter users by PENDING status', async () => {
@@ -89,8 +89,7 @@ describe('Admin Users API', () => {
           status: AccountStatus.PENDING,
           createdAt: new Date(),
           updatedAt: new Date(),
-          apartmentId: null,
-          apartment: null,
+          apartments: [],
         },
       ];
 
@@ -101,7 +100,7 @@ describe('Admin Users API', () => {
           status: AccountStatus.PENDING,
           role: UserRole.TENANT,
         },
-        include: { apartment: true },
+        include: { apartments: true },
         orderBy: [{ createdAt: 'desc' }],
       });
 
@@ -120,7 +119,6 @@ describe('Admin Users API', () => {
           status: AccountStatus.APPROVED,
           createdAt: new Date(),
           updatedAt: new Date(),
-          apartmentId: '1',
           apartment: {
             id: '1',
             externalId: 'EXT1',
@@ -146,7 +144,7 @@ describe('Admin Users API', () => {
           status: AccountStatus.APPROVED,
           role: UserRole.TENANT,
         },
-        include: { apartment: true },
+        include: { apartments: true },
         orderBy: [{ createdAt: 'desc' }],
       });
 
@@ -166,13 +164,13 @@ describe('Admin Users API', () => {
         status: AccountStatus.PENDING,
         createdAt: new Date(),
         updatedAt: new Date(),
-        apartmentId: null,
+        apartments: [],
       };
 
       const updatedUser = {
         ...mockUser,
         status: AccountStatus.APPROVED,
-        apartment: null,
+        apartments: [],
       };
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
@@ -182,13 +180,13 @@ describe('Admin Users API', () => {
         where: { id: '1' },
         data: {
           status: AccountStatus.APPROVED,
-          apartmentId: null,
+          apartments: { set: [] },
         },
-        include: { apartment: true },
+        include: { apartments: true },
       });
 
       expect(result.status).toBe(AccountStatus.APPROVED);
-      expect(result.apartmentId).toBeNull();
+      expect(result.apartments).toHaveLength(0);
     });
 
     it('should approve a user and assign apartment', async () => {
@@ -201,7 +199,7 @@ describe('Admin Users API', () => {
         status: AccountStatus.PENDING,
         createdAt: new Date(),
         updatedAt: new Date(),
-        apartmentId: null,
+        apartments: [],
       };
 
       const mockApartment = {
@@ -219,14 +217,14 @@ describe('Admin Users API', () => {
         isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
+        userId: null,
         user: null,
       };
 
       const updatedUser = {
         ...mockUser,
         status: AccountStatus.APPROVED,
-        apartmentId: 'apt1',
-        apartment: mockApartment,
+        apartments: [mockApartment],
       };
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
@@ -246,14 +244,12 @@ describe('Admin Users API', () => {
         where: { id: '1' },
         data: {
           status: AccountStatus.APPROVED,
-          apartmentId: 'apt1',
         },
-        include: { apartment: true },
+        include: { apartments: true },
       });
 
       expect(result.status).toBe(AccountStatus.APPROVED);
-      expect(result.apartmentId).toBe('apt1');
-      expect(result.apartment).not.toBeNull();
+      expect(result.apartments).toBeDefined();
     });
 
     it('should reject a user', async () => {
@@ -266,14 +262,13 @@ describe('Admin Users API', () => {
         status: AccountStatus.PENDING,
         createdAt: new Date(),
         updatedAt: new Date(),
-        apartmentId: null,
+        apartments: [],
       };
 
       const updatedUser = {
         ...mockUser,
         status: AccountStatus.REJECTED,
-        apartmentId: null,
-        apartment: null,
+        apartments: [],
       };
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
@@ -283,13 +278,13 @@ describe('Admin Users API', () => {
         where: { id: '1' },
         data: {
           status: AccountStatus.REJECTED,
-          apartmentId: null,
+          apartments: { set: [] },
         },
-        include: { apartment: true },
+        include: { apartments: true },
       });
 
       expect(result.status).toBe(AccountStatus.REJECTED);
-      expect(result.apartmentId).toBeNull();
+      expect(result.apartments).toHaveLength(0);
     });
 
     it('should prevent assigning already occupied apartment', async () => {
@@ -302,7 +297,7 @@ describe('Admin Users API', () => {
         status: AccountStatus.PENDING,
         createdAt: new Date(),
         updatedAt: new Date(),
-        apartmentId: null,
+        apartments: [],
       };
 
       const occupiedApartment = {
@@ -320,6 +315,7 @@ describe('Admin Users API', () => {
         isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
+        userId: 'other-user',
         user: {
           id: 'other-user',
           email: 'other@example.com',
@@ -329,7 +325,6 @@ describe('Admin Users API', () => {
           status: AccountStatus.APPROVED,
           createdAt: new Date(),
           updatedAt: new Date(),
-          apartmentId: 'apt1',
         },
       };
 
@@ -371,14 +366,13 @@ describe('Admin Users API', () => {
         status: AccountStatus.APPROVED,
         createdAt: new Date(),
         updatedAt: new Date(),
-        apartmentId: 'apt1',
+        apartments: [{ id: 'apt1', externalId: 'EXT1', number: '1' }],
       };
 
       const updatedUser = {
         ...mockUser,
         status: AccountStatus.REJECTED,
-        apartmentId: null,
-        apartment: null,
+        apartments: [],
       };
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
@@ -388,13 +382,13 @@ describe('Admin Users API', () => {
         where: { id: '1' },
         data: {
           status: AccountStatus.REJECTED,
-          apartmentId: null,
+          apartments: { set: [] },
         },
-        include: { apartment: true },
+        include: { apartments: true },
       });
 
       expect(result.status).toBe(AccountStatus.REJECTED);
-      expect(result.apartmentId).toBeNull();
+      expect(result.apartments).toHaveLength(0);
     });
   });
 });

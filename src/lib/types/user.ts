@@ -3,6 +3,6 @@ import { Apartment } from '@/lib/types/apartment';
 
 export type { User };
 
-export type UserWithApartment = User & {
-  apartment: Apartment | null;
+export type UserWithApartments = User & {
+  apartments: Apartment[];
 };

@@ -37,7 +37,6 @@ describe('Registration API', () => {
         status: AccountStatus.PENDING,
         createdAt: new Date(),
         updatedAt: new Date(),
-        apartmentId: null,
       });
 
       // Simulate API request
@@ -91,7 +90,6 @@ describe('Registration API', () => {
         status: AccountStatus.APPROVED,
         createdAt: new Date(),
         updatedAt: new Date(),
-        apartmentId: null,
       };
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue(existingUser);
@@ -130,7 +128,6 @@ describe('Registration API', () => {
         status: AccountStatus.PENDING,
         createdAt: new Date(),
         updatedAt: new Date(),
-        apartmentId: null,
       });
 
       const result = await prisma.user.create({
@@ -163,7 +160,6 @@ describe('Registration API', () => {
         status: AccountStatus.PENDING,
         createdAt: new Date(),
         updatedAt: new Date(),
-        apartmentId: null,
       });
 
       const result = await prisma.user.create({
@@ -195,7 +191,6 @@ describe('Registration API', () => {
         status: AccountStatus.PENDING,
         createdAt: new Date(),
         updatedAt: new Date(),
-        apartmentId: null,
       });
 
       const result = await prisma.user.create({

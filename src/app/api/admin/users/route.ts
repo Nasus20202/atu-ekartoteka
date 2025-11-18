@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     const users = await prisma.user.findMany({
       where,
       include: {
-        apartment: true,
+        apartments: true,
       },
       orderBy: [{ createdAt: 'desc' }],
     });
@@ -49,7 +49,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { userId, status, apartmentId } = body;
+    const { userId, status, apartmentIds } = body;
 
     if (!userId || !status) {
       return NextResponse.json(
@@ -78,38 +78,52 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    // If approving and apartment is provided, check if apartment is available
-    if (status === AccountStatus.APPROVED && apartmentId) {
-      const apartment = await prisma.apartment.findUnique({
-        where: { id: apartmentId },
+    // If approving and apartments are provided, check if apartments are available
+    if (
+      status === AccountStatus.APPROVED &&
+      apartmentIds &&
+      apartmentIds.length > 0
+    ) {
+      const apartments = await prisma.apartment.findMany({
+        where: { id: { in: apartmentIds } },
         include: { user: true },
       });
 
-      if (!apartment) {
+      if (apartments.length !== apartmentIds.length) {
         return NextResponse.json(
-          { error: 'Mieszkanie nie znalezione' },
+          { error: 'Niektóre mieszkania nie zostały znalezione' },
           { status: 404 }
         );
       }
 
-      if (apartment.user && apartment.user.id !== userId) {
+      const occupiedApartments = apartments.filter(
+        (apt) => apt.user && apt.user.id !== userId
+      );
+      if (occupiedApartments.length > 0) {
         return NextResponse.json(
-          { error: 'Mieszkanie jest już przypisane do innego użytkownika' },
+          {
+            error:
+              'Niektóre mieszkania są już przypisane do innego użytkownika',
+          },
           { status: 400 }
         );
       }
     }
 
-    // Update user
+    // Update user and apartment assignments
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
         status,
-        apartmentId:
-          status === AccountStatus.APPROVED ? apartmentId || null : null,
+        apartments:
+          status === AccountStatus.APPROVED && apartmentIds?.length
+            ? {
+                set: apartmentIds.map((id: string) => ({ id })),
+              }
+            : { set: [] },
       },
       include: {
-        apartment: true,
+        apartments: true,
       },
     });
 

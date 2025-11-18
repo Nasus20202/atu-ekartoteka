@@ -11,7 +11,6 @@ interface ExtendedUser {
   name: string | null;
   role: string;
   status: string;
-  apartmentId?: string | null;
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -74,7 +73,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user && token.id) {
-        // Fetch fresh user data from database to get current status and apartment
+        // Fetch fresh user data from database to get current status
         const user = await prisma.user.findUnique({
           where: { id: token.id as string },
           select: {
@@ -83,34 +82,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             name: true,
             role: true,
             status: true,
-            apartmentId: true,
-            apartment: {
-              select: {
-                id: true,
-                externalId: true,
-                owner: true,
-                address: true,
-                building: true,
-                number: true,
-                postalCode: true,
-                city: true,
-                area: true,
-                height: true,
-                isActive: true,
-              },
-            },
           },
         });
 
         if (user) {
-          const extendedSession = session.user as ExtendedUser & {
-            apartment?: typeof user.apartment;
-          };
+          const extendedSession = session.user as ExtendedUser;
           extendedSession.id = user.id;
           extendedSession.role = user.role;
           extendedSession.status = user.status;
-          extendedSession.apartmentId = user.apartmentId;
-          extendedSession.apartment = user.apartment;
         }
       }
       return session;

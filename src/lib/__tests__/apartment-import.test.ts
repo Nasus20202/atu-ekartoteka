@@ -57,6 +57,7 @@ describe('apartment-import', () => {
         homeownersAssociationId: 'hoa1',
         createdAt: new Date(),
         updatedAt: new Date(),
+        userId: null,
       });
       vi.mocked(prisma.apartment.updateMany).mockResolvedValue({ count: 0 });
 
@@ -96,6 +97,7 @@ describe('apartment-import', () => {
         homeownersAssociationId: 'hoa1',
         createdAt: new Date(),
         updatedAt: new Date(),
+        userId: null,
       });
       vi.mocked(prisma.apartment.updateMany).mockResolvedValue({ count: 0 });
 
@@ -158,6 +160,7 @@ describe('apartment-import', () => {
         homeownersAssociationId: 'hoa1',
         createdAt: new Date(),
         updatedAt: new Date(),
+        userId: null,
       });
       vi.mocked(prisma.apartment.update).mockResolvedValue({
         id: '1',
@@ -174,6 +177,7 @@ describe('apartment-import', () => {
         homeownersAssociationId: 'hoa1',
         createdAt: new Date(),
         updatedAt: new Date(),
+        userId: null,
       });
       vi.mocked(prisma.apartment.updateMany).mockResolvedValue({ count: 0 });
 
@@ -226,6 +230,7 @@ describe('apartment-import', () => {
         homeownersAssociationId: 'hoa1',
         createdAt: new Date(),
         updatedAt: new Date(),
+        userId: null,
       });
       vi.mocked(prisma.apartment.updateMany).mockResolvedValue({ count: 2 });
 
@@ -289,6 +294,7 @@ describe('apartment-import', () => {
           homeownersAssociationId: 'hoa1',
           createdAt: new Date(),
           updatedAt: new Date(),
+          userId: null,
         });
       vi.mocked(prisma.apartment.updateMany).mockResolvedValue({ count: 0 });
 

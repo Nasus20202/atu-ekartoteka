@@ -286,29 +286,32 @@ describe('User Login Authentication', () => {
     });
   });
 
-  describe('User with apartment', () => {
-    it('should handle user with assigned apartment', async () => {
-      const mockUser = mockUsers.withApartment;
+  describe('User with apartments', () => {
+    it('should handle user with assigned apartments', async () => {
+      const mockUser = mockUsers.withApartments;
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
 
       const user = await prisma.user.findUnique({
         where: { email: 'test@example.com' },
+        include: { apartments: true },
       });
 
-      expect(user?.apartmentId).toBe('apt-456');
+      expect(user?.apartments).toHaveLength(1);
+      expect(user?.apartments[0].id).toBe('apt-456');
     });
 
-    it('should handle user without assigned apartment', async () => {
+    it('should handle user without assigned apartments', async () => {
       const mockUser = createMockUser();
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
 
       const user = await prisma.user.findUnique({
         where: { email: 'test@example.com' },
+        include: { apartments: true },
       });
 
-      expect(user?.apartmentId).toBeNull();
+      expect(user?.apartments).toHaveLength(0);
     });
   });
 });

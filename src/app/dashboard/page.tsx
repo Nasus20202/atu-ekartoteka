@@ -15,6 +15,7 @@ import { LogoutButton } from '@/components/logout-button';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { prisma } from '@/lib/prisma';
 import { AccountStatus, UserRole } from '@/lib/types';
 
 export default async function DashboardPage() {
@@ -24,30 +25,24 @@ export default async function DashboardPage() {
     redirect('/login');
   }
 
+  // Fetch user with apartments
+  const userData = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    include: {
+      apartments: {
+        orderBy: { number: 'asc' },
+      },
+    },
+  });
+
+  if (!userData) {
+    redirect('/login');
+  }
+
   const statusMap = {
     APPROVED: 'Zatwierdzony',
     PENDING: 'Oczekujący',
     REJECTED: 'Odrzucony',
-  };
-
-  const user = session.user as {
-    email: string;
-    name?: string | null;
-    role: string;
-    status: string;
-    apartment?: {
-      id: string;
-      externalId: string;
-      owner?: string | null;
-      address?: string | null;
-      building?: string | null;
-      number: string;
-      postalCode?: string | null;
-      city?: string | null;
-      area?: number | null;
-      height?: number | null;
-      isActive: boolean;
-    } | null;
   };
 
   return (
@@ -61,7 +56,7 @@ export default async function DashboardPage() {
               </Link>
             </div>
             <div className="flex items-center gap-4">
-              {user.role === UserRole.ADMIN && (
+              {userData.role === UserRole.ADMIN && (
                 <Link href="/admin">
                   <Button variant="outline" size="sm">
                     Panel administratora
@@ -69,7 +64,7 @@ export default async function DashboardPage() {
                 </Link>
               )}
               <span className="text-sm text-muted-foreground">
-                {user.email}
+                {userData.email}
               </span>
               <ThemeToggle />
               <LogoutButton />
@@ -81,7 +76,7 @@ export default async function DashboardPage() {
       <main className="p-8">
         <div className="mx-auto max-w-4xl">
           <h1 className="mb-6 text-3xl font-bold">
-            Witaj{user.name ? `, ${user.name}` : ''}!
+            Witaj{userData.name ? `, ${userData.name}` : ''}!
           </h1>
 
           <div className="space-y-6">
@@ -100,27 +95,39 @@ export default async function DashboardPage() {
                       Status zatwierdzenia
                     </p>
                     <div className="mt-1 flex items-center gap-2">
-                      {user.status === AccountStatus.APPROVED && (
+                      {userData.status === AccountStatus.APPROVED && (
                         <>
                           <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
                           <span className="font-medium text-green-600 dark:text-green-400">
-                            {statusMap[user.status as keyof typeof statusMap]}
+                            {
+                              statusMap[
+                                userData.status as keyof typeof statusMap
+                              ]
+                            }
                           </span>
                         </>
                       )}
-                      {user.status === AccountStatus.PENDING && (
+                      {userData.status === AccountStatus.PENDING && (
                         <>
                           <Clock className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
                           <span className="font-medium text-yellow-600 dark:text-yellow-400">
-                            {statusMap[user.status as keyof typeof statusMap]}
+                            {
+                              statusMap[
+                                userData.status as keyof typeof statusMap
+                              ]
+                            }
                           </span>
                         </>
                       )}
-                      {user.status === AccountStatus.REJECTED && (
+                      {userData.status === AccountStatus.REJECTED && (
                         <>
                           <X className="h-4 w-4 text-red-600 dark:text-red-400" />
                           <span className="font-medium text-red-600 dark:text-red-400">
-                            {statusMap[user.status as keyof typeof statusMap]}
+                            {
+                              statusMap[
+                                userData.status as keyof typeof statusMap
+                              ]
+                            }
                           </span>
                         </>
                       )}
@@ -128,7 +135,7 @@ export default async function DashboardPage() {
                   </div>
                 </div>
 
-                {user.status === 'PENDING' && (
+                {userData.status === 'PENDING' && (
                   <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-950">
                     <div className="flex items-start gap-3">
                       <Clock className="mt-0.5 h-5 w-5 shrink-0 text-yellow-600 dark:text-yellow-400" />
@@ -146,7 +153,7 @@ export default async function DashboardPage() {
                   </div>
                 )}
 
-                {user.status === 'REJECTED' && (
+                {userData.status === 'REJECTED' && (
                   <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
                     <div className="flex items-start gap-3">
                       <X className="mt-0.5 h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
@@ -167,23 +174,23 @@ export default async function DashboardPage() {
                   <div className="flex items-center gap-2 text-sm">
                     <Mail className="h-4 w-4 text-muted-foreground" />
                     <span className="text-muted-foreground">Email:</span>
-                    <span className="font-medium">{user.email}</span>
+                    <span className="font-medium">{userData.email}</span>
                   </div>
-                  {user.name && (
+                  {userData.name && (
                     <div className="flex items-center gap-2 text-sm">
                       <User className="h-4 w-4 text-muted-foreground" />
                       <span className="text-muted-foreground">
                         Imię i nazwisko:
                       </span>
-                      <span className="font-medium">{user.name}</span>
+                      <span className="font-medium">{userData.name}</span>
                     </div>
                   )}
                 </div>
               </CardContent>
             </Card>
 
-            {/* Apartment Card */}
-            {user.status === 'APPROVED' && (
+            {/* Apartments Card */}
+            {userData.status === 'APPROVED' && (
               <Card
                 className="animate-scale-in"
                 style={{ animationDelay: '100ms' }}
@@ -191,82 +198,92 @@ export default async function DashboardPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Building2 className="h-5 w-5" />
-                    Mieszkanie
+                    {userData.apartments.length === 0
+                      ? 'Mieszkanie'
+                      : userData.apartments.length === 1
+                        ? 'Mieszkanie'
+                        : `Mieszkania (${userData.apartments.length})`}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {user.apartment ? (
+                  {userData.apartments.length > 0 ? (
                     <div className="space-y-4">
-                      <div className="rounded-lg border bg-muted/50 p-4">
-                        <div className="mb-4 flex items-start justify-between">
-                          <div>
-                            <h3 className="text-lg font-semibold">
-                              {user.apartment.address} {user.apartment.number}
-                            </h3>
-                            <p className="text-sm text-muted-foreground">
-                              {user.apartment.postalCode} {user.apartment.city}
-                            </p>
+                      {userData.apartments.map((apartment, index) => (
+                        <div
+                          key={apartment.id}
+                          className="rounded-lg border bg-muted/50 p-4"
+                          style={{
+                            animationDelay: `${100 + index * 50}ms`,
+                          }}
+                        >
+                          <div className="mb-4 flex items-start justify-between">
+                            <div>
+                              <h3 className="text-lg font-semibold">
+                                {apartment.address} {apartment.number}
+                              </h3>
+                              <p className="text-sm text-muted-foreground">
+                                {apartment.postalCode} {apartment.city}
+                              </p>
+                            </div>
+                            {apartment.isActive ? (
+                              <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-200">
+                                Aktywne
+                              </span>
+                            ) : (
+                              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+                                Nieaktywne
+                              </span>
+                            )}
                           </div>
-                          {user.apartment.isActive ? (
-                            <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-200">
-                              Aktywne
-                            </span>
-                          ) : (
-                            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-800 dark:bg-gray-800 dark:text-gray-200">
-                              Nieaktywne
-                            </span>
-                          )}
-                        </div>
 
-                        <dl className="grid gap-3 sm:grid-cols-2">
-                          {user.apartment.owner && (
-                            <div>
-                              <dt className="text-sm text-muted-foreground">
-                                Właściciel
-                              </dt>
-                              <dd className="font-medium">
-                                {user.apartment.owner}
-                              </dd>
-                            </div>
-                          )}
-                          {user.apartment.building && (
-                            <div>
-                              <dt className="text-sm text-muted-foreground">
-                                Budynek
-                              </dt>
-                              <dd className="font-medium">
-                                {user.apartment.building}
-                              </dd>
-                            </div>
-                          )}
-                          {user.apartment.area && (
-                            <div>
-                              <dt className="text-sm text-muted-foreground">
-                                Powierzchnia
-                              </dt>
-                              <dd className="font-medium">
-                                {user.apartment.area
-                                  ? user.apartment.area / 100
-                                  : '-'}{' '}
-                                m²
-                              </dd>
-                            </div>
-                          )}
-                          {user.apartment.height && (
-                            <div>
-                              <dt className="text-sm text-muted-foreground">
-                                Wysokość
-                              </dt>
-                              <dd className="font-medium">
-                                {user.apartment.height
-                                  ? user.apartment.height / 100
-                                  : '-'}{' '}
-                                cm
-                              </dd>
-                            </div>
-                          )}
-                        </dl>
-                      </div>
+                          <dl className="grid gap-3 sm:grid-cols-2">
+                            {apartment.owner && (
+                              <div>
+                                <dt className="text-sm text-muted-foreground">
+                                  Właściciel
+                                </dt>
+                                <dd className="font-medium">
+                                  {apartment.owner}
+                                </dd>
+                              </div>
+                            )}
+                            {apartment.building && (
+                              <div>
+                                <dt className="text-sm text-muted-foreground">
+                                  Budynek
+                                </dt>
+                                <dd className="font-medium">
+                                  {apartment.building}
+                                </dd>
+                              </div>
+                            )}
+                            {apartment.area && (
+                              <div>
+                                <dt className="text-sm text-muted-foreground">
+                                  Powierzchnia
+                                </dt>
+                                <dd className="font-medium">
+                                  {apartment.area ? apartment.area / 100 : '-'}{' '}
+                                  m²
+                                </dd>
+                              </div>
+                            )}
+                            {apartment.height && (
+                              <div>
+                                <dt className="text-sm text-muted-foreground">
+                                  Wysokość
+                                </dt>
+                                <dd className="font-medium">
+                                  {apartment.height
+                                    ? apartment.height / 100
+                                    : '-'}{' '}
+                                  cm
+                                </dd>
+                              </div>
+                            )}
+                          </dl>
+                        </div>
+                      ))}
                     </div>
                   ) : (
                     <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950">

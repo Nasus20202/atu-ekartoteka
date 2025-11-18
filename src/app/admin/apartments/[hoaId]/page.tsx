@@ -13,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Apartment } from '@/lib/types';
 
@@ -113,12 +114,14 @@ export default function HOAApartmentsPage() {
               )}
             </div>
             <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
+              <label
+                htmlFor="active-only"
+                className="flex items-center gap-2 text-sm cursor-pointer"
+              >
+                <Checkbox
+                  id="active-only"
                   checked={activeOnly}
-                  onChange={(e) => setActiveOnly(e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300"
+                  onCheckedChange={(checked: boolean) => setActiveOnly(checked)}
                 />
                 Tylko aktywne
               </label>

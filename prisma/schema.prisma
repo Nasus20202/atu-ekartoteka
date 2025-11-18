@@ -46,9 +46,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
-  // Relationship with apartments
-  apartment   Apartment? @relation(fields: [apartmentId], references: [id])
-  apartmentId String?    @unique
+  // Relationship with apartments (one-to-many: one user can own multiple apartments)
+  apartments  Apartment[]
   
   @@index([email])
   @@index([role])
@@ -57,8 +56,6 @@ model User {
 
 model Apartment {
   id          String   @id @default(cuid())
-  
-  // Data from lok.txt file
   externalId  String   @unique  // e.g. "W00016"
   owner       String?            // owner
   address     String?            // street
@@ -79,10 +76,12 @@ model Apartment {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
-  // Relationship with users
-  user        User?
+  // Relationship with user (many-to-one: each apartment belongs to one user)
+  user        User?   @relation(fields: [userId], references: [id])
+  userId      String?
   
   @@index([externalId])
   @@index([isActive])
   @@index([homeownersAssociationId])
+  @@index([userId])
 }

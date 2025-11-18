@@ -6,7 +6,7 @@ import {
   type ApartmentWithUser,
   type User,
   UserRole,
-  type UserWithApartment,
+  type UserWithApartments,
 } from '@/lib/types';
 
 describe('Type definitions', () => {
@@ -21,7 +21,6 @@ describe('Type definitions', () => {
         status: AccountStatus.APPROVED,
         createdAt: new Date(),
         updatedAt: new Date(),
-        apartmentId: null,
       };
 
       expect(user.email).toBe('test@example.com');
@@ -38,17 +37,15 @@ describe('Type definitions', () => {
         status: AccountStatus.APPROVED,
         createdAt: new Date(),
         updatedAt: new Date(),
-        apartmentId: null,
       };
 
       expect(user.name).toBeNull();
-      expect(user.apartmentId).toBeNull();
     });
   });
 
-  describe('UserWithApartment type', () => {
-    it('should accept User with apartment', () => {
-      const userWithApt: UserWithApartment = {
+  describe('UserWithApartments type', () => {
+    it('should accept User with apartments', () => {
+      const userWithApt: UserWithApartments = {
         id: '1',
         email: 'test@example.com',
         password: 'hashed',
@@ -57,31 +54,33 @@ describe('Type definitions', () => {
         status: AccountStatus.APPROVED,
         createdAt: new Date(),
         updatedAt: new Date(),
-        apartmentId: 'apt-1',
-        apartment: {
-          id: 'apt-1',
-          homeownersAssociationId: 'hoa-1',
-          externalId: 'EXT123',
-          owner: 'Owner Name',
-          address: 'Test St',
-          building: '1',
-          number: '10',
-          postalCode: '00-000',
-          city: 'Warsaw',
-          area: 50.5,
-          height: 2.5,
-          isActive: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
+        apartments: [
+          {
+            id: 'apt-1',
+            homeownersAssociationId: 'hoa-1',
+            externalId: 'EXT123',
+            owner: 'Owner Name',
+            address: 'Test St',
+            building: '1',
+            number: '10',
+            postalCode: '00-000',
+            city: 'Warsaw',
+            area: 50.5,
+            height: 2.5,
+            isActive: true,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            userId: '1',
+          },
+        ],
       };
 
-      expect(userWithApt.apartment).toBeDefined();
-      expect(userWithApt.apartment?.externalId).toBe('EXT123');
+      expect(userWithApt.apartments).toBeDefined();
+      expect(userWithApt.apartments[0]?.externalId).toBe('EXT123');
     });
 
-    it('should accept User without apartment (null)', () => {
-      const userWithoutApt: UserWithApartment = {
+    it('should accept User without apartments (empty array)', () => {
+      const userWithoutApt: UserWithApartments = {
         id: '1',
         email: 'test@example.com',
         password: 'hashed',
@@ -90,11 +89,10 @@ describe('Type definitions', () => {
         status: AccountStatus.PENDING,
         createdAt: new Date(),
         updatedAt: new Date(),
-        apartmentId: null,
-        apartment: null,
+        apartments: [],
       };
 
-      expect(userWithoutApt.apartment).toBeNull();
+      expect(userWithoutApt.apartments).toHaveLength(0);
     });
   });
 
@@ -115,6 +113,7 @@ describe('Type definitions', () => {
         isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
+        userId: null,
       };
 
       expect(apartment.externalId).toBe('EXT123');
@@ -138,6 +137,7 @@ describe('Type definitions', () => {
         isActive: false,
         createdAt: new Date(),
         updatedAt: new Date(),
+        userId: null,
       };
 
       expect(apartment.isActive).toBe(false);
@@ -161,6 +161,7 @@ describe('Type definitions', () => {
         isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
+        userId: 'user-1',
         user: {
           id: 'user-1',
           email: 'tenant@example.com',
@@ -169,7 +170,6 @@ describe('Type definitions', () => {
           status: AccountStatus.APPROVED,
           createdAt: new Date(),
           updatedAt: new Date(),
-          apartmentId: 'apt-1',
         },
       };
 
@@ -193,6 +193,7 @@ describe('Type definitions', () => {
         isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
+        userId: null,
         user: null,
       };
 
@@ -211,10 +212,9 @@ describe('Type definitions', () => {
         status: AccountStatus.APPROVED,
         createdAt: new Date(),
         updatedAt: new Date(),
-        apartmentId: null,
       };
 
-      const tenant: UserWithApartment = {
+      const tenant: UserWithApartments = {
         id: '2',
         email: 'tenant@example.com',
         password: 'hashed',
@@ -223,8 +223,7 @@ describe('Type definitions', () => {
         status: AccountStatus.APPROVED,
         createdAt: new Date(),
         updatedAt: new Date(),
-        apartmentId: null,
-        apartment: null,
+        apartments: [],
       };
 
       expect(admin.role).toBe('ADMIN');
@@ -241,10 +240,9 @@ describe('Type definitions', () => {
         status: AccountStatus.PENDING,
         createdAt: new Date(),
         updatedAt: new Date(),
-        apartmentId: null,
       };
 
-      const approvedUser: UserWithApartment = {
+      const approvedUser: UserWithApartments = {
         id: '2',
         email: 'approved@example.com',
         password: 'hashed',
@@ -253,8 +251,7 @@ describe('Type definitions', () => {
         status: AccountStatus.APPROVED,
         createdAt: new Date(),
         updatedAt: new Date(),
-        apartmentId: null,
-        apartment: null,
+        apartments: [],
       };
 
       const rejectedUser: User = {
@@ -266,7 +263,6 @@ describe('Type definitions', () => {
         status: AccountStatus.REJECTED,
         createdAt: new Date(),
         updatedAt: new Date(),
-        apartmentId: null,
       };
 
       expect(pendingUser.status).toBe('PENDING');

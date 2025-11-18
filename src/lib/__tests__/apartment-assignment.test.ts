@@ -69,7 +69,6 @@ describe('Apartment Assignment', () => {
         id: 'user1',
         email: 'existing@example.com',
         name: 'Existing User',
-        apartmentId: 'apt1',
       });
 
       const mockApartment = createMockApartment({ user: existingUser });
@@ -93,7 +92,6 @@ describe('Apartment Assignment', () => {
       const mockUser = createMockUser({
         id: 'user1',
         email: 'user@example.com',
-        apartmentId: 'apt1',
       });
 
       const mockApartment = createMockApartment({ user: mockUser });
@@ -139,7 +137,6 @@ describe('Apartment Assignment', () => {
         id: 'user1',
         email: 'user1@example.com',
         name: 'User 1',
-        apartmentId: 'apt1',
       });
 
       const mockApartmentList = [
@@ -172,33 +169,35 @@ describe('Apartment Assignment', () => {
       const mockUser = createMockUser({
         id: 'user1',
         email: 'user@example.com',
-        apartmentId: 'apt1',
+        apartments: [{ id: 'apt1', externalId: 'EXT1', number: '1' }],
       });
 
       const updatedUser = {
         ...mockUser,
         status: AccountStatus.REJECTED,
-        apartmentId: null,
-        apartment: null,
+        apartments: [],
       };
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
       vi.mocked(prisma.user.update).mockResolvedValue(updatedUser);
 
-      const user = await prisma.user.findUnique({ where: { id: 'user1' } });
-      expect(user?.apartmentId).toBe('apt1');
+      const user = await prisma.user.findUnique({
+        where: { id: 'user1' },
+        include: { apartments: true },
+      });
+      expect(user?.apartments).toHaveLength(1);
 
       const result = await prisma.user.update({
         where: { id: 'user1' },
         data: {
           status: AccountStatus.REJECTED,
-          apartmentId: null,
+          apartments: { set: [] },
         },
-        include: { apartment: true },
+        include: { apartments: true },
       });
 
       expect(result.status).toBe(AccountStatus.REJECTED);
-      expect(result.apartmentId).toBeNull();
+      expect(result.apartments).toHaveLength(0);
     });
 
     it('should allow approved user to have no apartment', async () => {
@@ -214,12 +213,11 @@ describe('Apartment Assignment', () => {
 
       const user = await prisma.user.findUnique({
         where: { id: 'user1' },
-        include: { apartment: true },
+        include: { apartments: true },
       });
 
       expect(user?.status).toBe(AccountStatus.APPROVED);
-      expect(user?.apartmentId).toBeNull();
-      expect(user?.apartment).toBeNull();
+      expect(user?.apartments).toHaveLength(0);
     });
 
     it('should not allow pending user to have apartment', async () => {
@@ -236,20 +234,20 @@ describe('Apartment Assignment', () => {
 
       const user = await prisma.user.findUnique({
         where: { id: 'user1' },
-        include: { apartment: true },
+        include: { apartments: true },
       });
 
       expect(user?.status).toBe(AccountStatus.PENDING);
-      expect(user?.apartmentId).toBeNull();
+      expect(user?.apartments).toHaveLength(0);
     });
   });
 
   describe('Data Consistency', () => {
-    it('should maintain one-to-one relationship between user and apartment', async () => {
+    it('should maintain one-to-many relationship between user and apartments', async () => {
       const mockUser = createMockUser({
         id: 'user1',
         email: 'user@example.com',
-        apartmentId: 'apt1',
+        apartments: [{ id: 'apt1', externalId: 'EXT1', number: '1' }],
       });
 
       const mockApartment = createMockApartment({
@@ -257,20 +255,24 @@ describe('Apartment Assignment', () => {
         address: 'Street',
         area: 50,
         height: 2.5,
-        user: mockUser,
+        userId: 'user1',
       });
 
       vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
       vi.mocked(prisma.apartment.findUnique).mockResolvedValue(mockApartment);
 
-      const user = await prisma.user.findUnique({ where: { id: 'user1' } });
+      const user = await prisma.user.findUnique({
+        where: { id: 'user1' },
+        include: { apartments: true },
+      });
       const apartment = await prisma.apartment.findUnique({
         where: { id: 'apt1' },
         include: { user: true },
       });
 
-      expect(user?.apartmentId).toBe('apt1');
-      expect(apartment?.user?.id).toBe('user1');
+      expect(user?.apartments).toHaveLength(1);
+      expect(user?.apartments[0].id).toBe('apt1');
+      expect(apartment?.userId).toBe('user1');
     });
   });
 });

@@ -9,7 +9,6 @@ import {
   UserCheck,
   UserX,
   X,
-  XCircle,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -22,11 +21,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AccountStatus, Apartment, UserWithApartment } from '@/lib/types';
+import { AccountStatus, Apartment, UserWithApartments } from '@/lib/types';
 
-type User = UserWithApartment;
+type User = UserWithApartments;
 
 export default function AdminUsersPage() {
   const confirm = useConfirm();
@@ -35,7 +35,7 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'ALL' | AccountStatus>('PENDING');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [selectedApartment, setSelectedApartment] = useState<string>('');
+  const [selectedApartments, setSelectedApartments] = useState<string[]>([]);
   const [apartmentSearch, setApartmentSearch] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const [editMode, setEditMode] = useState<
@@ -75,16 +75,41 @@ export default function AdminUsersPage() {
       const data = await response.json();
 
       if (response.ok) {
-        // Filter out apartments that are already assigned
-        const availableApartments = data.apartments.filter(
-          (apt: Apartment) => !users.some((u) => u.apartment?.id === apt.id)
-        );
-        setApartments(availableApartments);
+        // Fetch all users to check apartment assignments (not filtered by status)
+        const allUsersResponse = await fetch('/api/admin/users');
+        const allUsersData = await allUsersResponse.json();
+        const allUsers = allUsersData.users || [];
+
+        // For new user approval (PENDING status), show only unassigned apartments
+        if (selectedUser?.status === AccountStatus.PENDING) {
+          const unassignedApartments = data.apartments.filter(
+            (apt: Apartment) =>
+              !allUsers.some((u: User) =>
+                u.apartments?.some((a) => a.id === apt.id)
+              )
+          );
+          setApartments(unassignedApartments);
+        } else {
+          // For existing users, show their apartments + unassigned apartments
+          const currentUserApartmentIds =
+            selectedUser?.apartments?.map((a) => a.id) || [];
+
+          const availableApartments = data.apartments.filter(
+            (apt: Apartment) =>
+              currentUserApartmentIds.includes(apt.id) || // Include current user's apartments
+              !allUsers.some(
+                (u: User) =>
+                  u.id !== selectedUser?.id && // Exclude apartments from other users
+                  u.apartments?.some((a) => a.id === apt.id)
+              )
+          );
+          setApartments(availableApartments);
+        }
       }
     } catch (error) {
       console.error('Failed to fetch apartments:', error);
     }
-  }, [users]);
+  }, [selectedUser]);
 
   useEffect(() => {
     fetchUsers();
@@ -93,13 +118,17 @@ export default function AdminUsersPage() {
   useEffect(() => {
     if (selectedUser) {
       fetchApartments();
+      // Initialize with current apartments when opening dialog
+      setSelectedApartments(
+        selectedUser.apartments?.map((apt) => apt.id) || []
+      );
     }
   }, [selectedUser, fetchApartments]);
 
   const handleUpdateUser = async (
     userId: string,
     status: AccountStatus,
-    apartmentId?: string
+    apartmentIds?: string[]
   ) => {
     setActionLoading(true);
     try {
@@ -111,14 +140,14 @@ export default function AdminUsersPage() {
         body: JSON.stringify({
           userId,
           status,
-          apartmentId,
+          apartmentIds,
         }),
       });
 
       if (response.ok) {
         await fetchUsers();
         setSelectedUser(null);
-        setSelectedApartment('');
+        setSelectedApartments([]);
         setEditMode(null);
       } else {
         const data = await response.json();
@@ -127,38 +156,6 @@ export default function AdminUsersPage() {
     } catch (error) {
       console.error('Failed to update user:', error);
       alert('Failed to update user');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleRemoveApartment = async (
-    userId: string,
-    currentStatus: AccountStatus
-  ) => {
-    setActionLoading(true);
-    try {
-      const response = await fetch('/api/admin/users', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId,
-          status: currentStatus,
-          apartmentId: null,
-        }),
-      });
-
-      if (response.ok) {
-        await fetchUsers();
-      } else {
-        const data = await response.json();
-        alert(data.error || 'Failed to remove apartment');
-      }
-    } catch (error) {
-      console.error('Failed to remove apartment:', error);
-      alert('Failed to remove apartment');
     } finally {
       setActionLoading(false);
     }
@@ -296,51 +293,32 @@ export default function AdminUsersPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  {user.apartment && (
+                  {user.apartments && user.apartments.length > 0 && (
                     <div className="mb-4 rounded-lg bg-muted p-3">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <p className="mb-1 text-sm font-medium">
-                            Przypisane mieszkanie:
+                            Przypisane mieszkania: {user.apartments.length}
                           </p>
-                          <p className="text-sm text-muted-foreground">
-                            {user.apartment.address} {user.apartment.number}
-                            <br />
-                            {user.apartment.postalCode} {user.apartment.city}
-                          </p>
+                          <div className="space-y-2">
+                            {user.apartments.map((apartment) => (
+                              <p
+                                key={apartment.id}
+                                className="text-sm text-muted-foreground"
+                              >
+                                {apartment.address} {apartment.number}
+                                <br />
+                                {apartment.postalCode} {apartment.city}
+                              </p>
+                            ))}
+                          </div>
                         </div>
-                        {user.status === AccountStatus.APPROVED && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={async () => {
-                              const confirmed = await confirm({
-                                title: 'Usuń przypisanie mieszkania',
-                                description:
-                                  'Czy na pewno chcesz usunąć przypisanie mieszkania?',
-                                confirmText: 'Usuń',
-                                cancelText: 'Anuluj',
-                                variant: 'destructive',
-                              });
-                              if (confirmed) {
-                                handleRemoveApartment(
-                                  user.id,
-                                  AccountStatus.APPROVED
-                                );
-                              }
-                            }}
-                            disabled={actionLoading}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <XCircle className="h-4 w-4" />
-                          </Button>
-                        )}
                       </div>
                     </div>
                   )}
 
                   <div className="flex gap-2">
-                    {user.status === 'PENDING' && (
+                    {user.status === AccountStatus.PENDING && (
                       <>
                         <Button
                           size="sm"
@@ -366,21 +344,20 @@ export default function AdminUsersPage() {
                       </>
                     )}
 
-                    {user.status === 'APPROVED' && (
+                    {user.status === AccountStatus.APPROVED && (
                       <>
-                        {!user.apartment && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setSelectedUser(user);
-                              setEditMode('assign-apartment');
-                            }}
-                            disabled={actionLoading}
-                          >
-                            Przypisz mieszkanie
-                          </Button>
-                        )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setEditMode('assign-apartment');
+                          }}
+                          disabled={actionLoading}
+                        >
+                          <Edit className="mr-1 h-4 w-4" />
+                          Mieszkania ({user.apartments?.length || 0})
+                        </Button>
                         <Button
                           size="sm"
                           variant="outline"
@@ -453,45 +430,48 @@ export default function AdminUsersPage() {
                     </div>
 
                     <div className="max-h-60 space-y-2 overflow-y-auto rounded-lg border p-2">
-                      {editMode === 'approve' && (
-                        <button
-                          type="button"
-                          onClick={() => setSelectedApartment('')}
-                          className={`w-full rounded-lg border p-3 text-left transition-all duration-200 hover:bg-muted hover:scale-[1.02] ${
-                            selectedApartment === ''
-                              ? 'border-primary bg-primary/5'
-                              : ''
-                          }`}
-                        >
-                          <p className="text-sm font-medium">Brak mieszkania</p>
-                          <p className="text-xs text-muted-foreground">
-                            Zatwierdź konto bez przypisywania mieszkania
-                          </p>
-                        </button>
-                      )}
-
                       {filteredApartments.map((apt) => (
-                        <button
+                        <label
                           key={apt.id}
-                          type="button"
-                          onClick={() => setSelectedApartment(apt.id)}
-                          className={`w-full rounded-lg border p-3 text-left transition-all duration-200 hover:bg-muted hover:scale-[1.02] ${
-                            selectedApartment === apt.id
+                          htmlFor={`apt-${apt.id}`}
+                          className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-all duration-200 hover:bg-muted hover:scale-[1.02] ${
+                            selectedApartments.includes(apt.id)
                               ? 'border-primary bg-primary/5'
                               : ''
                           }`}
                         >
-                          <p className="text-sm font-medium">
-                            {apt.address} {apt.number}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {apt.postalCode} {apt.city} • Budynek:{' '}
-                            {apt.building} • Właściciel: {apt.owner}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Powierzchnia: {apt.area} m² • ID: {apt.externalId}
-                          </p>
-                        </button>
+                          <Checkbox
+                            id={`apt-${apt.id}`}
+                            checked={selectedApartments.includes(apt.id)}
+                            onCheckedChange={(checked: boolean) => {
+                              if (checked) {
+                                setSelectedApartments([
+                                  ...selectedApartments,
+                                  apt.id,
+                                ]);
+                              } else {
+                                setSelectedApartments(
+                                  selectedApartments.filter(
+                                    (id) => id !== apt.id
+                                  )
+                                );
+                              }
+                            }}
+                            className="mt-1"
+                          />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium">
+                              {apt.address} {apt.number}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {apt.postalCode} {apt.city} • Budynek:{' '}
+                              {apt.building} • Właściciel: {apt.owner}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Powierzchnia: {apt.area} m² • ID: {apt.externalId}
+                            </p>
+                          </div>
+                        </label>
                       ))}
 
                       {filteredApartments.length === 0 && apartmentSearch && (
@@ -507,24 +487,22 @@ export default function AdminUsersPage() {
                           handleUpdateUser(
                             selectedUser.id,
                             AccountStatus.APPROVED,
-                            selectedApartment || undefined
+                            selectedApartments
                           )
                         }
-                        disabled={
-                          actionLoading ||
-                          (editMode === 'assign-apartment' &&
-                            !selectedApartment)
-                        }
+                        disabled={actionLoading}
                         className="flex-1"
                       >
                         <Check className="mr-1 h-4 w-4" />
-                        {editMode === 'approve' ? 'Zatwierdź' : 'Przypisz'}
+                        {editMode === 'approve'
+                          ? 'Zatwierdź'
+                          : `Przypisz (${selectedApartments.length})`}
                       </Button>
                       <Button
                         variant="outline"
                         onClick={() => {
                           setSelectedUser(null);
-                          setSelectedApartment('');
+                          setSelectedApartments([]);
                           setApartmentSearch('');
                           setEditMode(null);
                         }}
@@ -554,7 +532,7 @@ export default function AdminUsersPage() {
                             handleUpdateUser(
                               selectedUser.id,
                               'APPROVED',
-                              selectedUser.apartment?.id
+                              selectedUser.apartments?.map((a) => a.id) || []
                             )
                           }
                           disabled={
@@ -572,11 +550,14 @@ export default function AdminUsersPage() {
                           }
                           className="w-full justify-start"
                           onClick={async () => {
-                            if (selectedUser.apartment) {
+                            if (
+                              selectedUser.apartments &&
+                              selectedUser.apartments.length > 0
+                            ) {
                               const confirmed = await confirm({
                                 title: 'Odrzuć użytkownika',
                                 description:
-                                  'Odrzucenie użytkownika usunie przypisanie mieszkania. Kontynuować?',
+                                  'Odrzucenie użytkownika usunie przypisanie mieszkań. Kontynuować?',
                                 confirmText: 'Odrzuć',
                                 cancelText: 'Anuluj',
                                 variant: 'destructive',

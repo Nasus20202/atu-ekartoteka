@@ -13,6 +13,7 @@ export const createMockApartment = (
     height?: number;
     isActive?: boolean;
     user?: unknown;
+    userId?: string | null;
   } = {}
 ) => ({
   id: 'apt1',
@@ -30,6 +31,7 @@ export const createMockApartment = (
   createdAt: new Date(),
   updatedAt: new Date(),
   user: null,
+  userId: null,
   ...overrides,
 });
 

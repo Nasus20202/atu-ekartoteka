@@ -7,7 +7,7 @@ export const createMockUser = (
     name?: string | null;
     role?: UserRole;
     status?: AccountStatus;
-    apartmentId?: string | null;
+    apartments?: unknown[];
   } = {}
 ) => ({
   id: 'user-123',
@@ -18,7 +18,7 @@ export const createMockUser = (
   status: AccountStatus.APPROVED,
   createdAt: new Date(),
   updatedAt: new Date(),
-  apartmentId: null,
+  apartments: [],
   ...overrides,
 });
 
@@ -46,7 +46,13 @@ export const mockUsers = {
     email: 'approved@example.com',
     name: 'Approved User',
   }),
-  withApartment: createMockUser({
-    apartmentId: 'apt-456',
+  withApartments: createMockUser({
+    apartments: [
+      {
+        id: 'apt-456',
+        externalId: 'W00001',
+        number: '1',
+      },
+    ],
   }),
 };
