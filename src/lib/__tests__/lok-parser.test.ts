@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
-import { parseLokFile, getUniqueApartments, LokEntry } from '../lok-parser';
 import path from 'path';
+import { describe, expect, it } from 'vitest';
+
+import { getUniqueApartments, LokEntry, parseLokFile } from '@/lib/lok-parser';
 
 describe('lok-parser', () => {
   describe('parseLokFile', () => {

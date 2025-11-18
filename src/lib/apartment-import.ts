@@ -1,9 +1,5 @@
+import { getUniqueApartments, parseLokBuffer } from '@/lib/lok-parser';
 import { prisma } from '@/lib/prisma';
-import {
-  parseLokFile,
-  parseLokBuffer,
-  getUniqueApartments,
-} from '@/lib/lok-parser';
 
 export interface ImportResult {
   created: number;
@@ -16,9 +12,8 @@ export interface ImportResult {
 export async function importApartmentsFromFile(
   filePath: string
 ): Promise<ImportResult> {
-  const result = await importApartmentsFromBuffer(
-    await require('fs/promises').readFile(filePath)
-  );
+  const fs = await import('fs/promises');
+  const result = await importApartmentsFromBuffer(await fs.readFile(filePath));
   return result;
 }
 

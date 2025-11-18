@@ -1,10 +1,11 @@
-import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
-import { ThemeToggle } from '@/components/theme-toggle';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { UserRole } from '@/lib/constants';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
+
+import { auth } from '@/auth';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { UserRole } from '@/lib/constants';
 
 export default async function DashboardPage() {
   const session = await auth();

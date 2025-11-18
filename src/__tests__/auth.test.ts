@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import bcrypt from 'bcryptjs';
-import { prisma } from '@/lib/prisma';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { $Enums } from '@/generated/prisma';
+import { prisma } from '@/lib/prisma';
 
 const UserRole = $Enums.UserRole;
 const AccountStatus = $Enums.AccountStatus;

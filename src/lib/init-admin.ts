@@ -1,6 +1,8 @@
 import bcrypt from 'bcryptjs';
-import { prisma } from '@/lib/prisma';
 import * as readline from 'readline';
+
+import { AccountStatus, UserRole } from '@/lib/constants';
+import { prisma } from '@/lib/prisma';
 
 async function promptUser(question: string): Promise<string> {
   const rl = readline.createInterface({
@@ -20,7 +22,7 @@ export async function createInitialAdmin() {
   try {
     const adminExists = await prisma.user.findFirst({
       where: {
-        role: 'ADMIN',
+        role: UserRole.ADMIN,
       },
     });
 
@@ -47,8 +49,8 @@ export async function createInitialAdmin() {
         email,
         password: hashedPassword,
         name,
-        role: 'ADMIN',
-        status: 'APPROVED',
+        role: UserRole.ADMIN,
+        status: AccountStatus.APPROVED,
       },
     });
 

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -10,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 interface Apartment {
   id: string;
@@ -45,7 +46,7 @@ export default function ApartmentsPage() {
   const [activeOnly, setActiveOnly] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const fetchApartments = async () => {
+  const fetchApartments = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
@@ -67,11 +68,11 @@ export default function ApartmentsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.page, pagination.limit, search, activeOnly]);
 
   useEffect(() => {
     fetchApartments();
-  }, [pagination.page, activeOnly]);
+  }, [fetchApartments]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

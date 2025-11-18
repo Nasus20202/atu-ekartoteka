@@ -1,4 +1,4 @@
-import { createInitialAdmin } from './init-admin';
+import { createInitialAdmin } from '@/lib/init-admin';
 
 async function main() {
   console.log('Setting up initial admin user...');

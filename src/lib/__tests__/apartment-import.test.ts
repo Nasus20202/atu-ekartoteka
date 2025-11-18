@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { importApartmentsFromBuffer } from '../apartment-import';
-import * as lokParser from '../lok-parser';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { importApartmentsFromBuffer } from '@/lib/apartment-import';
+import * as lokParser from '@/lib/lok-parser';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {

@@ -1,8 +1,9 @@
-import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
-import { ThemeToggle } from '@/components/theme-toggle';
+import { Building2, Home, Upload, Users } from 'lucide-react';
 import Link from 'next/link';
-import { Building2, Upload, Users, Home } from 'lucide-react';
+import { redirect } from 'next/navigation';
+
+import { auth } from '@/auth';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { UserRole } from '@/lib/constants';
 
 export default async function AdminLayout({
