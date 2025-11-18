@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
-import { UserRole } from '@/lib/constants';
 import { prisma } from '@/lib/prisma';
+import { UserRole } from '@/lib/types';
 
 export async function GET(req: NextRequest) {
   try {
     const session = await auth();
 
     if (!session || session.user.role !== UserRole.ADMIN) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Brak uprawnień' }, { status: 401 });
     }
 
     const { searchParams } = new URL(req.url);
@@ -61,8 +61,8 @@ export async function GET(req: NextRequest) {
     console.error('Apartments fetch error:', error);
     return NextResponse.json(
       {
-        error: 'Failed to fetch apartments',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        error: 'Nie udało się pobrać mieszkań',
+        message: error instanceof Error ? error.message : 'Nieznany błąd',
       },
       { status: 500 }
     );

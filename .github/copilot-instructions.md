@@ -25,6 +25,7 @@
 - **Testing**: Rememeber about unit/integration/E2E testing
 - **Dependencies**: Don't add useless dependencies to the codebase
 - **Delete old code**: If something is unused, just delete it
+- **Don't use magic numbers/strings**: Use types or constants instead
 
 ## Best Practices
 

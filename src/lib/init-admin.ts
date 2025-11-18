@@ -1,8 +1,8 @@
 import bcrypt from 'bcryptjs';
 import * as readline from 'readline';
 
-import { AccountStatus, UserRole } from '@/lib/constants';
 import { prisma } from '@/lib/prisma';
+import { AccountStatus, UserRole } from '@/lib/types';
 
 async function promptUser(question: string): Promise<string> {
   const rl = readline.createInterface({

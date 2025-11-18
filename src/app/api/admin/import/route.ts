@@ -2,21 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
 import { importApartmentsFromBuffer } from '@/lib/apartment-import';
-import { UserRole } from '@/lib/constants';
+import { UserRole } from '@/lib/types';
 
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
 
     if (!session || session.user.role !== UserRole.ADMIN) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Brak uprawnień' }, { status: 401 });
     }
 
     const formData = await req.formData();
     const file = formData.get('file') as File;
 
     if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Nie przesłano pliku' },
+        { status: 400 }
+      );
     }
 
     const bytes = await file.arrayBuffer();
@@ -32,8 +35,8 @@ export async function POST(req: NextRequest) {
     console.error('Import error:', error);
     return NextResponse.json(
       {
-        error: 'Import failed',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        error: 'Import nie powiódł się',
+        message: error instanceof Error ? error.message : 'Nieznany błąd',
       },
       { status: 500 }
     );

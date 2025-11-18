@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 
 import { auth } from '@/auth';
-import { UserRole } from '@/lib/constants';
+import { UserRole } from '@/lib/types';
 
 export default async function HomePage() {
   const session = await auth();

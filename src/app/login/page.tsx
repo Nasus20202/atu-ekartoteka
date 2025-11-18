@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
@@ -94,6 +95,16 @@ export default function LoginPage() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Logowanie...' : 'Zaloguj się'}
             </Button>
+
+            <div className="text-center text-sm">
+              <span className="text-muted-foreground">Nie masz konta? </span>
+              <Link
+                href="/register"
+                className="font-medium text-primary hover:underline"
+              >
+                Zarejestruj się
+              </Link>
+            </div>
           </form>
         </CardContent>
       </Card>

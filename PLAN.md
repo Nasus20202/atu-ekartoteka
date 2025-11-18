@@ -39,56 +39,44 @@
 - [x] Middleware for route protection
 - [x] First admin account creation script
 
+### 5. **lok.txt File Parser** ✅
+
+- [x] Function to read file in ISO 8859-2 encoding
+- [x] Import apartments to database
+- [x] Status update logic (deactivate apartments not in file, without deletion)
+
+### 6. **Admin Panel** ✅
+
+- [x] Dashboard with pending accounts list
+- [x] Account approval and apartment assignment functionality
+- [x] Interface for lok.txt file import
+- [x] List of all apartments and users
+
+### 7. **Tenant Panel** ✅
+
+- [x] New account registration
+- [x] Account status page (pending/approved)
+- [x] Assigned apartment view
+
+### 8. **API Routes** ✅
+
+- [x] `/api/auth/*` - authentication
+- [x] `/api/admin/users` - user management
+- [x] `/api/admin/apartments` - apartment management
+- [x] `/api/admin/import` - lok.txt file import
+- [x] `/api/register` - tenant registration
+
+### 9. **User Interface** ✅
+
+- [x] Login page
+- [x] Registration page
+- [x] Admin dashboard
+- [x] Tenant dashboard
+- [x] Tailwind CSS / shadcn/ui usage
+
 ---
 
 ## 📋 To Do
-
-### 3. **Database Model (Prisma Schema)**
-
-- [ ] `User` table (admin/tenant, email, password, approval status)
-- [ ] `Apartment` table (apartments with fields: number, building, floor, height, active status)
-- [ ] Relationships between users and apartments
-
-### 4. **Authentication System**
-
-- [ ] NextAuth.js for login handling
-- [ ] Middleware for route protection
-- [ ] First admin account creation logic on initial startup
-
-### 5. **lok.txt File Parser**
-
-- [ ] Function to read file in ISO 8859-2 encoding
-- [ ] Import apartments to database
-- [ ] Status update logic (deactivate apartments not in file, without deletion)
-
-### 6. **Admin Panel**
-
-- [ ] Dashboard with pending accounts list
-- [ ] Account approval and apartment assignment functionality
-- [ ] Interface for lok.txt file import
-- [ ] List of all apartments and users
-
-### 7. **Tenant Panel**
-
-- [ ] New account registration
-- [ ] Account status page (pending/approved)
-- [ ] Assigned apartment view
-
-### 8. **API Routes**
-
-- [ ] `/api/auth/*` - authentication
-- [ ] `/api/admin/users` - user management
-- [ ] `/api/admin/apartments` - apartment management
-- [ ] `/api/admin/import` - lok.txt file import
-- [ ] `/api/register` - tenant registration
-
-### 9. **User Interface**
-
-- [ ] Login page
-- [ ] Registration page
-- [ ] Admin dashboard
-- [ ] Tenant dashboard
-- [ ] Tailwind CSS / shadcn/ui usage
 
 ### 10. **Tests and Documentation**
 

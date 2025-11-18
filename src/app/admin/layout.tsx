@@ -3,8 +3,9 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { auth } from '@/auth';
+import { LogoutButton } from '@/components/logout-button';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { UserRole } from '@/lib/constants';
+import { UserRole } from '@/lib/types';
 
 export default async function AdminLayout({
   children,
@@ -54,6 +55,7 @@ export default async function AdminLayout({
                 {session.user.email}
               </span>
               <ThemeToggle />
+              <LogoutButton />
             </div>
           </div>
         </div>

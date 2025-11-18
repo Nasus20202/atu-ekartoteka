@@ -12,20 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-
-interface Apartment {
-  id: string;
-  externalId: string;
-  owner: string;
-  address: string;
-  building: string;
-  number: string;
-  postalCode: string;
-  city: string;
-  area: number;
-  height: number;
-  isActive: boolean;
-}
+import { Apartment } from '@/lib/types';
 
 interface PaginationData {
   page: number;
