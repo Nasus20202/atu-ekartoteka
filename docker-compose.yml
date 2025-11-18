@@ -29,6 +29,7 @@ services:
     environment:
       DATABASE_URL: postgresql://atu_user:atu_password@db:5432/atu_ekartoteka?schema=public
       NEXTAUTH_URL: http://localhost:3000
+      AUTH_TRUST_HOST: "true"
       NEXTAUTH_SECRET: your-secret-key-change-this-in-production
       NODE_ENV: production
     ports:

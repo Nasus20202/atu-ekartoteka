@@ -76,7 +76,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user && token.id) {
         // Fetch fresh user data from database to get current status and apartment
         const user = await prisma.user.findUnique({
-          where: { id: token.id },
+          where: { id: token.id as string },
           select: {
             id: true,
             email: true,

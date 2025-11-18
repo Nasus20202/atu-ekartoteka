@@ -11,3 +11,7 @@ README.md
 coverage
 .vscode
 .idea
+**/__tests__
+*.test.ts
+*.test.tsx
+vitest.config.ts
