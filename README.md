@@ -1,36 +1,26 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ATU Ekartoteka
 
-## Getting Started
+## Prisma migrations (Docker)
 
-First, run the development server:
+You can run Prisma migrations automatically when starting the Docker environment in two ways:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- As a dedicated one-off service in `docker-compose.yml` (default):
+  - Start the stack:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+    ```bash
+    docker-compose up -d db
+    docker-compose up --build migrations
+    docker-compose up --build app
+    ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+  - The `migrations` service runs `pnpm db:deploy` (non-interactive) and exits. It's useful for CI or controlled deployments.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Inside the `app` container at boot (optional):
+  - Set `RUN_MIGRATIONS_ON_STARTUP: "true"` in the `app` service environment to enable running migrations during container startup. This uses an entrypoint script that retries until the DB is reachable and migrations succeed.
 
-## Learn More
+  - This approach is handy for single-container workflows or when you want the app to self-migrate before starting.
 
-To learn more about Next.js, take a look at the following resources:
+Notes:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- By default the entrypoint uses `pnpm db:deploy`, which runs `prisma migrate deploy` non-interactively and then calls `prisma generate`.
+- If you prefer not to copy developer dependencies (e.g. `prisma` CLI) into the runtime image, use the dedicated `migrations` service instead.
