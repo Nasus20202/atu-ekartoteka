@@ -27,6 +27,18 @@
 - [x] Prisma ORM setup
 - [x] Dockerfile for the application
 
+### 3. **Database Model (Prisma Schema)** ✅
+
+- [x] `User` table (admin/tenant, email, password, approval status)
+- [x] `Apartment` table (apartments with fields: number, building, floor, height, active status)
+- [x] Relationships between users and apartments
+
+### 4. **Authentication System** ✅
+
+- [x] NextAuth.js v5 for login handling
+- [x] Middleware for route protection
+- [x] First admin account creation script
+
 ---
 
 ## 📋 To Do

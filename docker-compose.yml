@@ -1,4 +1,4 @@
-version: "3.9"
+version: '3.9'
 
 services:
   db:
@@ -10,11 +10,11 @@ services:
       POSTGRES_PASSWORD: atu_password
       POSTGRES_DB: atu_ekartoteka
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U atu_user -d atu_ekartoteka"]
+      test: ['CMD-SHELL', 'pg_isready -U atu_user -d atu_ekartoteka']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -34,7 +34,7 @@ services:
       NEXTAUTH_SECRET: your-secret-key-change-this-in-production
       NODE_ENV: production
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
       - ./data:/app/data
 
