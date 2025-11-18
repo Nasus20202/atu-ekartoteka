@@ -18,14 +18,14 @@ export default async function DashboardPage() {
 
   const roleMap = {
     ADMIN: 'Administrator',
-    TENANT: 'Najemca',
+    TENANT: 'Mieszkaniec',
   };
 
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Panel główny</h1>
+          <h1 className="text-3xl font-bold">Panel mieszkańca</h1>
           <ThemeToggle />
         </div>
         <Card>
