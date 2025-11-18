@@ -265,14 +265,6 @@ export default async function DashboardPage() {
                               </dd>
                             </div>
                           )}
-                          <div>
-                            <dt className="text-sm text-muted-foreground">
-                              ID zewnętrzne
-                            </dt>
-                            <dd className="font-mono text-sm">
-                              {user.apartment.externalId}
-                            </dd>
-                          </div>
                         </dl>
                       </div>
                     </div>
