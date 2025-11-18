@@ -1,72 +1,82 @@
-import path from 'path';
 import { describe, expect, it } from 'vitest';
 
-import { getUniqueApartments, LokEntry, parseLokFile } from '@/lib/lok-parser';
+import {
+  getUniqueApartments,
+  LokEntry,
+  parseLokBuffer,
+} from '@/lib/lok-parser';
 
 describe('lok-parser', () => {
-  describe('parseLokFile', () => {
-    it('should parse lok.txt file with ISO 8859-2 encoding', async () => {
-      const filePath = path.join(process.cwd(), 'data', 'lok.txt');
-      const entries = await parseLokFile(filePath);
+  describe('parseLokBuffer', () => {
+    it('should parse buffer with ISO 8859-2 encoding', async () => {
+      const mockData =
+        'W1#Jan Kowalski##EXT001#ul. Testowa#1#1#00-001#Warszawa###50.5#250\n';
+      const iconv = await import('iconv-lite');
+      const buffer = iconv.encode(mockData, 'iso-8859-2');
+      const entries = await parseLokBuffer(buffer);
 
       expect(entries).toBeDefined();
       expect(Array.isArray(entries)).toBe(true);
-      expect(entries.length).toBeGreaterThan(0);
+      expect(entries.length).toBe(1);
     });
 
     it('should correctly parse entry fields', async () => {
-      const filePath = path.join(process.cwd(), 'data', 'lok.txt');
-      const entries = await parseLokFile(filePath);
+      const mockData =
+        'W1#Jan Kowalski##EXT001#ul. Testowa#1#1#00-001#Warszawa####50.5#250\n';
+      const iconv = await import('iconv-lite');
+      const buffer = iconv.encode(mockData, 'iso-8859-2');
+      const entries = await parseLokBuffer(buffer);
       const firstEntry = entries[0];
 
-      expect(firstEntry).toHaveProperty('id');
-      expect(firstEntry).toHaveProperty('owner');
-      expect(firstEntry).toHaveProperty('externalId');
-      expect(firstEntry).toHaveProperty('address');
-      expect(firstEntry).toHaveProperty('building');
-      expect(firstEntry).toHaveProperty('number');
-      expect(firstEntry).toHaveProperty('postalCode');
-      expect(firstEntry).toHaveProperty('city');
-      expect(firstEntry).toHaveProperty('area');
-      expect(firstEntry).toHaveProperty('height');
-      expect(firstEntry).toHaveProperty('isOwner');
+      expect(firstEntry).toHaveProperty('id', 'W1');
+      expect(firstEntry).toHaveProperty('owner', 'Jan Kowalski');
+      expect(firstEntry).toHaveProperty('externalId', 'EXT001');
+      expect(firstEntry).toHaveProperty('address', 'ul. Testowa');
+      expect(firstEntry).toHaveProperty('building', '1');
+      expect(firstEntry).toHaveProperty('number', '1');
+      expect(firstEntry).toHaveProperty('postalCode', '00-001');
+      expect(firstEntry).toHaveProperty('city', 'Warszawa');
+      expect(firstEntry).toHaveProperty('area', 50.5);
+      expect(firstEntry).toHaveProperty('height', 250);
+      expect(firstEntry).toHaveProperty('isOwner', true);
     });
 
     it('should correctly identify owner entries', async () => {
-      const filePath = path.join(process.cwd(), 'data', 'lok.txt');
-      const entries = await parseLokFile(filePath);
+      const mockData =
+        'W1#Owner##EXT001#Address#1#1#00-001#City####50#250\nL1#Tenant##EXT001#Address#1#1#00-001#City####50#250\n';
+      const iconv = await import('iconv-lite');
+      const buffer = iconv.encode(mockData, 'iso-8859-2');
+      const entries = await parseLokBuffer(buffer);
 
       const ownerEntries = entries.filter((e) => e.isOwner);
-      expect(ownerEntries.length).toBeGreaterThan(0);
-
-      ownerEntries.forEach((entry) => {
-        expect(entry.id.startsWith('W')).toBe(true);
-      });
+      expect(ownerEntries.length).toBe(1);
+      expect(ownerEntries[0].id).toBe('W1');
     });
 
     it('should parse area and height as numbers', async () => {
-      const filePath = path.join(process.cwd(), 'data', 'lok.txt');
-      const entries = await parseLokFile(filePath);
+      const mockData =
+        'W1#Owner##EXT001#Address#1#1#00-001#City####50.5#250.75\n';
+      const iconv = await import('iconv-lite');
+      const buffer = iconv.encode(mockData, 'iso-8859-2');
+      const entries = await parseLokBuffer(buffer);
       const firstEntry = entries[0];
 
       expect(typeof firstEntry.area).toBe('number');
+      expect(firstEntry.area).toBe(50.5);
       expect(typeof firstEntry.height).toBe('number');
+      expect(firstEntry.height).toBe(250.75);
     });
 
     it('should handle Polish characters correctly', async () => {
-      const filePath = path.join(process.cwd(), 'data', 'lok.txt');
-      const entries = await parseLokFile(filePath);
+      const mockData =
+        'W1#Janusz Kowalski##EXT001#ul. Łąkowa#1#1#00-001#Kraków####50#250\n';
+      const iconv = await import('iconv-lite');
+      const buffer = iconv.encode(mockData, 'iso-8859-2');
+      const entries = await parseLokBuffer(buffer);
 
-      // Check that Polish characters are decoded correctly
-      // The file should contain Polish characters like ł, ą, ć, etc.
-      const hasPolishChars = entries.some(
-        (entry) =>
-          entry.owner.match(/[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/) ||
-          entry.address.match(/[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/) ||
-          entry.city.match(/[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/)
-      );
-
-      expect(hasPolishChars).toBe(true);
+      expect(entries[0].owner).toBe('Janusz Kowalski');
+      expect(entries[0].address).toBe('ul. Łąkowa');
+      expect(entries[0].city).toBe('Kraków');
     });
   });
 

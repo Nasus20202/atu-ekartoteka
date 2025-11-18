@@ -13,23 +13,58 @@ export async function POST(req: NextRequest) {
     }
 
     const formData = await req.formData();
-    const file = formData.get('file') as File;
+    const files = formData.getAll('files') as File[];
 
-    if (!file) {
+    if (!files || files.length === 0) {
       return NextResponse.json(
-        { error: 'Nie przesłano pliku' },
+        { error: 'Nie przesłano plików' },
         { status: 400 }
       );
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    const results = [];
+    const errors = [];
 
-    const result = await importApartmentsFromBuffer(buffer);
+    for (const file of files) {
+      try {
+        // Extract HOA ID from file path structure: {HOA_ID}/lok.txt
+        const pathParts = file.name.split('/');
+        if (pathParts.length < 2) {
+          throw new Error(
+            `Nieprawidłowa struktura pliku: ${file.name}. Oczekiwano {ID_HOA}/lok.txt`
+          );
+        }
+
+        const fileName = pathParts[pathParts.length - 1];
+        // HOA ID is the folder directly containing lok.txt (second to last part)
+        const hoaId = pathParts[pathParts.length - 2];
+
+        if (fileName !== 'lok.txt') {
+          throw new Error(
+            `Nieprawidłowa nazwa pliku: ${fileName}. Oczekiwano lok.txt`
+          );
+        }
+
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+
+        const result = await importApartmentsFromBuffer(buffer, hoaId);
+        results.push({
+          hoaId,
+          ...result,
+        });
+      } catch (error) {
+        errors.push({
+          file: file.name,
+          error: error instanceof Error ? error.message : 'Nieznany błąd',
+        });
+      }
+    }
 
     return NextResponse.json({
-      success: true,
-      result,
+      success: errors.length === 0,
+      results,
+      errors,
     });
   } catch (error) {
     console.error('Import error:', error);

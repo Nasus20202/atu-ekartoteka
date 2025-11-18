@@ -1,6 +1,7 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { Building2, Edit2, Search } from 'lucide-react';
+import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -12,89 +13,99 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Apartment } from '@/lib/types';
 
-interface PaginationData {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
+interface HOA {
+  id: string;
+  externalId: string;
+  name: string;
+  apartmentCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function ApartmentsPage() {
-  const [apartments, setApartments] = useState<Apartment[]>([]);
-  const [pagination, setPagination] = useState<PaginationData>({
-    page: 1,
-    limit: 20,
-    total: 0,
-    totalPages: 0,
-  });
+  const [hoas, setHoas] = useState<HOA[]>([]);
   const [search, setSearch] = useState('');
-  const [activeOnly, setActiveOnly] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState('');
 
-  const fetchApartments = useCallback(async () => {
+  const fetchHOAs = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
-        page: pagination.page.toString(),
-        limit: pagination.limit.toString(),
         search,
-        activeOnly: activeOnly.toString(),
       });
 
-      const response = await fetch(`/api/admin/apartments?${params}`);
+      const response = await fetch(`/api/admin/hoa?${params}`);
       const data = await response.json();
 
       if (response.ok) {
-        setApartments(data.apartments);
-        setPagination(data.pagination);
+        setHoas(data.homeownersAssociations);
       }
     } catch (error) {
-      console.error('Failed to fetch apartments:', error);
+      console.error('Failed to fetch HOAs:', error);
     } finally {
       setLoading(false);
     }
-  }, [pagination.page, pagination.limit, search, activeOnly]);
+  }, [search]);
 
   useEffect(() => {
-    fetchApartments();
-  }, [fetchApartments]);
+    fetchHOAs();
+  }, [fetchHOAs]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setPagination((prev) => ({ ...prev, page: 1 }));
-    fetchApartments();
+    fetchHOAs();
   };
 
-  const goToPage = (page: number) => {
-    setPagination((prev) => ({ ...prev, page }));
+  const startEditing = (hoa: HOA) => {
+    setEditingId(hoa.id);
+    setEditingName(hoa.name);
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditingName('');
+  };
+
+  const saveEdit = async (id: string) => {
+    try {
+      const response = await fetch('/api/admin/hoa', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id,
+          name: editingName,
+        }),
+      });
+
+      if (response.ok) {
+        setEditingId(null);
+        setEditingName('');
+        fetchHOAs();
+      }
+    } catch (error) {
+      console.error('Failed to update HOA:', error);
+    }
   };
 
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Mieszkania</h1>
-          <div className="flex items-center gap-4">
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={activeOnly}
-                onChange={(e) => setActiveOnly(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300"
-              />
-              Tylko aktywne
-            </label>
-          </div>
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold">Wspólnoty mieszkaniowe</h1>
+          <p className="mt-2 text-muted-foreground">
+            Wybierz wspólnotę, aby zobaczyć mieszkania
+          </p>
         </div>
 
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Wyszukiwanie</CardTitle>
-            <CardDescription>
-              Szukaj po numerze, właścicielu, adresie lub mieście
-            </CardDescription>
+            <CardDescription>Szukaj po nazwie lub ID wspólnoty</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSearch} className="flex gap-2">
@@ -117,129 +128,104 @@ export default function ApartmentsPage() {
         ) : (
           <>
             <div className="mb-4 text-sm text-muted-foreground">
-              Znaleziono {pagination.total} mieszkań
+              Znaleziono {hoas.length}{' '}
+              {hoas.length === 1
+                ? 'wspólnotę'
+                : hoas.length < 5
+                  ? 'wspólnoty'
+                  : 'wspólnot'}
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              {apartments.map((apartment) => (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {hoas.map((hoa) => (
                 <Card
-                  key={apartment.id}
-                  className={!apartment.isActive ? 'opacity-60 grayscale' : ''}
+                  key={hoa.id}
+                  className="hover:shadow-lg transition-shadow"
                 >
                   <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-lg">
-                          {apartment.address} {apartment.number}
-                        </CardTitle>
-                        <CardDescription>
-                          {apartment.postalCode} {apartment.city}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        {editingId === hoa.id ? (
+                          <Input
+                            value={editingName}
+                            onChange={(e) => setEditingName(e.target.value)}
+                            className="h-8 mb-2"
+                            autoFocus
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                saveEdit(hoa.id);
+                              } else if (e.key === 'Escape') {
+                                cancelEditing();
+                              }
+                            }}
+                          />
+                        ) : (
+                          <CardTitle className="text-lg flex items-center gap-2">
+                            <Building2 className="h-5 w-5 text-muted-foreground shrink-0" />
+                            <span className="truncate">{hoa.name}</span>
+                          </CardTitle>
+                        )}
+                        <CardDescription className="font-mono text-xs">
+                          {hoa.externalId}
                         </CardDescription>
                       </div>
-                      {apartment.isActive ? (
-                        <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-200">
-                          Aktywne
-                        </span>
+                      {editingId === hoa.id ? (
+                        <div className="flex gap-1 shrink-0">
+                          <Button
+                            size="sm"
+                            onClick={() => saveEdit(hoa.id)}
+                            className="h-8"
+                          >
+                            Zapisz
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={cancelEditing}
+                            className="h-8"
+                          >
+                            Anuluj
+                          </Button>
+                        </div>
                       ) : (
-                        <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800 dark:bg-gray-800 dark:text-gray-200">
-                          Nieaktywne
-                        </span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => startEditing(hoa)}
+                          className="h-8 shrink-0"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
                       )}
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <dl className="space-y-1 text-sm">
-                      <div className="flex justify-between">
-                        <dt className="text-muted-foreground">Właściciel:</dt>
-                        <dd className="font-medium">{apartment.owner}</dd>
+                    <div className="mb-4">
+                      <div className="text-3xl font-bold text-primary">
+                        {hoa.apartmentCount}
                       </div>
-                      <div className="flex justify-between">
-                        <dt className="text-muted-foreground">Budynek:</dt>
-                        <dd className="font-medium">{apartment.building}</dd>
-                      </div>
-                      <div className="flex justify-between">
-                        <dt className="text-muted-foreground">Powierzchnia:</dt>
-                        <dd className="font-medium">{apartment.area} m²</dd>
-                      </div>
-                      <div className="flex justify-between">
-                        <dt className="text-muted-foreground">Wysokość:</dt>
-                        <dd className="font-medium">{apartment.height} cm</dd>
-                      </div>
-                      <div className="flex justify-between">
-                        <dt className="text-muted-foreground">
-                          ID zewnętrzne:
-                        </dt>
-                        <dd className="font-mono text-xs">
-                          {apartment.externalId}
-                        </dd>
-                      </div>
-                    </dl>
+                      <p className="text-sm text-muted-foreground">
+                        {hoa.apartmentCount === 1
+                          ? 'mieszkanie'
+                          : hoa.apartmentCount < 5
+                            ? 'mieszkania'
+                            : 'mieszkań'}
+                      </p>
+                    </div>
+                    <Link href={`/admin/apartments/${hoa.id}`}>
+                      <Button className="w-full">Zobacz mieszkania</Button>
+                    </Link>
                   </CardContent>
                 </Card>
               ))}
             </div>
 
-            {pagination.totalPages > 1 && (
-              <div className="mt-6 flex items-center justify-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => goToPage(pagination.page - 1)}
-                  disabled={pagination.page === 1}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Poprzednia
-                </Button>
-
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: pagination.totalPages }, (_, i) => {
-                    const page = i + 1;
-                    const isNearCurrent =
-                      Math.abs(page - pagination.page) <= 2 ||
-                      page === 1 ||
-                      page === pagination.totalPages;
-
-                    if (!isNearCurrent) {
-                      if (
-                        page === pagination.page - 3 ||
-                        page === pagination.page + 3
-                      ) {
-                        return (
-                          <span
-                            key={page}
-                            className="px-2 text-muted-foreground"
-                          >
-                            ...
-                          </span>
-                        );
-                      }
-                      return null;
-                    }
-
-                    return (
-                      <Button
-                        key={page}
-                        variant={
-                          page === pagination.page ? 'default' : 'outline'
-                        }
-                        size="sm"
-                        onClick={() => goToPage(page)}
-                      >
-                        {page}
-                      </Button>
-                    );
-                  })}
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => goToPage(pagination.page + 1)}
-                  disabled={pagination.page === pagination.totalPages}
-                >
-                  Następna
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
+            {hoas.length === 0 && (
+              <div className="text-center py-12">
+                <Building2 className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">
+                  Nie znaleziono wspólnot mieszkaniowych
+                </p>
               </div>
             )}
           </>

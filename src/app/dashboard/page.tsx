@@ -15,7 +15,7 @@ import { LogoutButton } from '@/components/logout-button';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserRole } from '@/lib/types';
+import { AccountStatus, UserRole } from '@/lib/types';
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -100,7 +100,7 @@ export default async function DashboardPage() {
                       Status zatwierdzenia
                     </p>
                     <div className="mt-1 flex items-center gap-2">
-                      {user.status === 'APPROVED' && (
+                      {user.status === AccountStatus.APPROVED && (
                         <>
                           <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
                           <span className="font-medium text-green-600 dark:text-green-400">
@@ -108,7 +108,7 @@ export default async function DashboardPage() {
                           </span>
                         </>
                       )}
-                      {user.status === 'PENDING' && (
+                      {user.status === AccountStatus.PENDING && (
                         <>
                           <Clock className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
                           <span className="font-medium text-yellow-600 dark:text-yellow-400">
@@ -116,7 +116,7 @@ export default async function DashboardPage() {
                           </span>
                         </>
                       )}
-                      {user.status === 'REJECTED' && (
+                      {user.status === AccountStatus.REJECTED && (
                         <>
                           <X className="h-4 w-4 text-red-600 dark:text-red-400" />
                           <span className="font-medium text-red-600 dark:text-red-400">

@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 interface ImportResult {
+  hoaId: string;
   created: number;
   updated: number;
   deactivated: number;
@@ -22,43 +23,61 @@ interface ImportResult {
   errors: string[];
 }
 
+interface ImportResponse {
+  success: boolean;
+  results: ImportResult[];
+  errors: Array<{ file: string; error: string }>;
+}
+
 export default function AdminImportPage() {
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<FileList | null>(null);
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<ImportResult | null>(null);
+  const [response, setResponse] = useState<ImportResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-      setResult(null);
+    if (e.target.files && e.target.files.length > 0) {
+      setFiles(e.target.files);
+      setResponse(null);
       setError(null);
     }
   };
 
   const handleImport = async () => {
-    if (!file) return;
+    if (!files) return;
 
     setLoading(true);
     setError(null);
-    setResult(null);
+    setResponse(null);
 
     try {
       const formData = new FormData();
-      formData.append('file', file);
 
-      const response = await fetch('/api/admin/import', {
+      // Support both webkitRelativePath (directory upload) and regular files
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        // Use webkitRelativePath if available, otherwise use file.name
+        const filePath =
+          (file as File & { webkitRelativePath?: string }).webkitRelativePath ||
+          file.name;
+
+        // Create a new File with the path in the name
+        const fileWithPath = new File([file], filePath, { type: file.type });
+        formData.append('files', fileWithPath);
+      }
+
+      const res = await fetch('/api/admin/import', {
         method: 'POST',
         body: formData,
       });
 
-      const data = await response.json();
+      const data = await res.json();
 
-      if (!response.ok) {
+      if (!res.ok) {
         throw new Error(data.error || 'Import failed');
       }
 
-      setResult(data.result);
+      setResponse(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Import failed');
     } finally {
@@ -73,32 +92,35 @@ export default function AdminImportPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Importuj plik lok.txt</CardTitle>
+            <CardTitle>Importuj dane</CardTitle>
             <CardDescription>
-              Wybierz plik lok.txt aby zaimportować lub zaktualizować dane
-              mieszkań
+              Wybierz folder główny zawierający podfoldery wspólnot
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="file">Plik lok.txt</Label>
+              <Label htmlFor="files">Folder z danymi</Label>
               <Input
-                id="file"
+                id="files"
                 type="file"
                 accept=".txt"
                 onChange={handleFileChange}
                 disabled={loading}
+                multiple
+                // @ts-expect-error - webkitdirectory is not in the type definitions
+                webkitdirectory=""
+                directory=""
               />
-              {file && (
+              {files && (
                 <p className="text-sm text-muted-foreground">
-                  Wybrany plik: {file.name}
+                  Wybrano plików: {files.length}
                 </p>
               )}
             </div>
 
             <Button
               onClick={handleImport}
-              disabled={!file || loading}
+              disabled={!files || loading}
               className="w-full"
             >
               {loading ? (
@@ -124,72 +146,95 @@ export default function AdminImportPage() {
               </div>
             )}
 
-            {result && (
+            {response && (
               <div className="space-y-4">
-                <div className="flex items-start gap-2 rounded-lg bg-green-100 p-4 text-green-800 dark:bg-green-900 dark:text-green-200">
-                  <CheckCircle className="mt-0.5 h-5 w-5 shrink-0" />
-                  <div className="flex-1">
-                    <p className="font-medium">Import zakończony pomyślnie</p>
+                {response.success && (
+                  <div className="flex items-start gap-2 rounded-lg bg-green-100 p-4 text-green-800 dark:bg-green-900 dark:text-green-200">
+                    <CheckCircle className="mt-0.5 h-5 w-5 shrink-0" />
+                    <div className="flex-1">
+                      <p className="font-medium">Import zakończony pomyślnie</p>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                        {result.created}
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Utworzonych
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                        {result.updated}
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Zaktualizowanych
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                        {result.deactivated}
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Dezaktywowanych
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-2xl font-bold">{result.total}</div>
-                      <p className="text-sm text-muted-foreground">
-                        Razem w pliku
-                      </p>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {result.errors.length > 0 && (
+                {response.errors.length > 0 && (
                   <div className="rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-950">
                     <div className="mb-2 flex items-center gap-2 font-medium text-orange-800 dark:text-orange-200">
                       <AlertCircle className="h-5 w-5" />
-                      Ostrzeżenia ({result.errors.length})
+                      Błędy plików ({response.errors.length})
                     </div>
                     <ul className="space-y-1 text-sm text-orange-700 dark:text-orange-300">
-                      {result.errors.map((err, idx) => (
-                        <li key={idx}>• {err}</li>
+                      {response.errors.map((err, idx) => (
+                        <li key={idx}>
+                          • {err.file}: {err.error}
+                        </li>
                       ))}
                     </ul>
                   </div>
                 )}
+
+                {response.results.map((result) => (
+                  <Card key={result.hoaId}>
+                    <CardHeader>
+                      <CardTitle className="text-lg">
+                        Wspólnota: {result.hoaId}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        <div className="rounded-lg border p-4">
+                          <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                            {result.created}
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Utworzonych
+                          </p>
+                        </div>
+
+                        <div className="rounded-lg border p-4">
+                          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                            {result.updated}
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Zaktualizowanych
+                          </p>
+                        </div>
+
+                        <div className="rounded-lg border p-4">
+                          <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                            {result.deactivated}
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Dezaktywowanych
+                          </p>
+                        </div>
+
+                        <div className="rounded-lg border p-4">
+                          <div className="text-2xl font-bold">
+                            {result.total}
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Razem w pliku
+                          </p>
+                        </div>
+                      </div>
+
+                      {result.errors.length > 0 && (
+                        <div className="mt-4 rounded-lg border border-orange-200 bg-orange-50 p-3 dark:border-orange-800 dark:bg-orange-950">
+                          <div className="mb-2 flex items-center gap-2 text-sm font-medium text-orange-800 dark:text-orange-200">
+                            <AlertCircle className="h-4 w-4" />
+                            Ostrzeżenia ({result.errors.length})
+                          </div>
+                          <ul className="space-y-1 text-sm text-orange-700 dark:text-orange-300">
+                            {result.errors.map((err, idx) => (
+                              <li key={idx}>• {err}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             )}
           </CardContent>

@@ -1,5 +1,3 @@
-import { readFile } from 'fs/promises';
-
 export interface LokEntry {
   id: string;
   owner: string;
@@ -12,11 +10,6 @@ export interface LokEntry {
   area: number;
   height: number;
   isOwner: boolean;
-}
-
-export async function parseLokFile(filePath: string): Promise<LokEntry[]> {
-  const buffer = await readFile(filePath);
-  return parseLokBuffer(buffer);
 }
 
 export async function parseLokBuffer(buffer: Buffer): Promise<LokEntry[]> {

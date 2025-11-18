@@ -9,16 +9,26 @@ export interface ImportResult {
   errors: string[];
 }
 
+export interface FileWithHOA {
+  hoaId: string;
+  buffer: Buffer;
+}
+
 export async function importApartmentsFromFile(
-  filePath: string
+  filePath: string,
+  hoaId: string
 ): Promise<ImportResult> {
   const fs = await import('fs/promises');
-  const result = await importApartmentsFromBuffer(await fs.readFile(filePath));
+  const result = await importApartmentsFromBuffer(
+    await fs.readFile(filePath),
+    hoaId
+  );
   return result;
 }
 
 export async function importApartmentsFromBuffer(
-  buffer: Buffer
+  buffer: Buffer,
+  hoaId: string
 ): Promise<ImportResult> {
   const result: ImportResult = {
     created: 0,
@@ -31,6 +41,20 @@ export async function importApartmentsFromBuffer(
   try {
     const entries = await parseLokBuffer(buffer);
     const apartments = getUniqueApartments(entries);
+
+    // Find or create HOA
+    let hoa = await prisma.homeownersAssociation.findUnique({
+      where: { externalId: hoaId },
+    });
+
+    if (!hoa) {
+      hoa = await prisma.homeownersAssociation.create({
+        data: {
+          externalId: hoaId,
+          name: hoaId, // defaults to ID, admin can change later
+        },
+      });
+    }
 
     const externalIdsInFile = new Set(apartments.map((a) => a.externalId));
 
@@ -53,6 +77,7 @@ export async function importApartmentsFromBuffer(
               area: apartment.area,
               height: apartment.height,
               isActive: true,
+              homeownersAssociationId: hoa.id,
             },
           });
           result.updated++;
@@ -69,6 +94,7 @@ export async function importApartmentsFromBuffer(
               area: apartment.area,
               height: apartment.height,
               isActive: true,
+              homeownersAssociationId: hoa.id,
             },
           });
           result.created++;
@@ -86,6 +112,7 @@ export async function importApartmentsFromBuffer(
           notIn: Array.from(externalIdsInFile),
         },
         isActive: true,
+        homeownersAssociationId: hoa.id,
       },
       data: {
         isActive: false,

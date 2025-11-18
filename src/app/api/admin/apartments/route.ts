@@ -17,11 +17,13 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const search = searchParams.get('search') || '';
     const activeOnly = searchParams.get('activeOnly') === 'true';
+    const hoaId = searchParams.get('hoaId');
 
     const skip = (page - 1) * limit;
 
     const where = {
       AND: [
+        hoaId ? { homeownersAssociationId: hoaId } : {},
         activeOnly ? { isActive: true } : {},
         search
           ? {
@@ -38,7 +40,7 @@ export async function GET(req: NextRequest) {
       ],
     };
 
-    const [apartments, total] = await Promise.all([
+    const [apartments, total, hoa] = await Promise.all([
       prisma.apartment.findMany({
         where,
         skip,
@@ -46,10 +48,17 @@ export async function GET(req: NextRequest) {
         orderBy: [{ building: 'asc' }, { number: 'asc' }],
       }),
       prisma.apartment.count({ where }),
+      hoaId
+        ? prisma.homeownersAssociation.findUnique({
+            where: { id: hoaId },
+            select: { id: true, externalId: true, name: true },
+          })
+        : Promise.resolve(null),
     ]);
 
     return NextResponse.json({
       apartments,
+      hoa,
       pagination: {
         page,
         limit,

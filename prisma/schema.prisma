@@ -22,6 +22,19 @@ enum AccountStatus {
   REJECTED   // Rejected
 }
 
+model HomeownersAssociation {
+  id          String   @id @default(cuid())
+  externalId  String   @unique  // ID from folder structure
+  name        String              // defaults to externalId, can be changed by admin
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  apartments  Apartment[]
+  
+  @@index([externalId])
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -59,6 +72,10 @@ model Apartment {
   // Activity status
   isActive    Boolean  @default(true)  // whether apartment is in current file
   
+  // Homeowners' Association relation
+  homeownersAssociation   HomeownersAssociation @relation(fields: [homeownersAssociationId], references: [id])
+  homeownersAssociationId String
+  
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
@@ -67,4 +84,5 @@ model Apartment {
   
   @@index([externalId])
   @@index([isActive])
+  @@index([homeownersAssociationId])
 }
