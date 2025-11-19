@@ -5,7 +5,6 @@ import { ApartmentsSection } from '@/components/dashboard/apartments-section';
 import { ChargesSummaryCard } from '@/components/dashboard/charges-summary-card';
 import { NotificationsSidebar } from '@/components/dashboard/notifications-sidebar';
 import { PaymentsSummaryCard } from '@/components/dashboard/payments-summary-card';
-import { DashboardNavbar } from '@/components/dashboard-navbar';
 import { UserStatusSection } from '@/components/user-status-section';
 import { AccountStatus } from '@/generated/prisma';
 import { prisma } from '@/lib/prisma';
@@ -90,8 +89,6 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
-      <DashboardNavbar userId={session.user.id} />
-
       <main className="p-8">
         <div className="mx-auto max-w-7xl">
           <h1 className="mb-6 text-3xl font-bold">

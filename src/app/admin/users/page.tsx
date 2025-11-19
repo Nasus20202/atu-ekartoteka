@@ -7,6 +7,7 @@ import {
   Edit,
   Search,
   UserCheck,
+  UserPlus,
   UserX,
   X,
 } from 'lucide-react';
@@ -39,8 +40,15 @@ export default function AdminUsersPage() {
   const [apartmentSearch, setApartmentSearch] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const [editMode, setEditMode] = useState<
-    'approve' | 'change-status' | 'assign-apartment' | null
+    'approve' | 'change-status' | 'assign-apartment' | 'create-user' | null
   >(null);
+  const [newUserData, setNewUserData] = useState({
+    email: '',
+    password: '',
+    name: '',
+    role: 'TENANT',
+    status: 'PENDING',
+  });
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -161,6 +169,44 @@ export default function AdminUsersPage() {
     }
   };
 
+  const handleCreateUser = async () => {
+    if (!newUserData.email || !newUserData.password) {
+      alert('Email i hasło są wymagane');
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      const response = await fetch('/api/admin/users/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newUserData),
+      });
+
+      if (response.ok) {
+        await fetchUsers();
+        setEditMode(null);
+        setNewUserData({
+          email: '',
+          password: '',
+          name: '',
+          role: 'TENANT',
+          status: 'PENDING',
+        });
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to create user');
+      }
+    } catch (error) {
+      console.error('Failed to create user:', error);
+      alert('Failed to create user');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const filteredApartments = apartments.filter(
     (apt) =>
       apartmentSearch === '' ||
@@ -213,6 +259,21 @@ export default function AdminUsersPage() {
               </p>
             )}
           </div>
+          <Button
+            onClick={() => {
+              setNewUserData({
+                email: '',
+                password: '',
+                name: '',
+                role: 'TENANT',
+                status: 'PENDING',
+              });
+              setEditMode('create-user');
+            }}
+          >
+            <UserPlus className="mr-2 h-4 w-4" />
+            Dodaj użytkownika
+          </Button>
         </div>
 
         <div className="mb-6 flex gap-2">
@@ -603,6 +664,124 @@ export default function AdminUsersPage() {
                     </div>
                   </>
                 )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Create User Dialog */}
+        {editMode === 'create-user' && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <Card className="w-full max-w-md">
+              <CardHeader>
+                <CardTitle>Dodaj nowego użytkownika</CardTitle>
+                <CardDescription>
+                  Wypełnij formularz aby utworzyć nowe konto użytkownika
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="email">Email *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="email@example.com"
+                      value={newUserData.email}
+                      onChange={(e) =>
+                        setNewUserData({
+                          ...newUserData,
+                          email: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="password">Hasło *</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={newUserData.password}
+                      onChange={(e) =>
+                        setNewUserData({
+                          ...newUserData,
+                          password: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="name">Imię i nazwisko</Label>
+                    <Input
+                      id="name"
+                      placeholder="Jan Kowalski"
+                      value={newUserData.name}
+                      onChange={(e) =>
+                        setNewUserData({ ...newUserData, name: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="role">Rola</Label>
+                    <select
+                      id="role"
+                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      value={newUserData.role}
+                      onChange={(e) =>
+                        setNewUserData({ ...newUserData, role: e.target.value })
+                      }
+                    >
+                      <option value="TENANT">Użytkownik</option>
+                      <option value="ADMIN">Administrator</option>
+                    </select>
+                  </div>
+                  <div>
+                    <Label htmlFor="status">Status</Label>
+                    <select
+                      id="status"
+                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      value={newUserData.status}
+                      onChange={(e) =>
+                        setNewUserData({
+                          ...newUserData,
+                          status: e.target.value,
+                        })
+                      }
+                    >
+                      <option value="PENDING">Oczekujący</option>
+                      <option value="APPROVED">Zatwierdzony</option>
+                      <option value="REJECTED">Odrzucony</option>
+                    </select>
+                  </div>
+
+                  <div className="flex gap-2 pt-4">
+                    <Button
+                      onClick={handleCreateUser}
+                      disabled={actionLoading}
+                      className="flex-1"
+                    >
+                      <UserPlus className="mr-2 h-4 w-4" />
+                      Utwórz
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setEditMode(null);
+                        setNewUserData({
+                          email: '',
+                          password: '',
+                          name: '',
+                          role: 'TENANT',
+                          status: 'PENDING',
+                        });
+                      }}
+                      disabled={actionLoading}
+                    >
+                      Anuluj
+                    </Button>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>

@@ -1,3 +1,4 @@
+import { Cog, User } from 'lucide-react';
 import Link from 'next/link';
 
 import { LogoutButton } from '@/components/logout-button';
@@ -31,18 +32,22 @@ export async function DashboardNavbar({ userId }: DashboardNavbarProps) {
             <Link href="/dashboard" className="text-xl font-bold">
               ATU Ekartoteka
             </Link>
-          </div>
-          <div className="flex items-center gap-4">
             {userData.role === UserRole.ADMIN && (
               <Link href="/admin">
-                <Button variant="outline" size="sm">
+                <Button variant="ghost">
+                  <Cog className="mr-2 h-4 w-4" />
                   Panel administratora
                 </Button>
               </Link>
             )}
-            <span className="text-sm text-muted-foreground">
-              {userData.email}
-            </span>
+          </div>
+          <div className="flex items-center gap-4">
+            <Link href="/dashboard/profile">
+              <Button variant="ghost" size="sm">
+                <User className="mr-2 h-4 w-4" />
+                Profil
+              </Button>
+            </Link>
             <ThemeToggle />
             <LogoutButton />
           </div>

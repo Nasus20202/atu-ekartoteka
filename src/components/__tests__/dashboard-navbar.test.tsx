@@ -13,7 +13,7 @@ vi.mock('@/lib/prisma', () => ({
 }));
 
 describe('DashboardNavbar', () => {
-  it('renders navbar with user email', async () => {
+  it('renders navbar with profile button', async () => {
     const { prisma } = await import('@/lib/prisma');
     (prisma.user.findUnique as Mock).mockResolvedValue({
       email: 'test@example.com',
@@ -24,7 +24,7 @@ describe('DashboardNavbar', () => {
     render(Navbar as React.ReactElement);
 
     expect(screen.getByText('ATU Ekartoteka')).toBeInTheDocument();
-    expect(screen.getByText('test@example.com')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /profil/i })).toBeInTheDocument();
   });
 
   it('renders admin panel button for admin users', async () => {

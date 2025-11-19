@@ -68,7 +68,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="nazwa@przykład.pl"
+                placeholder="email@example.com"
                 autoComplete="email"
                 required
                 value={email}
