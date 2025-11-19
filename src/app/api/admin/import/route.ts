@@ -11,11 +11,19 @@ export async function POST(req: NextRequest) {
     const session = await auth();
 
     if (!session || session.user.role !== UserRole.ADMIN) {
+      console.warn(
+        'Unauthorized import attempt',
+        session?.user?.email || 'anonymous'
+      );
       return NextResponse.json({ error: 'Brak uprawnień' }, { status: 401 });
     }
 
     const formData = await req.formData();
     const files = formData.getAll('files') as File[];
+
+    console.log(
+      `Import initiated by ${session.user.email}: ${files.length} files uploaded`
+    );
 
     if (!files || files.length === 0) {
       return NextResponse.json(
@@ -25,6 +33,10 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await processBatchImport(files);
+
+    console.log(
+      `Import completed by ${session.user.email}: ${result.results.length} HOAs processed`
+    );
 
     return NextResponse.json(result);
   } catch (error) {

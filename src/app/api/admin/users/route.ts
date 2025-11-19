@@ -9,6 +9,10 @@ export async function GET(req: NextRequest) {
     const session = await auth();
 
     if (!session || session.user.role !== UserRole.ADMIN) {
+      console.warn(
+        'Unauthorized user list access attempt',
+        session?.user?.email || 'anonymous'
+      );
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -45,11 +49,19 @@ export async function PATCH(req: NextRequest) {
     const session = await auth();
 
     if (!session || session.user.role !== UserRole.ADMIN) {
+      console.warn(
+        'Unauthorized user update attempt',
+        session?.user?.email || 'anonymous'
+      );
       return NextResponse.json({ error: 'Brak uprawnień' }, { status: 401 });
     }
 
     const body = await req.json();
     const { userId, status, apartmentIds } = body;
+
+    console.log(
+      `Admin ${session.user.email} attempting to update user ${userId} status to ${status}`
+    );
 
     if (!userId || !status) {
       return NextResponse.json(
@@ -126,6 +138,10 @@ export async function PATCH(req: NextRequest) {
         apartments: true,
       },
     });
+
+    console.log(
+      `User status updated by ${session.user.email}: ${updatedUser.email} -> ${status} (${updatedUser.apartments.length} apartments assigned)`
+    );
 
     return NextResponse.json({ user: updatedUser });
   } catch (error) {

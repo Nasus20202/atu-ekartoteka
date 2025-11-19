@@ -9,6 +9,8 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { email, password, name } = body;
 
+    console.log(`Registration attempt for email: ${email}`);
+
     if (!email || !password) {
       return NextResponse.json(
         { error: 'Email i hasło są wymagane' },
@@ -39,6 +41,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (existingUser) {
+      console.warn(`Registration failed: user already exists for ${email}`);
       return NextResponse.json(
         { error: 'Użytkownik z tym adresem email już istnieje' },
         { status: 400 }
@@ -66,6 +69,10 @@ export async function POST(req: NextRequest) {
         createdAt: true,
       },
     });
+
+    console.log(
+      `User registered successfully: ${user.email} (status: ${user.status})`
+    );
 
     return NextResponse.json(
       {

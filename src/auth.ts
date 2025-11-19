@@ -40,6 +40,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         });
 
         if (!user) {
+          console.warn(
+            `Failed login attempt: user not found for ${credentials.email}`
+          );
           return null;
         }
 
@@ -49,8 +52,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         );
 
         if (!passwordMatch) {
+          console.warn(
+            `Failed login attempt for ${credentials.email}: incorrect password`
+          );
           return null;
         }
+
+        console.log(
+          `User logged in successfully: ${user.email} (role: ${user.role}, status: ${user.status})`
+        );
 
         return {
           id: user.id,

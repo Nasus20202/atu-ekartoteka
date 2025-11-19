@@ -10,11 +10,19 @@ export async function POST(request: NextRequest) {
     const session = await auth();
 
     if (!session || session.user.role !== UserRole.ADMIN) {
+      console.warn(
+        'Unauthorized user creation attempt',
+        session?.user?.email || 'anonymous'
+      );
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
     const { email, password, name, role, status } = body;
+
+    console.log(
+      `Admin ${session.user.email} attempting to create user: ${email}`
+    );
 
     // Validate required fields
     if (!email || !password) {
@@ -40,6 +48,9 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingUser) {
+      console.warn(
+        `User creation failed: ${email} already exists (attempted by ${session.user.email})`
+      );
       return NextResponse.json(
         { error: 'User with this email already exists' },
         { status: 400 }

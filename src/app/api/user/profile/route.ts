@@ -15,6 +15,14 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     const { name, currentPassword, newPassword } = body;
 
+    const changesRequested = [];
+    if (name !== undefined) changesRequested.push('name');
+    if (newPassword) changesRequested.push('password');
+
+    console.log(
+      `Profile update requested by ${session.user.email}: [${changesRequested.join(', ')}]`
+    );
+
     // Get user from database
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -47,6 +55,9 @@ export async function PATCH(request: NextRequest) {
       );
 
       if (!isPasswordValid) {
+        console.warn(
+          `Failed password change attempt for ${session.user.email}: incorrect current password`
+        );
         return NextResponse.json(
           { error: 'Current password is incorrect' },
           { status: 400 }
@@ -69,6 +80,10 @@ export async function PATCH(request: NextRequest) {
         status: true,
       },
     });
+
+    console.log(
+      `Profile updated successfully for ${session.user.email}: [${changesRequested.join(', ')}]`
+    );
 
     return NextResponse.json(updatedUser);
   } catch (error) {

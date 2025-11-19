@@ -18,9 +18,15 @@ export const importChargeNotifications = async (
   });
 
   if (!hoa) {
-    console.warn(`HOA not found for externalId: ${hoaExternalId}`);
+    console.error(
+      `Charge notification import failed: HOA not found for externalId: ${hoaExternalId}`
+    );
     return { imported: 0, skipped: entries.length };
   }
+
+  console.log(
+    `Starting charge notification import for HOA ${hoaExternalId}: ${entries.length} entries to process`
+  );
 
   // Get all apartments for this HOA once
   const apartments = await prisma.apartment.findMany({
@@ -80,9 +86,6 @@ export const importChargeNotifications = async (
     const apartmentId = apartmentMap.get(entry.apartmentCode);
 
     if (!apartmentId) {
-      console.warn(
-        `Apartment not found for apartmentCode: ${entry.apartmentCode}`
-      );
       skipped++;
       continue;
     }
@@ -149,6 +152,16 @@ export const importChargeNotifications = async (
     }
   }
 
+  if (skipped > 0) {
+    console.warn(
+      `Charge notification import for HOA ${hoaExternalId}: ${skipped} entries skipped (apartments not found)`
+    );
+  }
+
+  console.log(
+    `Charge notification import completed for HOA ${hoaExternalId}: ${imported} imported, ${skipped} skipped`
+  );
+
   return { imported, skipped };
 };
 
@@ -168,9 +181,15 @@ export const importPayments = async (
   });
 
   if (!hoa) {
-    console.warn(`HOA not found for externalId: ${hoaExternalId}`);
+    console.error(
+      `Payment import failed: HOA not found for externalId: ${hoaExternalId}`
+    );
     return { imported: 0, skipped: entries.length };
   }
+
+  console.log(
+    `Starting payment import for HOA ${hoaExternalId}: ${entries.length} entries to process`
+  );
 
   // Get all apartments for this HOA once
   const apartments = await prisma.apartment.findMany({
@@ -255,9 +274,6 @@ export const importPayments = async (
     const apartmentId = apartmentMap.get(entry.apartmentCode);
 
     if (!apartmentId) {
-      console.warn(
-        `Apartment not found for apartmentCode: ${entry.apartmentCode}`
-      );
       skipped++;
       continue;
     }
@@ -376,6 +392,16 @@ export const importPayments = async (
       }
     }
   }
+
+  if (skipped > 0) {
+    console.warn(
+      `Payment import for HOA ${hoaExternalId}: ${skipped} entries skipped (apartments not found)`
+    );
+  }
+
+  console.log(
+    `Payment import completed for HOA ${hoaExternalId}: ${imported} imported, ${skipped} skipped`
+  );
 
   return { imported, skipped };
 };

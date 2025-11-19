@@ -38,6 +38,8 @@ export async function importApartmentsFromBuffer(
     errors: [],
   };
 
+  console.log(`Starting apartment import for HOA ${hoaId}`);
+
   try {
     const entries = await parseLokBuffer(buffer);
     const apartments = getUniqueApartments(entries);
@@ -48,6 +50,7 @@ export async function importApartmentsFromBuffer(
     });
 
     if (!hoa) {
+      console.log(`Creating new HOA: ${hoaId}`);
       hoa = await prisma.homeownersAssociation.create({
         data: {
           externalId: hoaId,
