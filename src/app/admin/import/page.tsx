@@ -28,12 +28,16 @@ interface ImportResult {
     total: number;
   };
   notifications?: {
-    imported: number;
-    skipped: number;
+    created: number;
+    updated: number;
+    deleted: number;
+    total: number;
   };
   payments?: {
-    imported: number;
+    created: number;
+    updated: number;
     skipped: number;
+    total: number;
   };
 }
 
@@ -294,22 +298,40 @@ export default function AdminImportPage() {
                           <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
                             Powiadomienia o opłatach
                           </h3>
-                          <div className="grid gap-4 sm:grid-cols-2">
+                          <div className="grid gap-4 sm:grid-cols-4">
                             <div className="rounded-lg border p-4">
                               <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                                {result.notifications.imported}
+                                {result.notifications.created}
                               </div>
                               <p className="text-sm text-muted-foreground">
-                                Zaimportowanych
+                                Utworzonych
                               </p>
                             </div>
 
                             <div className="rounded-lg border p-4">
-                              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                                {result.notifications.skipped}
+                              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                                {result.notifications.updated}
                               </div>
                               <p className="text-sm text-muted-foreground">
-                                Pominiętych
+                                Zaktualizowanych
+                              </p>
+                            </div>
+
+                            <div className="rounded-lg border p-4">
+                              <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                                {result.notifications.deleted}
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Usuniętych
+                              </p>
+                            </div>
+
+                            <div className="rounded-lg border p-4">
+                              <div className="text-2xl font-bold">
+                                {result.notifications.total}
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Razem w pliku
                               </p>
                             </div>
                           </div>
@@ -321,13 +343,22 @@ export default function AdminImportPage() {
                           <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
                             Wpłaty
                           </h3>
-                          <div className="grid gap-4 sm:grid-cols-2">
+                          <div className="grid gap-4 sm:grid-cols-4">
                             <div className="rounded-lg border p-4">
                               <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                                {result.payments.imported}
+                                {result.payments.created}
                               </div>
                               <p className="text-sm text-muted-foreground">
-                                Zaimportowanych
+                                Utworzonych
+                              </p>
+                            </div>
+
+                            <div className="rounded-lg border p-4">
+                              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                                {result.payments.updated}
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Zaktualizowanych
                               </p>
                             </div>
 
@@ -337,6 +368,15 @@ export default function AdminImportPage() {
                               </div>
                               <p className="text-sm text-muted-foreground">
                                 Pominiętych
+                              </p>
+                            </div>
+
+                            <div className="rounded-lg border p-4">
+                              <div className="text-2xl font-bold">
+                                {result.payments.total}
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Razem w pliku
                               </p>
                             </div>
                           </div>

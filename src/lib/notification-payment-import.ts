@@ -5,11 +5,17 @@ import { parseWplatyFile } from '@/lib/wplaty-parser';
 export const importChargeNotifications = async (
   buffer: Buffer,
   hoaExternalId: string
-): Promise<{ imported: number; skipped: number }> => {
+): Promise<{
+  created: number;
+  updated: number;
+  deleted: number;
+  total: number;
+}> => {
   const { entries } = await parsePowCzynszFile(buffer);
 
-  let imported = 0;
-  let skipped = 0;
+  let created = 0;
+  let updated = 0;
+  let deleted = 0;
 
   // Resolve HOA once before processing
   const hoa = await prisma.homeownersAssociation.findUnique({
@@ -21,7 +27,7 @@ export const importChargeNotifications = async (
     console.error(
       `Charge notification import failed: HOA not found for externalId: ${hoaExternalId}`
     );
-    return { imported: 0, skipped: entries.length };
+    return { created: 0, updated: 0, deleted: 0, total: entries.length };
   }
 
   console.log(
@@ -82,15 +88,19 @@ export const importChargeNotifications = async (
     totalAmount: number;
   }> = [];
 
+  // Track which notifications should exist (from the file)
+  const notificationsInFile = new Set<string>();
+
   for (const entry of entries) {
     const apartmentId = apartmentMap.get(entry.apartmentCode);
 
     if (!apartmentId) {
-      skipped++;
       continue;
     }
 
-    const existingId = existingMap.get(`${apartmentId}-${entry.lineNo}`);
+    const key = `${apartmentId}-${entry.lineNo}`;
+    notificationsInFile.add(key);
+    const existingId = existingMap.get(key);
 
     if (existingId) {
       toUpdate.push({
@@ -115,13 +125,18 @@ export const importChargeNotifications = async (
     }
   }
 
+  // Find notifications to delete (exist in DB but not in file)
+  const toDelete = existingNotifications
+    .filter((n) => !notificationsInFile.has(`${n.apartmentId}-${n.lineNo}`))
+    .map((n) => n.id);
+
   // Bulk create
   if (toCreate.length > 0) {
     await prisma.chargeNotification.createMany({
       data: toCreate,
       skipDuplicates: true,
     });
-    imported += toCreate.length;
+    created = toCreate.length;
   }
 
   // Bulk update in batches
@@ -129,49 +144,56 @@ export const importChargeNotifications = async (
     const BATCH_SIZE = 100;
     for (let i = 0; i < toUpdate.length; i += BATCH_SIZE) {
       const batch = toUpdate.slice(i, i + BATCH_SIZE);
-      try {
-        await prisma.$transaction(
-          batch.map((notification) =>
-            prisma.chargeNotification.update({
-              where: { id: notification.id },
-              data: {
-                description: notification.description,
-                quantity: notification.quantity,
-                unit: notification.unit,
-                unitPrice: notification.unitPrice,
-                totalAmount: notification.totalAmount,
-              },
-            })
-          )
-        );
-        imported += batch.length;
-      } catch (error) {
-        console.error('Error updating notification batch:', error);
-        skipped += batch.length;
-      }
+      await prisma.$transaction(
+        batch.map((notification) =>
+          prisma.chargeNotification.update({
+            where: { id: notification.id },
+            data: {
+              description: notification.description,
+              quantity: notification.quantity,
+              unit: notification.unit,
+              unitPrice: notification.unitPrice,
+              totalAmount: notification.totalAmount,
+            },
+          })
+        )
+      );
     }
+    updated = toUpdate.length;
   }
 
-  if (skipped > 0) {
-    console.warn(
-      `Charge notification import for HOA ${hoaExternalId}: ${skipped} entries skipped (apartments not found)`
-    );
+  // Bulk delete
+  if (toDelete.length > 0) {
+    await prisma.chargeNotification.deleteMany({
+      where: {
+        id: { in: toDelete },
+      },
+    });
+    deleted = toDelete.length;
   }
+
+  const total = entries.length;
 
   console.log(
-    `Charge notification import completed for HOA ${hoaExternalId}: ${imported} imported, ${skipped} skipped`
+    `Charge notification import completed for HOA ${hoaExternalId}: ${created} created, ${updated} updated, ${deleted} deleted, ${total} total`
   );
 
-  return { imported, skipped };
+  return { created, updated, deleted, total };
 };
 
 export const importPayments = async (
   buffer: Buffer,
   hoaExternalId: string
-): Promise<{ imported: number; skipped: number }> => {
+): Promise<{
+  created: number;
+  updated: number;
+  skipped: number;
+  total: number;
+}> => {
   const { entries } = await parseWplatyFile(buffer);
 
-  let imported = 0;
+  let created = 0;
+  let updated = 0;
   let skipped = 0;
 
   // Resolve HOA once before processing
@@ -184,7 +206,12 @@ export const importPayments = async (
     console.error(
       `Payment import failed: HOA not found for externalId: ${hoaExternalId}`
     );
-    return { imported: 0, skipped: entries.length };
+    return {
+      created: 0,
+      updated: 0,
+      skipped: entries.length,
+      total: entries.length,
+    };
   }
 
   console.log(
@@ -349,7 +376,7 @@ export const importPayments = async (
       data: toCreate,
       skipDuplicates: true,
     });
-    imported += toCreate.length;
+    created = toCreate.length;
   }
 
   // Bulk update in batches
@@ -357,41 +384,38 @@ export const importPayments = async (
     const BATCH_SIZE = 100;
     for (let i = 0; i < toUpdate.length; i += BATCH_SIZE) {
       const batch = toUpdate.slice(i, i + BATCH_SIZE);
-      try {
-        await prisma.$transaction(
-          batch.map((payment) =>
-            prisma.payment.update({
-              where: { id: payment.id },
-              data: {
-                externalId: payment.externalId,
-                dateFrom: payment.dateFrom,
-                dateTo: payment.dateTo,
-                openingBalance: payment.openingBalance,
-                totalCharges: payment.totalCharges,
-                closingBalance: payment.closingBalance,
-                january: payment.january,
-                february: payment.february,
-                march: payment.march,
-                april: payment.april,
-                may: payment.may,
-                june: payment.june,
-                july: payment.july,
-                august: payment.august,
-                september: payment.september,
-                october: payment.october,
-                november: payment.november,
-                december: payment.december,
-              },
-            })
-          )
-        );
-        imported += batch.length;
-      } catch (error) {
-        console.error('Error updating payment batch:', error);
-        skipped += batch.length;
-      }
+      await prisma.$transaction(
+        batch.map((payment) =>
+          prisma.payment.update({
+            where: { id: payment.id },
+            data: {
+              externalId: payment.externalId,
+              dateFrom: payment.dateFrom,
+              dateTo: payment.dateTo,
+              openingBalance: payment.openingBalance,
+              totalCharges: payment.totalCharges,
+              closingBalance: payment.closingBalance,
+              january: payment.january,
+              february: payment.february,
+              march: payment.march,
+              april: payment.april,
+              may: payment.may,
+              june: payment.june,
+              july: payment.july,
+              august: payment.august,
+              september: payment.september,
+              october: payment.october,
+              november: payment.november,
+              december: payment.december,
+            },
+          })
+        )
+      );
     }
+    updated = toUpdate.length;
   }
+
+  const total = entries.length;
 
   if (skipped > 0) {
     console.warn(
@@ -400,8 +424,8 @@ export const importPayments = async (
   }
 
   console.log(
-    `Payment import completed for HOA ${hoaExternalId}: ${imported} imported, ${skipped} skipped`
+    `Payment import completed for HOA ${hoaExternalId}: ${created} created, ${updated} updated, ${skipped} skipped, ${total} total`
   );
 
-  return { imported, skipped };
+  return { created, updated, skipped, total };
 };

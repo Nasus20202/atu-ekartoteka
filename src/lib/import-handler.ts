@@ -27,12 +27,16 @@ export interface HOAImportResult extends ImportResult {
     total: number;
   };
   notifications?: {
-    imported: number;
-    skipped: number;
+    created: number;
+    updated: number;
+    deleted: number;
+    total: number;
   };
   payments?: {
-    imported: number;
+    created: number;
+    updated: number;
     skipped: number;
+    total: number;
   };
 }
 
@@ -154,7 +158,7 @@ export async function processBatchImport(
           hoaId
         );
         console.log(
-          `Imported ${notificationsResult.imported} charge notifications, skipped ${notificationsResult.skipped}`
+          `Notifications: ${notificationsResult.created} created, ${notificationsResult.updated} updated, ${notificationsResult.deleted} deleted, ${notificationsResult.total} total`
         );
       }
 
@@ -164,7 +168,7 @@ export async function processBatchImport(
         console.log(`Importing payments for HOA ${hoaId}...`);
         paymentsResult = await importPayments(paymentsBuffer, hoaId);
         console.log(
-          `Imported ${paymentsResult.imported} payment records, skipped ${paymentsResult.skipped}`
+          `Payments: ${paymentsResult.created} created, ${paymentsResult.updated} updated, ${paymentsResult.skipped} skipped, ${paymentsResult.total} total`
         );
       }
 
