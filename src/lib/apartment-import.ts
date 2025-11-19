@@ -1,4 +1,3 @@
-import { importChargesFromBuffer } from '@/lib/charge-import';
 import { getUniqueApartments, parseLokBuffer } from '@/lib/lok-parser';
 import { prisma } from '@/lib/prisma';
 
@@ -8,12 +7,6 @@ export interface ImportResult {
   deactivated: number;
   total: number;
   errors: string[];
-  charges?: {
-    created: number;
-    updated: number;
-    skipped: number;
-    total: number;
-  };
 }
 
 export interface FileWithHOA {
@@ -35,8 +28,7 @@ export async function importApartmentsFromFile(
 
 export async function importApartmentsFromBuffer(
   buffer: Buffer,
-  hoaId: string,
-  chargesBuffer?: Buffer
+  hoaId: string
 ): Promise<ImportResult> {
   const result: ImportResult = {
     created: 0,
@@ -211,33 +203,6 @@ export async function importApartmentsFromBuffer(
     console.log(
       `Apartment import completed for HOA ${hoaId}: ${result.created} created, ${result.updated} updated, ${result.deactivated} deactivated`
     );
-
-    // Import charges if buffer provided
-    if (chargesBuffer) {
-      console.log(`Starting charge import for HOA ${hoaId}...`);
-      try {
-        const chargeResult = await importChargesFromBuffer(
-          chargesBuffer,
-          hoaId
-        );
-        result.charges = {
-          created: chargeResult.created,
-          updated: chargeResult.updated,
-          skipped: chargeResult.skipped,
-          total: chargeResult.total,
-        };
-        console.log(
-          `Charge import completed: ${chargeResult.created} created, ${chargeResult.updated} updated, ${chargeResult.skipped} skipped`
-        );
-        if (chargeResult.errors.length > 0) {
-          result.errors.push(...chargeResult.errors);
-        }
-      } catch (error) {
-        const errorMsg = `Failed to import charges: ${error instanceof Error ? error.message : 'Unknown error'}`;
-        console.error(errorMsg);
-        result.errors.push(errorMsg);
-      }
-    }
 
     return result;
   } catch (error) {

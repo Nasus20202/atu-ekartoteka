@@ -224,6 +224,13 @@ export default function HOAApartmentsPage() {
                         </dd>
                       </div>
                     </dl>
+                    <div className="mt-4">
+                      <Link href={`/admin/apartments/${hoaId}/${apartment.id}`}>
+                        <Button variant="outline" size="sm" className="w-full">
+                          Zobacz szczegóły
+                        </Button>
+                      </Link>
+                    </div>
                   </CardContent>
                 </Card>
               ))}

@@ -27,6 +27,14 @@ interface ImportResult {
     skipped: number;
     total: number;
   };
+  notifications?: {
+    imported: number;
+    skipped: number;
+  };
+  payments?: {
+    imported: number;
+    skipped: number;
+  };
 }
 
 interface ImportResponse {
@@ -275,6 +283,60 @@ export default function AdminImportPage() {
                               </div>
                               <p className="text-sm text-muted-foreground">
                                 Razem w pliku
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {result.notifications && (
+                        <div className="mb-6">
+                          <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
+                            Powiadomienia o opłatach
+                          </h3>
+                          <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="rounded-lg border p-4">
+                              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                                {result.notifications.imported}
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Zaimportowanych
+                              </p>
+                            </div>
+
+                            <div className="rounded-lg border p-4">
+                              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                                {result.notifications.skipped}
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Pominiętych
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {result.payments && (
+                        <div className="mb-6">
+                          <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
+                            Wpłaty
+                          </h3>
+                          <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="rounded-lg border p-4">
+                              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                                {result.payments.imported}
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Zaimportowanych
+                              </p>
+                            </div>
+
+                            <div className="rounded-lg border p-4">
+                              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                                {result.payments.skipped}
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Pominiętych
                               </p>
                             </div>
                           </div>

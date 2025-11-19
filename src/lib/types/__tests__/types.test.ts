@@ -265,9 +265,9 @@ describe('Type definitions', () => {
         updatedAt: new Date(),
       };
 
-      expect(pendingUser.status).toBe('PENDING');
-      expect(approvedUser.status).toBe('APPROVED');
-      expect(rejectedUser.status).toBe('REJECTED');
+      expect(pendingUser.status).toBe(AccountStatus.PENDING);
+      expect(approvedUser.status).toBe(AccountStatus.APPROVED);
+      expect(rejectedUser.status).toBe(AccountStatus.REJECTED);
     });
   });
 });

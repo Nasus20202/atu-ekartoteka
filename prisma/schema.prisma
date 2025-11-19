@@ -81,7 +81,9 @@ model Apartment {
   userId      String?
   
   // Charges for this apartment
-  charges     Charge[]
+  charges               Charge[]
+  chargeNotifications   ChargeNotification[]
+  payments              Payment[]
   
   @@index([externalId])
   @@index([isActive])
@@ -117,4 +119,68 @@ model Charge {
   @@index([apartmentId])
   @@index([period])
   @@index([dateFrom])
+}
+
+model ChargeNotification {
+  id              String   @id @default(cuid())
+  externalId      String   // from pow_czynsz.txt
+  lineNo          Int      // position in file
+  
+  // Apartment relation
+  apartment       Apartment @relation(fields: [apartmentId], references: [id])
+  apartmentId     String
+  
+  // Charge details
+  description     String
+  quantity        Float
+  unit            String   // e.g. "szt.", "m2"
+  unitPrice       Float
+  totalAmount     Float
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([apartmentId, lineNo])
+  @@index([apartmentId])
+  @@index([externalId])
+}
+
+model Payment {
+  id              String   @id @default(cuid())
+  externalId      String   // from wplaty.txt
+  
+  // Apartment relation
+  apartment       Apartment @relation(fields: [apartmentId], references: [id])
+  apartmentId     String
+  
+  // Period information
+  year            Int
+  dateFrom        DateTime
+  dateTo          DateTime
+  
+  // Balances
+  openingBalance  Float    // saldo początkowe
+  totalCharges    Float    // naliczenie
+  closingBalance  Float    // saldo końcowe
+  
+  // Monthly payments (12 months)
+  january         Float    @default(0)
+  february        Float    @default(0)
+  march           Float    @default(0)
+  april           Float    @default(0)
+  may             Float    @default(0)
+  june            Float    @default(0)
+  july            Float    @default(0)
+  august          Float    @default(0)
+  september       Float    @default(0)
+  october         Float    @default(0)
+  november        Float    @default(0)
+  december        Float    @default(0)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([apartmentId, year])
+  @@index([apartmentId])
+  @@index([year])
 }

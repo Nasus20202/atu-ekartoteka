@@ -2,14 +2,38 @@ import {
   importApartmentsFromBuffer,
   ImportResult,
 } from '@/lib/apartment-import';
+import {
+  ChargeImportResult,
+  importChargesFromBuffer,
+} from '@/lib/charge-import';
+import {
+  importChargeNotifications,
+  importPayments,
+} from '@/lib/notification-payment-import';
 
 export interface ImportFileGroup {
   lokFile?: File;
   chargesFile?: File;
+  notificationsFile?: File;
+  paymentsFile?: File;
 }
 
 export interface HOAImportResult extends ImportResult {
   hoaId: string;
+  charges?: {
+    created: number;
+    updated: number;
+    skipped: number;
+    total: number;
+  };
+  notifications?: {
+    imported: number;
+    skipped: number;
+  };
+  payments?: {
+    imported: number;
+    skipped: number;
+  };
 }
 
 export interface ImportError {
@@ -53,9 +77,17 @@ export async function processBatchImport(
         const entry = filesByHOA.get(hoaId) || {};
         entry.chargesFile = file;
         filesByHOA.set(hoaId, entry);
+      } else if (fileName === 'pow_czynsz.txt') {
+        const entry = filesByHOA.get(hoaId) || {};
+        entry.notificationsFile = file;
+        filesByHOA.set(hoaId, entry);
+      } else if (fileName === 'wplaty.txt') {
+        const entry = filesByHOA.get(hoaId) || {};
+        entry.paymentsFile = file;
+        filesByHOA.set(hoaId, entry);
       } else if (!fileName.endsWith('.wmb')) {
         throw new Error(
-          `Nieprawidłowa nazwa pliku: ${fileName}. Oczekiwano lok.txt lub nal_czynsz.txt`
+          `Nieprawidłowa nazwa pliku: ${fileName}. Oczekiwano lok.txt, nal_czynsz.txt, pow_czynsz.txt lub wplaty.txt`
         );
       }
     } catch (error) {
@@ -67,7 +99,10 @@ export async function processBatchImport(
   }
 
   // Process each HOA
-  for (const [hoaId, { lokFile, chargesFile }] of filesByHOA.entries()) {
+  for (const [
+    hoaId,
+    { lokFile, chargesFile, notificationsFile, paymentsFile },
+  ] of filesByHOA.entries()) {
     try {
       if (!lokFile) {
         throw new Error(
@@ -77,25 +112,75 @@ export async function processBatchImport(
 
       console.log(`Starting import for HOA ${hoaId}...`);
 
+      // Import apartments
+      console.log(`Importing apartments for HOA ${hoaId}...`);
       const lokBytes = await lokFile.arrayBuffer();
       const lokBuffer = Buffer.from(lokBytes);
+      const result = await importApartmentsFromBuffer(lokBuffer, hoaId);
 
-      let chargesBuffer: Buffer | undefined;
+      // Import charges if available
+      let chargesResult: ChargeImportResult | undefined;
       if (chargesFile) {
         console.log(`Found charges file for HOA ${hoaId}`);
         const chargesBytes = await chargesFile.arrayBuffer();
-        chargesBuffer = Buffer.from(chargesBytes);
+        const chargesBuffer = Buffer.from(chargesBytes);
+        console.log(`Importing charges for HOA ${hoaId}...`);
+        chargesResult = await importChargesFromBuffer(chargesBuffer, hoaId);
+        console.log(
+          `Imported ${chargesResult.created} charges, updated ${chargesResult.updated}, skipped ${chargesResult.skipped}`
+        );
       }
 
-      const result = await importApartmentsFromBuffer(
-        lokBuffer,
-        hoaId,
-        chargesBuffer
-      );
+      let notificationsBuffer: Buffer | undefined;
+      if (notificationsFile) {
+        console.log(`Found notifications file for HOA ${hoaId}`);
+        const notificationsBytes = await notificationsFile.arrayBuffer();
+        notificationsBuffer = Buffer.from(notificationsBytes);
+      }
+
+      let paymentsBuffer: Buffer | undefined;
+      if (paymentsFile) {
+        console.log(`Found payments file for HOA ${hoaId}`);
+        const paymentsBytes = await paymentsFile.arrayBuffer();
+        paymentsBuffer = Buffer.from(paymentsBytes);
+      }
+
+      // Import notifications if available
+      let notificationsResult;
+      if (notificationsBuffer) {
+        console.log(`Importing charge notifications for HOA ${hoaId}...`);
+        notificationsResult = await importChargeNotifications(
+          notificationsBuffer,
+          hoaId
+        );
+        console.log(
+          `Imported ${notificationsResult.imported} charge notifications, skipped ${notificationsResult.skipped}`
+        );
+      }
+
+      // Import payments if available
+      let paymentsResult;
+      if (paymentsBuffer) {
+        console.log(`Importing payments for HOA ${hoaId}...`);
+        paymentsResult = await importPayments(paymentsBuffer, hoaId);
+        console.log(
+          `Imported ${paymentsResult.imported} payment records, skipped ${paymentsResult.skipped}`
+        );
+      }
 
       results.push({
         hoaId,
         ...result,
+        charges: chargesResult
+          ? {
+              created: chargesResult.created,
+              updated: chargesResult.updated,
+              skipped: chargesResult.skipped,
+              total: chargesResult.total,
+            }
+          : undefined,
+        notifications: notificationsResult,
+        payments: paymentsResult,
       });
 
       console.log(`Import completed for HOA ${hoaId}`);

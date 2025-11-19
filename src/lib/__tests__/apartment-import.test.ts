@@ -307,42 +307,5 @@ describe('apartment-import', () => {
       expect(result.errors[0]).toContain('Failed to import EXT1');
       expect(result.total).toBe(2);
     });
-
-    it('should import charges when chargesBuffer is provided', async () => {
-      const mockEntries = [createMockLokEntry()];
-
-      vi.spyOn(lokParser, 'parseLokBuffer').mockResolvedValue(mockEntries);
-      vi.spyOn(lokParser, 'getUniqueApartments').mockReturnValue(mockEntries);
-
-      vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValue(
-        mockHOA
-      );
-      vi.mocked(prisma.apartment.findMany).mockResolvedValue([]);
-      vi.mocked(prisma.apartment.createMany).mockResolvedValue({ count: 1 });
-      vi.mocked(prisma.apartment.updateMany).mockResolvedValue({ count: 0 });
-
-      const { importChargesFromBuffer } = await import('@/lib/charge-import');
-      vi.mocked(importChargesFromBuffer).mockResolvedValue({
-        created: 5,
-        updated: 2,
-        skipped: 1,
-        total: 8,
-        errors: [],
-      });
-
-      const apartmentBuffer = Buffer.from('apartment data');
-      const chargesBuffer = Buffer.from('charges data');
-      const result = await importApartmentsFromBuffer(
-        apartmentBuffer,
-        'HOA001',
-        chargesBuffer
-      );
-
-      expect(result.charges).toBeDefined();
-      expect(result.charges?.created).toBe(5);
-      expect(result.charges?.updated).toBe(2);
-      expect(result.charges?.skipped).toBe(1);
-      expect(result.charges?.total).toBe(8);
-    });
   });
 });

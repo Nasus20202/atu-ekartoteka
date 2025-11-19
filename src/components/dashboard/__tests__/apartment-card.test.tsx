@@ -19,7 +19,7 @@ describe('ApartmentCard', () => {
   it('renders apartment basic information', () => {
     render(<ApartmentCard apartment={mockApartment} index={0} />);
 
-    expect(screen.getByText('ul. Testowa 1 10')).toBeInTheDocument();
+    expect(screen.getByText(/ul\. Testowa 1 A\/10/)).toBeInTheDocument();
     expect(screen.getByText('00-001 Warszawa')).toBeInTheDocument();
   });
 
@@ -30,11 +30,10 @@ describe('ApartmentCard', () => {
     expect(screen.getByText('Jan Kowalski')).toBeInTheDocument();
   });
 
-  it('renders building information when provided', () => {
+  it('renders building in address when provided', () => {
     render(<ApartmentCard apartment={mockApartment} index={0} />);
 
-    expect(screen.getByText('Budynek')).toBeInTheDocument();
-    expect(screen.getByText('A')).toBeInTheDocument();
+    expect(screen.getByText(/A\/10/)).toBeInTheDocument();
   });
 
   it('renders area in square meters', () => {
@@ -51,14 +50,17 @@ describe('ApartmentCard', () => {
     expect(screen.getByText('2.5 cm')).toBeInTheDocument();
   });
 
-  it('renders link to apartment charges', () => {
+  it('renders links to apartment charges and payments', () => {
     render(<ApartmentCard apartment={mockApartment} index={0} />);
 
-    const link = screen.getByRole('link');
-    expect(link).toHaveAttribute('href', '/dashboard/charges/apt-1');
+    const chargesLink = screen.getByRole('link', { name: /naliczenia/i });
+    expect(chargesLink).toHaveAttribute('href', '/dashboard/charges/apt-1');
 
-    const button = screen.getByRole('button', { name: /naliczenia/i });
-    expect(button).toBeInTheDocument();
+    const paymentsLink = screen.getByRole('link', { name: /wpłaty/i });
+    expect(paymentsLink).toHaveAttribute(
+      'href',
+      '/dashboard/payments/apt-1/2025'
+    );
   });
 
   it('handles null values gracefully', () => {
@@ -76,9 +78,8 @@ describe('ApartmentCard', () => {
 
     render(<ApartmentCard apartment={apartmentWithNulls} index={0} />);
 
-    expect(screen.getByText('5')).toBeInTheDocument();
+    expect(screen.getByText(/\/5/)).toBeInTheDocument();
     expect(screen.queryByText('Właściciel')).not.toBeInTheDocument();
-    expect(screen.queryByText('Budynek')).not.toBeInTheDocument();
     expect(screen.queryByText('Powierzchnia')).not.toBeInTheDocument();
     expect(screen.queryByText('Wysokość')).not.toBeInTheDocument();
   });

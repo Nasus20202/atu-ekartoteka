@@ -60,7 +60,9 @@ export default async function ChargesPage() {
         apartmentData = {
           apartmentNumber: apartment.number,
           apartmentAddress:
-            `${apartment.address || ''} ${apartment.number}`.trim(),
+            `${apartment.address || ''} ${apartment.building || ''}/${apartment.number}`
+              .replace(/\s+\//g, ' /')
+              .trim(),
           charges: [],
         };
         periodData.push(apartmentData);

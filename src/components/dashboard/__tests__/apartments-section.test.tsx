@@ -33,8 +33,8 @@ describe('ApartmentsSection', () => {
     render(<ApartmentsSection apartments={mockApartments} />);
 
     expect(screen.getByText('Mieszkania (2)')).toBeInTheDocument();
-    expect(screen.getByText('ul. Testowa 1 10')).toBeInTheDocument();
-    expect(screen.getByText('ul. Testowa 2 20')).toBeInTheDocument();
+    expect(screen.getByText(/ul\. Testowa 1 A\/10/)).toBeInTheDocument();
+    expect(screen.getByText(/ul\. Testowa 2 B\/20/)).toBeInTheDocument();
   });
 
   it('renders singular title for one apartment', () => {

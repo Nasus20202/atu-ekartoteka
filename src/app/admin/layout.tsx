@@ -1,4 +1,4 @@
-import { Building2, Home, Upload, Users } from 'lucide-react';
+import { Building2, Upload, Users } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
@@ -19,7 +19,6 @@ export default async function AdminLayout({
   }
 
   const navigation = [
-    { name: 'Panel mieszkańca', href: '/dashboard', icon: Home },
     { name: 'Mieszkania', href: '/admin/apartments', icon: Building2 },
     { name: 'Import', href: '/admin/import', icon: Upload },
     { name: 'Użytkownicy', href: '/admin/users', icon: Users },

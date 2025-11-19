@@ -89,7 +89,8 @@ export default async function ApartmentChargesPage({
             <BackButton />
             <div>
               <h1 className="text-3xl font-bold">
-                {apartment.address} {apartment.number}
+                {apartment.address} {apartment.building || ''}/
+                {apartment.number}
               </h1>
               <p className="text-sm text-muted-foreground">
                 {apartment.postalCode} {apartment.city}

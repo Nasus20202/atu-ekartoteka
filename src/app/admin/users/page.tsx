@@ -468,7 +468,8 @@ export default function AdminUsersPage() {
                               {apt.building} • Właściciel: {apt.owner}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              Powierzchnia: {apt.area} m² • ID: {apt.externalId}
+                              Powierzchnia: {apt.area ? apt.area / 100 : '-'} m²
+                              • ID: {apt.externalId}
                             </p>
                           </div>
                         </label>
@@ -523,7 +524,7 @@ export default function AdminUsersPage() {
                       <div className="space-y-2">
                         <Button
                           variant={
-                            selectedUser.status === 'APPROVED'
+                            selectedUser.status === AccountStatus.APPROVED
                               ? 'default'
                               : 'outline'
                           }
@@ -531,12 +532,13 @@ export default function AdminUsersPage() {
                           onClick={() =>
                             handleUpdateUser(
                               selectedUser.id,
-                              'APPROVED',
+                              AccountStatus.APPROVED,
                               selectedUser.apartments?.map((a) => a.id) || []
                             )
                           }
                           disabled={
-                            actionLoading || selectedUser.status === 'APPROVED'
+                            actionLoading ||
+                            selectedUser.status === AccountStatus.APPROVED
                           }
                         >
                           <Check className="mr-2 h-4 w-4" />

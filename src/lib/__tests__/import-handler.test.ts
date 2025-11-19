@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import * as apartmentImport from '@/lib/apartment-import';
+import * as chargeImport from '@/lib/charge-import';
 import { processBatchImport } from '@/lib/import-handler';
 
 // Helper function to create mock File with arrayBuffer method
@@ -31,14 +32,16 @@ describe('import-handler', () => {
           deactivated: 1,
           total: 7,
           errors: [],
-          charges: {
-            created: 10,
-            updated: 5,
-            skipped: 2,
-            total: 17,
-          },
         }
       );
+
+      vi.spyOn(chargeImport, 'importChargesFromBuffer').mockResolvedValue({
+        created: 10,
+        updated: 5,
+        skipped: 2,
+        total: 17,
+        errors: [],
+      });
 
       const result = await processBatchImport([lokFile, chargesFile]);
 
@@ -48,6 +51,10 @@ describe('import-handler', () => {
       expect(result.results[0].created).toBe(5);
       expect(result.results[0].charges?.created).toBe(10);
       expect(result.errors).toHaveLength(0);
+      expect(chargeImport.importChargesFromBuffer).toHaveBeenCalledWith(
+        expect.any(Buffer),
+        'hoa1'
+      );
     });
 
     it('should process multiple HOAs', async () => {
@@ -148,9 +155,9 @@ describe('import-handler', () => {
       expect(result.results[0].charges).toBeUndefined();
       expect(apartmentImport.importApartmentsFromBuffer).toHaveBeenCalledWith(
         expect.any(Buffer),
-        'hoa1',
-        undefined
+        'hoa1'
       );
+      expect(chargeImport.importChargesFromBuffer).not.toHaveBeenCalled();
     });
   });
 });

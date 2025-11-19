@@ -13,6 +13,7 @@ interface ApartmentData {
   building: string | null;
   area: number | null;
   height: number | null;
+  payments?: Array<{ closingBalance: number }>;
 }
 
 interface ApartmentsSectionProps {
@@ -43,6 +44,9 @@ export function ApartmentsSection({ apartments }: ApartmentsSectionProps) {
               <ApartmentCard
                 key={apartment.id}
                 apartment={apartment}
+                latestPaymentBalance={
+                  apartment.payments?.[0]?.closingBalance ?? null
+                }
                 index={index}
               />
             ))}
