@@ -2,22 +2,25 @@ import { AlertCircle, Building2 } from 'lucide-react';
 
 import { ApartmentCard } from '@/components/dashboard/apartment-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { Apartment, Payment } from '@/lib/types';
 
-interface ApartmentData {
-  id: string;
-  address: string | null;
-  number: string;
-  postalCode: string | null;
-  city: string | null;
-  owner: string | null;
-  building: string | null;
-  area: number | null;
-  height: number | null;
-  payments?: Array<{ closingBalance: number }>;
-}
+type ApartmentCardData = Pick<
+  Apartment,
+  | 'id'
+  | 'address'
+  | 'number'
+  | 'postalCode'
+  | 'city'
+  | 'owner'
+  | 'building'
+  | 'area'
+  | 'height'
+> & {
+  payments?: Pick<Payment, 'closingBalance'>[];
+};
 
 interface ApartmentsSectionProps {
-  apartments: ApartmentData[];
+  apartments: ApartmentCardData[];
 }
 
 export function ApartmentsSection({ apartments }: ApartmentsSectionProps) {

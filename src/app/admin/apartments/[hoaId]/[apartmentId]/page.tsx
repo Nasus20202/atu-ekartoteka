@@ -13,84 +13,41 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import type {
+  Apartment,
+  Charge,
+  ChargeNotification,
+  HomeownersAssociation,
+  Payment,
+  User,
+} from '@/lib/types';
 
-interface Apartment {
-  id: string;
-  externalId: string;
-  owner: string | null;
-  address: string | null;
-  building: string | null;
-  number: string;
-  postalCode: string | null;
-  city: string | null;
-  area: number | null;
-  height: number | null;
-  isActive: boolean;
-  homeownersAssociation: {
-    id: string;
-    externalId: string;
-    name: string;
-  };
-  user: {
-    id: string;
-    name: string | null;
-    email: string;
-  } | null;
-  charges: Array<{
-    id: string;
-    externalId: string;
-    externalLineNo: number;
-    dateFrom: string;
-    dateTo: string;
-    period: string;
-    description: string;
-    quantity: number;
-    unit: string;
-    unitPrice: number;
-    totalAmount: number;
-    createdAt: string;
-  }>;
-  chargeNotifications: Array<{
-    id: string;
-    externalId: string;
-    lineNo: number;
-    description: string;
-    quantity: number;
-    unit: string;
-    unitPrice: number;
-    totalAmount: number;
-    createdAt: string;
-  }>;
-  payments: Array<{
-    id: string;
-    externalId: string;
-    year: number;
-    dateFrom: string;
-    dateTo: string;
-    openingBalance: number;
-    totalCharges: number;
-    closingBalance: number;
-    january: number;
-    february: number;
-    march: number;
-    april: number;
-    may: number;
-    june: number;
-    july: number;
-    august: number;
-    september: number;
-    october: number;
-    november: number;
-    december: number;
-    createdAt: string;
-  }>;
-}
+type ApartmentDetailsData = Pick<
+  Apartment,
+  | 'id'
+  | 'externalId'
+  | 'owner'
+  | 'address'
+  | 'building'
+  | 'number'
+  | 'postalCode'
+  | 'city'
+  | 'area'
+  | 'height'
+  | 'isActive'
+> & {
+  homeownersAssociation: HomeownersAssociation;
+  user: Omit<User, 'password'> | null;
+  charges: Charge[];
+  chargeNotifications: ChargeNotification[];
+  payments: Payment[];
+};
 
 export default function ApartmentDetailsPage() {
   const params = useParams();
   const apartmentId = params.apartmentId as string;
 
-  const [apartment, setApartment] = useState<Apartment | null>(null);
+  const [apartment, setApartment] = useState<ApartmentDetailsData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

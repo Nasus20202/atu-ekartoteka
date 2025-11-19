@@ -1,3 +1,5 @@
+import { decodeBuffer, ParseResult } from '@/lib/parser-utils';
+
 export interface ChargeNotificationEntry {
   externalId: string;
   apartmentCode: string;
@@ -9,15 +11,10 @@ export interface ChargeNotificationEntry {
   totalAmount: number;
 }
 
-interface ParseResult {
-  header: string[];
-  footer: string[];
-  entries: ChargeNotificationEntry[];
-}
-
-export async function parsePowCzynszFile(buffer: Buffer): Promise<ParseResult> {
-  const iconv = await import('iconv-lite');
-  const content = iconv.decode(buffer, 'iso-8859-2');
+export async function parsePowCzynszFile(
+  buffer: Buffer
+): Promise<ParseResult<ChargeNotificationEntry>> {
+  const content = await decodeBuffer(buffer);
   const lines = content.split('\n');
   const entries: ChargeNotificationEntry[] = [];
   const header: string[] = [];

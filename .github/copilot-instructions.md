@@ -33,3 +33,4 @@
 - Maintain consistency with existing code patterns
 - Prioritize user experience and accessibility
 - Keep components modular and reusable
+- Follow conventional commit message rules

@@ -60,7 +60,8 @@ Footer line 1`;
     const result = await parsePowCzynszFile(buffer);
 
     expect(result.entries).toHaveLength(1);
+    expect(result.footer).toBeDefined();
     expect(result.footer).toHaveLength(1);
-    expect(result.footer[0]).toBe('Footer line 1');
+    expect(result.footer?.[0]).toBe('Footer line 1');
   });
 });

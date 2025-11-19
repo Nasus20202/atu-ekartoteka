@@ -12,9 +12,10 @@ export interface LokEntry {
   isOwner: boolean;
 }
 
+import { decodeBuffer } from '@/lib/parser-utils';
+
 export async function parseLokBuffer(buffer: Buffer): Promise<LokEntry[]> {
-  const iconv = await import('iconv-lite');
-  const content = iconv.decode(buffer, 'iso-8859-2');
+  const content = await decodeBuffer(buffer);
   const lines = content.split('\n').filter((line: string) => line.trim());
 
   const entries: LokEntry[] = [];

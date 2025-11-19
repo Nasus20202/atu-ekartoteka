@@ -1,3 +1,5 @@
+import { decodeBuffer, parseDate, ParseResult } from '@/lib/parser-utils';
+
 export interface PaymentEntry {
   externalId: string;
   apartmentCode: string;
@@ -10,18 +12,10 @@ export interface PaymentEntry {
   closingBalance: number;
 }
 
-interface ParseResult {
-  entries: PaymentEntry[];
-}
-
-const parseDate = (dateStr: string): Date => {
-  const [day, month, year] = dateStr.split('/').map((x) => parseInt(x, 10));
-  return new Date(year, month - 1, day);
-};
-
-export async function parseWplatyFile(buffer: Buffer): Promise<ParseResult> {
-  const iconv = await import('iconv-lite');
-  const content = iconv.decode(buffer, 'iso-8859-2');
+export async function parseWplatyFile(
+  buffer: Buffer
+): Promise<ParseResult<PaymentEntry>> {
+  const content = await decodeBuffer(buffer);
   const lines = content.split('\n');
   const entries: PaymentEntry[] = [];
 
