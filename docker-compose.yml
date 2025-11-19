@@ -21,7 +21,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: atu-app
+    container_name: atu-ekartoteka
     restart: unless-stopped
     depends_on:
       - db
@@ -42,7 +42,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: atu-migrations
+    container_name: atu-ekartoteka-migrations
     depends_on:
       db:
         condition: service_healthy
