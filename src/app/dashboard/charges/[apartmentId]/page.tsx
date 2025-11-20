@@ -2,9 +2,9 @@ import { Building2 } from 'lucide-react';
 import { notFound, redirect } from 'next/navigation';
 
 import { auth } from '@/auth';
-import { BackButton } from '@/components/back-button';
 import { PeriodCard } from '@/components/charges/period-card';
-import { DashboardNavbar } from '@/components/dashboard-navbar';
+import { Page } from '@/components/page';
+import { PageHeader } from '@/components/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { prisma } from '@/lib/database/prisma';
 import { AccountStatus } from '@/lib/types';
@@ -81,57 +81,44 @@ export default async function ApartmentChargesPage({
   const periods = Array.from(chargesByPeriod.keys()).sort().reverse();
 
   return (
-    <div className="min-h-screen bg-background">
-      <DashboardNavbar userId={session.user.id} />
-      <main className="p-8">
-        <div className="mx-auto max-w-4xl">
-          <div className="mb-6 flex items-center gap-4">
-            <BackButton />
-            <div>
-              <h1 className="text-3xl font-bold">
-                {apartment.address} {apartment.building || ''}/
-                {apartment.number}
-              </h1>
+    <Page maxWidth="4xl">
+      <PageHeader
+        title={`${apartment.address} ${apartment.building || ''}/${apartment.number}`}
+        description={`${apartment.postalCode} ${apartment.city}`}
+      />
+
+      {periods.length === 0 ? (
+        <Card>
+          <CardContent className="flex min-h-[200px] items-center justify-center">
+            <div className="text-center">
+              <Building2 className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+              <p className="text-lg font-medium">Brak naliczeń</p>
               <p className="text-sm text-muted-foreground">
-                {apartment.postalCode} {apartment.city}
+                Nie znaleziono żadnych naliczeń dla tego mieszkania.
               </p>
             </div>
-          </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-6">
+          {periods.map((period) => {
+            const charges = chargesByPeriod.get(period)!;
+            const totalAmount = charges.reduce(
+              (sum, charge) => sum + charge.totalAmount,
+              0
+            );
 
-          {periods.length === 0 ? (
-            <Card>
-              <CardContent className="flex min-h-[200px] items-center justify-center">
-                <div className="text-center">
-                  <Building2 className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-                  <p className="text-lg font-medium">Brak naliczeń</p>
-                  <p className="text-sm text-muted-foreground">
-                    Nie znaleziono żadnych naliczeń dla tego mieszkania.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-6">
-              {periods.map((period) => {
-                const charges = chargesByPeriod.get(period)!;
-                const totalAmount = charges.reduce(
-                  (sum, charge) => sum + charge.totalAmount,
-                  0
-                );
-
-                return (
-                  <PeriodCard
-                    key={period}
-                    period={period}
-                    charges={charges}
-                    totalAmount={totalAmount}
-                  />
-                );
-              })}
-            </div>
-          )}
+            return (
+              <PeriodCard
+                key={period}
+                period={period}
+                charges={charges}
+                totalAmount={totalAmount}
+              />
+            );
+          })}
         </div>
-      </main>
-    </div>
+      )}
+    </Page>
   );
 }

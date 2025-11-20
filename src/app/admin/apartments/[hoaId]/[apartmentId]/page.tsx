@@ -300,9 +300,9 @@ export default function ApartmentDetailsPage() {
                           <div
                             className={`border-t pt-2 text-right font-bold ${
                               payment.closingBalance < 0
-                                ? 'text-green-600'
+                                ? 'text-red-600'
                                 : payment.closingBalance > 0
-                                  ? 'text-red-600'
+                                  ? 'text-green-600'
                                   : ''
                             }`}
                           >

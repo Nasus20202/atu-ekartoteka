@@ -98,8 +98,16 @@ export default async function DashboardPage() {
           <div
             className={`grid gap-6 ${allNotifications.length > 0 && userData.status === AccountStatus.APPROVED ? 'lg:grid-cols-[1fr_350px]' : ''}`}
           >
-            {/* Main Content */}
-            <div className="space-y-6">
+            {/* Sidebar - shows first on mobile, second on desktop */}
+            {userData.status === AccountStatus.APPROVED &&
+              allNotifications.length > 0 && (
+                <aside className="lg:order-2">
+                  <NotificationsSidebar notifications={allNotifications} />
+                </aside>
+              )}
+
+            {/* Main Content - shows second on mobile, first on desktop */}
+            <div className="space-y-6 lg:order-1">
               {/* Account Status Card */}
               <UserStatusSection
                 name={userData.name}
@@ -131,14 +139,6 @@ export default async function DashboardPage() {
                 <ApartmentsSection apartments={userData.apartments} />
               )}
             </div>
-
-            {/* Sidebar */}
-            {userData.status === AccountStatus.APPROVED &&
-              allNotifications.length > 0 && (
-                <aside>
-                  <NotificationsSidebar notifications={allNotifications} />
-                </aside>
-              )}
           </div>
         </div>
       </main>

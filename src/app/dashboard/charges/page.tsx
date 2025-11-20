@@ -2,9 +2,9 @@ import { FileText } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
 import { auth } from '@/auth';
-import { BackButton } from '@/components/back-button';
 import { MultiApartmentPeriodCard } from '@/components/charges/multi-apartment-period-card';
-import { DashboardNavbar } from '@/components/dashboard-navbar';
+import { Page } from '@/components/page';
+import { PageHeader } from '@/components/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import type { ChargeData } from '@/lib/charge-utils';
 import { prisma } from '@/lib/database/prisma';
@@ -84,56 +84,46 @@ export default async function ChargesPage() {
   const periods = Array.from(chargesByPeriod.keys()).sort().reverse();
 
   return (
-    <div className="min-h-screen bg-background">
-      <DashboardNavbar userId={session.user.id} />
-      <main className="p-8">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-6 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <BackButton />
-              <h1 className="text-3xl font-bold">Naliczenia</h1>
-            </div>
-          </div>
+    <Page>
+      <PageHeader title="Naliczenia" />
 
-          {periods.length === 0 ? (
-            <Card>
-              <CardContent className="flex min-h-[200px] items-center justify-center">
-                <div className="text-center">
-                  <FileText className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-                  <p className="text-lg font-medium">Brak naliczeń</p>
-                  <p className="text-sm text-muted-foreground">
-                    Nie znaleziono żadnych naliczeń dla Twoich mieszkań.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-6">
-              {periods.map((period) => {
-                const periodData = chargesByPeriod.get(period)!;
-                const totalPeriodAmount = periodData.reduce(
-                  (sum, apt) =>
-                    sum +
-                    apt.charges.reduce(
-                      (aptSum, charge) => aptSum + charge.totalAmount,
-                      0
-                    ),
+      {periods.length === 0 ? (
+        <Card>
+          <CardContent className="flex min-h-[200px] items-center justify-center">
+            <div className="text-center">
+              <FileText className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+              <p className="text-lg font-medium">Brak naliczeń</p>
+              <p className="text-sm text-muted-foreground">
+                Nie znaleziono żadnych naliczeń dla Twoich mieszkań.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-6">
+          {periods.map((period) => {
+            const periodData = chargesByPeriod.get(period)!;
+            const totalPeriodAmount = periodData.reduce(
+              (sum, apt) =>
+                sum +
+                apt.charges.reduce(
+                  (aptSum, charge) => aptSum + charge.totalAmount,
                   0
-                );
+                ),
+              0
+            );
 
-                return (
-                  <MultiApartmentPeriodCard
-                    key={period}
-                    period={period}
-                    apartmentsData={periodData}
-                    totalAmount={totalPeriodAmount}
-                  />
-                );
-              })}
-            </div>
-          )}
+            return (
+              <MultiApartmentPeriodCard
+                key={period}
+                period={period}
+                apartmentsData={periodData}
+                totalAmount={totalPeriodAmount}
+              />
+            );
+          })}
         </div>
-      </main>
-    </div>
+      )}
+    </Page>
   );
 }

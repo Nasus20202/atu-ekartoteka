@@ -84,7 +84,7 @@ jobs:
             type=semver,pattern={{major}}
             type=sha
             type=raw,value={{date 'YYYYMMDD-HHmmss'}}
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=latest,enable=${{ github.ref_type == 'tag' }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6

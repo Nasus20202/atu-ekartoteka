@@ -26,7 +26,7 @@ export const NotificationsSidebar = ({
   const totalAmount = notifications.reduce((sum, n) => sum + n.totalAmount, 0);
 
   return (
-    <Card className="sticky top-8">
+    <Card className="sticky top-20">
       <CardHeader>
         <CardTitle>Powiadomienia</CardTitle>
         <CardDescription>Bieżące naliczenia czynszowe</CardDescription>

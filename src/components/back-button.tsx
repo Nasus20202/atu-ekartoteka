@@ -9,9 +9,13 @@ export function BackButton() {
   const router = useRouter();
 
   return (
-    <Button variant="ghost" size="sm" onClick={() => router.back()}>
-      <ArrowLeft className="mr-2 h-4 w-4" />
-      Powrót
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={() => router.back()}
+      className="h-12 w-12 [&_svg]:!size-6"
+    >
+      <ArrowLeft />
     </Button>
   );
 }

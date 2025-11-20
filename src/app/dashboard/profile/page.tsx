@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation';
 
 import { auth } from '@/auth';
-import { BackButton } from '@/components/back-button';
+import { Page } from '@/components/page';
+import { PageHeader } from '@/components/page-header';
 import { ProfileForm } from '@/components/profile-form';
 import {
   Card,
@@ -32,28 +33,23 @@ export default async function ProfilePage() {
   }
 
   return (
-    <div className="bg-background p-8">
-      <div className="mx-auto max-w-2xl">
-        <div className="mb-6">
-          <BackButton />
-          <h1 className="mt-4 text-3xl font-bold">Profil</h1>
-          <p className="text-muted-foreground">
-            Zarządzaj swoimi danymi osobowymi
-          </p>
-        </div>
+    <Page maxWidth="2xl">
+      <PageHeader
+        title="Profil"
+        description="Zarządzaj swoimi danymi osobowymi"
+      />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Edytuj profil</CardTitle>
-            <CardDescription>
-              Zmień swoje imię i nazwisko lub hasło
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ProfileForm initialName={user.name} />
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Edytuj profil</CardTitle>
+          <CardDescription>
+            Zmień swoje imię i nazwisko lub hasło
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ProfileForm initialName={user.name} />
+        </CardContent>
+      </Card>
+    </Page>
   );
 }

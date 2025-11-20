@@ -16,7 +16,7 @@ describe('BackButton', () => {
   it('renders back button', () => {
     render(<BackButton />);
 
-    const button = screen.getByRole('button', { name: /powrót/i });
+    const button = screen.getByRole('button');
     expect(button).toBeInTheDocument();
   });
 
@@ -24,7 +24,7 @@ describe('BackButton', () => {
     const user = userEvent.setup();
     render(<BackButton />);
 
-    const button = screen.getByRole('button', { name: /powrót/i });
+    const button = screen.getByRole('button');
     await user.click(button);
 
     expect(mockBack).toHaveBeenCalledOnce();
@@ -33,6 +33,17 @@ describe('BackButton', () => {
   it('has ArrowLeft icon', () => {
     const { container } = render(<BackButton />);
 
+    const icon = container.querySelector('svg.lucide-arrow-left');
+    expect(icon).toBeInTheDocument();
+  });
+
+  it('has correct size classes', () => {
+    const { container } = render(<BackButton />);
+
+    const button = screen.getByRole('button');
+    expect(button).toHaveClass('h-12', 'w-12');
+
+    // Icon size is controlled by [&_svg]:!size-6 utility
     const icon = container.querySelector('svg.lucide-arrow-left');
     expect(icon).toBeInTheDocument();
   });

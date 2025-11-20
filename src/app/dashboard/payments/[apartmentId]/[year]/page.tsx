@@ -1,8 +1,8 @@
 import { notFound, redirect } from 'next/navigation';
 
 import { auth } from '@/auth';
-import { BackButton } from '@/components/back-button';
-import { DashboardNavbar } from '@/components/dashboard-navbar';
+import { Page } from '@/components/page';
+import { PageHeader } from '@/components/page-header';
 import {
   Card,
   CardContent,
@@ -29,6 +29,12 @@ export default async function PaymentDetailsPage({
     redirect('/login');
   }
 
+  // Validate year parameter
+  const yearNumber = parseInt(year, 10);
+  if (isNaN(yearNumber) || yearNumber < 1900 || yearNumber > 2100) {
+    notFound();
+  }
+
   const apartment = await prisma.apartment.findFirst({
     where: {
       id: apartmentId,
@@ -36,7 +42,7 @@ export default async function PaymentDetailsPage({
     },
     include: {
       payments: {
-        where: { year: parseInt(year) },
+        where: { year: yearNumber },
       },
     },
   });
@@ -65,143 +71,123 @@ export default async function PaymentDetailsPage({
   const totalPayments = months.reduce((sum, month) => sum + month.value, 0);
 
   return (
-    <div className="min-h-screen bg-background">
-      <DashboardNavbar userId={session.user.id} />
+    <Page maxWidth="4xl">
+      <PageHeader
+        title={`Wpłaty - ${apartment.address} ${apartment.building || ''}/${apartment.number}`}
+        description={`Szczegóły wpłat za rok ${payment.year}`}
+      />
 
-      <main className="p-8">
-        <div className="mx-auto max-w-4xl">
-          <div className="mb-6">
-            <BackButton />
-            <h1 className="mt-4 text-3xl font-bold">
-              Wpłaty - {apartment.address} {apartment.building || ''}/
-              {apartment.number}
-            </h1>
-            <p className="text-muted-foreground">
-              Szczegóły wpłat za rok {payment.year}
-            </p>
-          </div>
+      <div className="space-y-6">
+        {/* Summary Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Podsumowanie roku {payment.year}</CardTitle>
+            <CardDescription>
+              Okres: {payment.dateFrom.toLocaleDateString('pl-PL')} -{' '}
+              {payment.dateTo.toLocaleDateString('pl-PL')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="rounded-lg bg-muted p-4">
+                <div className="text-sm text-muted-foreground">
+                  Saldo początkowe
+                </div>
+                <div className="text-2xl font-bold">
+                  {payment.openingBalance.toFixed(2)} zł
+                </div>
+              </div>
+              <div className="rounded-lg bg-muted p-4">
+                <div className="text-sm text-muted-foreground">Naliczenia</div>
+                <div className="text-2xl font-bold">
+                  {payment.totalCharges.toFixed(2)} zł
+                </div>
+              </div>
+              <div className="rounded-lg bg-muted p-4">
+                <div className="text-sm text-muted-foreground">Suma wpłat</div>
+                <div className="text-2xl font-bold">
+                  {totalPayments.toFixed(2)} zł
+                </div>
+              </div>
+              <div className="rounded-lg bg-muted p-4">
+                <div className="text-sm text-muted-foreground">
+                  Saldo końcowe
+                </div>
+                <div
+                  className={`text-2xl font-bold ${
+                    payment.closingBalance >= 0
+                      ? 'text-green-600'
+                      : 'text-red-600'
+                  }`}
+                >
+                  {payment.closingBalance.toFixed(2)} zł
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-          <div className="space-y-6">
-            {/* Summary Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Podsumowanie roku {payment.year}</CardTitle>
-                <CardDescription>
-                  Okres: {payment.dateFrom.toLocaleDateString('pl-PL')} -{' '}
-                  {payment.dateTo.toLocaleDateString('pl-PL')}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="rounded-lg bg-muted p-4">
-                    <div className="text-sm text-muted-foreground">
-                      Saldo początkowe
-                    </div>
-                    <div className="text-2xl font-bold">
-                      {payment.openingBalance.toFixed(2)} zł
-                    </div>
-                  </div>
-                  <div className="rounded-lg bg-muted p-4">
-                    <div className="text-sm text-muted-foreground">
-                      Naliczenia
-                    </div>
-                    <div className="text-2xl font-bold">
-                      {payment.totalCharges.toFixed(2)} zł
-                    </div>
-                  </div>
-                  <div className="rounded-lg bg-muted p-4">
-                    <div className="text-sm text-muted-foreground">
-                      Suma wpłat
-                    </div>
-                    <div className="text-2xl font-bold">
-                      {totalPayments.toFixed(2)} zł
-                    </div>
-                  </div>
-                  <div className="rounded-lg bg-muted p-4">
-                    <div className="text-sm text-muted-foreground">
-                      Saldo końcowe
-                    </div>
-                    <div
-                      className={`text-2xl font-bold ${
-                        payment.closingBalance >= 0
-                          ? 'text-green-600'
-                          : 'text-red-600'
-                      }`}
-                    >
-                      {payment.closingBalance.toFixed(2)} zł
-                    </div>
+        {/* Monthly Payments Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Wpłaty miesięczne</CardTitle>
+            <CardDescription>Szczegółowy wykaz wpłat</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {months.map((month) => (
+                <div
+                  key={month.name}
+                  className={`flex items-center justify-between rounded-lg p-3 ${
+                    month.value > 0 ? 'bg-muted' : 'opacity-50'
+                  }`}
+                >
+                  <div className="font-medium">{month.name}</div>
+                  <div className="text-lg font-semibold">
+                    {month.value.toFixed(2)} zł
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
-            {/* Monthly Payments Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Wpłaty miesięczne</CardTitle>
-                <CardDescription>Szczegółowy wykaz wpłat</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {months.map((month) => (
-                    <div
-                      key={month.name}
-                      className={`flex items-center justify-between rounded-lg p-3 ${
-                        month.value > 0 ? 'bg-muted' : 'opacity-50'
-                      }`}
-                    >
-                      <div className="font-medium">{month.name}</div>
-                      <div className="text-lg font-semibold">
-                        {month.value.toFixed(2)} zł
-                      </div>
-                    </div>
-                  ))}
+        {/* Apartment Details Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Dane lokalu</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <div className="font-medium text-muted-foreground">Adres</div>
+                <div>
+                  {apartment.address} {apartment.building || ''}/
+                  {apartment.number}
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Apartment Details Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Dane lokalu</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <div className="font-medium text-muted-foreground">
-                      Adres
-                    </div>
-                    <div>
-                      {apartment.address} {apartment.building || ''}/
-                      {apartment.number}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="font-medium text-muted-foreground">
-                      Miasto
-                    </div>
-                    <div>
-                      {apartment.postalCode} {apartment.city}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="font-medium text-muted-foreground">
-                      Numer lokalu
-                    </div>
-                    <div>{apartment.number}</div>
-                  </div>
-                  <div>
-                    <div className="font-medium text-muted-foreground">
-                      Powierzchnia
-                    </div>
-                    <div>{apartment.area ? apartment.area / 100 : '-'} m²</div>
-                  </div>
+              </div>
+              <div>
+                <div className="font-medium text-muted-foreground">Miasto</div>
+                <div>
+                  {apartment.postalCode} {apartment.city}
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </main>
-    </div>
+              </div>
+              <div>
+                <div className="font-medium text-muted-foreground">
+                  Numer lokalu
+                </div>
+                <div>{apartment.number}</div>
+              </div>
+              <div>
+                <div className="font-medium text-muted-foreground">
+                  Powierzchnia
+                </div>
+                <div>{apartment.area ? apartment.area / 100 : '-'} m²</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </Page>
   );
 }
