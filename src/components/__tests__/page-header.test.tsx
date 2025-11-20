@@ -63,9 +63,7 @@ describe('PageHeader', () => {
   });
 
   it('renders description with correct styling', () => {
-    const { container } = render(
-      <PageHeader title="Title" description="Description" />
-    );
+    render(<PageHeader title="Title" description="Description" />);
 
     const description = screen.getByText('Description');
     expect(description).toHaveClass('text-muted-foreground');

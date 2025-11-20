@@ -1,0 +1,79 @@
+services:
+  db:
+    image: postgres:18-alpine
+    container_name: atu-postgres-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-atu_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-atu_password}
+      POSTGRES_DB: ${POSTGRES_DB:-atu_ekartoteka}
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - atu-network
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${POSTGRES_USER:-atu_user} -d ${POSTGRES_DB:-atu_ekartoteka}',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  migrations:
+    image: ${APP_IMAGE:-ghcr.io/nasus20202/atu-ekartoteka:latest}
+    container_name: atu-ekartoteka-migrations-prod
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-atu_user}:${POSTGRES_PASSWORD:-atu_password}@db:5432/${POSTGRES_DB:-atu_ekartoteka}?schema=public
+      NODE_ENV: production
+    command: ['pnpm', 'db:deploy']
+    networks:
+      - atu-network
+    restart: 'no'
+
+  app:
+    image: ${APP_IMAGE:-ghcr.io/nasus20202/atu-ekartoteka:latest}
+    container_name: atu-ekartoteka-prod
+    restart: unless-stopped
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-atu_user}:${POSTGRES_PASSWORD:-atu_password}@db:5432/${POSTGRES_DB:-atu_ekartoteka}?schema=public
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      AUTH_TRUST_HOST: 'true'
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?NEXTAUTH_SECRET must be set}
+      NODE_ENV: production
+      RUN_MIGRATIONS_ON_STARTUP: 'false'
+    ports:
+      - '${APP_PORT:-3000}:3000'
+    volumes:
+      - app_data:/app/data
+    networks:
+      - atu-network
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'wget --no-verbose --tries=1 --spider http://localhost:3000/api/health/readiness || exit 1',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_data:
+    driver: local
+  app_data:
+    driver: local
+
+networks:
+  atu-network:
+    driver: bridge

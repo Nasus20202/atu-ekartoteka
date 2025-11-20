@@ -10,9 +10,9 @@ const logger = createLogger('api:register');
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { email, password, name } = body;
+    const { email, password, name, isFirstAdmin } = body;
 
-    logger.info({ email }, 'Registration attempt');
+    logger.info({ email, isFirstAdmin }, 'Registration attempt');
 
     if (!email || !password) {
       return NextResponse.json(
@@ -51,6 +51,32 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Check if this is first admin registration
+    let role: UserRole = UserRole.TENANT;
+    let status: AccountStatus = AccountStatus.PENDING;
+
+    if (isFirstAdmin) {
+      // Verify no admin exists
+      const adminExists = await prisma.user.findFirst({
+        where: { role: UserRole.ADMIN },
+      });
+
+      if (adminExists) {
+        logger.warn(
+          { email },
+          'Attempted first admin registration but admin already exists'
+        );
+        return NextResponse.json(
+          { error: 'Administrator już istnieje w systemie' },
+          { status: 400 }
+        );
+      }
+
+      role = UserRole.ADMIN;
+      status = AccountStatus.APPROVED;
+      logger.info({ email }, 'Creating first admin user');
+    }
+
     // Hash password
     const hashedPassword = await hash(password, 10);
 
@@ -60,8 +86,8 @@ export async function POST(req: NextRequest) {
         email,
         password: hashedPassword,
         name: name || null,
-        role: UserRole.TENANT,
-        status: AccountStatus.PENDING,
+        role,
+        status,
       },
       select: {
         id: true,
@@ -74,7 +100,7 @@ export async function POST(req: NextRequest) {
     });
 
     logger.info(
-      { email: user.email, status: user.status },
+      { email: user.email, role: user.role, status: user.status },
       'User registered successfully'
     );
 

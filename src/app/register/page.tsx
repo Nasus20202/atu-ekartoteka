@@ -1,10 +1,10 @@
 'use client';
 
-import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, CheckCircle, Loader2, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,25 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [isFirstAdmin, setIsFirstAdmin] = useState(false);
+  const [checkingSetup, setCheckingSetup] = useState(true);
+
+  useEffect(() => {
+    // Check if this is first run (no admin exists)
+    const checkSetupStatus = async () => {
+      try {
+        const response = await fetch('/api/setup/check');
+        const data = await response.json();
+        setIsFirstAdmin(data.needsSetup);
+      } catch (error) {
+        console.error('Failed to check setup status:', error);
+      } finally {
+        setCheckingSetup(false);
+      }
+    };
+
+    checkSetupStatus();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +78,7 @@ export default function RegisterPage() {
           email: formData.email,
           password: formData.password,
           name: formData.name || undefined,
+          isFirstAdmin,
         }),
       });
 
@@ -103,19 +123,40 @@ export default function RegisterPage() {
           <CardHeader>
             <div className="mb-4 flex justify-center">
               <div className="rounded-full bg-green-100 p-3 dark:bg-green-900">
-                <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+                {isFirstAdmin ? (
+                  <Shield className="h-8 w-8 text-green-600 dark:text-green-400" />
+                ) : (
+                  <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+                )}
               </div>
             </div>
-            <CardTitle className="text-center">Konto utworzone!</CardTitle>
+            <CardTitle className="text-center">
+              {isFirstAdmin
+                ? 'Konto administratora utworzone!'
+                : 'Konto utworzone!'}
+            </CardTitle>
             <CardDescription className="text-center">
-              Twoje konto zostało pomyślnie utworzone i oczekuje na
-              zatwierdzenie przez administratora.
+              {isFirstAdmin
+                ? 'Twoje konto administratora zostało pomyślnie utworzone. Masz pełny dostęp do systemu.'
+                : 'Twoje konto zostało pomyślnie utworzone i oczekuje na zatwierdzenie przez administratora.'}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-center text-sm text-muted-foreground">
               Logowanie...
             </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (checkingSetup) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="flex items-center justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </CardContent>
         </Card>
       </div>
@@ -129,9 +170,20 @@ export default function RegisterPage() {
       </div>
       <Card className="w-full max-w-md animate-scale-in">
         <CardHeader>
-          <CardTitle>Rejestracja</CardTitle>
+          {isFirstAdmin && (
+            <div className="mb-4 flex justify-center">
+              <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900">
+                <Shield className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+              </div>
+            </div>
+          )}
+          <CardTitle>
+            {isFirstAdmin ? 'Konfiguracja początkowa' : 'Rejestracja'}
+          </CardTitle>
           <CardDescription>
-            Utwórz konto, aby uzyskać dostęp do systemu
+            {isFirstAdmin
+              ? 'Utwórz konto administratora, aby rozpocząć korzystanie z systemu'
+              : 'Utwórz konto, aby uzyskać dostęp do systemu'}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -211,22 +263,26 @@ export default function RegisterPage() {
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Rejestrowanie...
+                  {isFirstAdmin ? 'Tworzenie konta...' : 'Rejestrowanie...'}
                 </>
+              ) : isFirstAdmin ? (
+                'Utwórz konto administratora'
               ) : (
                 'Zarejestruj się'
               )}
             </Button>
 
-            <div className="text-center text-sm">
-              <span className="text-muted-foreground">Masz już konto? </span>
-              <Link
-                href="/login"
-                className="font-medium text-primary hover:underline"
-              >
-                Zaloguj się
-              </Link>
-            </div>
+            {!isFirstAdmin && (
+              <div className="text-center text-sm">
+                <span className="text-muted-foreground">Masz już konto? </span>
+                <Link
+                  href="/login"
+                  className="font-medium text-primary hover:underline"
+                >
+                  Zaloguj się
+                </Link>
+              </div>
+            )}
           </form>
         </CardContent>
       </Card>

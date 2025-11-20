@@ -20,22 +20,27 @@ pnpm install
 
 # Set up database
 pnpm db:migrate
-pnpm db:setup  # Creates admin user
 
 # Start dev server
 pnpm dev
 ```
 
-### Docker
+Visit `http://localhost:3000/register` to create the first admin user.
+
+### Docker (Development)
 
 ```bash
-# Start with migrations
-docker-compose up -d db
-docker-compose up --build migrations
-docker-compose up --build app
-
-# Or auto-migrate on startup (set RUN_MIGRATIONS_ON_STARTUP=true in docker-compose.yml)
+# Start all services
 docker-compose up -d
+```
+
+### Docker (Production)
+
+```bash
+# Quick start
+cp .env.prod.example .env.prod
+# Edit .env.prod with your configuration
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
 ```
 
 ## Scripts
@@ -46,7 +51,15 @@ docker-compose up -d
 - `pnpm lint:fix` - Fix linting issues
 - `pnpm format` - Format code with Prettier
 - `pnpm db:migrate` - Run database migrations
-- `pnpm db:setup` - Initialize database with admin user
+- `pnpm db:deploy` - Deploy migrations (production)
+
+## Health Checks
+
+The application provides health check endpoints for monitoring:
+
+- `/api/health` - Combined health check (database + application)
+- `/api/health/liveness` - Liveness probe (process running)
+- `/api/health/readiness` - Readiness probe (ready to serve traffic, checks database)
 
 ## Features
 
