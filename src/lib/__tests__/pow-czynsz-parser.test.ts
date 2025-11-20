@@ -8,9 +8,9 @@ describe('parsePowCzynszFile', () => {
     const content = `Header line 1
 Header line 2
 #
-W00162#KLO11-KLO11-00000-00001M#1#Koszta zarządu - eksploatacja#1#szt.#245#245,00
-W00162#KLO11-KLO11-00000-00001M#2#Zarządzanie Nieruchomością Wspólną#1#szt#73#73,00
-W00163#KLO11-KLO11-00000-00002M#1#Koszta zarządu - eksploatacja#1#szt.#245#245,00`;
+W00162#hoa1-hoa1-00000-00001M#1#Koszta zarządu - eksploatacja#1#szt.#245#245,00
+W00162#hoa1-hoa1-00000-00001M#2#Zarządzanie Nieruchomością Wspólną#1#szt#73#73,00
+W00163#hoa1-hoa1-00000-00002M#1#Koszta zarządu - eksploatacja#1#szt.#245#245,00`;
     const buffer = iconv.encode(content, 'iso-8859-2');
 
     const result = await parsePowCzynszFile(buffer);
@@ -18,7 +18,7 @@ W00163#KLO11-KLO11-00000-00002M#1#Koszta zarządu - eksploatacja#1#szt.#245#245,
     expect(result.entries).toHaveLength(3);
     expect(result.entries[0]).toEqual({
       externalId: 'W00162',
-      apartmentCode: 'KLO11-KLO11-00000-00001M',
+      apartmentCode: 'hoa1-hoa1-00000-00001M',
       lineNo: 1,
       description: 'Koszta zarządu - eksploatacja',
       quantity: 1,
@@ -28,7 +28,7 @@ W00163#KLO11-KLO11-00000-00002M#1#Koszta zarządu - eksploatacja#1#szt.#245#245,
     });
     expect(result.entries[1]).toEqual({
       externalId: 'W00162',
-      apartmentCode: 'KLO11-KLO11-00000-00001M',
+      apartmentCode: 'hoa1-hoa1-00000-00001M',
       lineNo: 2,
       description: 'Zarządzanie Nieruchomością Wspólną',
       quantity: 1,
@@ -53,7 +53,7 @@ W00163#KLO11-KLO11-00000-00002M#1#Koszta zarządu - eksploatacja#1#szt.#245#245,
     const content = `Header line 1
 Header line 2
 #
-W00162#KLO11-KLO11-00000-00001M#1#Test#1#szt#100#100,00
+W00162#hoa1-hoa1-00000-00001M#1#Test#1#szt#100#100,00
 Footer line 1`;
     const buffer = iconv.encode(content, 'iso-8859-2');
 

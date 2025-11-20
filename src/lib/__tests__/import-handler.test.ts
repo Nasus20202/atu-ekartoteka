@@ -59,7 +59,7 @@ describe('import-handler', () => {
 
     it('should process multiple HOAs', async () => {
       const lokFile1 = createMockFile('lok data 1', 'hoa1/lok.txt');
-      const lokFile2 = createMockFile('lok data 2', 'KLO12/lok.txt');
+      const lokFile2 = createMockFile('lok data 2', 'hoa2/lok.txt');
 
       vi.spyOn(
         apartmentImport,
@@ -88,7 +88,7 @@ describe('import-handler', () => {
       expect(result.success).toBe(true);
       expect(result.results).toHaveLength(2);
       expect(result.results[0].hoaId).toBe('hoa1');
-      expect(result.results[1].hoaId).toBe('KLO12');
+      expect(result.results[1].hoaId).toBe('hoa2');
     });
 
     it('should require lok.txt file', async () => {

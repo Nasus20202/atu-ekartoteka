@@ -5,8 +5,8 @@ import { parseWplatyFile } from '@/lib/parsers/wplaty-parser';
 describe('parseWplatyFile', () => {
   it('should parse wplaty.txt file correctly', async () => {
     const iconv = await import('iconv-lite');
-    const content = `W00162#KLO11-KLO11-00000-00001M#2025#01/01/2025#30/11/2025#0#20#0#0#318#620#318#0#318#0#318#0#318#638#318#0#318#0#318#636#318#636#318#0#318#0#0#0#-948,00
-W00163#KLO11-KLO11-00000-00002M#2025#01/01/2025#30/11/2025#0#300#0#0#318#310#318#310#318#318#318#318#318#318#318#318#318#0#318#0#318#318#318#318#318#0#0#0#-670,00`;
+    const content = `W00162#hoa1-hoa1-00000-00001M#2025#01/01/2025#30/11/2025#0#20#0#0#318#620#318#0#318#0#318#0#318#638#318#0#318#0#318#636#318#636#318#0#318#0#0#0#-948,00
+W00163#hoa1-hoa1-00000-00002M#2025#01/01/2025#30/11/2025#0#300#0#0#318#310#318#310#318#318#318#318#318#318#318#318#318#0#318#0#318#318#318#318#318#0#0#0#-670,00`;
     const buffer = iconv.encode(content, 'iso-8859-2');
 
     const result = await parseWplatyFile(buffer);
@@ -14,7 +14,7 @@ W00163#KLO11-KLO11-00000-00002M#2025#01/01/2025#30/11/2025#0#300#0#0#318#310#318
     expect(result.entries).toHaveLength(2);
     expect(result.entries[0]).toMatchObject({
       externalId: 'W00162',
-      apartmentCode: 'KLO11-KLO11-00000-00001M',
+      apartmentCode: 'hoa1-hoa1-00000-00001M',
       year: 2025,
       openingBalance: 0,
       totalCharges: 20,
@@ -37,7 +37,7 @@ W00163#KLO11-KLO11-00000-00002M#2025#01/01/2025#30/11/2025#0#300#0#0#318#310#318
 
   it('should parse dates correctly', async () => {
     const iconv = await import('iconv-lite');
-    const content = `W00162#KLO11-KLO11-00000-00001M#2025#01/01/2025#31/12/2025#0#20#0#0#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#0#0#-1180,00`;
+    const content = `W00162#hoa1-hoa1-00000-00001M#2025#01/01/2025#31/12/2025#0#20#0#0#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#0#0#-1180,00`;
     const buffer = iconv.encode(content, 'iso-8859-2');
 
     const result = await parseWplatyFile(buffer);
@@ -49,7 +49,7 @@ W00163#KLO11-KLO11-00000-00002M#2025#01/01/2025#30/11/2025#0#300#0#0#318#310#318
 
   it('should handle decimal values with comma', async () => {
     const iconv = await import('iconv-lite');
-    const content = `W00162#KLO11-KLO11-00000-00001M#2025#01/01/2025#31/12/2025#100,50#200,75#0#50,25#0#50,25#0#50,25#0#50,25#0#50,25#0#50,25#0#50,25#0#50,25#0#50,25#0#50,25#0#50,25#0#50,25#0#0#-250,50`;
+    const content = `W00162#hoa1-hoa1-00000-00001M#2025#01/01/2025#31/12/2025#100,50#200,75#0#50,25#0#50,25#0#50,25#0#50,25#0#50,25#0#50,25#0#50,25#0#50,25#0#50,25#0#50,25#0#50,25#0#50,25#0#0#-250,50`;
     const buffer = iconv.encode(content, 'iso-8859-2');
 
     const result = await parseWplatyFile(buffer);

@@ -105,119 +105,143 @@ export async function processBatchImport(
     }
   }
 
-  // Process each HOA
-  for (const [
-    hoaId,
-    { lokFile, chargesFile, notificationsFile, paymentsFile },
-  ] of filesByHOA.entries()) {
-    try {
-      if (!lokFile) {
-        throw new Error(
-          `Brak pliku lok.txt dla wspólnoty ${hoaId}. Plik lok.txt jest wymagany.`
-        );
-      }
+  // Process each HOA asynchronously in parallel
+  const hoaImportPromises = Array.from(filesByHOA.entries()).map(
+    async ([
+      hoaId,
+      { lokFile, chargesFile, notificationsFile, paymentsFile },
+    ]) => {
+      try {
+        if (!lokFile) {
+          throw new Error(
+            `Brak pliku lok.txt dla wspólnoty ${hoaId}. Plik lok.txt jest wymagany.`
+          );
+        }
 
-      logger.info({ hoaId }, 'Starting import for HOA');
+        logger.info({ hoaId }, 'Starting import for HOA');
 
-      // Import apartments
-      logger.info({ hoaId }, 'Importing apartments');
-      const lokBytes = await lokFile.arrayBuffer();
-      const lokBuffer = Buffer.from(lokBytes);
-      const result = await importApartmentsFromBuffer(lokBuffer, hoaId);
+        // Import apartments
+        logger.info({ hoaId }, 'Importing apartments');
+        const lokBytes = await lokFile.arrayBuffer();
+        const lokBuffer = Buffer.from(lokBytes);
+        const result = await importApartmentsFromBuffer(lokBuffer, hoaId);
 
-      // Import charges if available
-      let chargesResult: ChargeImportResult | undefined;
-      if (chargesFile) {
-        logger.info({ hoaId }, 'Found charges file');
-        const chargesBytes = await chargesFile.arrayBuffer();
-        const chargesBuffer = Buffer.from(chargesBytes);
-        logger.info({ hoaId }, 'Importing charges');
-        chargesResult = await importChargesFromBuffer(chargesBuffer, hoaId);
-        logger.info(
-          {
-            hoaId,
-            created: chargesResult.created,
-            updated: chargesResult.updated,
-            skipped: chargesResult.skipped,
-          },
-          'Charges imported'
-        );
-      }
-
-      let notificationsBuffer: Buffer | undefined;
-      if (notificationsFile) {
-        logger.info({ hoaId }, 'Found notifications file');
-        const notificationsBytes = await notificationsFile.arrayBuffer();
-        notificationsBuffer = Buffer.from(notificationsBytes);
-      }
-
-      let paymentsBuffer: Buffer | undefined;
-      if (paymentsFile) {
-        logger.info({ hoaId }, 'Found payments file');
-        const paymentsBytes = await paymentsFile.arrayBuffer();
-        paymentsBuffer = Buffer.from(paymentsBytes);
-      }
-
-      // Import notifications if available
-      let notificationsResult;
-      if (notificationsBuffer) {
-        logger.info({ hoaId }, 'Importing charge notifications');
-        notificationsResult = await importChargeNotifications(
-          notificationsBuffer,
-          hoaId
-        );
-        logger.info(
-          {
-            hoaId,
-            created: notificationsResult.created,
-            updated: notificationsResult.updated,
-            deleted: notificationsResult.deleted,
-            total: notificationsResult.total,
-          },
-          'Notifications imported'
-        );
-      }
-
-      // Import payments if available
-      let paymentsResult;
-      if (paymentsBuffer) {
-        logger.info({ hoaId }, 'Importing payments');
-        paymentsResult = await importPayments(paymentsBuffer, hoaId);
-        logger.info(
-          {
-            hoaId,
-            created: paymentsResult.created,
-            updated: paymentsResult.updated,
-            skipped: paymentsResult.skipped,
-            total: paymentsResult.total,
-          },
-          'Payments imported'
-        );
-      }
-
-      results.push({
-        hoaId,
-        ...result,
-        charges: chargesResult
-          ? {
+        // Import charges if available
+        let chargesResult: ChargeImportResult | undefined;
+        if (chargesFile) {
+          logger.info({ hoaId }, 'Found charges file');
+          const chargesBytes = await chargesFile.arrayBuffer();
+          const chargesBuffer = Buffer.from(chargesBytes);
+          logger.info({ hoaId }, 'Importing charges');
+          chargesResult = await importChargesFromBuffer(chargesBuffer, hoaId);
+          logger.info(
+            {
+              hoaId,
               created: chargesResult.created,
               updated: chargesResult.updated,
               skipped: chargesResult.skipped,
-              total: chargesResult.total,
-            }
-          : undefined,
-        notifications: notificationsResult,
-        payments: paymentsResult,
-      });
+            },
+            'Charges imported'
+          );
+        }
 
-      logger.info({ hoaId }, 'Import completed for HOA');
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Nieznany błąd';
-      logger.error({ hoaId, error: errorMsg }, 'Import failed for HOA');
-      errors.push({
-        hoaId,
-        error: errorMsg,
-      });
+        let notificationsBuffer: Buffer | undefined;
+        if (notificationsFile) {
+          logger.info({ hoaId }, 'Found notifications file');
+          const notificationsBytes = await notificationsFile.arrayBuffer();
+          notificationsBuffer = Buffer.from(notificationsBytes);
+        }
+
+        let paymentsBuffer: Buffer | undefined;
+        if (paymentsFile) {
+          logger.info({ hoaId }, 'Found payments file');
+          const paymentsBytes = await paymentsFile.arrayBuffer();
+          paymentsBuffer = Buffer.from(paymentsBytes);
+        }
+
+        // Import notifications if available
+        let notificationsResult;
+        if (notificationsBuffer) {
+          logger.info({ hoaId }, 'Importing charge notifications');
+          notificationsResult = await importChargeNotifications(
+            notificationsBuffer,
+            hoaId
+          );
+          logger.info(
+            {
+              hoaId,
+              created: notificationsResult.created,
+              updated: notificationsResult.updated,
+              deleted: notificationsResult.deleted,
+              total: notificationsResult.total,
+            },
+            'Notifications imported'
+          );
+        }
+
+        // Import payments if available
+        let paymentsResult;
+        if (paymentsBuffer) {
+          logger.info({ hoaId }, 'Importing payments');
+          paymentsResult = await importPayments(paymentsBuffer, hoaId);
+          logger.info(
+            {
+              hoaId,
+              created: paymentsResult.created,
+              updated: paymentsResult.updated,
+              skipped: paymentsResult.skipped,
+              total: paymentsResult.total,
+            },
+            'Payments imported'
+          );
+        }
+
+        logger.info({ hoaId }, 'Import completed for HOA');
+
+        return {
+          status: 'fulfilled' as const,
+          value: {
+            hoaId,
+            ...result,
+            charges: chargesResult
+              ? {
+                  created: chargesResult.created,
+                  updated: chargesResult.updated,
+                  skipped: chargesResult.skipped,
+                  total: chargesResult.total,
+                }
+              : undefined,
+            notifications: notificationsResult,
+            payments: paymentsResult,
+          },
+        };
+      } catch (error) {
+        const errorMsg =
+          error instanceof Error ? error.message : 'Nieznany błąd';
+        logger.error({ hoaId, error: errorMsg }, 'Import failed for HOA');
+        return {
+          status: 'rejected' as const,
+          reason: {
+            hoaId,
+            error: errorMsg,
+          },
+        };
+      }
+    }
+  );
+
+  // Wait for all HOA imports to complete
+  const settledResults = await Promise.allSettled(hoaImportPromises);
+
+  // Collect results and errors
+  for (const settled of settledResults) {
+    if (settled.status === 'fulfilled') {
+      const innerResult = settled.value;
+      if (innerResult.status === 'fulfilled') {
+        results.push(innerResult.value);
+      } else {
+        errors.push(innerResult.reason);
+      }
     }
   }
 
