@@ -11,6 +11,10 @@ export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
   try {
+    // Parse formData first, before any auth checks that might consume the body
+    const formData = await req.formData();
+
+    // Now check authentication
     const session = await auth();
 
     if (!session || session.user.role !== UserRole.ADMIN) {
@@ -21,7 +25,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Brak uprawnień' }, { status: 401 });
     }
 
-    const formData = await req.formData();
     const files = formData.getAll('files') as File[];
 
     logger.info(

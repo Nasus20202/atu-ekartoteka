@@ -28,7 +28,7 @@ const eslintConfig = defineConfig([
       // Remove unused imports
       'unused-imports/no-unused-imports': 'error',
       'unused-imports/no-unused-vars': [
-        'warn',
+        'error',
         {
           vars: 'all',
           varsIgnorePattern: '^_',
@@ -53,6 +53,18 @@ const eslintConfig = defineConfig([
           ],
         },
       ],
+    },
+  },
+  // Allow 'any' type in test files
+  {
+    files: [
+      '**/__tests__/**/*.ts',
+      '**/__tests__/**/*.tsx',
+      '**/*.test.ts',
+      '**/*.test.tsx',
+    ],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
     },
   },
   // Override default ignores of eslint-config-next.
