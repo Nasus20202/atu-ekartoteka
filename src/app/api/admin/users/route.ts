@@ -3,15 +3,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { AccountStatus, UserRole } from '@/generated/prisma';
 import { prisma } from '@/lib/database/prisma';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('api:admin:users');
 
 export async function GET(req: NextRequest) {
   try {
     const session = await auth();
 
     if (!session || session.user.role !== UserRole.ADMIN) {
-      console.warn(
-        'Unauthorized user list access attempt',
-        session?.user?.email || 'anonymous'
+      logger.warn(
+        { email: session?.user?.email || 'anonymous' },
+        'Unauthorized user list access attempt'
       );
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -33,7 +36,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ users });
   } catch (error) {
-    console.error('Users fetch error:', error);
+    logger.error({ error }, 'Users fetch error');
     return NextResponse.json(
       {
         error: 'Nie udało się pobrać użytkowników',
@@ -49,9 +52,9 @@ export async function PATCH(req: NextRequest) {
     const session = await auth();
 
     if (!session || session.user.role !== UserRole.ADMIN) {
-      console.warn(
-        'Unauthorized user update attempt',
-        session?.user?.email || 'anonymous'
+      logger.warn(
+        { email: session?.user?.email || 'anonymous' },
+        'Unauthorized user update attempt'
       );
       return NextResponse.json({ error: 'Brak uprawnień' }, { status: 401 });
     }
@@ -59,8 +62,9 @@ export async function PATCH(req: NextRequest) {
     const body = await req.json();
     const { userId, status, apartmentIds } = body;
 
-    console.log(
-      `Admin ${session.user.email} attempting to update user ${userId} status to ${status}`
+    logger.info(
+      { adminEmail: session.user.email, userId, status },
+      'Admin attempting to update user status'
     );
 
     if (!userId || !status) {
@@ -139,13 +143,19 @@ export async function PATCH(req: NextRequest) {
       },
     });
 
-    console.log(
-      `User status updated by ${session.user.email}: ${updatedUser.email} -> ${status} (${updatedUser.apartments.length} apartments assigned)`
+    logger.info(
+      {
+        adminEmail: session.user.email,
+        userEmail: updatedUser.email,
+        status,
+        apartmentCount: updatedUser.apartments.length,
+      },
+      'User status updated'
     );
 
     return NextResponse.json({ user: updatedUser });
   } catch (error) {
-    console.error('User update error:', error);
+    logger.error({ error }, 'User update error');
     return NextResponse.json(
       {
         error: 'Nie udało się zaktualizować użytkownika',

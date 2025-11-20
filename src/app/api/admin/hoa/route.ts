@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
 import { prisma } from '@/lib/database/prisma';
+import { createLogger } from '@/lib/logger';
 import { UserRole } from '@/lib/types';
+
+const logger = createLogger('api:admin:hoa');
 
 export async function GET(req: NextRequest) {
   try {
@@ -47,7 +50,7 @@ export async function GET(req: NextRequest) {
       })),
     });
   } catch (error) {
-    console.error('HOA fetch error:', error);
+    logger.error({ error }, 'HOA fetch error');
     return NextResponse.json(
       {
         error: 'Nie udało się pobrać wspólnot',
@@ -85,7 +88,7 @@ export async function PATCH(req: NextRequest) {
       homeownersAssociation: updatedHOA,
     });
   } catch (error) {
-    console.error('HOA update error:', error);
+    logger.error({ error }, 'HOA update error');
     return NextResponse.json(
       {
         error: 'Nie udało się zaktualizować wspólnoty',

@@ -1,6 +1,9 @@
 import { prisma } from '@/lib/database/prisma';
+import { createLogger } from '@/lib/logger';
 import { parsePowCzynszFile } from '@/lib/parsers/pow-czynsz-parser';
 import { parseWplatyFile } from '@/lib/parsers/wplaty-parser';
+
+const logger = createLogger('import:notifications-payments');
 
 export const importChargeNotifications = async (
   buffer: Buffer,
@@ -24,14 +27,16 @@ export const importChargeNotifications = async (
   });
 
   if (!hoa) {
-    console.error(
-      `Charge notification import failed: HOA not found for externalId: ${hoaExternalId}`
+    logger.error(
+      { hoaExternalId },
+      'Charge notification import failed: HOA not found'
     );
     return { created: 0, updated: 0, deleted: 0, total: entries.length };
   }
 
-  console.log(
-    `Starting charge notification import for HOA ${hoaExternalId}: ${entries.length} entries to process`
+  logger.info(
+    { hoaExternalId, entryCount: entries.length },
+    'Starting charge notification import'
   );
 
   // Get all apartments for this HOA once
@@ -174,8 +179,9 @@ export const importChargeNotifications = async (
 
   const total = entries.length;
 
-  console.log(
-    `Charge notification import completed for HOA ${hoaExternalId}: ${created} created, ${updated} updated, ${deleted} deleted, ${total} total`
+  logger.info(
+    { hoaExternalId, created, updated, deleted, total },
+    'Charge notification import completed'
   );
 
   return { created, updated, deleted, total };
@@ -203,9 +209,7 @@ export const importPayments = async (
   });
 
   if (!hoa) {
-    console.error(
-      `Payment import failed: HOA not found for externalId: ${hoaExternalId}`
-    );
+    logger.error({ hoaExternalId }, 'Payment import failed: HOA not found');
     return {
       created: 0,
       updated: 0,
@@ -214,8 +218,9 @@ export const importPayments = async (
     };
   }
 
-  console.log(
-    `Starting payment import for HOA ${hoaExternalId}: ${entries.length} entries to process`
+  logger.info(
+    { hoaExternalId, entryCount: entries.length },
+    'Starting payment import'
   );
 
   // Get all apartments for this HOA once
@@ -418,13 +423,15 @@ export const importPayments = async (
   const total = entries.length;
 
   if (skipped > 0) {
-    console.warn(
-      `Payment import for HOA ${hoaExternalId}: ${skipped} entries skipped (apartments not found)`
+    logger.warn(
+      { hoaExternalId, skipped },
+      'Payment import: entries skipped (apartments not found)'
     );
   }
 
-  console.log(
-    `Payment import completed for HOA ${hoaExternalId}: ${created} created, ${updated} updated, ${skipped} skipped, ${total} total`
+  logger.info(
+    { hoaExternalId, created, updated, skipped, total },
+    'Payment import completed'
   );
 
   return { created, updated, skipped, total };

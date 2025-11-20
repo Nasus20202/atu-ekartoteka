@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
 import { prisma } from '@/lib/database/prisma';
+import { createLogger } from '@/lib/logger';
 import { UserRole } from '@/lib/types';
+
+const logger = createLogger('api:admin:apartments');
 
 export async function GET(req: NextRequest) {
   try {
@@ -67,7 +70,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Apartments fetch error:', error);
+    logger.error({ error }, 'Apartments fetch error');
     return NextResponse.json(
       {
         error: 'Nie udało się pobrać mieszkań',

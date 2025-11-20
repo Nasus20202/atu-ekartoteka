@@ -2,7 +2,10 @@ import bcrypt from 'bcryptjs';
 import * as readline from 'readline';
 
 import { prisma } from '@/lib/database/prisma';
+import { createLogger } from '@/lib/logger';
 import { AccountStatus, UserRole } from '@/lib/types';
+
+const logger = createLogger('init:admin');
 
 async function promptUser(question: string): Promise<string> {
   const rl = readline.createInterface({
@@ -27,12 +30,12 @@ export async function createInitialAdmin() {
     });
 
     if (adminExists) {
-      console.log('Admin user already exists');
-      console.log(`Email: ${adminExists.email}`);
+      logger.info('Admin user already exists');
+      logger.info(`Email: ${adminExists.email}`);
       return;
     }
 
-    console.log('\n=== Creating Initial Admin User ===\n');
+    logger.info('\n=== Creating Initial Admin User ===\n');
 
     const email = await promptUser('Enter admin email: ');
     const name = await promptUser('Enter admin name: ');
@@ -54,13 +57,13 @@ export async function createInitialAdmin() {
       },
     });
 
-    console.log('\n✓ Initial admin user created successfully!');
-    console.log(`Email: ${admin.email}`);
-    console.log(`Name: ${admin.name}\n`);
+    logger.info('\n✓ Initial admin user created successfully!');
+    logger.info(`Email: ${admin.email}`);
+    logger.info(`Name: ${admin.name}\n`);
 
     return admin;
   } catch (error) {
-    console.error('Error creating initial admin:', error);
+    logger.error({ error }, 'Error creating initial admin');
     throw error;
   }
 }

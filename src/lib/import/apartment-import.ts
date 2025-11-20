@@ -1,8 +1,11 @@
 import { prisma } from '@/lib/database/prisma';
+import { createLogger } from '@/lib/logger';
 import {
   getUniqueApartments,
   parseApartmentBuffer,
 } from '@/lib/parsers/apartment-parser';
+
+const logger = createLogger('import:apartments');
 
 export interface ImportResult {
   created: number;
@@ -41,7 +44,7 @@ export async function importApartmentsFromBuffer(
     errors: [],
   };
 
-  console.log(`Starting apartment import for HOA ${hoaId}`);
+  logger.info({ hoaId }, 'Starting apartment import');
 
   try {
     const entries = await parseApartmentBuffer(buffer);
@@ -53,7 +56,7 @@ export async function importApartmentsFromBuffer(
     });
 
     if (!hoa) {
-      console.log(`Creating new HOA: ${hoaId}`);
+      logger.info({ hoaId }, 'Creating new HOA');
       hoa = await prisma.homeownersAssociation.create({
         data: {
           externalId: hoaId,
@@ -209,8 +212,14 @@ export async function importApartmentsFromBuffer(
     result.deactivated = deactivated.count;
     result.total = apartments.length;
 
-    console.log(
-      `Apartment import completed for HOA ${hoaId}: ${result.created} created, ${result.updated} updated, ${result.deactivated} deactivated`
+    logger.info(
+      {
+        hoaId,
+        created: result.created,
+        updated: result.updated,
+        deactivated: result.deactivated,
+      },
+      'Apartment import completed'
     );
 
     return result;

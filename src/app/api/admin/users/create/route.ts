@@ -3,16 +3,19 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
 import { prisma } from '@/lib/database/prisma';
+import { createLogger } from '@/lib/logger';
 import { AccountStatus, UserRole } from '@/lib/types';
+
+const logger = createLogger('api:admin:users:create');
 
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
 
     if (!session || session.user.role !== UserRole.ADMIN) {
-      console.warn(
-        'Unauthorized user creation attempt',
-        session?.user?.email || 'anonymous'
+      logger.warn(
+        { email: session?.user?.email || 'anonymous' },
+        'Unauthorized user creation attempt'
       );
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -20,8 +23,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email, password, name, role, status } = body;
 
-    console.log(
-      `Admin ${session.user.email} attempting to create user: ${email}`
+    logger.info(
+      { adminEmail: session.user.email, newUserEmail: email, role },
+      'Admin creating new user'
     );
 
     // Validate required fields
@@ -48,7 +52,8 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingUser) {
-      console.warn(
+      logger.warn(
+        { email },
         `User creation failed: ${email} already exists (attempted by ${session.user.email})`
       );
       return NextResponse.json(
@@ -81,7 +86,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(user, { status: 201 });
   } catch (error) {
-    console.error('Failed to create user:', error);
+    logger.error({ error }, 'Failed to create user');
     return NextResponse.json(
       { error: 'Failed to create user' },
       { status: 500 }

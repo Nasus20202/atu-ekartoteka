@@ -1,8 +1,11 @@
+import { createLogger } from '@/lib/logger';
 import {
   decodeBuffer,
   parseDate,
   parseDecimal,
 } from '@/lib/parsers/parser-utils';
+
+const logger = createLogger('parser:nal-czynsz');
 
 export interface NalCzynszEntry {
   id: string;
@@ -69,7 +72,7 @@ export async function parseNalCzynszBuffer(
         totalAmount,
       });
     } catch (error) {
-      console.error(`Failed to parse line: ${line}`, error);
+      logger.debug({ line, error }, 'Failed to parse line');
       continue;
     }
   }

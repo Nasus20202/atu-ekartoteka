@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { BackButton } from '@/components/back-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { logger } from '@/lib/logger';
 
 export default function Error({
   error,
@@ -15,7 +16,10 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error(error);
+    logger.error(
+      { error: error.message, stack: error.stack },
+      'Charges page error'
+    );
   }, [error]);
 
   return (

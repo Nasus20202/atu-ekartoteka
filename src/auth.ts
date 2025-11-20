@@ -4,6 +4,9 @@ import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 
 import { prisma } from '@/lib/database/prisma';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('auth');
 
 interface ExtendedUser {
   id: string;
@@ -40,8 +43,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         });
 
         if (!user) {
-          console.warn(
-            `Failed login attempt: user not found for ${credentials.email}`
+          logger.warn(
+            { email: credentials.email },
+            'Failed login attempt: user not found'
           );
           return null;
         }
@@ -52,14 +56,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         );
 
         if (!passwordMatch) {
-          console.warn(
-            `Failed login attempt for ${credentials.email}: incorrect password`
+          logger.warn(
+            { email: credentials.email },
+            'Failed login attempt: incorrect password'
           );
           return null;
         }
 
-        console.log(
-          `User logged in successfully: ${user.email} (role: ${user.role}, status: ${user.status})`
+        logger.info(
+          { email: user.email, role: user.role, status: user.status },
+          'User logged in successfully'
         );
 
         return {

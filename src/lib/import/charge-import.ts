@@ -1,5 +1,8 @@
 import { prisma } from '@/lib/database/prisma';
+import { createLogger } from '@/lib/logger';
 import { parseNalCzynszBuffer } from '@/lib/parsers/nal-czynsz-parser';
+
+const logger = createLogger('import:charges');
 
 export interface ChargeImportResult {
   created: number;
@@ -69,8 +72,9 @@ export async function importChargesFromBuffer(
       if (apartmentId) {
         validEntries.push({ entry, apartmentId });
       } else {
-        console.log(
-          `Skipping charge for apartment ${entry.apartmentExternalId} (not found in HOA ${hoaId})`
+        logger.debug(
+          { apartmentExternalId: entry.apartmentExternalId, hoaId },
+          'Skipping charge: apartment not found'
         );
         result.skipped++;
       }

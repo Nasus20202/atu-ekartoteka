@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
 import { processBatchImport } from '@/lib/import/import-handler';
+import { createLogger } from '@/lib/logger';
 import { UserRole } from '@/lib/types';
+
+const logger = createLogger('api:admin:import');
 
 export const runtime = 'nodejs';
 
@@ -11,9 +14,9 @@ export async function POST(req: NextRequest) {
     const session = await auth();
 
     if (!session || session.user.role !== UserRole.ADMIN) {
-      console.warn(
-        'Unauthorized import attempt',
-        session?.user?.email || 'anonymous'
+      logger.warn(
+        { email: session?.user?.email || 'anonymous' },
+        'Unauthorized import attempt'
       );
       return NextResponse.json({ error: 'Brak uprawnień' }, { status: 401 });
     }
@@ -21,8 +24,9 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const files = formData.getAll('files') as File[];
 
-    console.log(
-      `Import initiated by ${session.user.email}: ${files.length} files uploaded`
+    logger.info(
+      { email: session.user.email, fileCount: files.length },
+      'Import initiated'
     );
 
     if (!files || files.length === 0) {
@@ -34,13 +38,14 @@ export async function POST(req: NextRequest) {
 
     const result = await processBatchImport(files);
 
-    console.log(
-      `Import completed by ${session.user.email}: ${result.results.length} HOAs processed`
+    logger.info(
+      { email: session.user.email, hoaCount: result.results.length },
+      'Import completed'
     );
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Import error:', error);
+    logger.error({ error }, 'Import error');
     return NextResponse.json(
       {
         error: 'Import nie powiódł się',

@@ -10,6 +10,9 @@ import {
   importChargeNotifications,
   importPayments,
 } from '@/lib/import/notification-payment-import';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('import:handler');
 
 export interface ImportFileGroup {
   lokFile?: File;
@@ -114,10 +117,10 @@ export async function processBatchImport(
         );
       }
 
-      console.log(`Starting import for HOA ${hoaId}...`);
+      logger.info({ hoaId }, 'Starting import for HOA');
 
       // Import apartments
-      console.log(`Importing apartments for HOA ${hoaId}...`);
+      logger.info({ hoaId }, 'Importing apartments');
       const lokBytes = await lokFile.arrayBuffer();
       const lokBuffer = Buffer.from(lokBytes);
       const result = await importApartmentsFromBuffer(lokBuffer, hoaId);
@@ -125,26 +128,32 @@ export async function processBatchImport(
       // Import charges if available
       let chargesResult: ChargeImportResult | undefined;
       if (chargesFile) {
-        console.log(`Found charges file for HOA ${hoaId}`);
+        logger.info({ hoaId }, 'Found charges file');
         const chargesBytes = await chargesFile.arrayBuffer();
         const chargesBuffer = Buffer.from(chargesBytes);
-        console.log(`Importing charges for HOA ${hoaId}...`);
+        logger.info({ hoaId }, 'Importing charges');
         chargesResult = await importChargesFromBuffer(chargesBuffer, hoaId);
-        console.log(
-          `Imported ${chargesResult.created} charges, updated ${chargesResult.updated}, skipped ${chargesResult.skipped}`
+        logger.info(
+          {
+            hoaId,
+            created: chargesResult.created,
+            updated: chargesResult.updated,
+            skipped: chargesResult.skipped,
+          },
+          'Charges imported'
         );
       }
 
       let notificationsBuffer: Buffer | undefined;
       if (notificationsFile) {
-        console.log(`Found notifications file for HOA ${hoaId}`);
+        logger.info({ hoaId }, 'Found notifications file');
         const notificationsBytes = await notificationsFile.arrayBuffer();
         notificationsBuffer = Buffer.from(notificationsBytes);
       }
 
       let paymentsBuffer: Buffer | undefined;
       if (paymentsFile) {
-        console.log(`Found payments file for HOA ${hoaId}`);
+        logger.info({ hoaId }, 'Found payments file');
         const paymentsBytes = await paymentsFile.arrayBuffer();
         paymentsBuffer = Buffer.from(paymentsBytes);
       }
@@ -152,23 +161,37 @@ export async function processBatchImport(
       // Import notifications if available
       let notificationsResult;
       if (notificationsBuffer) {
-        console.log(`Importing charge notifications for HOA ${hoaId}...`);
+        logger.info({ hoaId }, 'Importing charge notifications');
         notificationsResult = await importChargeNotifications(
           notificationsBuffer,
           hoaId
         );
-        console.log(
-          `Notifications: ${notificationsResult.created} created, ${notificationsResult.updated} updated, ${notificationsResult.deleted} deleted, ${notificationsResult.total} total`
+        logger.info(
+          {
+            hoaId,
+            created: notificationsResult.created,
+            updated: notificationsResult.updated,
+            deleted: notificationsResult.deleted,
+            total: notificationsResult.total,
+          },
+          'Notifications imported'
         );
       }
 
       // Import payments if available
       let paymentsResult;
       if (paymentsBuffer) {
-        console.log(`Importing payments for HOA ${hoaId}...`);
+        logger.info({ hoaId }, 'Importing payments');
         paymentsResult = await importPayments(paymentsBuffer, hoaId);
-        console.log(
-          `Payments: ${paymentsResult.created} created, ${paymentsResult.updated} updated, ${paymentsResult.skipped} skipped, ${paymentsResult.total} total`
+        logger.info(
+          {
+            hoaId,
+            created: paymentsResult.created,
+            updated: paymentsResult.updated,
+            skipped: paymentsResult.skipped,
+            total: paymentsResult.total,
+          },
+          'Payments imported'
         );
       }
 
@@ -187,10 +210,10 @@ export async function processBatchImport(
         payments: paymentsResult,
       });
 
-      console.log(`Import completed for HOA ${hoaId}`);
+      logger.info({ hoaId }, 'Import completed for HOA');
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Nieznany błąd';
-      console.error(`Import failed for HOA ${hoaId}: ${errorMsg}`);
+      logger.error({ hoaId, error: errorMsg }, 'Import failed for HOA');
       errors.push({
         hoaId,
         error: errorMsg,

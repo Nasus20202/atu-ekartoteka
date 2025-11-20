@@ -1,8 +1,11 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
 import { prisma } from '@/lib/database/prisma';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('api:user:profile');
 
 export async function PATCH(request: NextRequest) {
   try {
@@ -19,8 +22,9 @@ export async function PATCH(request: NextRequest) {
     if (name !== undefined) changesRequested.push('name');
     if (newPassword) changesRequested.push('password');
 
-    console.log(
-      `Profile update requested by ${session.user.email}: [${changesRequested.join(', ')}]`
+    logger.info(
+      { email: session.user.email, changes: changesRequested },
+      'Profile update requested'
     );
 
     // Get user from database
@@ -55,8 +59,9 @@ export async function PATCH(request: NextRequest) {
       );
 
       if (!isPasswordValid) {
-        console.warn(
-          `Failed password change attempt for ${session.user.email}: incorrect current password`
+        logger.warn(
+          { email: session.user.email },
+          'Failed password change attempt: incorrect current password'
         );
         return NextResponse.json(
           { error: 'Current password is incorrect' },
@@ -81,13 +86,14 @@ export async function PATCH(request: NextRequest) {
       },
     });
 
-    console.log(
-      `Profile updated successfully for ${session.user.email}: [${changesRequested.join(', ')}]`
+    logger.info(
+      { email: session.user.email, changes: changesRequested },
+      'Profile updated successfully'
     );
 
     return NextResponse.json(updatedUser);
   } catch (error) {
-    console.error('Failed to update profile:', error);
+    logger.error({ error }, 'Failed to update profile');
     return NextResponse.json(
       { error: 'Failed to update profile' },
       { status: 500 }

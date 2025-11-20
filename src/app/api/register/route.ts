@@ -3,13 +3,16 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { AccountStatus, UserRole } from '@/generated/prisma';
 import { prisma } from '@/lib/database/prisma';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('api:register');
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { email, password, name } = body;
 
-    console.log(`Registration attempt for email: ${email}`);
+    logger.info({ email }, 'Registration attempt');
 
     if (!email || !password) {
       return NextResponse.json(
@@ -41,7 +44,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (existingUser) {
-      console.warn(`Registration failed: user already exists for ${email}`);
+      logger.warn({ email }, 'Registration failed: user already exists');
       return NextResponse.json(
         { error: 'Użytkownik z tym adresem email już istnieje' },
         { status: 400 }
@@ -70,8 +73,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    console.log(
-      `User registered successfully: ${user.email} (status: ${user.status})`
+    logger.info(
+      { email: user.email, status: user.status },
+      'User registered successfully'
     );
 
     return NextResponse.json(
@@ -82,7 +86,7 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error('Registration error:', error);
+    logger.error({ error }, 'Registration error');
     return NextResponse.json(
       {
         error: 'Nie udało się utworzyć konta',

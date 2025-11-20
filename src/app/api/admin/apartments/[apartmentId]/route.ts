@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
 import { prisma } from '@/lib/database/prisma';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('api:admin:apartments:detail');
 
 export async function GET(
   _request: Request,
@@ -54,7 +57,7 @@ export async function GET(
 
     return NextResponse.json(apartment);
   } catch (error) {
-    console.error('Error fetching apartment details:', error);
+    logger.error({ error }, 'Error fetching apartment details');
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

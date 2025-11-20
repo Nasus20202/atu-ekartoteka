@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { logger } from '@/lib/logger';
 
 type ProfileFormProps = {
   initialName: string | null;
@@ -94,7 +95,7 @@ export function ProfileForm({ initialName }: ProfileFormProps) {
         });
       }
     } catch (error) {
-      console.error('Failed to update profile:', error);
+      logger.error({ error }, 'Failed to update profile');
       setErrors({ password: 'Wystąpił błąd podczas aktualizacji profilu' });
     } finally {
       setLoading(false);
