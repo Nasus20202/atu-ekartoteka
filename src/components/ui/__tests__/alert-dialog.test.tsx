@@ -89,6 +89,7 @@ describe('AlertDialog', () => {
           <AlertDialogContent>
             <AlertDialogHeader data-testid="alert-header">
               <AlertDialogTitle>Title</AlertDialogTitle>
+              <AlertDialogDescription>Description</AlertDialogDescription>
             </AlertDialogHeader>
           </AlertDialogContent>
         </AlertDialog>
@@ -103,6 +104,8 @@ describe('AlertDialog', () => {
       render(
         <AlertDialog open={true}>
           <AlertDialogContent>
+            <AlertDialogTitle>Title</AlertDialogTitle>
+            <AlertDialogDescription>Description</AlertDialogDescription>
             <AlertDialogFooter data-testid="alert-footer">
               <AlertDialogCancel>Cancel</AlertDialogCancel>
             </AlertDialogFooter>
@@ -124,6 +127,8 @@ describe('AlertDialog', () => {
       render(
         <AlertDialog open={true}>
           <AlertDialogContent>
+            <AlertDialogTitle>Title</AlertDialogTitle>
+            <AlertDialogDescription>Description</AlertDialogDescription>
             <AlertDialogAction onClick={handleAction}>
               Confirm
             </AlertDialogAction>
@@ -143,6 +148,8 @@ describe('AlertDialog', () => {
       render(
         <AlertDialog open={true}>
           <AlertDialogContent>
+            <AlertDialogTitle>Title</AlertDialogTitle>
+            <AlertDialogDescription>Description</AlertDialogDescription>
             <AlertDialogCancel onClick={handleCancel}>Cancel</AlertDialogCancel>
           </AlertDialogContent>
         </AlertDialog>
@@ -157,6 +164,8 @@ describe('AlertDialog', () => {
       render(
         <AlertDialog open={true}>
           <AlertDialogContent>
+            <AlertDialogTitle>Title</AlertDialogTitle>
+            <AlertDialogDescription>Description</AlertDialogDescription>
             <AlertDialogAction>Action</AlertDialogAction>
           </AlertDialogContent>
         </AlertDialog>
@@ -170,6 +179,8 @@ describe('AlertDialog', () => {
       render(
         <AlertDialog open={true}>
           <AlertDialogContent>
+            <AlertDialogTitle>Title</AlertDialogTitle>
+            <AlertDialogDescription>Description</AlertDialogDescription>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
           </AlertDialogContent>
         </AlertDialog>
@@ -186,6 +197,7 @@ describe('AlertDialog', () => {
         <AlertDialog open={true}>
           <AlertDialogContent>
             <AlertDialogTitle className="custom-title">Title</AlertDialogTitle>
+            <AlertDialogDescription>Description</AlertDialogDescription>
           </AlertDialogContent>
         </AlertDialog>
       );
@@ -199,6 +211,7 @@ describe('AlertDialog', () => {
       render(
         <AlertDialog open={true}>
           <AlertDialogContent>
+            <AlertDialogTitle>Title</AlertDialogTitle>
             <AlertDialogDescription className="custom-desc">
               Description
             </AlertDialogDescription>
@@ -215,6 +228,8 @@ describe('AlertDialog', () => {
       render(
         <AlertDialog open={true}>
           <AlertDialogContent>
+            <AlertDialogTitle>Title</AlertDialogTitle>
+            <AlertDialogDescription>Description</AlertDialogDescription>
             <AlertDialogAction className="bg-destructive">
               Delete
             </AlertDialogAction>
@@ -236,6 +251,7 @@ describe('AlertDialog', () => {
         <AlertDialog open={true} onOpenChange={handleOpenChange}>
           <AlertDialogContent>
             <AlertDialogTitle>Title</AlertDialogTitle>
+            <AlertDialogDescription>Description</AlertDialogDescription>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
           </AlertDialogContent>
         </AlertDialog>
@@ -268,6 +284,7 @@ describe('AlertDialog', () => {
         <AlertDialog open={true}>
           <AlertDialogContent>
             <AlertDialogTitle>Dialog Title</AlertDialogTitle>
+            <AlertDialogDescription>Description</AlertDialogDescription>
           </AlertDialogContent>
         </AlertDialog>
       );
@@ -280,6 +297,7 @@ describe('AlertDialog', () => {
       render(
         <AlertDialog open={true}>
           <AlertDialogContent>
+            <AlertDialogTitle>Title</AlertDialogTitle>
             <AlertDialogDescription>Description text</AlertDialogDescription>
           </AlertDialogContent>
         </AlertDialog>
