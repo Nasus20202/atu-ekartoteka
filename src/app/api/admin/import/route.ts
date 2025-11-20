@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { gunzipSync } from 'zlib';
 
 import { auth } from '@/auth';
 import { processBatchImport } from '@/lib/import/import-handler';
@@ -11,10 +12,7 @@ export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
   try {
-    // Parse formData first, before any auth checks that might consume the body
-    const formData = await req.formData();
-
-    // Now check authentication
+    // Check authentication first
     const session = await auth();
 
     if (!session || session.user.role !== UserRole.ADMIN) {
@@ -25,7 +23,39 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Brak uprawnień' }, { status: 401 });
     }
 
-    const files = formData.getAll('files') as File[];
+    const contentType = req.headers.get('content-type') || '';
+    let files: File[];
+
+    // Handle both JSON (base64) and FormData (multipart) formats
+    if (contentType.includes('application/json')) {
+      // JSON format with base64 encoded files
+      const body = await req.json();
+      const fileData = body.files as Array<{
+        path: string;
+        name: string;
+        content: string;
+      }>;
+
+      if (!fileData || fileData.length === 0) {
+        return NextResponse.json(
+          { error: 'Nie przesłano plików' },
+          { status: 400 }
+        );
+      }
+
+      // Convert base64 to File objects (decompress gzipped content)
+      files = fileData.map((fileInfo) => {
+        const compressedBuffer = Buffer.from(fileInfo.content, 'base64');
+        const decompressedBuffer = gunzipSync(compressedBuffer);
+        return new File([decompressedBuffer], fileInfo.path, {
+          type: 'application/octet-stream',
+        });
+      });
+    } else {
+      // FormData format (multipart)
+      const formData = await req.formData();
+      files = formData.getAll('files') as File[];
+    }
 
     logger.info(
       { email: session.user.email, fileCount: files.length },

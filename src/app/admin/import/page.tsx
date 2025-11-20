@@ -69,24 +69,47 @@ export default function AdminImportPage() {
     setResponse(null);
 
     try {
-      const formData = new FormData();
+      // Convert files to base64 and send as JSON to avoid HTTP/2 flow control issues
+      const fileData: Array<{ path: string; content: string; name: string }> =
+        [];
 
-      // Support both webkitRelativePath (directory upload) and regular files
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        // Use webkitRelativePath if available, otherwise use file.name
         const filePath =
           (file as File & { webkitRelativePath?: string }).webkitRelativePath ||
           file.name;
 
-        // Create a new File with the path in the name
-        const fileWithPath = new File([file], filePath, { type: file.type });
-        formData.append('files', fileWithPath);
+        // Compress file content with gzip, then base64 encode
+        const arrayBuffer = await file.arrayBuffer();
+        const stream = new Blob([arrayBuffer]).stream();
+        const compressedStream = stream.pipeThrough(
+          new CompressionStream('gzip')
+        );
+        const compressedBlob = await new Response(compressedStream).blob();
+        const compressedBuffer = await compressedBlob.arrayBuffer();
+
+        // Convert compressed data to base64
+        const base64 = btoa(
+          new Uint8Array(compressedBuffer).reduce(
+            (data, byte) => data + String.fromCharCode(byte),
+            ''
+          )
+        );
+
+        fileData.push({
+          path: filePath,
+          name: file.name,
+          content: base64,
+        });
       }
 
+      // Send as JSON
       const res = await fetch('/api/admin/import', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ files: fileData }),
       });
 
       const data = await res.json();
