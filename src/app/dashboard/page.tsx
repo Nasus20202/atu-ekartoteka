@@ -88,14 +88,16 @@ export default async function DashboardPage() {
     }));
 
   return (
-    <div className="min-h-screen bg-background animate-fade-in">
+    <div className="bg-background animate-fade-in">
       <main className="p-8">
         <div className="mx-auto max-w-7xl">
           <h1 className="mb-6 text-3xl font-bold">
             Witaj{userData.name ? `, ${userData.name}` : ''}!
           </h1>
 
-          <div className="grid gap-6 lg:grid-cols-[1fr_350px]">
+          <div
+            className={`grid gap-6 ${allNotifications.length > 0 && userData.status === AccountStatus.APPROVED ? 'lg:grid-cols-[1fr_350px]' : ''}`}
+          >
             {/* Main Content */}
             <div className="space-y-6">
               {/* Account Status Card */}

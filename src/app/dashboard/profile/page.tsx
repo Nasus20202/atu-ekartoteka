@@ -32,7 +32,7 @@ export default async function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-8">
+    <div className="bg-background p-8">
       <div className="mx-auto max-w-2xl">
         <div className="mb-6">
           <BackButton />

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
 
+import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -123,6 +124,9 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4 animate-fade-in">
+      <div className="absolute right-4 top-4 animate-slide-in-top">
+        <ThemeToggle />
+      </div>
       <Card className="w-full max-w-md animate-scale-in">
         <CardHeader>
           <CardTitle>Rejestracja</CardTitle>
