@@ -85,7 +85,8 @@ describe('UserStatusSection', () => {
     });
   });
 
-  it('shows approved status with green color', () => {
+  it('shows approved status with green color', async () => {
+    const user = userEvent.setup();
     render(
       <UserStatusSection
         name="Jan Kowalski"
@@ -95,9 +96,9 @@ describe('UserStatusSection', () => {
     );
 
     const trigger = screen.getByRole('button', { name: /status konta/i });
-    trigger.click();
+    await user.click(trigger);
 
-    waitFor(() => {
+    await waitFor(() => {
       expect(screen.getByText('Zatwierdzony')).toBeInTheDocument();
     });
   });
