@@ -27,22 +27,21 @@ WORKDIR /app
 
 ENV NODE_ENV=production \
     PORT=3000 \
-    HOSTNAME="0.0.0.0" \
-    PNPM_HOME="/usr/local/share/pnpm" \
-    PATH="/usr/local/share/pnpm:$PATH"
+    HOSTNAME="0.0.0.0"
 
 RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs && \
-    mkdir -p $PNPM_HOME && \
-    chown nextjs:nodejs $PNPM_HOME
+    adduser --system --uid 1001 nextjs
 
+COPY --from=builder --chown=nextjs:nodejs /app/pnpm-lock.yaml ./pnpm-lock.yaml
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm install prisma && chown -R nextjs:nodejs /app/node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma/
+COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static/
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public/
 COPY --chown=nextjs:nodejs --chmod=755 docker/docker-entrypoint.sh ./docker-entrypoint.sh
 
 USER nextjs
-RUN pnpm install -g prisma
 
 EXPOSE 3000
 

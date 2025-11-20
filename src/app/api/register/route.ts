@@ -1,9 +1,9 @@
 import { hash } from 'bcryptjs';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { AccountStatus, UserRole } from '@/generated/prisma';
 import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
+import { AccountStatus, UserRole } from '@/lib/types';
 
 const logger = createLogger('api:register');
 

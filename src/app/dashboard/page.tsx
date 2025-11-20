@@ -6,8 +6,8 @@ import { ChargesSummaryCard } from '@/components/dashboard/charges-summary-card'
 import { NotificationsSidebar } from '@/components/dashboard/notifications-sidebar';
 import { PaymentsSummaryCard } from '@/components/dashboard/payments-summary-card';
 import { UserStatusSection } from '@/components/user-status-section';
-import { AccountStatus } from '@/generated/prisma';
 import { prisma } from '@/lib/database/prisma';
+import { AccountStatus } from '@/lib/types';
 
 export default async function DashboardPage() {
   const session = await auth();

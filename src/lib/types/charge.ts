@@ -1,1 +1,1 @@
-export type { Charge, ChargeNotification } from '@/generated/prisma';
+export type { Charge, ChargeNotification } from '@/generated/prisma/client';

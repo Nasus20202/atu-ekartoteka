@@ -5,8 +5,7 @@ import {
   createMockUser,
   mockApartments,
 } from '@/__tests__/fixtures';
-import { AccountStatus } from '@/generated/prisma';
-import type { Apartment } from '@/lib/types';
+import { AccountStatus, Apartment } from '@/lib/types';
 
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {

@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ChargeNotification } from '@/generated/prisma';
+import { ChargeNotification } from '@/lib/types';
 
 interface NotificationsSidebarProps {
   notifications: Array<

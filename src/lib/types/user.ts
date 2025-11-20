@@ -1,4 +1,4 @@
-import { Apartment, User } from '@/generated/prisma';
+import { Apartment, User } from '@/generated/prisma/client';
 
 export type { User };
 

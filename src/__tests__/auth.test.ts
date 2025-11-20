@@ -2,11 +2,8 @@ import bcrypt from 'bcryptjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createMockUser, mockUsers } from '@/__tests__/fixtures';
-import { $Enums } from '@/generated/prisma';
 import { prisma } from '@/lib/database/prisma';
-
-const UserRole = $Enums.UserRole;
-const AccountStatus = $Enums.AccountStatus;
+import { AccountStatus, UserRole } from '@/lib/types';
 
 // Mock prisma
 vi.mock('@/lib/database/prisma', () => ({

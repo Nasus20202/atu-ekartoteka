@@ -34,7 +34,9 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [apartments, setApartments] = useState<Apartment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'ALL' | AccountStatus>('PENDING');
+  const [filter, setFilter] = useState<'ALL' | AccountStatus>(
+    AccountStatus.PENDING
+  );
   const [userSearch, setUserSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedApartments, setSelectedApartments] = useState<string[]>([]);

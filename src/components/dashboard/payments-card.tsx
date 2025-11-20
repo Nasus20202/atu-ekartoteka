@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Payment } from '@/generated/prisma';
+import { Payment } from '@/lib/types';
 
 interface PaymentsCardProps {
   payment: Payment;
