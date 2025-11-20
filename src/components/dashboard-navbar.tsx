@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { LogoutButton } from '@/components/logout-button';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database/prisma';
 import { UserRole } from '@/lib/types';
 
 type DashboardNavbarProps = {

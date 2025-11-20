@@ -27,6 +27,7 @@ type ApartmentDetailsData = Pick<
   | 'id'
   | 'externalId'
   | 'owner'
+  | 'email'
   | 'address'
   | 'building'
   | 'number'
@@ -125,7 +126,9 @@ export default function ApartmentDetailsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Właściciel</p>
-                  <p className="font-medium">{apartment.owner || 'Brak'}</p>
+                  <p className="font-medium">
+                    {apartment.owner || 'Brak'} ({apartment.email || 'Brak'})
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Status</p>
@@ -160,7 +163,7 @@ export default function ApartmentDetailsPage() {
                 <div>
                   <p className="text-sm text-muted-foreground">Wysokość</p>
                   <p className="font-medium">
-                    {apartment.height ? `${apartment.height} m` : 'Brak'}
+                    {apartment.height ? `${apartment.height / 100} cm` : 'Brak'}
                   </p>
                 </div>
               </div>

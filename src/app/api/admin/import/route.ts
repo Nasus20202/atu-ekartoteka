@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
-import { processBatchImport } from '@/lib/import-handler';
+import { processBatchImport } from '@/lib/import/import-handler';
 import { UserRole } from '@/lib/types';
 
 export const runtime = 'nodejs';

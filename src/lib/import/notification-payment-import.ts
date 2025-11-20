@@ -1,6 +1,6 @@
-import { parsePowCzynszFile } from '@/lib/pow-czynsz-parser';
-import { prisma } from '@/lib/prisma';
-import { parseWplatyFile } from '@/lib/wplaty-parser';
+import { prisma } from '@/lib/database/prisma';
+import { parsePowCzynszFile } from '@/lib/parsers/pow-czynsz-parser';
+import { parseWplatyFile } from '@/lib/parsers/wplaty-parser';
 
 export const importChargeNotifications = async (
   buffer: Buffer,

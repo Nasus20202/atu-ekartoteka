@@ -4,6 +4,7 @@ export const createMockApartment = (
     homeownersAssociationId?: string;
     externalId?: string;
     owner?: string;
+    email?: string | null;
     address?: string;
     building?: string;
     number?: string;
@@ -20,6 +21,7 @@ export const createMockApartment = (
   homeownersAssociationId: 'hoa1',
   externalId: 'EXT1',
   owner: 'John Doe',
+  email: 'john.doe@example.com',
   address: 'Main Street 1',
   building: 'A',
   number: '101',

@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
-  createMockLokEntry,
+  createMockApartmentEntry,
+  mockApartmentEntries,
   mockHOA,
-  mockLokEntries,
 } from '@/__tests__/fixtures';
-import { importApartmentsFromBuffer } from '@/lib/apartment-import';
-import * as lokParser from '@/lib/lok-parser';
+import { importApartmentsFromBuffer } from '@/lib/import/apartment-import';
+import * as apartmentParser from '@/lib/parsers/apartment-parser';
 
-vi.mock('@/lib/prisma', () => ({
+vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     homeownersAssociation: {
       findUnique: vi.fn(),
@@ -30,7 +30,7 @@ vi.mock('@/lib/charge-import', () => ({
   importChargesFromBuffer: vi.fn(),
 }));
 
-const { prisma } = await import('@/lib/prisma');
+const { prisma } = await import('@/lib/database/prisma');
 
 describe('apartment-import', () => {
   beforeEach(() => {
@@ -39,10 +39,14 @@ describe('apartment-import', () => {
 
   describe('importApartmentsFromBuffer', () => {
     it('should create HOA if it does not exist', async () => {
-      const mockEntries = [createMockLokEntry()];
+      const mockEntries = [createMockApartmentEntry()];
 
-      vi.spyOn(lokParser, 'parseLokBuffer').mockResolvedValue(mockEntries);
-      vi.spyOn(lokParser, 'getUniqueApartments').mockReturnValue(mockEntries);
+      vi.spyOn(apartmentParser, 'parseApartmentBuffer').mockResolvedValue(
+        mockEntries
+      );
+      vi.spyOn(apartmentParser, 'getUniqueApartments').mockReturnValue(
+        mockEntries
+      );
 
       vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValue(
         null
@@ -53,6 +57,7 @@ describe('apartment-import', () => {
         id: '1',
         externalId: 'EXT1',
         owner: 'Jan Kowalski',
+        email: 'jan.kowalski@example.com',
         address: 'ul. Testowa 1',
         building: 'B1',
         number: '1',
@@ -80,10 +85,14 @@ describe('apartment-import', () => {
     });
 
     it('should create new apartments when they do not exist', async () => {
-      const mockEntries = [createMockLokEntry()];
+      const mockEntries = [createMockApartmentEntry()];
 
-      vi.spyOn(lokParser, 'parseLokBuffer').mockResolvedValue(mockEntries);
-      vi.spyOn(lokParser, 'getUniqueApartments').mockReturnValue(mockEntries);
+      vi.spyOn(apartmentParser, 'parseApartmentBuffer').mockResolvedValue(
+        mockEntries
+      );
+      vi.spyOn(apartmentParser, 'getUniqueApartments').mockReturnValue(
+        mockEntries
+      );
 
       vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValue(
         mockHOA
@@ -104,6 +113,7 @@ describe('apartment-import', () => {
           {
             externalId: 'EXT1',
             owner: 'Jan Kowalski',
+            email: 'jan.kowalski@example.com',
             address: 'ul. Testowa 1',
             building: 'B1',
             number: '1',
@@ -121,7 +131,7 @@ describe('apartment-import', () => {
 
     it('should update existing apartments', async () => {
       const mockEntries = [
-        createMockLokEntry({
+        createMockApartmentEntry({
           owner: 'Jan Nowak',
           address: 'ul. Testowa 2',
           building: 'B2',
@@ -133,8 +143,12 @@ describe('apartment-import', () => {
         }),
       ];
 
-      vi.spyOn(lokParser, 'parseLokBuffer').mockResolvedValue(mockEntries);
-      vi.spyOn(lokParser, 'getUniqueApartments').mockReturnValue(mockEntries);
+      vi.spyOn(apartmentParser, 'parseApartmentBuffer').mockResolvedValue(
+        mockEntries
+      );
+      vi.spyOn(apartmentParser, 'getUniqueApartments').mockReturnValue(
+        mockEntries
+      );
 
       vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValue(
         mockHOA
@@ -145,6 +159,7 @@ describe('apartment-import', () => {
           id: '1',
           number: '1',
           owner: null,
+          email: null,
           address: null,
           building: null,
           postalCode: null,
@@ -163,6 +178,7 @@ describe('apartment-import', () => {
           id: '1',
           externalId: 'EXT1',
           owner: 'Jan Nowak',
+          email: 'jan.kowalski@example.com',
           address: 'ul. Testowa 2',
           building: 'B2',
           number: '2',
@@ -181,6 +197,7 @@ describe('apartment-import', () => {
         id: '1',
         externalId: 'EXT1',
         owner: 'Jan Kowalski',
+        email: 'jan.kowalski@example.com',
         address: 'ul. Testowa 1',
         building: 'B1',
         number: '1',
@@ -208,6 +225,7 @@ describe('apartment-import', () => {
         where: { externalId: 'EXT1' },
         data: {
           owner: 'Jan Nowak',
+          email: 'jan.kowalski@example.com',
           address: 'ul. Testowa 2',
           building: 'B2',
           number: '2',
@@ -222,10 +240,14 @@ describe('apartment-import', () => {
     });
 
     it('should deactivate apartments not in the file', async () => {
-      const mockEntries = [createMockLokEntry()];
+      const mockEntries = [createMockApartmentEntry()];
 
-      vi.spyOn(lokParser, 'parseLokBuffer').mockResolvedValue(mockEntries);
-      vi.spyOn(lokParser, 'getUniqueApartments').mockReturnValue(mockEntries);
+      vi.spyOn(apartmentParser, 'parseApartmentBuffer').mockResolvedValue(
+        mockEntries
+      );
+      vi.spyOn(apartmentParser, 'getUniqueApartments').mockReturnValue(
+        mockEntries
+      );
 
       vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValue(
         mockHOA
@@ -253,7 +275,7 @@ describe('apartment-import', () => {
     });
 
     it('should handle errors gracefully', async () => {
-      vi.spyOn(lokParser, 'parseLokBuffer').mockRejectedValue(
+      vi.spyOn(apartmentParser, 'parseApartmentBuffer').mockRejectedValue(
         new Error('Parse error')
       );
 
@@ -266,10 +288,17 @@ describe('apartment-import', () => {
     });
 
     it('should continue processing on individual apartment errors', async () => {
-      const mockEntries = [mockLokEntries.owner, mockLokEntries.secondOwner];
+      const mockEntries = [
+        mockApartmentEntries.owner,
+        mockApartmentEntries.secondOwner,
+      ];
 
-      vi.spyOn(lokParser, 'parseLokBuffer').mockResolvedValue(mockEntries);
-      vi.spyOn(lokParser, 'getUniqueApartments').mockReturnValue(mockEntries);
+      vi.spyOn(apartmentParser, 'parseApartmentBuffer').mockResolvedValue(
+        mockEntries
+      );
+      vi.spyOn(apartmentParser, 'getUniqueApartments').mockReturnValue(
+        mockEntries
+      );
 
       vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValue(
         mockHOA
@@ -284,6 +313,7 @@ describe('apartment-import', () => {
           id: '2',
           externalId: 'EXT2',
           owner: 'Anna Nowak',
+          email: 'anna.nowak@example.com',
           address: 'ul. Testowa 2',
           building: 'B2',
           number: '2',

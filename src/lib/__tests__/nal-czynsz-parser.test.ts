@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseNalCzynszBuffer } from '@/lib/nal-czynsz-parser';
+import { parseNalCzynszBuffer } from '@/lib/parsers/nal-czynsz-parser';
 
 describe('nal-czynsz-parser', () => {
   describe('parseNalCzynszBuffer', () => {

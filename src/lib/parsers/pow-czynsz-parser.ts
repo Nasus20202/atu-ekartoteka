@@ -1,4 +1,4 @@
-import { decodeBuffer, ParseResult } from '@/lib/parser-utils';
+import { decodeBuffer, ParseResult } from '@/lib/parsers/parser-utils';
 
 export interface ChargeNotificationEntry {
   externalId: string;

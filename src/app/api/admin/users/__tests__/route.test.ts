@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AccountStatus, UserRole } from '@/generated/prisma';
 
-vi.mock('@/lib/prisma', () => ({
+vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     user: {
       findMany: vi.fn(),
@@ -15,7 +15,7 @@ vi.mock('@/lib/prisma', () => ({
   },
 }));
 
-const { prisma } = await import('@/lib/prisma');
+const { prisma } = await import('@/lib/database/prisma');
 
 describe('Admin Users API', () => {
   beforeEach(() => {
@@ -50,6 +50,7 @@ describe('Admin Users API', () => {
               id: '1',
               externalId: 'EXT1',
               owner: 'Owner Name',
+              email: null,
               address: 'Test Street',
               building: 'B1',
               number: '1',
@@ -207,6 +208,7 @@ describe('Admin Users API', () => {
         homeownersAssociationId: 'hoa1',
         externalId: 'EXT1',
         owner: 'Owner',
+        email: null,
         address: 'Street',
         building: 'B1',
         number: '1',
@@ -305,6 +307,7 @@ describe('Admin Users API', () => {
         homeownersAssociationId: 'hoa1',
         externalId: 'EXT1',
         owner: 'Owner',
+        email: null,
         address: 'Street',
         building: 'B1',
         number: '1',

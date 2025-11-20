@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import * as readline from 'readline';
 
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database/prisma';
 import { AccountStatus, UserRole } from '@/lib/types';
 
 async function promptUser(question: string): Promise<string> {

@@ -1,5 +1,5 @@
-import { parseNalCzynszBuffer } from '@/lib/nal-czynsz-parser';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database/prisma';
+import { parseNalCzynszBuffer } from '@/lib/parsers/nal-czynsz-parser';
 
 export interface ChargeImportResult {
   created: number;

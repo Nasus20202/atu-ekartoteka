@@ -7,7 +7,7 @@ import { MultiApartmentPeriodCard } from '@/components/charges/multi-apartment-p
 import { DashboardNavbar } from '@/components/dashboard-navbar';
 import { Card, CardContent } from '@/components/ui/card';
 import type { ChargeData } from '@/lib/charge-utils';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database/prisma';
 import { AccountStatus } from '@/lib/types';
 
 export default async function ChargesPage() {

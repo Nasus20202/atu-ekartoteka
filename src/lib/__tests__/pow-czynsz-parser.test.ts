@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parsePowCzynszFile } from '@/lib/pow-czynsz-parser';
+import { parsePowCzynszFile } from '@/lib/parsers/pow-czynsz-parser';
 
 describe('parsePowCzynszFile', () => {
   it('should parse pow_czynsz.txt file correctly', async () => {

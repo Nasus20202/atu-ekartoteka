@@ -8,7 +8,7 @@ import {
 import { AccountStatus } from '@/generated/prisma';
 import type { Apartment } from '@/lib/types';
 
-vi.mock('@/lib/prisma', () => ({
+vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     user: {
       findUnique: vi.fn(),
@@ -21,7 +21,7 @@ vi.mock('@/lib/prisma', () => ({
   },
 }));
 
-const { prisma } = await import('@/lib/prisma');
+const { prisma } = await import('@/lib/database/prisma');
 
 describe('Apartment Assignment', () => {
   beforeEach(() => {

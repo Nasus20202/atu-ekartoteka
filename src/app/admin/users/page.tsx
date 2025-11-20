@@ -35,6 +35,7 @@ export default function AdminUsersPage() {
   const [apartments, setApartments] = useState<Apartment[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'ALL' | AccountStatus>('PENDING');
+  const [userSearch, setUserSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedApartments, setSelectedApartments] = useState<string[]>([]);
   const [apartmentSearch, setApartmentSearch] = useState('');
@@ -207,13 +208,47 @@ export default function AdminUsersPage() {
     }
   };
 
-  const filteredApartments = apartments.filter(
-    (apt) =>
-      apartmentSearch === '' ||
-      apt.number.toLowerCase().includes(apartmentSearch.toLowerCase()) ||
-      apt.address?.toLowerCase().includes(apartmentSearch.toLowerCase()) ||
-      apt.owner?.toLowerCase().includes(apartmentSearch.toLowerCase())
-  );
+  // Check if apartment matches user's name or email
+  const isApartmentMatchingUser = (apt: Apartment, user: User | null) => {
+    if (!user) return false;
+
+    const userName = user.name?.toLowerCase() || '';
+    const userEmail = user.email?.toLowerCase() || '';
+    const aptOwner = apt.owner?.toLowerCase() || '';
+    const aptEmail = apt.email?.toLowerCase() || '';
+
+    // Match if user name matches apartment owner or user email matches apartment email
+    return (
+      (userName && aptOwner && aptOwner.includes(userName)) ||
+      (userName && aptOwner && userName.includes(aptOwner)) ||
+      (userEmail && aptEmail && userEmail === aptEmail)
+    );
+  };
+
+  const filteredApartments = apartments
+    .filter(
+      (apt) =>
+        apartmentSearch === '' ||
+        apt.number.toLowerCase().includes(apartmentSearch.toLowerCase()) ||
+        apt.address?.toLowerCase().includes(apartmentSearch.toLowerCase()) ||
+        apt.owner?.toLowerCase().includes(apartmentSearch.toLowerCase()) ||
+        apt.email?.toLowerCase().includes(apartmentSearch.toLowerCase())
+    )
+    .sort((a, b) => {
+      // Sort matching apartments first
+      const aMatches = isApartmentMatchingUser(a, selectedUser);
+      const bMatches = isApartmentMatchingUser(b, selectedUser);
+
+      if (aMatches && !bMatches) return -1;
+      if (!aMatches && bMatches) return 1;
+
+      // Then sort by building and number
+      const buildingCompare = (a.building || '').localeCompare(
+        b.building || ''
+      );
+      if (buildingCompare !== 0) return buildingCompare;
+      return (a.number || '').localeCompare(b.number || '');
+    });
 
   const getStatusBadge = (status: AccountStatus) => {
     switch (status) {
@@ -242,6 +277,22 @@ export default function AdminUsersPage() {
         return null;
     }
   };
+
+  const filteredUsers = users.filter((user) => {
+    if (userSearch === '') return true;
+
+    const searchLower = userSearch.toLowerCase();
+    const nameMatch = user.name?.toLowerCase().includes(searchLower);
+    const emailMatch = user.email?.toLowerCase().includes(searchLower);
+    const apartmentMatch = user.apartments?.some(
+      (apt) =>
+        apt.number.toLowerCase().includes(searchLower) ||
+        apt.address?.toLowerCase().includes(searchLower) ||
+        apt.owner?.toLowerCase().includes(searchLower)
+    );
+
+    return nameMatch || emailMatch || apartmentMatch;
+  });
 
   const pendingCount = users.filter(
     (u) => u.status === AccountStatus.PENDING
@@ -274,6 +325,18 @@ export default function AdminUsersPage() {
             <UserPlus className="mr-2 h-4 w-4" />
             Dodaj użytkownika
           </Button>
+        </div>
+
+        <div className="mb-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Szukaj po imieniu, emailu lub mieszkaniu..."
+              value={userSearch}
+              onChange={(e) => setUserSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
         </div>
 
         <div className="mb-6 flex gap-2">
@@ -312,21 +375,23 @@ export default function AdminUsersPage() {
 
         {loading ? (
           <div className="text-center text-muted-foreground">Ładowanie...</div>
-        ) : users.length === 0 ? (
+        ) : filteredUsers.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <AlertCircle className="mb-4 h-12 w-12 text-muted-foreground" />
               <p className="text-lg font-medium">Brak użytkowników</p>
               <p className="text-sm text-muted-foreground">
-                {filter === AccountStatus.PENDING
-                  ? 'Brak kont oczekujących na zatwierdzenie'
-                  : 'Nie znaleziono użytkowników'}
+                {userSearch
+                  ? 'Nie znaleziono użytkowników pasujących do wyszukiwania'
+                  : filter === AccountStatus.PENDING
+                    ? 'Brak kont oczekujących na zatwierdzenie'
+                    : 'Nie znaleziono użytkowników'}
               </p>
             </CardContent>
           </Card>
         ) : (
           <div className="grid gap-4">
-            {users.map((user, index) => (
+            {filteredUsers.map((user, index) => (
               <Card
                 key={user.id}
                 className="animate-scale-in"
@@ -482,7 +547,7 @@ export default function AdminUsersPage() {
                         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                           id="apartment-search"
-                          placeholder="Szukaj po numerze, adresie lub właścicielu..."
+                          placeholder="Szukaj po numerze, adresie, właścicielu lub emailu..."
                           value={apartmentSearch}
                           onChange={(e) => setApartmentSearch(e.target.value)}
                           className="pl-9"
@@ -491,50 +556,71 @@ export default function AdminUsersPage() {
                     </div>
 
                     <div className="max-h-60 space-y-2 overflow-y-auto rounded-lg border p-2">
-                      {filteredApartments.map((apt) => (
-                        <label
-                          key={apt.id}
-                          htmlFor={`apt-${apt.id}`}
-                          className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-all duration-200 hover:bg-muted hover:scale-[1.02] ${
-                            selectedApartments.includes(apt.id)
-                              ? 'border-primary bg-primary/5'
-                              : ''
-                          }`}
-                        >
-                          <Checkbox
-                            id={`apt-${apt.id}`}
-                            checked={selectedApartments.includes(apt.id)}
-                            onCheckedChange={(checked: boolean) => {
-                              if (checked) {
-                                setSelectedApartments([
-                                  ...selectedApartments,
-                                  apt.id,
-                                ]);
-                              } else {
-                                setSelectedApartments(
-                                  selectedApartments.filter(
-                                    (id) => id !== apt.id
-                                  )
-                                );
-                              }
-                            }}
-                            className="mt-1"
-                          />
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">
-                              {apt.address} {apt.number}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {apt.postalCode} {apt.city} • Budynek:{' '}
-                              {apt.building} • Właściciel: {apt.owner}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              Powierzchnia: {apt.area ? apt.area / 100 : '-'} m²
-                              • ID: {apt.externalId}
-                            </p>
-                          </div>
-                        </label>
-                      ))}
+                      {filteredApartments.map((apt) => {
+                        const isMatching = isApartmentMatchingUser(
+                          apt,
+                          selectedUser
+                        );
+                        return (
+                          <label
+                            key={apt.id}
+                            htmlFor={`apt-${apt.id}`}
+                            className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-all duration-200 hover:bg-muted hover:scale-[1.02] ${
+                              selectedApartments.includes(apt.id)
+                                ? 'border-primary bg-primary/5'
+                                : isMatching
+                                  ? 'border-green-500 bg-green-50 dark:bg-green-950/20'
+                                  : ''
+                            }`}
+                          >
+                            <Checkbox
+                              id={`apt-${apt.id}`}
+                              checked={selectedApartments.includes(apt.id)}
+                              onCheckedChange={(checked: boolean) => {
+                                if (checked) {
+                                  setSelectedApartments([
+                                    ...selectedApartments,
+                                    apt.id,
+                                  ]);
+                                } else {
+                                  setSelectedApartments(
+                                    selectedApartments.filter(
+                                      (id) => id !== apt.id
+                                    )
+                                  );
+                                }
+                              }}
+                              className="mt-1"
+                            />
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-medium">
+                                  {apt.address} {apt.number}
+                                </p>
+                                {isMatching && (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-200">
+                                    <Check className="h-3 w-3" />
+                                    Dopasowanie
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                {apt.postalCode} {apt.city} • Budynek:{' '}
+                                {apt.building} • Właściciel: {apt.owner}
+                              </p>
+                              {apt.email && (
+                                <p className="text-xs text-muted-foreground">
+                                  Email: {apt.email}
+                                </p>
+                              )}
+                              <p className="text-xs text-muted-foreground">
+                                Powierzchnia: {apt.area ? apt.area / 100 : '-'}{' '}
+                                m² • ID: {apt.externalId}
+                              </p>
+                            </div>
+                          </label>
+                        );
+                      })}
 
                       {filteredApartments.length === 0 && apartmentSearch && (
                         <p className="py-4 text-center text-sm text-muted-foreground">

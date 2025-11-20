@@ -58,6 +58,7 @@ model Apartment {
   id          String   @id @default(cuid())
   externalId  String   @unique  // e.g. "W00016"
   owner       String?            // owner
+  email       String?            // owner email
   address     String?            // street
   building    String?            // building number
   number      String             // apartment number (can be "3A")

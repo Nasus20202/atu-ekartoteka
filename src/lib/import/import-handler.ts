@@ -1,15 +1,15 @@
 import {
   importApartmentsFromBuffer,
   ImportResult,
-} from '@/lib/apartment-import';
+} from '@/lib/import/apartment-import';
 import {
   ChargeImportResult,
   importChargesFromBuffer,
-} from '@/lib/charge-import';
+} from '@/lib/import/charge-import';
 import {
   importChargeNotifications,
   importPayments,
-} from '@/lib/notification-payment-import';
+} from '@/lib/import/notification-payment-import';
 
 export interface ImportFileGroup {
   lokFile?: File;

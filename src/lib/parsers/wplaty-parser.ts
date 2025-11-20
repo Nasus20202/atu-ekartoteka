@@ -1,4 +1,8 @@
-import { decodeBuffer, parseDate, ParseResult } from '@/lib/parser-utils';
+import {
+  decodeBuffer,
+  parseDate,
+  ParseResult,
+} from '@/lib/parsers/parser-utils';
 
 export interface PaymentEntry {
   externalId: string;

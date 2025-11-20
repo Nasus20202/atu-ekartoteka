@@ -1,20 +1,23 @@
 import { describe, expect, it } from 'vitest';
 
-import { createMockLokEntry, mockLokEntries } from '@/__tests__/fixtures';
 import {
+  createMockApartmentEntry,
+  mockApartmentEntries,
+} from '@/__tests__/fixtures';
+import {
+  ApartmentEntry,
   getUniqueApartments,
-  LokEntry,
-  parseLokBuffer,
-} from '@/lib/lok-parser';
+  parseApartmentBuffer,
+} from '@/lib/parsers/apartment-parser';
 
-describe('lok-parser', () => {
-  describe('parseLokBuffer', () => {
+describe('apartment-parser', () => {
+  describe('parseApartmentBuffer', () => {
     it('should parse buffer with ISO 8859-2 encoding', async () => {
       const mockData =
-        'W1#Jan Kowalski##EXT001#ul. Testowa#1#1#00-001#Warszawa###50.5#250\n';
+        'W1#Jan Kowalski##EXT001#ul. Testowa#1#1#00-001#Warszawa#jan@example.com##50.5#250\n';
       const iconv = await import('iconv-lite');
       const buffer = iconv.encode(mockData, 'iso-8859-2');
-      const entries = await parseLokBuffer(buffer);
+      const entries = await parseApartmentBuffer(buffer);
 
       expect(entries).toBeDefined();
       expect(Array.isArray(entries)).toBe(true);
@@ -23,14 +26,15 @@ describe('lok-parser', () => {
 
     it('should correctly parse entry fields', async () => {
       const mockData =
-        'W1#Jan Kowalski##EXT001#ul. Testowa#1#1#00-001#Warszawa####50.5#250\n';
+        'W1#Jan Kowalski##EXT001#ul. Testowa#1#1#00-001#Warszawa#jan@example.com###50.5#250\n';
       const iconv = await import('iconv-lite');
       const buffer = iconv.encode(mockData, 'iso-8859-2');
-      const entries = await parseLokBuffer(buffer);
+      const entries = await parseApartmentBuffer(buffer);
       const firstEntry = entries[0];
 
       expect(firstEntry).toHaveProperty('id', 'W1');
       expect(firstEntry).toHaveProperty('owner', 'Jan Kowalski');
+      expect(firstEntry).toHaveProperty('email', 'jan@example.com');
       expect(firstEntry).toHaveProperty('externalId', 'EXT001');
       expect(firstEntry).toHaveProperty('address', 'ul. Testowa');
       expect(firstEntry).toHaveProperty('building', '1');
@@ -44,10 +48,10 @@ describe('lok-parser', () => {
 
     it('should correctly identify owner entries', async () => {
       const mockData =
-        'W1#Owner##EXT001#Address#1#1#00-001#City####50#250\nL1#Tenant##EXT001#Address#1#1#00-001#City####50#250\n';
+        'W1#Owner#owner@example.com#EXT001#Address#1#1#00-001#City####50#250\nL1#Tenant#tenant@example.com#EXT001#Address#1#1#00-001#City####50#250\n';
       const iconv = await import('iconv-lite');
       const buffer = iconv.encode(mockData, 'iso-8859-2');
-      const entries = await parseLokBuffer(buffer);
+      const entries = await parseApartmentBuffer(buffer);
 
       const ownerEntries = entries.filter((e) => e.isOwner);
       expect(ownerEntries.length).toBe(1);
@@ -56,10 +60,10 @@ describe('lok-parser', () => {
 
     it('should parse area and height as numbers', async () => {
       const mockData =
-        'W1#Owner##EXT001#Address#1#1#00-001#City####50.5#250.75\n';
+        'W1#Owner##EXT001#Address#1#1#00-001#City#owner@example.com###50.5#250.75\n';
       const iconv = await import('iconv-lite');
       const buffer = iconv.encode(mockData, 'iso-8859-2');
-      const entries = await parseLokBuffer(buffer);
+      const entries = await parseApartmentBuffer(buffer);
       const firstEntry = entries[0];
 
       expect(typeof firstEntry.area).toBe('number');
@@ -70,10 +74,10 @@ describe('lok-parser', () => {
 
     it('should handle Polish characters correctly', async () => {
       const mockData =
-        'W1#Janusz Kowalski##EXT001#ul. Łąkowa#1#1#00-001#Kraków####50#250\n';
+        'W1#Janusz Kowalski##EXT001#ul. Łąkowa#1#1#00-001#Kraków#janusz@example.com###50.5#250\n';
       const iconv = await import('iconv-lite');
       const buffer = iconv.encode(mockData, 'iso-8859-2');
-      const entries = await parseLokBuffer(buffer);
+      const entries = await parseApartmentBuffer(buffer);
 
       expect(entries[0].owner).toBe('Janusz Kowalski');
       expect(entries[0].address).toBe('ul. Łąkowa');
@@ -83,14 +87,14 @@ describe('lok-parser', () => {
 
   describe('getUniqueApartments', () => {
     it('should filter only owner entries', () => {
-      const entries: LokEntry[] = [
-        createMockLokEntry({
+      const entries: ApartmentEntry[] = [
+        createMockApartmentEntry({
           owner: 'Owner 1',
           address: 'Address 1',
           area: 50,
           height: 2.5,
         }),
-        mockLokEntries.tenant,
+        mockApartmentEntries.tenant,
       ];
 
       const unique = getUniqueApartments(entries);
@@ -101,21 +105,21 @@ describe('lok-parser', () => {
     });
 
     it('should return unique apartments by externalId', () => {
-      const entries: LokEntry[] = [
-        createMockLokEntry({
+      const entries: ApartmentEntry[] = [
+        createMockApartmentEntry({
           owner: 'Owner 1',
           address: 'Address 1',
           area: 50,
           height: 2.5,
         }),
-        createMockLokEntry({
+        createMockApartmentEntry({
           id: 'W2',
           owner: 'Owner 2',
           address: 'Address 1',
           area: 50,
           height: 2.5,
         }),
-        mockLokEntries.secondOwner,
+        mockApartmentEntries.secondOwner,
       ];
 
       const unique = getUniqueApartments(entries);
@@ -126,7 +130,7 @@ describe('lok-parser', () => {
     });
 
     it('should return empty array when no owner entries exist', () => {
-      const entries: LokEntry[] = [mockLokEntries.tenant];
+      const entries: ApartmentEntry[] = [mockApartmentEntries.tenant];
 
       const unique = getUniqueApartments(entries);
 

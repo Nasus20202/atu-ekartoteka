@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import * as apartmentImport from '@/lib/apartment-import';
-import * as chargeImport from '@/lib/charge-import';
-import { processBatchImport } from '@/lib/import-handler';
+import * as apartmentImport from '@/lib/import/apartment-import';
+import * as chargeImport from '@/lib/import/charge-import';
+import { processBatchImport } from '@/lib/import/import-handler';
 
 // Helper function to create mock File with arrayBuffer method
 function createMockFile(content: string, name: string): File {

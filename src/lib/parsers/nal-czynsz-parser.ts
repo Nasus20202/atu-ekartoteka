@@ -1,4 +1,8 @@
-import { decodeBuffer, parseDate, parseDecimal } from '@/lib/parser-utils';
+import {
+  decodeBuffer,
+  parseDate,
+  parseDecimal,
+} from '@/lib/parsers/parser-utils';
 
 export interface NalCzynszEntry {
   id: string;

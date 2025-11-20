@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createMockHOA } from '@/__tests__/fixtures';
-import { importChargesFromBuffer } from '@/lib/charge-import';
+import { importChargesFromBuffer } from '@/lib/import/charge-import';
 
-vi.mock('@/lib/prisma', () => ({
+vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     homeownersAssociation: {
       findUnique: vi.fn(),
@@ -21,7 +21,7 @@ vi.mock('@/lib/prisma', () => ({
   },
 }));
 
-const { prisma } = await import('@/lib/prisma');
+const { prisma } = await import('@/lib/database/prisma');
 
 describe('charge-import', () => {
   describe('importChargesFromBuffer', () => {
@@ -36,6 +36,7 @@ describe('charge-import', () => {
         externalId: 'hoa1-hoa1-00000-00001M',
         number: '1',
         owner: 'John Doe',
+        email: null,
         address: null,
         building: null,
         postalCode: null,
@@ -88,6 +89,7 @@ describe('charge-import', () => {
         externalId: 'hoa1-hoa1-00000-00001M',
         number: '1',
         owner: 'John Doe',
+        email: null,
         address: null,
         building: null,
         postalCode: null,
@@ -173,6 +175,7 @@ describe('charge-import', () => {
         externalId: 'hoa1-hoa1-00000-00001M',
         number: '1',
         owner: 'John Doe',
+        email: null,
         address: null,
         building: null,
         postalCode: null,
@@ -227,6 +230,7 @@ describe('charge-import', () => {
         externalId: 'hoa1-hoa1-00000-00001M',
         number: '1',
         owner: 'John Doe',
+        email: null,
         address: null,
         building: null,
         postalCode: null,
@@ -247,6 +251,7 @@ describe('charge-import', () => {
         externalId: 'hoa1-hoa1-00000-00002M',
         number: '2',
         owner: 'Jane Doe',
+        email: null,
         address: null,
         building: null,
         postalCode: null,

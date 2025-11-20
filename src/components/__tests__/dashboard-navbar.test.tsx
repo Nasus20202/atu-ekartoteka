@@ -4,7 +4,7 @@ import { describe, expect, it, type Mock, vi } from 'vitest';
 import { DashboardNavbar } from '@/components/dashboard-navbar';
 import { UserRole } from '@/lib/types';
 
-vi.mock('@/lib/prisma', () => ({
+vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     user: {
       findUnique: vi.fn(),
@@ -14,7 +14,7 @@ vi.mock('@/lib/prisma', () => ({
 
 describe('DashboardNavbar', () => {
   it('renders navbar with profile button', async () => {
-    const { prisma } = await import('@/lib/prisma');
+    const { prisma } = await import('@/lib/database/prisma');
     (prisma.user.findUnique as Mock).mockResolvedValue({
       email: 'test@example.com',
       role: UserRole.TENANT,
@@ -28,7 +28,7 @@ describe('DashboardNavbar', () => {
   });
 
   it('renders admin panel button for admin users', async () => {
-    const { prisma } = await import('@/lib/prisma');
+    const { prisma } = await import('@/lib/database/prisma');
     (prisma.user.findUnique as Mock).mockResolvedValue({
       email: 'admin@example.com',
       role: UserRole.ADMIN,
@@ -43,7 +43,7 @@ describe('DashboardNavbar', () => {
   });
 
   it('does not render admin panel button for regular users', async () => {
-    const { prisma } = await import('@/lib/prisma');
+    const { prisma } = await import('@/lib/database/prisma');
     (prisma.user.findUnique as Mock).mockResolvedValue({
       email: 'user@example.com',
       role: UserRole.TENANT,
@@ -58,7 +58,7 @@ describe('DashboardNavbar', () => {
   });
 
   it('returns null if user not found', async () => {
-    const { prisma } = await import('@/lib/prisma');
+    const { prisma } = await import('@/lib/database/prisma');
     (prisma.user.findUnique as Mock).mockResolvedValue(null);
 
     const Navbar = await DashboardNavbar({ userId: 'nonexistent' });
@@ -66,7 +66,7 @@ describe('DashboardNavbar', () => {
   });
 
   it('renders theme toggle and logout button', async () => {
-    const { prisma } = await import('@/lib/prisma');
+    const { prisma } = await import('@/lib/database/prisma');
     (prisma.user.findUnique as Mock).mockResolvedValue({
       email: 'test@example.com',
       role: UserRole.TENANT,

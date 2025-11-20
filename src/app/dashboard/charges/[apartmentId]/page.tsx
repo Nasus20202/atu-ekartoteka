@@ -6,7 +6,7 @@ import { BackButton } from '@/components/back-button';
 import { PeriodCard } from '@/components/charges/period-card';
 import { DashboardNavbar } from '@/components/dashboard-navbar';
 import { Card, CardContent } from '@/components/ui/card';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database/prisma';
 import { AccountStatus } from '@/lib/types';
 
 export default async function ApartmentChargesPage({

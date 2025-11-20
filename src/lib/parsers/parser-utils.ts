@@ -1,3 +1,5 @@
+import { decode } from 'iconv-lite';
+
 export interface ParseResult<T> {
   entries: T[];
   header?: string[];
@@ -14,6 +16,5 @@ export function parseDecimal(value: string): number {
 }
 
 export async function decodeBuffer(buffer: Buffer): Promise<string> {
-  const iconv = await import('iconv-lite');
-  return iconv.decode(buffer, 'iso-8859-2');
+  return decode(buffer, 'iso-8859-2');
 }

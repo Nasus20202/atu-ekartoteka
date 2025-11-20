@@ -7,7 +7,7 @@ import { NotificationsSidebar } from '@/components/dashboard/notifications-sideb
 import { PaymentsSummaryCard } from '@/components/dashboard/payments-summary-card';
 import { UserStatusSection } from '@/components/user-status-section';
 import { AccountStatus } from '@/generated/prisma';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database/prisma';
 
 export default async function DashboardPage() {
   const session = await auth();

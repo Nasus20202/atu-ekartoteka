@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseWplatyFile } from '@/lib/wplaty-parser';
+import { parseWplatyFile } from '@/lib/parsers/wplaty-parser';
 
 describe('parseWplatyFile', () => {
   it('should parse wplaty.txt file correctly', async () => {

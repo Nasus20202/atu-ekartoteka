@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AccountStatus, UserRole } from '@/generated/prisma';
 
-vi.mock('@/lib/prisma', () => ({
+vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     user: {
       findUnique: vi.fn(),
@@ -12,7 +12,7 @@ vi.mock('@/lib/prisma', () => ({
   },
 }));
 
-const { prisma } = await import('@/lib/prisma');
+const { prisma } = await import('@/lib/database/prisma');
 
 describe('Registration API', () => {
   beforeEach(() => {

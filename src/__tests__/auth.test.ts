@@ -3,13 +3,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createMockUser, mockUsers } from '@/__tests__/fixtures';
 import { $Enums } from '@/generated/prisma';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database/prisma';
 
 const UserRole = $Enums.UserRole;
 const AccountStatus = $Enums.AccountStatus;
 
 // Mock prisma
-vi.mock('@/lib/prisma', () => ({
+vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     user: {
       findUnique: vi.fn(),
@@ -62,7 +62,9 @@ describe('User Login Authentication', () => {
 
   describe('User lookup', () => {
     it('should return null when user does not exist', async () => {
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
+      (prisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
+        null
+      );
 
       const user = await prisma.user.findUnique({
         where: { email: 'nonexistent@example.com' },
@@ -77,7 +79,9 @@ describe('User Login Authentication', () => {
     it('should find user by email', async () => {
       const mockUser = createMockUser();
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
+      (prisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockUser
+      );
 
       const user = await prisma.user.findUnique({
         where: { email: 'test@example.com' },
@@ -127,7 +131,9 @@ describe('User Login Authentication', () => {
     it('should return user object on successful login', async () => {
       const mockUser = createMockUser();
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
+      (prisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockUser
+      );
       vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
 
       const user = await prisma.user.findUnique({
@@ -150,7 +156,9 @@ describe('User Login Authentication', () => {
     it('should return admin user on successful login', async () => {
       const mockAdminUser = mockUsers.admin;
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockAdminUser);
+      (prisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockAdminUser
+      );
       vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
 
       const user = await prisma.user.findUnique({
@@ -172,7 +180,9 @@ describe('User Login Authentication', () => {
     it('should allow login for approved user', async () => {
       const mockUser = mockUsers.approved;
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
+      (prisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockUser
+      );
 
       const user = await prisma.user.findUnique({
         where: { email: 'approved@example.com' },
@@ -184,7 +194,9 @@ describe('User Login Authentication', () => {
     it('should identify pending user', async () => {
       const mockUser = mockUsers.pending;
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
+      (prisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockUser
+      );
 
       const user = await prisma.user.findUnique({
         where: { email: 'pending@example.com' },
@@ -196,7 +208,9 @@ describe('User Login Authentication', () => {
     it('should identify rejected user', async () => {
       const mockUser = mockUsers.rejected;
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
+      (prisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockUser
+      );
 
       const user = await prisma.user.findUnique({
         where: { email: 'rejected@example.com' },
@@ -208,7 +222,7 @@ describe('User Login Authentication', () => {
 
   describe('Edge cases', () => {
     it('should handle database errors gracefully', async () => {
-      vi.mocked(prisma.user.findUnique).mockRejectedValue(
+      (prisma.user.findUnique as ReturnType<typeof vi.fn>).mockRejectedValue(
         new Error('Database connection error')
       );
 
@@ -232,7 +246,9 @@ describe('User Login Authentication', () => {
     it('should handle user with null name', async () => {
       const mockUser = createMockUser({ name: null });
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
+      (prisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockUser
+      );
 
       const user = await prisma.user.findUnique({
         where: { email: 'test@example.com' },
@@ -242,7 +258,9 @@ describe('User Login Authentication', () => {
     });
 
     it('should handle case-sensitive email lookup', async () => {
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
+      (prisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
+        null
+      );
 
       const user = await prisma.user.findUnique({
         where: { email: 'Test@Example.com' },
@@ -259,7 +277,9 @@ describe('User Login Authentication', () => {
     it('should return correct user structure for session', async () => {
       const mockUser = createMockUser();
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
+      (prisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockUser
+      );
       vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
 
       const user = await prisma.user.findUnique({
@@ -290,7 +310,9 @@ describe('User Login Authentication', () => {
     it('should handle user with assigned apartments', async () => {
       const mockUser = mockUsers.withApartments;
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
+      (prisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockUser
+      );
 
       const user = await prisma.user.findUnique({
         where: { email: 'test@example.com' },
@@ -304,7 +326,9 @@ describe('User Login Authentication', () => {
     it('should handle user without assigned apartments', async () => {
       const mockUser = createMockUser();
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
+      (prisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockUser
+      );
 
       const user = await prisma.user.findUnique({
         where: { email: 'test@example.com' },
