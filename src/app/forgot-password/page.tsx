@@ -62,7 +62,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthLayout
-      title="Zapomniałeś hasła?"
+      title="Przywracanie hasła"
       description="Podaj adres email konta do przywrócenia hasła"
     >
       <form onSubmit={handleSubmit} className="space-y-4">

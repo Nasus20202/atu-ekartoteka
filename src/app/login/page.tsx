@@ -80,7 +80,7 @@ function LoginForm() {
               href="/forgot-password"
               className="text-xs font-medium text-primary hover:underline"
             >
-              Zapomniałeś hasła?
+              Przywracanie hasła
             </Link>
           </div>
           <Input
