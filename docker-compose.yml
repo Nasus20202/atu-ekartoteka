@@ -50,6 +50,9 @@ services:
 
       # Application URL
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+
+      # Tracking Script (optional)
+      NEXT_PUBLIC_TRACKING_SCRIPT: ${NEXT_PUBLIC_TRACKING_SCRIPT:-}
     env_file:
       - .env
     ports:

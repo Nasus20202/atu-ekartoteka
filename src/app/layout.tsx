@@ -6,6 +6,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { ConfirmProvider } from '@/components/confirm-dialog';
 import { SessionProvider } from '@/components/session-provider';
 import { ThemeProvider } from '@/components/theme-provider';
+import { TrackingScript } from '@/components/tracking-script';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -33,6 +34,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
+        <TrackingScript />
         <SessionProvider>
           <ThemeProvider attribute="class" enableSystem={true}>
             <ConfirmProvider>{children}</ConfirmProvider>
