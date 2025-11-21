@@ -1,0 +1,14 @@
+Nowa rejestracja użytkownika
+
+Nowy użytkownik zarejestrował się w systemie i oczekuje na zatwierdzenie.
+
+Dane użytkownika:
+- Imię i nazwisko: {{USER_NAME}}
+- Email: {{USER_EMAIL}}
+- Data rejestracji: {{REGISTRATION_DATE}}
+
+Aby zatwierdzić lub odrzucić użytkownika, przejdź do panelu administracyjnego:
+{{ADMIN_URL}}
+
+---
+To jest automatyczna wiadomość. Nie odpowiadaj na ten email.

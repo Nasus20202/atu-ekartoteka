@@ -27,21 +27,23 @@ pnpm dev
 
 Visit `http://localhost:3000/register` to create the first admin user.
 
-### Docker (Development)
+### Docker
 
 ```bash
+# Copy environment file
+cp .env.docker.example .env
+
+# Edit .env with your SMTP and other settings
+nano .env
+
 # Start all services
 docker-compose up -d
+
+# Check status
+docker-compose ps
 ```
 
-### Docker (Production)
-
-```bash
-# Quick start
-cp .env.prod.example .env.prod
-# Edit .env.prod with your configuration
-docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
-```
+See [Docker Documentation](docs/DOCKER.md) for detailed setup and troubleshooting.
 
 ## Scripts
 

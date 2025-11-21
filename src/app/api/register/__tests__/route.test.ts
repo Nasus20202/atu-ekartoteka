@@ -44,6 +44,7 @@ describe('Registration API', () => {
         name: userData.name,
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
+        emailVerified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -56,6 +57,7 @@ describe('Registration API', () => {
           name: userData.name,
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
+          emailVerified: true,
         },
       });
 
@@ -97,6 +99,7 @@ describe('Registration API', () => {
         name: 'Existing User',
         role: UserRole.TENANT,
         status: AccountStatus.APPROVED,
+        emailVerified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -135,6 +138,7 @@ describe('Registration API', () => {
         name: userData.name,
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
+        emailVerified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -146,6 +150,7 @@ describe('Registration API', () => {
           name: userData.name,
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
+          emailVerified: true,
         },
       });
 
@@ -167,6 +172,7 @@ describe('Registration API', () => {
         name: userData.name,
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
+        emailVerified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -178,6 +184,7 @@ describe('Registration API', () => {
           name: userData.name,
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
+          emailVerified: true,
         },
       });
 
@@ -198,6 +205,7 @@ describe('Registration API', () => {
         name: null,
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
+        emailVerified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -209,6 +217,7 @@ describe('Registration API', () => {
           name: null,
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
+          emailVerified: true,
         },
       });
 
@@ -236,6 +245,7 @@ describe('Registration API', () => {
         name: adminData.name,
         role: UserRole.ADMIN,
         status: AccountStatus.APPROVED,
+        emailVerified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -247,6 +257,7 @@ describe('Registration API', () => {
           name: adminData.name,
           role: UserRole.ADMIN,
           status: AccountStatus.APPROVED,
+          emailVerified: true,
         },
       });
 
@@ -263,6 +274,7 @@ describe('Registration API', () => {
         name: 'Existing Admin',
         role: UserRole.ADMIN,
         status: AccountStatus.APPROVED,
+        emailVerified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -294,6 +306,7 @@ describe('Registration API', () => {
         name: userData.name,
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
+        emailVerified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -305,6 +318,7 @@ describe('Registration API', () => {
           name: userData.name,
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
+          emailVerified: true,
         },
       });
 
@@ -334,6 +348,7 @@ describe('Registration API', () => {
         name: 'First Admin',
         role: UserRole.ADMIN,
         status: AccountStatus.APPROVED,
+        emailVerified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -347,6 +362,7 @@ describe('Registration API', () => {
           name: firstAdmin.name,
           role: UserRole.ADMIN,
           status: AccountStatus.APPROVED,
+          emailVerified: true,
         },
       });
 
@@ -363,6 +379,7 @@ describe('Registration API', () => {
         name: 'Regular User',
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
+        emailVerified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -376,6 +393,7 @@ describe('Registration API', () => {
           name: regularUser.name,
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
+          emailVerified: true,
         },
       });
 

@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 
 import { ConfirmProvider } from '@/components/confirm-dialog';
+import { SessionProvider } from '@/components/session-provider';
 import { ThemeProvider } from '@/components/theme-provider';
 
 const geistSans = Geist({
@@ -32,9 +33,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <ThemeProvider attribute="class" enableSystem={true}>
-          <ConfirmProvider>{children}</ConfirmProvider>
-        </ThemeProvider>
+        <SessionProvider>
+          <ThemeProvider attribute="class" enableSystem={true}>
+            <ConfirmProvider>{children}</ConfirmProvider>
+          </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   );

@@ -90,7 +90,7 @@ export default function RegisterPage() {
 
       setSuccess(true);
 
-      // Automatically sign in the user
+      // Automatically sign in the user after registration
       const signInResult = await signIn('credentials', {
         email: formData.email,
         password: formData.password,
@@ -100,7 +100,7 @@ export default function RegisterPage() {
       if (signInResult?.error) {
         // If auto-login fails, redirect to login page
         setTimeout(() => {
-          router.push('/login');
+          router.push('/login?registered=true');
         }, 2000);
       } else {
         // Successful login, redirect to dashboard

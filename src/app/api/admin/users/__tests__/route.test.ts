@@ -32,6 +32,7 @@ describe('Admin Users API', () => {
           name: 'Tenant One',
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
+          emailVerified: true,
           createdAt: new Date(),
           updatedAt: new Date(),
           apartments: [],
@@ -43,6 +44,7 @@ describe('Admin Users API', () => {
           name: 'Tenant Two',
           role: UserRole.TENANT,
           status: AccountStatus.APPROVED,
+          emailVerified: true,
           createdAt: new Date(),
           updatedAt: new Date(),
           apartments: [
@@ -88,6 +90,7 @@ describe('Admin Users API', () => {
           name: 'Pending User',
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
+          emailVerified: true,
           createdAt: new Date(),
           updatedAt: new Date(),
           apartments: [],
@@ -99,6 +102,7 @@ describe('Admin Users API', () => {
       const result = await prisma.user.findMany({
         where: {
           status: AccountStatus.PENDING,
+          emailVerified: true,
           role: UserRole.TENANT,
         },
         include: { apartments: true },
@@ -118,6 +122,7 @@ describe('Admin Users API', () => {
           name: 'Approved User',
           role: UserRole.TENANT,
           status: AccountStatus.APPROVED,
+          emailVerified: true,
           createdAt: new Date(),
           updatedAt: new Date(),
           apartment: {
@@ -143,6 +148,7 @@ describe('Admin Users API', () => {
       const result = await prisma.user.findMany({
         where: {
           status: AccountStatus.APPROVED,
+          emailVerified: true,
           role: UserRole.TENANT,
         },
         include: { apartments: true },
@@ -163,6 +169,7 @@ describe('Admin Users API', () => {
         name: 'Test User',
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
+        emailVerified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
         apartments: [],
@@ -171,6 +178,7 @@ describe('Admin Users API', () => {
       const updatedUser = {
         ...mockUser,
         status: AccountStatus.APPROVED,
+        emailVerified: true,
         apartments: [],
       };
 
@@ -181,6 +189,7 @@ describe('Admin Users API', () => {
         where: { id: '1' },
         data: {
           status: AccountStatus.APPROVED,
+          emailVerified: true,
           apartments: { set: [] },
         },
         include: { apartments: true },
@@ -198,6 +207,7 @@ describe('Admin Users API', () => {
         name: 'Test User',
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
+        emailVerified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
         apartments: [],
@@ -226,6 +236,7 @@ describe('Admin Users API', () => {
       const updatedUser = {
         ...mockUser,
         status: AccountStatus.APPROVED,
+        emailVerified: true,
         apartments: [mockApartment],
       };
 
@@ -246,6 +257,7 @@ describe('Admin Users API', () => {
         where: { id: '1' },
         data: {
           status: AccountStatus.APPROVED,
+          emailVerified: true,
         },
         include: { apartments: true },
       });
@@ -262,6 +274,7 @@ describe('Admin Users API', () => {
         name: 'Test User',
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
+        emailVerified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
         apartments: [],
@@ -270,6 +283,7 @@ describe('Admin Users API', () => {
       const updatedUser = {
         ...mockUser,
         status: AccountStatus.REJECTED,
+        emailVerified: true,
         apartments: [],
       };
 
@@ -280,6 +294,7 @@ describe('Admin Users API', () => {
         where: { id: '1' },
         data: {
           status: AccountStatus.REJECTED,
+          emailVerified: true,
           apartments: { set: [] },
         },
         include: { apartments: true },
@@ -297,6 +312,7 @@ describe('Admin Users API', () => {
         name: 'Test User',
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
+        emailVerified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
         apartments: [],
@@ -326,6 +342,7 @@ describe('Admin Users API', () => {
           name: 'Other User',
           role: UserRole.TENANT,
           status: AccountStatus.APPROVED,
+          emailVerified: true,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -367,6 +384,7 @@ describe('Admin Users API', () => {
         name: 'Test User',
         role: UserRole.TENANT,
         status: AccountStatus.APPROVED,
+        emailVerified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
         apartments: [{ id: 'apt1', externalId: 'EXT1', number: '1' }],
@@ -375,6 +393,7 @@ describe('Admin Users API', () => {
       const updatedUser = {
         ...mockUser,
         status: AccountStatus.REJECTED,
+        emailVerified: true,
         apartments: [],
       };
 
@@ -385,6 +404,7 @@ describe('Admin Users API', () => {
         where: { id: '1' },
         data: {
           status: AccountStatus.REJECTED,
+          emailVerified: true,
           apartments: { set: [] },
         },
         include: { apartments: true },

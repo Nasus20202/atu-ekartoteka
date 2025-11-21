@@ -2,7 +2,13 @@ import { hash } from 'bcryptjs';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/database/prisma';
+import { getEmailService } from '@/lib/email/email-service';
+import {
+  generateSecureToken,
+  getVerificationExpiration,
+} from '@/lib/email/verification-utils';
 import { createLogger } from '@/lib/logger';
+import { notifyAdminsOfNewUser } from '@/lib/notifications/new-user-registration';
 import { AccountStatus, UserRole } from '@/lib/types';
 
 const logger = createLogger('api:register');
@@ -88,6 +94,7 @@ export async function POST(req: NextRequest) {
         name: name || null,
         role,
         status,
+        emailVerified: isFirstAdmin ? true : false, // First admin is auto-verified
       },
       select: {
         id: true,
@@ -95,9 +102,63 @@ export async function POST(req: NextRequest) {
         name: true,
         role: true,
         status: true,
+        emailVerified: true,
         createdAt: true,
       },
     });
+
+    // Send verification email for non-admin users
+    if (!isFirstAdmin) {
+      try {
+        const verificationToken = generateSecureToken();
+        const expiresAt = getVerificationExpiration(24);
+
+        // Store verification token in database
+        await prisma.emailVerification.create({
+          data: {
+            userId: user.id,
+            code: verificationToken,
+            expiresAt,
+          },
+        });
+
+        // Send verification email
+        const emailService = getEmailService();
+        await emailService.sendVerificationEmail(
+          user.email,
+          verificationToken,
+          user.name || undefined
+        );
+
+        logger.info(
+          { email: user.email, userId: user.id },
+          'Verification email sent'
+        );
+      } catch (emailError) {
+        logger.error(
+          { error: emailError, email: user.email },
+          'Failed to send verification email'
+        );
+        // Don't fail registration if email fails
+      }
+    }
+
+    // Notify admins of new user registration (for non-admin users)
+    if (!isFirstAdmin) {
+      try {
+        await notifyAdminsOfNewUser(
+          user.email,
+          user.name || 'Brak imienia',
+          user.createdAt
+        );
+      } catch (notificationError) {
+        logger.error(
+          { error: notificationError, email: user.email },
+          'Failed to notify admins of new user'
+        );
+        // Don't fail registration if notification fails
+      }
+    }
 
     logger.info(
       { email: user.email, role: user.role, status: user.status },
@@ -106,8 +167,11 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       {
-        message: 'Konto utworzone pomyślnie',
+        message: isFirstAdmin
+          ? 'Konto utworzone pomyślnie'
+          : 'Konto utworzone pomyślnie. Sprawdź swoją skrzynkę email, aby potwierdzić adres.',
         user,
+        requiresVerification: !isFirstAdmin,
       },
       { status: 201 }
     );

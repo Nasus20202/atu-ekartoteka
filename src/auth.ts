@@ -14,6 +14,7 @@ interface ExtendedUser {
   name: string | null;
   role: string;
   status: string;
+  emailVerified: boolean;
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -64,7 +65,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         logger.info(
-          { email: user.email, role: user.role, status: user.status },
+          {
+            email: user.email,
+            role: user.role,
+            status: user.status,
+            emailVerified: user.emailVerified,
+          },
           'User logged in successfully'
         );
 
@@ -74,6 +80,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name,
           role: user.role,
           status: user.status,
+          emailVerified: user.emailVerified,
         };
       },
     }),
@@ -98,14 +105,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             name: true,
             role: true,
             status: true,
+            emailVerified: true,
           },
         });
 
         if (user) {
-          const extendedSession = session.user as ExtendedUser;
-          extendedSession.id = user.id;
-          extendedSession.role = user.role;
-          extendedSession.status = user.status;
+          // Extend session with user data
+          Object.assign(session.user, {
+            id: user.id,
+            role: user.role,
+            status: user.status,
+            emailVerified: user.emailVerified,
+          });
         }
       }
       return session;

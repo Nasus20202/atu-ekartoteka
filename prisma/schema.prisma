@@ -35,22 +35,26 @@ model HomeownersAssociation {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String?
-  role      UserRole @default(TENANT)
-  status    AccountStatus @default(PENDING)
+  id             String   @id @default(cuid())
+  email          String   @unique
+  password       String
+  name           String?
+  role           UserRole @default(TENANT)
+  status         AccountStatus @default(PENDING)
+  emailVerified  Boolean  @default(false)
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
   // Relationship with apartments (one-to-many: one user can own multiple apartments)
-  apartments  Apartment[]
+  apartments         Apartment[]
+  emailVerifications EmailVerification[]
+  passwordResets     PasswordReset[]
   
   @@index([email])
   @@index([role])
   @@index([status])
+  @@index([emailVerified])
 }
 
 model Apartment {
@@ -183,4 +187,36 @@ model Payment {
   @@unique([apartmentId, year])
   @@index([apartmentId])
   @@index([year])
+}
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code      String   @unique
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([code])
+  @@index([expiresAt])
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
 }

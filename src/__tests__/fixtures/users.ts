@@ -7,6 +7,7 @@ export const createMockUser = (
     name?: string | null;
     role?: UserRole;
     status?: AccountStatus;
+    emailVerified?: boolean;
     apartments?: unknown[];
   } = {}
 ) => ({
@@ -16,6 +17,7 @@ export const createMockUser = (
   name: 'Test User',
   role: UserRole.TENANT,
   status: AccountStatus.APPROVED,
+  emailVerified: true,
   createdAt: new Date(),
   updatedAt: new Date(),
   apartments: [],

@@ -1,0 +1,119 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nowa rejestracja użytkownika</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+    "
+  >
+    <table role="presentation" style="width: 100%; border-collapse: collapse">
+      <tr>
+        <td align="center" style="padding: 40px 0">
+          <table
+            role="presentation"
+            style="
+              width: 600px;
+              border-collapse: collapse;
+              background-color: #ffffff;
+              border-radius: 8px;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            "
+          >
+            <tr>
+              <td style="padding: 40px 30px">
+                <h1 style="margin: 0 0 20px 0; color: #333333; font-size: 24px">
+                  Nowa rejestracja użytkownika
+                </h1>
+                <p
+                  style="
+                    margin: 0 0 20px 0;
+                    color: #666666;
+                    font-size: 16px;
+                    line-height: 1.5;
+                  "
+                >
+                  Nowy użytkownik zarejestrował się w systemie i oczekuje na
+                  zatwierdzenie.
+                </p>
+
+                <div
+                  style="
+                    background-color: #f8f9fa;
+                    border-radius: 4px;
+                    padding: 20px;
+                    margin: 0 0 20px 0;
+                  "
+                >
+                  <h3
+                    style="margin: 0 0 10px 0; color: #333333; font-size: 16px"
+                  >
+                    Dane użytkownika:
+                  </h3>
+                  <p style="margin: 5px 0; color: #666666; font-size: 14px">
+                    <strong>Imię i nazwisko:</strong> {{USER_NAME}}
+                  </p>
+                  <p style="margin: 5px 0; color: #666666; font-size: 14px">
+                    <strong>Email:</strong> {{USER_EMAIL}}
+                  </p>
+                  <p style="margin: 5px 0; color: #666666; font-size: 14px">
+                    <strong>Data rejestracji:</strong> {{REGISTRATION_DATE}}
+                  </p>
+                </div>
+
+                <p
+                  style="
+                    margin: 0 0 20px 0;
+                    color: #666666;
+                    font-size: 16px;
+                    line-height: 1.5;
+                  "
+                >
+                  Aby zatwierdzić lub odrzucić użytkownika, przejdź do panelu
+                  administracyjnego:
+                </p>
+
+                <table role="presentation" style="margin: 0 0 20px 0">
+                  <tr>
+                    <td style="border-radius: 4px; background-color: #007bff">
+                      <a
+                        href="{{ADMIN_URL}}"
+                        style="
+                          display: inline-block;
+                          padding: 12px 24px;
+                          color: #ffffff;
+                          text-decoration: none;
+                          font-size: 16px;
+                          font-weight: bold;
+                        "
+                      >
+                        Przejdź do panelu administracyjnego
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <p
+                  style="
+                    margin: 0;
+                    color: #999999;
+                    font-size: 14px;
+                    line-height: 1.5;
+                  "
+                >
+                  To jest automatyczna wiadomość. Nie odpowiadaj na ten email.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

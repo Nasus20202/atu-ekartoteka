@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
+import { notifyAccountApproved } from '@/lib/notifications/account-status';
 import { AccountStatus, UserRole } from '@/lib/types';
 
 const logger = createLogger('api:admin:users');
@@ -152,6 +153,11 @@ export async function PATCH(req: NextRequest) {
       },
       'User status updated'
     );
+
+    // Send notification if account was approved
+    if (status === AccountStatus.APPROVED) {
+      await notifyAccountApproved(updatedUser.email, updatedUser.name);
+    }
 
     return NextResponse.json({ user: updatedUser });
   } catch (error) {

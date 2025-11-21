@@ -53,6 +53,7 @@ describe('Setup Check Endpoint', () => {
         name: 'Admin User',
         role: UserRole.ADMIN,
         status: AccountStatus.APPROVED,
+        emailVerified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -103,6 +104,7 @@ describe('Setup Check Endpoint', () => {
         name: 'First Admin',
         role: UserRole.ADMIN,
         status: AccountStatus.APPROVED,
+        emailVerified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -123,6 +125,7 @@ describe('Setup Check Endpoint', () => {
         name: 'Admin User',
         role: UserRole.ADMIN,
         status: AccountStatus.APPROVED,
+        emailVerified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -203,6 +206,7 @@ describe('Setup Check Endpoint', () => {
         name: 'Admin User',
         role: UserRole.ADMIN,
         status: AccountStatus.PENDING,
+        emailVerified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -224,6 +228,7 @@ describe('Setup Check Endpoint', () => {
         name: 'Admin User',
         role: UserRole.ADMIN,
         status: AccountStatus.REJECTED,
+        emailVerified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       });

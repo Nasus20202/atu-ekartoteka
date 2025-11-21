@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 
 import { auth } from '@/auth';
 import { DashboardNavbar } from '@/components/dashboard-navbar';
+import { EmailVerificationBanner } from '@/components/email-verification-banner';
 
 export default async function DashboardLayout({
   children,
@@ -17,6 +18,7 @@ export default async function DashboardLayout({
   return (
     <>
       <DashboardNavbar userId={session.user.id} />
+      <EmailVerificationBanner />
       {children}
     </>
   );

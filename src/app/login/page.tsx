@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { signIn, useSession } from 'next-auth/react';
+import { Suspense, useEffect, useState } from 'react';
 
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
@@ -17,12 +17,25 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { status } = useSession();
+
+  const resetSuccess = searchParams.get('reset') === 'success';
+  const registered = searchParams.get('registered') === 'true';
+  const verified = searchParams.get('verified') === 'true';
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.push('/');
+    }
+  }, [status, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,7 +89,15 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Hasło</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Hasło</Label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs font-medium text-primary hover:underline"
+                >
+                  Zapomniałeś hasła?
+                </Link>
+              </div>
               <Input
                 id="password"
                 type="password"
@@ -87,6 +108,25 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
+
+            {resetSuccess && (
+              <div className="rounded-lg bg-green-50 dark:bg-green-900/20 p-3 text-sm text-green-800 dark:text-green-400">
+                Hasło zostało zmienione. Możesz się teraz zalogować.
+              </div>
+            )}
+
+            {registered && (
+              <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 p-3 text-sm text-blue-800 dark:text-blue-400">
+                Konto utworzone. Sprawdź email i zaloguj się.
+              </div>
+            )}
+
+            {verified && (
+              <div className="rounded-lg bg-green-50 dark:bg-green-900/20 p-3 text-sm text-green-800 dark:text-green-400">
+                Email zweryfikowany pomyślnie!
+              </div>
+            )}
+
             {error && (
               <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
                 {error}
@@ -109,5 +149,19 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
+          <p>Ładowanie...</p>
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

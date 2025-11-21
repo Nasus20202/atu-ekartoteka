@@ -174,6 +174,7 @@ describe('Apartment Assignment', () => {
       const updatedUser = {
         ...mockUser,
         status: AccountStatus.REJECTED,
+        emailVerified: true,
         apartments: [],
       };
 
@@ -190,6 +191,7 @@ describe('Apartment Assignment', () => {
         where: { id: 'user1' },
         data: {
           status: AccountStatus.REJECTED,
+          emailVerified: true,
           apartments: { set: [] },
         },
         include: { apartments: true },
@@ -225,6 +227,7 @@ describe('Apartment Assignment', () => {
           id: 'user1',
           email: 'user@example.com',
           status: AccountStatus.PENDING,
+          emailVerified: true,
         }),
         apartment: null,
       };

@@ -48,6 +48,7 @@ describe('User Profile API', () => {
       name: 'Test User',
       role: UserRole.TENANT,
       status: AccountStatus.APPROVED,
+      emailVerified: true,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

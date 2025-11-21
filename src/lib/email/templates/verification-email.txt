@@ -1,0 +1,10 @@
+Witaj{{NAME}}!
+
+Dziękujemy za rejestrację. Aby dokończyć proces rejestracji, potwierdź swój adres email.
+
+Kliknij poniższy link, aby potwierdzić swój adres email:
+{{VERIFICATION_URL}}
+
+Link wygaśnie za 24 godziny.
+
+Jeśli nie rejestrowałeś się w naszym serwisie, zignoruj tę wiadomość.

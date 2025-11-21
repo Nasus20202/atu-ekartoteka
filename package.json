@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "dev:pretty": "next dev | pino-pretty",
-    "build": "next build",
+    "build": "next build && npm run copy:templates",
+    "copy:templates": "mkdir -p .next/standalone/src/lib/email/templates && cp -r src/lib/email/templates/* .next/standalone/src/lib/email/templates/",
     "start": "next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
@@ -37,6 +38,8 @@
     "next": "16.0.3",
     "next-auth": "5.0.0-beta.30",
     "next-themes": "^0.4.6",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^7.0.10",
     "pg": "^8.16.3",
     "pino": "^10.1.0",
     "react": "19.2.0",
@@ -50,11 +53,13 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/bcrypt": "^6.0.0",
     "@types/node": "^24",
+    "@types/node-cron": "^3.0.11",
+    "@types/nodemailer": "^7.0.4",
     "@types/pg": "^8.15.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^5.1.1",
-    "@vitest/ui": "^4.0.10",
+    "@vitest/ui": "^4.0.12",
     "eslint": "^9",
     "eslint-config-next": "16.0.3",
     "eslint-config-prettier": "^10.1.8",
@@ -65,14 +70,14 @@
     "husky": "^9.1.7",
     "iconv-lite": "^0.7.0",
     "jsdom": "^27.2.0",
-    "lint-staged": "^16.2.6",
+    "lint-staged": "^16.2.7",
     "pino-pretty": "^13.1.2",
     "prettier": "^3.6.2",
     "prisma": "^7.0.0",
     "tailwindcss": "^4",
     "tsx": "^4.20.6",
     "typescript": "^5",
-    "vitest": "^4.0.10"
+    "vitest": "^4.0.12"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs}": [
@@ -86,6 +91,14 @@
   "pnpm": {
     "overrides": {
       "@auth/core": "*"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "@prisma/engines",
+      "bcrypt",
+      "esbuild",
+      "prisma",
+      "sharp",
+      "unrs-resolver"
+    ]
   }
 }

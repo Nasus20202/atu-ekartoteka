@@ -1,0 +1,10 @@
+Gratulacje!
+
+Witaj{{NAME}},
+
+Twoje konto zostało zatwierdzone przez administratora. Możesz teraz zalogować się do systemu.
+
+Zaloguj się tutaj:
+{{LOGIN_URL}}
+
+Dziękujemy za cierpliwość!

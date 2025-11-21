@@ -17,7 +17,7 @@ services:
       timeout: 5s
       retries: 5
 
-  app:
+  ekartoteka:
     build:
       context: .
       dockerfile: Dockerfile
@@ -25,14 +25,33 @@ services:
     restart: unless-stopped
     depends_on:
       - db
-      - migrations
+      - ekartoteka-migrations
     environment:
+      # Database
       DATABASE_URL: postgresql://atu_user:atu_password@db:5432/atu_ekartoteka?schema=public
+
+      # NextAuth
       NEXTAUTH_URL: http://localhost:3000
       AUTH_TRUST_HOST: 'true'
-      NEXTAUTH_SECRET: your-secret-key-change-this-in-production
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-your-secret-key-change-this-in-production}
+
+      # Node Environment
       NODE_ENV: production
       RUN_MIGRATIONS_ON_STARTUP: 'false'
+
+      # Email Configuration (SMTP)
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@example.com}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-ATU Ekartoteka}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+
+      # Application URL
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+    env_file:
+      - .env
     ports:
       - '3000:3000'
     volumes:
@@ -48,7 +67,7 @@ services:
       retries: 3
       start_period: 40s
 
-  migrations:
+  ekartoteka-migrations:
     build:
       context: .
       dockerfile: Dockerfile
