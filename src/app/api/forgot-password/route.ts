@@ -4,6 +4,7 @@ import { prisma } from '@/lib/database/prisma';
 import { getEmailService } from '@/lib/email/email-service';
 import { generateSecureToken } from '@/lib/email/verification-utils';
 import { createLogger } from '@/lib/logger';
+import { verifyTurnstileToken } from '@/lib/turnstile';
 
 const logger = createLogger('api:forgot-password');
 
@@ -13,7 +14,17 @@ const logger = createLogger('api:forgot-password');
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { email } = body;
+    const { email, turnstileToken } = body;
+
+    // Validate Turnstile
+    const valid = await verifyTurnstileToken(turnstileToken);
+    if (!valid) {
+      logger.warn({ email }, 'Forgot password failed: invalid Turnstile token');
+      return NextResponse.json(
+        { error: 'Nieprawidłowe potwierdzenie turnstile' },
+        { status: 400 }
+      );
+    }
 
     if (!email) {
       return NextResponse.json(

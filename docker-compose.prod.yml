@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-atu_password}
       POSTGRES_DB: ${POSTGRES_DB:-atu_ekartoteka}
     ports:
-      - '${POSTGRES_PORT:-5432}:5432'
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -16,8 +16,8 @@ services:
     healthcheck:
       test:
         [
-          'CMD-SHELL',
-          'pg_isready -U ${POSTGRES_USER:-atu_user} -d ${POSTGRES_DB:-atu_ekartoteka}',
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-atu_user} -d ${POSTGRES_DB:-atu_ekartoteka}",
         ]
       interval: 10s
       timeout: 5s
@@ -32,10 +32,10 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-atu_user}:${POSTGRES_PASSWORD:-atu_password}@db:5432/${POSTGRES_DB:-atu_ekartoteka}?schema=public
       NODE_ENV: production
-    command: ['pnpm', 'db:deploy']
+    command: ["pnpm", "db:deploy"]
     networks:
       - atu-network
-    restart: 'no'
+    restart: "no"
 
   ekartoteka:
     image: ${APP_IMAGE:-ghcr.io/nasus20202/atu-ekartoteka:latest}
@@ -52,12 +52,12 @@ services:
 
       # NextAuth
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
-      AUTH_TRUST_HOST: 'true'
+      AUTH_TRUST_HOST: "true"
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?NEXTAUTH_SECRET must be set}
 
       # Node Environment
       NODE_ENV: production
-      RUN_MIGRATIONS_ON_STARTUP: 'false'
+      RUN_MIGRATIONS_ON_STARTUP: "false"
 
       # Email Configuration (SMTP)
       EMAIL_FROM: ${EMAIL_FROM:-noreply@example.com}
@@ -71,12 +71,16 @@ services:
       # Application URL
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
 
+      # Cloudflare Turnstile
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY:-}
+      TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-}
+
       # Cron Job Secret
       CRON_SECRET: ${CRON_SECRET}
     env_file:
       - .env
     ports:
-      - '${APP_PORT:-3000}:3000'
+      - "${APP_PORT:-3000}:3000"
     volumes:
       - app_data:/app/data
     networks:
@@ -84,8 +88,8 @@ services:
     healthcheck:
       test:
         [
-          'CMD-SHELL',
-          'wget --no-verbose --tries=1 --spider http://localhost:3000/api/health/readiness || exit 1',
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health/readiness || exit 1",
         ]
       interval: 30s
       timeout: 10s

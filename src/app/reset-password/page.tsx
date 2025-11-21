@@ -1,5 +1,6 @@
 'use client';
 
+import { Turnstile } from '@marsidev/react-turnstile';
 import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -21,6 +22,7 @@ function ResetPasswordContent() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +49,7 @@ function ResetPasswordContent() {
       const response = await fetch('/api/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, password }),
+        body: JSON.stringify({ token, password, turnstileToken }),
       });
 
       const data = await response.json();
@@ -124,6 +126,14 @@ function ResetPasswordContent() {
           <p className="text-xs text-muted-foreground">Minimum 8 znaków</p>
         </div>
 
+        <div className="pt-2 flex items-center justify-center">
+          <Turnstile
+            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY as string}
+            onSuccess={(token: string) => setTurnstileToken(token)}
+            onExpire={() => setTurnstileToken(null)}
+          />
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="confirmPassword">Potwierdź hasło</Label>
           <Input
@@ -144,7 +154,11 @@ function ResetPasswordContent() {
           </Alert>
         )}
 
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={loading || !turnstileToken}
+        >
           {loading ? 'Resetowanie...' : 'Zresetuj hasło'}
         </Button>
 

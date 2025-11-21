@@ -45,6 +45,11 @@ vi.mock('@/lib/logger', () => ({
   })),
 }));
 
+// Mock turnstile verification as always valid for tests
+vi.mock('@/lib/turnstile', () => ({
+  verifyTurnstileToken: vi.fn(() => Promise.resolve(true)),
+}));
+
 const { prisma } = await import('@/lib/database/prisma');
 const { notifyAdminsOfNewUser } = await import(
   '@/lib/notifications/new-user-registration'
@@ -77,6 +82,7 @@ describe('POST /api/register - Admin Notifications', () => {
         password: 'password123',
         name: 'New User',
         isFirstAdmin: false,
+        turnstileToken: 'test-turnstile-token',
       }),
     });
 
@@ -112,6 +118,7 @@ describe('POST /api/register - Admin Notifications', () => {
         password: 'password123',
         name: 'Admin User',
         isFirstAdmin: true,
+        turnstileToken: 'test-turnstile-token',
       }),
     });
 
@@ -148,6 +155,7 @@ describe('POST /api/register - Admin Notifications', () => {
         password: 'password123',
         name: 'New User',
         isFirstAdmin: false,
+        turnstileToken: 'test-turnstile-token',
       }),
     });
 
@@ -180,6 +188,7 @@ describe('POST /api/register - Admin Notifications', () => {
         email: 'newuser@example.com',
         password: 'password123',
         isFirstAdmin: false,
+        turnstileToken: 'test-turnstile-token',
       }),
     });
 

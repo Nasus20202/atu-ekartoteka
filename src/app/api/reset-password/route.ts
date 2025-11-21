@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
+import { verifyTurnstileToken } from '@/lib/turnstile';
 
 const logger = createLogger('api:reset-password');
 
@@ -12,7 +13,7 @@ const logger = createLogger('api:reset-password');
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { token, password } = body;
+    const { token, password, turnstileToken } = body;
 
     if (!token || !password) {
       return NextResponse.json(
@@ -57,6 +58,15 @@ export async function POST(req: NextRequest) {
 
     // Hash new password
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Verify turnstile token
+    const valid = await verifyTurnstileToken(turnstileToken);
+    if (!valid) {
+      return NextResponse.json(
+        { error: 'Nieprawidłowe potwierdzenie turnstile' },
+        { status: 400 }
+      );
+    }
 
     // Update password and mark token as used
     await prisma.$transaction([

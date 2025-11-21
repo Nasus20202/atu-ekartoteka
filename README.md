@@ -27,6 +27,43 @@ pnpm dev
 
 Visit `http://localhost:3000/register` to create the first admin user.
 
+## Environment variables
+
+- Database (Postgres):
+  - `DATABASE_URL` - Full Postgres connection string used by Prisma (production/development).
+  - `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `POSTGRES_PORT` - Used in docker-compose for provisioning the DB container.
+
+- NextAuth / Authentication:
+  - `NEXTAUTH_URL` - App URL used by NextAuth (e.g., `http://localhost:3000` or your domain).
+  - `NEXTAUTH_SECRET` - Secret used by NextAuth for session signing; always set in production.
+  - `AUTH_TRUST_HOST` - Optional; when set to `'true'`, trust host headers in proxied environments.
+
+- Application runtime / build:
+  - `NODE_ENV` - `development` or `production` (affects logs, email behavior, and more).
+  - `APP_PORT` - Port the app listens on (used in Docker compose examples).
+  - `APP_IMAGE` - For production Docker image definition.
+  - `RUN_MIGRATIONS_ON_STARTUP` - If `true`, the app will attempt to run DB migrations at startup.
+
+- Email (SMTP):
+  - `EMAIL_FROM` - From email address used in outbound messages.
+  - `EMAIL_FROM_NAME` - From display name.
+  - `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` - Standard SMTP configuration.
+
+- Application URLs & client-side script:
+  - `NEXT_PUBLIC_APP_URL` - Public URL used in email links and frontend redirection.
+  - `NEXT_PUBLIC_TRACKING_SCRIPT` - Optional: inline script used to load tracking providers (be cautious; sanitized strings only).
+
+- Security / process:
+  - `CRON_SECRET` - Optional secret used to protect cron-trigger endpoints.
+  - `LOG_LEVEL` - Optional: logging level used in production (e.g., `info`, `debug`).
+  - `ENABLE_TEST_LOGS` - Optional: set `true` to enable logs while running tests.
+
+- Cloudflare Turnstile (Captcha):
+  - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` - Client site key (public), used by the React widget.
+  - `TURNSTILE_SECRET_KEY` - Server secret key for token verification.
+
+Examples can be found in [`.env.example`](.env.example) and [`.env.docker.example`](.env.docker.example).
+
 ### Docker
 
 ```bash

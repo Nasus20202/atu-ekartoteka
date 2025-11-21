@@ -5,6 +5,7 @@ import Credentials from 'next-auth/providers/credentials';
 
 import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
+import { verifyTurnstileToken } from '@/lib/turnstile';
 
 const logger = createLogger('auth');
 
@@ -31,9 +32,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
+        turnstileToken: { label: 'Turnstile Token', type: 'text' },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
+        // Validate turnstile token
+        const turnstileToken =
+          typeof credentials.turnstileToken === 'string'
+            ? credentials.turnstileToken
+            : undefined;
+        const valid = await verifyTurnstileToken(turnstileToken);
+        if (!valid) {
+          logger.warn(
+            { email: credentials.email },
+            'Login failed: invalid Turnstile token'
+          );
           return null;
         }
 

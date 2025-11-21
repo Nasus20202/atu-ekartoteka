@@ -8,11 +8,11 @@ services:
       POSTGRES_PASSWORD: atu_password
       POSTGRES_DB: atu_ekartoteka
     ports:
-      - '5432:5432'
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/18/docker
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U atu_user -d atu_ekartoteka']
+      test: ["CMD-SHELL", "pg_isready -U atu_user -d atu_ekartoteka"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -32,12 +32,12 @@ services:
 
       # NextAuth
       NEXTAUTH_URL: http://localhost:3000
-      AUTH_TRUST_HOST: 'true'
+      AUTH_TRUST_HOST: "true"
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-your-secret-key-change-this-in-production}
 
       # Node Environment
       NODE_ENV: production
-      RUN_MIGRATIONS_ON_STARTUP: 'false'
+      RUN_MIGRATIONS_ON_STARTUP: "false"
 
       # Email Configuration (SMTP)
       EMAIL_FROM: ${EMAIL_FROM:-noreply@example.com}
@@ -51,19 +51,23 @@ services:
       # Application URL
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
 
+      # Cloudflare Turnstile
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY:-}
+      TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-}
+
       # Tracking Script (optional)
       NEXT_PUBLIC_TRACKING_SCRIPT: ${NEXT_PUBLIC_TRACKING_SCRIPT:-}
     env_file:
       - .env
     ports:
-      - '3000:3000'
+      - "3000:3000"
     volumes:
       - ./data:/app/data
     healthcheck:
       test:
         [
-          'CMD-SHELL',
-          'wget --no-verbose --tries=1 --spider http://localhost:3000/api/health/readiness || exit 1',
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health/readiness || exit 1",
         ]
       interval: 30s
       timeout: 10s
@@ -81,8 +85,8 @@ services:
     environment:
       DATABASE_URL: postgresql://atu_user:atu_password@db:5432/atu_ekartoteka?schema=public
       NODE_ENV: production
-    command: ['pnpm', 'db:deploy']
-    restart: 'no'
+    command: ["pnpm", "db:deploy"]
+    restart: "no"
 
 volumes:
   postgres_data:

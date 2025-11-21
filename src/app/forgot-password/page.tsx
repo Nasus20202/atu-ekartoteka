@@ -1,5 +1,6 @@
 'use client';
 
+import { Turnstile } from '@marsidev/react-turnstile';
 import { Mail } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -15,6 +16,7 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +27,7 @@ export default function ForgotPasswordPage() {
       const response = await fetch('/api/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, turnstileToken }),
       });
 
       const data = await response.json();
@@ -85,9 +87,21 @@ export default function ForgotPasswordPage() {
           </Alert>
         )}
 
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={loading || !turnstileToken}
+        >
           {loading ? 'Wysyłanie...' : 'Wyślij link resetowania'}
         </Button>
+
+        <div className="pt-2 flex items-center justify-center">
+          <Turnstile
+            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY as string}
+            onSuccess={(token: string) => setTurnstileToken(token)}
+            onExpire={() => setTurnstileToken(null)}
+          />
+        </div>
 
         <div className="text-center text-sm">
           <Link

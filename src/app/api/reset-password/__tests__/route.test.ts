@@ -31,6 +31,11 @@ vi.mock('@/lib/logger', () => ({
   })),
 }));
 
+// Mock turnstile verification as always valid for tests
+vi.mock('@/lib/turnstile', () => ({
+  verifyTurnstileToken: vi.fn(() => Promise.resolve(true)),
+}));
+
 const { prisma } = await import('@/lib/database/prisma');
 
 describe('POST /api/reset-password', () => {
@@ -41,7 +46,10 @@ describe('POST /api/reset-password', () => {
   it('should return 400 if token or password is missing', async () => {
     const req = new NextRequest('http://localhost:3000/api/reset-password', {
       method: 'POST',
-      body: JSON.stringify({ token: 'abc' }),
+      body: JSON.stringify({
+        token: 'abc',
+        turnstileToken: 'test-turnstile-token',
+      }),
     });
 
     const response = await POST(req);
@@ -54,7 +62,11 @@ describe('POST /api/reset-password', () => {
   it('should return 400 if password is too short', async () => {
     const req = new NextRequest('http://localhost:3000/api/reset-password', {
       method: 'POST',
-      body: JSON.stringify({ token: 'abc', password: 'short' }),
+      body: JSON.stringify({
+        token: 'abc',
+        password: 'short',
+        turnstileToken: 'test-turnstile-token',
+      }),
     });
 
     const response = await POST(req);
@@ -69,7 +81,11 @@ describe('POST /api/reset-password', () => {
 
     const req = new NextRequest('http://localhost:3000/api/reset-password', {
       method: 'POST',
-      body: JSON.stringify({ token: 'invalid', password: 'newpass123' }),
+      body: JSON.stringify({
+        token: 'invalid',
+        password: 'newpass123',
+        turnstileToken: 'test-turnstile-token',
+      }),
     });
 
     const response = await POST(req);
@@ -105,7 +121,11 @@ describe('POST /api/reset-password', () => {
 
     const req = new NextRequest('http://localhost:3000/api/reset-password', {
       method: 'POST',
-      body: JSON.stringify({ token: 'expired-token', password: 'newpass123' }),
+      body: JSON.stringify({
+        token: 'expired-token',
+        password: 'newpass123',
+        turnstileToken: 'test-turnstile-token',
+      }),
     });
 
     const response = await POST(req);
@@ -141,7 +161,11 @@ describe('POST /api/reset-password', () => {
 
     const req = new NextRequest('http://localhost:3000/api/reset-password', {
       method: 'POST',
-      body: JSON.stringify({ token: 'used-token', password: 'newpass123' }),
+      body: JSON.stringify({
+        token: 'used-token',
+        password: 'newpass123',
+        turnstileToken: 'test-turnstile-token',
+      }),
     });
 
     const response = await POST(req);
@@ -181,7 +205,11 @@ describe('POST /api/reset-password', () => {
 
     const req = new NextRequest('http://localhost:3000/api/reset-password', {
       method: 'POST',
-      body: JSON.stringify({ token: 'valid-token', password: 'newpass123' }),
+      body: JSON.stringify({
+        token: 'valid-token',
+        password: 'newpass123',
+        turnstileToken: 'test-turnstile-token',
+      }),
     });
 
     const response = await POST(req);
@@ -199,7 +227,11 @@ describe('POST /api/reset-password', () => {
 
     const req = new NextRequest('http://localhost:3000/api/reset-password', {
       method: 'POST',
-      body: JSON.stringify({ token: 'token', password: 'newpass123' }),
+      body: JSON.stringify({
+        token: 'token',
+        password: 'newpass123',
+        turnstileToken: 'test-turnstile-token',
+      }),
     });
 
     const response = await POST(req);

@@ -1,5 +1,6 @@
 'use client';
 
+import { Turnstile } from '@marsidev/react-turnstile';
 import { CheckCircle, Loader2, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -25,6 +26,7 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState(false);
   const [isFirstAdmin, setIsFirstAdmin] = useState(false);
   const [checkingSetup, setCheckingSetup] = useState(true);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   useEffect(() => {
     // Check if this is first run (no admin exists)
@@ -73,6 +75,7 @@ export default function RegisterPage() {
           password: formData.password,
           name: formData.name || undefined,
           isFirstAdmin,
+          turnstileToken,
         }),
       });
 
@@ -88,6 +91,7 @@ export default function RegisterPage() {
       const signInResult = await signIn('credentials', {
         email: formData.email,
         password: formData.password,
+        turnstileToken,
         redirect: false,
       });
 
@@ -227,13 +231,25 @@ export default function RegisterPage() {
           />
         </div>
 
+        <div className="pt-2 flex items-center justify-center">
+          <Turnstile
+            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY as string}
+            onSuccess={(token: string) => setTurnstileToken(token)}
+            onExpire={() => setTurnstileToken(null)}
+          />
+        </div>
+
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={loading || !turnstileToken}
+        >
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

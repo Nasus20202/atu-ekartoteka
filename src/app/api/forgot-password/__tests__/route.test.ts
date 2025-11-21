@@ -34,6 +34,11 @@ vi.mock('@/lib/logger', () => ({
   })),
 }));
 
+// Mock turnstile verification as always valid for tests
+vi.mock('@/lib/turnstile', () => ({
+  verifyTurnstileToken: vi.fn(() => Promise.resolve(true)),
+}));
+
 const { prisma } = await import('@/lib/database/prisma');
 
 describe('POST /api/forgot-password', () => {
@@ -44,7 +49,7 @@ describe('POST /api/forgot-password', () => {
   it('should return 400 if email is missing', async () => {
     const req = new NextRequest('http://localhost:3000/api/forgot-password', {
       method: 'POST',
-      body: JSON.stringify({}),
+      body: JSON.stringify({ turnstileToken: 'test-turnstile-token' }),
     });
 
     const response = await POST(req);
@@ -59,7 +64,10 @@ describe('POST /api/forgot-password', () => {
 
     const req = new NextRequest('http://localhost:3000/api/forgot-password', {
       method: 'POST',
-      body: JSON.stringify({ email: 'nonexistent@example.com' }),
+      body: JSON.stringify({
+        email: 'nonexistent@example.com',
+        turnstileToken: 'test-turnstile-token',
+      }),
     });
 
     const response = await POST(req);
@@ -69,6 +77,26 @@ describe('POST /api/forgot-password', () => {
     expect(data.message).toBe(
       'Jeśli konto istnieje, email z instrukcjami został wysłany'
     );
+  });
+
+  it('should return 400 if turnstile token is invalid', async () => {
+    // Make turnstile validation fail
+    const { verifyTurnstileToken } = await import('@/lib/turnstile');
+    vi.mocked(verifyTurnstileToken).mockResolvedValueOnce(false);
+
+    const req = new NextRequest('http://localhost:3000/api/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: 'test@example.com',
+        turnstileToken: 'invalid-token',
+      }),
+    });
+
+    const response = await POST(req);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.error).toBe('Nieprawidłowe potwierdzenie turnstile');
   });
 
   it('should create password reset token and send email for existing user', async () => {
@@ -98,7 +126,10 @@ describe('POST /api/forgot-password', () => {
 
     const req = new NextRequest('http://localhost:3000/api/forgot-password', {
       method: 'POST',
-      body: JSON.stringify({ email: 'test@example.com' }),
+      body: JSON.stringify({
+        email: 'test@example.com',
+        turnstileToken: 'test-turnstile-token',
+      }),
     });
 
     const response = await POST(req);
@@ -121,7 +152,10 @@ describe('POST /api/forgot-password', () => {
 
     const req = new NextRequest('http://localhost:3000/api/forgot-password', {
       method: 'POST',
-      body: JSON.stringify({ email: 'test@example.com' }),
+      body: JSON.stringify({
+        email: 'test@example.com',
+        turnstileToken: 'test-turnstile-token',
+      }),
     });
 
     const response = await POST(req);

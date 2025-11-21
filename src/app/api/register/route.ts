@@ -9,6 +9,7 @@ import {
 } from '@/lib/email/verification-utils';
 import { createLogger } from '@/lib/logger';
 import { notifyAdminsOfNewUser } from '@/lib/notifications/new-user-registration';
+import { verifyTurnstileToken } from '@/lib/turnstile';
 import { AccountStatus, UserRole } from '@/lib/types';
 
 const logger = createLogger('api:register');
@@ -16,7 +17,7 @@ const logger = createLogger('api:register');
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { email, password, name, isFirstAdmin } = body;
+    const { email, password, name, isFirstAdmin, turnstileToken } = body;
 
     logger.info({ email, isFirstAdmin }, 'Registration attempt');
 
@@ -40,6 +41,16 @@ export async function POST(req: NextRequest) {
     if (password.length < 8) {
       return NextResponse.json(
         { error: 'Hasło musi mieć co najmniej 8 znaków' },
+        { status: 400 }
+      );
+    }
+
+    // Verify Turnstile token
+    const isTurnstileValid = await verifyTurnstileToken(turnstileToken);
+    if (!isTurnstileValid) {
+      logger.warn({ email }, 'Registration failed: invalid Turnstile token');
+      return NextResponse.json(
+        { error: 'Nieprawidłowe potwierdzenie turnstile' },
         { status: 400 }
       );
     }

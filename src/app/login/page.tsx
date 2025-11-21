@@ -1,5 +1,6 @@
 'use client';
 
+import { Turnstile } from '@marsidev/react-turnstile';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -17,6 +18,7 @@ function LoginForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { status } = useSession();
@@ -41,6 +43,7 @@ function LoginForm() {
       const result = await signIn('credentials', {
         email,
         password,
+        turnstileToken,
         redirect: false,
       });
 
@@ -123,10 +126,21 @@ function LoginForm() {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? 'Logowanie...' : 'Zaloguj się'}
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={loading || !turnstileToken}
+        >
+          Zaloguj się
         </Button>
 
+        <div className="pt-2 flex items-center justify-center">
+          <Turnstile
+            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY as string}
+            onSuccess={(token: string) => setTurnstileToken(token)}
+            onExpire={() => setTurnstileToken(null)}
+          />
+        </div>
         <div className="text-center text-sm">
           <span className="text-muted-foreground">Nie masz konta? </span>
           <Link
