@@ -1,18 +1,13 @@
 'use client';
 
+import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
 
-import { ThemeToggle } from '@/components/theme-toggle';
+import { AuthLayout } from '@/components/auth-layout';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -74,115 +69,95 @@ function ResetPasswordContent() {
 
   if (!token) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-4 animate-fade-in">
-        <Card className="w-full max-w-md animate-scale-in">
-          <CardHeader>
-            <CardTitle>Nieprawidłowy link</CardTitle>
-            <CardDescription>
-              Link resetowania hasła jest nieprawidłowy lub wygasł.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link
-              href="/forgot-password"
-              className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
-            >
-              Wyślij nowy link resetowania
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
+      <AuthLayout
+        title="Nieprawidłowy link"
+        description="Link resetowania hasła jest nieprawidłowy lub wygasł."
+        icon={
+          <div className="rounded-full bg-red-100 p-3 dark:bg-red-950/50">
+            <AlertCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
+          </div>
+        }
+      >
+        <Button asChild className="w-full">
+          <Link href="/forgot-password">Wyślij nowy link resetowania</Link>
+        </Button>
+      </AuthLayout>
     );
   }
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-4 animate-fade-in">
-        <Card className="w-full max-w-md animate-scale-in">
-          <CardHeader>
-            <CardTitle>Hasło zostało zmienione</CardTitle>
-            <CardDescription>
-              Twoje hasło zostało pomyślnie zmienione. Możesz się teraz
-              zalogować.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Przekierowywanie do strony logowania...
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      <AuthLayout
+        title="Hasło zostało zmienione"
+        description="Twoje hasło zostało pomyślnie zmienione. Możesz się teraz zalogować."
+        icon={
+          <div className="rounded-full bg-green-100 p-3 dark:bg-green-950/50">
+            <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+          </div>
+        }
+      >
+        <p className="text-center text-sm text-muted-foreground">
+          Przekierowywanie do strony logowania...
+        </p>
+      </AuthLayout>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4 animate-fade-in">
-      <div className="absolute right-4 top-4 animate-slide-in-top">
-        <ThemeToggle />
-      </div>
-      <Card className="w-full max-w-md animate-scale-in">
-        <CardHeader>
-          <CardTitle>Ustaw nowe hasło</CardTitle>
-          <CardDescription>
-            Wprowadź nowe hasło dla swojego konta.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="password">Nowe hasło</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-                minLength={8}
-              />
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Minimum 8 znaków
-              </p>
-            </div>
+    <AuthLayout
+      title="Ustaw nowe hasło"
+      description="Wprowadź nowe hasło dla swojego konta."
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="password">Nowe hasło</Label>
+          <Input
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            disabled={loading}
+            minLength={8}
+          />
+          <p className="text-xs text-muted-foreground">Minimum 8 znaków</p>
+        </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Potwierdź hasło</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="••••••••"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                disabled={loading}
-                minLength={8}
-              />
-            </div>
+        <div className="space-y-2">
+          <Label htmlFor="confirmPassword">Potwierdź hasło</Label>
+          <Input
+            id="confirmPassword"
+            type="password"
+            placeholder="••••••••"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            disabled={loading}
+            minLength={8}
+          />
+        </div>
 
-            {error && (
-              <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-800 dark:text-red-400">
-                {error}
-              </div>
-            )}
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Resetowanie...' : 'Zresetuj hasło'}
-            </Button>
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? 'Resetowanie...' : 'Zresetuj hasło'}
+        </Button>
 
-            <div className="text-center text-sm">
-              <Link
-                href="/login"
-                className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
-              >
-                Wróć do logowania
-              </Link>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+        <div className="text-center text-sm">
+          <Link
+            href="/login"
+            className="font-medium text-primary hover:underline"
+          >
+            Wróć do logowania
+          </Link>
+        </div>
+      </form>
+    </AuthLayout>
   );
 }
 
@@ -190,9 +165,11 @@ export default function ResetPasswordPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center">
-          <p>Ładowanie...</p>
-        </div>
+        <AuthLayout>
+          <div className="flex justify-center py-4">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        </AuthLayout>
       }
     >
       <ResetPasswordContent />

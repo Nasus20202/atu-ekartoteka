@@ -1,17 +1,12 @@
 'use client';
 
+import { Mail } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { ThemeToggle } from '@/components/theme-toggle';
+import { AuthLayout } from '@/components/auth-layout';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -49,76 +44,60 @@ export default function ForgotPasswordPage() {
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-4 animate-fade-in">
-        <Card className="w-full max-w-md animate-scale-in">
-          <CardHeader>
-            <CardTitle>Sprawdź swoją skrzynkę email</CardTitle>
-            <CardDescription>
-              Jeśli konto z tym adresem email istnieje, wysłaliśmy instrukcje
-              resetowania hasła.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link
-              href="/login"
-              className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
-            >
-              Wróć do logowania
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
+      <AuthLayout
+        title="Sprawdź swoją skrzynkę email"
+        description="Jeśli konto z tym adresem email istnieje, wysłaliśmy instrukcje resetowania hasła."
+        icon={
+          <div className="rounded-full bg-green-100 p-3 dark:bg-green-950/50">
+            <Mail className="h-8 w-8 text-green-600 dark:text-green-400" />
+          </div>
+        }
+      >
+        <Button asChild className="w-full">
+          <Link href="/login">Wróć do logowania</Link>
+        </Button>
+      </AuthLayout>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4 animate-fade-in">
-      <div className="absolute right-4 top-4 animate-slide-in-top">
-        <ThemeToggle />
-      </div>
-      <Card className="w-full max-w-md animate-scale-in">
-        <CardHeader>
-          <CardTitle>Zapomniałeś hasła?</CardTitle>
-          <CardDescription>
-            Podaj swój adres email, a wyślemy Ci link do zresetowania hasła.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="twoj@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={loading}
-              />
-            </div>
+    <AuthLayout
+      title="Zapomniałeś hasła?"
+      description="Podaj adres email konta do przywrócenia hasła"
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="twoj@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            disabled={loading}
+          />
+        </div>
 
-            {error && (
-              <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-800 dark:text-red-400">
-                {error}
-              </div>
-            )}
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Wysyłanie...' : 'Wyślij link resetowania'}
-            </Button>
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? 'Wysyłanie...' : 'Wyślij link resetowania'}
+        </Button>
 
-            <div className="text-center text-sm">
-              <Link
-                href="/login"
-                className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
-              >
-                Wróć do logowania
-              </Link>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+        <div className="text-center text-sm">
+          <Link
+            href="/login"
+            className="font-medium text-primary hover:underline"
+          >
+            Wróć do logowania
+          </Link>
+        </div>
+      </form>
+    </AuthLayout>
   );
 }

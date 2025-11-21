@@ -1,20 +1,14 @@
 'use client';
 
-import { AlertCircle, CheckCircle, Loader2, Shield } from 'lucide-react';
+import { CheckCircle, Loader2, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 
-import { ThemeToggle } from '@/components/theme-toggle';
+import { AuthLayout } from '@/components/auth-layout';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -118,174 +112,152 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-4 animate-fade-in">
-        <Card className="w-full max-w-md animate-scale-in">
-          <CardHeader>
-            <div className="mb-4 flex justify-center">
-              <div className="rounded-full bg-green-100 p-3 dark:bg-green-900">
-                {isFirstAdmin ? (
-                  <Shield className="h-8 w-8 text-green-600 dark:text-green-400" />
-                ) : (
-                  <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
-                )}
-              </div>
-            </div>
-            <CardTitle className="text-center">
-              {isFirstAdmin
-                ? 'Konto administratora utworzone!'
-                : 'Konto utworzone!'}
-            </CardTitle>
-            <CardDescription className="text-center">
-              {isFirstAdmin
-                ? 'Twoje konto administratora zostało pomyślnie utworzone. Masz pełny dostęp do systemu.'
-                : 'Twoje konto zostało pomyślnie utworzone i oczekuje na zatwierdzenie przez administratora.'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-center text-sm text-muted-foreground">
-              Logowanie...
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      <AuthLayout
+        title={
+          isFirstAdmin ? 'Konto administratora utworzone!' : 'Konto utworzone!'
+        }
+        description={
+          isFirstAdmin
+            ? 'Twoje konto administratora zostało pomyślnie utworzone. Masz pełny dostęp do systemu.'
+            : 'Twoje konto zostało pomyślnie utworzone i oczekuje na zatwierdzenie przez administratora.'
+        }
+        icon={
+          <div className="rounded-full bg-green-100 p-3 dark:bg-green-950/50">
+            {isFirstAdmin ? (
+              <Shield className="h-8 w-8 text-green-600 dark:text-green-400" />
+            ) : (
+              <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+            )}
+          </div>
+        }
+      >
+        <p className="text-center text-sm text-muted-foreground">
+          Logowanie...
+        </p>
+      </AuthLayout>
     );
   }
 
   if (checkingSetup) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md">
-          <CardContent className="flex items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </CardContent>
-        </Card>
-      </div>
+      <AuthLayout>
+        <div className="flex justify-center py-4">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </AuthLayout>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4 animate-fade-in">
-      <div className="absolute right-4 top-4 animate-slide-in-top">
-        <ThemeToggle />
-      </div>
-      <Card className="w-full max-w-md animate-scale-in">
-        <CardHeader>
-          {isFirstAdmin && (
-            <div className="mb-4 flex justify-center">
-              <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900">
-                <Shield className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-              </div>
-            </div>
+    <AuthLayout
+      title={isFirstAdmin ? 'Konfiguracja początkowa' : 'Rejestracja'}
+      description={
+        isFirstAdmin
+          ? 'Utwórz konto administratora, aby rozpocząć korzystanie z systemu'
+          : 'Utwórz konto, aby uzyskać dostęp do systemu'
+      }
+      icon={
+        isFirstAdmin ? (
+          <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-950/50">
+            <Shield className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+          </div>
+        ) : undefined
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="name">Imię i nazwisko (opcjonalne)</Label>
+          <Input
+            id="name"
+            type="text"
+            placeholder="Jan Kowalski"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            disabled={loading}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="jan.kowalski@example.com"
+            value={formData.email}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
+            required
+            disabled={loading}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="password">Hasło</Label>
+          <Input
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            value={formData.password}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
+            required
+            disabled={loading}
+            minLength={8}
+          />
+          <p className="text-xs text-muted-foreground">
+            Hasło musi mieć co najmniej 8 znaków
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="confirmPassword">Potwierdź hasło</Label>
+          <Input
+            id="confirmPassword"
+            type="password"
+            placeholder="••••••••"
+            value={formData.confirmPassword}
+            onChange={(e) =>
+              setFormData({ ...formData, confirmPassword: e.target.value })
+            }
+            required
+            disabled={loading}
+            minLength={8}
+          />
+        </div>
+
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {isFirstAdmin ? 'Tworzenie konta...' : 'Rejestrowanie...'}
+            </>
+          ) : isFirstAdmin ? (
+            'Utwórz konto administratora'
+          ) : (
+            'Zarejestruj się'
           )}
-          <CardTitle>
-            {isFirstAdmin ? 'Konfiguracja początkowa' : 'Rejestracja'}
-          </CardTitle>
-          <CardDescription>
-            {isFirstAdmin
-              ? 'Utwórz konto administratora, aby rozpocząć korzystanie z systemu'
-              : 'Utwórz konto, aby uzyskać dostęp do systemu'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Imię i nazwisko (opcjonalne)</Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="Jan Kowalski"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                disabled={loading}
-              />
-            </div>
+        </Button>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="jan.kowalski@example.com"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                required
-                disabled={loading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Hasło</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
-                required
-                disabled={loading}
-                minLength={8}
-              />
-              <p className="text-xs text-muted-foreground">
-                Hasło musi mieć co najmniej 8 znaków
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Potwierdź hasło</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="••••••••"
-                value={formData.confirmPassword}
-                onChange={(e) =>
-                  setFormData({ ...formData, confirmPassword: e.target.value })
-                }
-                required
-                disabled={loading}
-                minLength={8}
-              />
-            </div>
-
-            {error && (
-              <div className="flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                <p>{error}</p>
-              </div>
-            )}
-
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {isFirstAdmin ? 'Tworzenie konta...' : 'Rejestrowanie...'}
-                </>
-              ) : isFirstAdmin ? (
-                'Utwórz konto administratora'
-              ) : (
-                'Zarejestruj się'
-              )}
-            </Button>
-
-            {!isFirstAdmin && (
-              <div className="text-center text-sm">
-                <span className="text-muted-foreground">Masz już konto? </span>
-                <Link
-                  href="/login"
-                  className="font-medium text-primary hover:underline"
-                >
-                  Zaloguj się
-                </Link>
-              </div>
-            )}
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+        {!isFirstAdmin && (
+          <div className="text-center text-sm">
+            <span className="text-muted-foreground">Masz już konto? </span>
+            <Link
+              href="/login"
+              className="font-medium text-primary hover:underline"
+            >
+              Zaloguj się
+            </Link>
+          </div>
+        )}
+      </form>
+    </AuthLayout>
   );
 }

@@ -1,19 +1,14 @@
 'use client';
 
+import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn, useSession } from 'next-auth/react';
 import { Suspense, useEffect, useState } from 'react';
 
-import { ThemeToggle } from '@/components/theme-toggle';
+import { AuthLayout } from '@/components/auth-layout';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -61,94 +56,88 @@ function LoginForm() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4 animate-fade-in">
-      <div className="absolute right-4 top-4 animate-slide-in-top">
-        <ThemeToggle />
-      </div>
-      <Card className="w-full max-w-md animate-scale-in">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold tracking-tight">
-            ATU Ekartoteka
-          </CardTitle>
-          <CardDescription>
-            Wprowadź dane logowania aby uzyskać dostęp do konta
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="email@example.com"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Hasło</Label>
-                <Link
-                  href="/forgot-password"
-                  className="text-xs font-medium text-primary hover:underline"
-                >
-                  Zapomniałeś hasła?
-                </Link>
-              </div>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
+    <AuthLayout
+      title="ATU Ekartoteka"
+      description="Wprowadź dane logowania, aby uzyskać dostęp do konta"
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="email@example.com"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password">Hasło</Label>
+            <Link
+              href="/forgot-password"
+              className="text-xs font-medium text-primary hover:underline"
+            >
+              Zapomniałeś hasła?
+            </Link>
+          </div>
+          <Input
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            autoComplete="current-password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
 
-            {resetSuccess && (
-              <div className="rounded-lg bg-green-50 dark:bg-green-900/20 p-3 text-sm text-green-800 dark:text-green-400">
-                Hasło zostało zmienione. Możesz się teraz zalogować.
-              </div>
-            )}
+        {resetSuccess && (
+          <Alert className="bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-900">
+            <AlertDescription className="text-green-800 dark:text-green-400">
+              Hasło zostało zmienione. Możesz się teraz zalogować.
+            </AlertDescription>
+          </Alert>
+        )}
 
-            {registered && (
-              <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 p-3 text-sm text-blue-800 dark:text-blue-400">
-                Konto utworzone. Sprawdź email i zaloguj się.
-              </div>
-            )}
+        {registered && (
+          <Alert className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900">
+            <AlertDescription className="text-blue-800 dark:text-blue-400">
+              Konto utworzone. Sprawdź email i zaloguj się.
+            </AlertDescription>
+          </Alert>
+        )}
 
-            {verified && (
-              <div className="rounded-lg bg-green-50 dark:bg-green-900/20 p-3 text-sm text-green-800 dark:text-green-400">
-                Email zweryfikowany pomyślnie!
-              </div>
-            )}
+        {verified && (
+          <Alert className="bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-900">
+            <AlertDescription className="text-green-800 dark:text-green-400">
+              Email zweryfikowany pomyślnie!
+            </AlertDescription>
+          </Alert>
+        )}
 
-            {error && (
-              <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-                {error}
-              </div>
-            )}
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Logowanie...' : 'Zaloguj się'}
-            </Button>
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? 'Logowanie...' : 'Zaloguj się'}
+        </Button>
 
-            <div className="text-center text-sm">
-              <span className="text-muted-foreground">Nie masz konta? </span>
-              <Link
-                href="/register"
-                className="font-medium text-primary hover:underline"
-              >
-                Zarejestruj się
-              </Link>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+        <div className="text-center text-sm">
+          <span className="text-muted-foreground">Nie masz konta? </span>
+          <Link
+            href="/register"
+            className="font-medium text-primary hover:underline"
+          >
+            Zarejestruj się
+          </Link>
+        </div>
+      </form>
+    </AuthLayout>
   );
 }
 
@@ -156,9 +145,11 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
-          <p>Ładowanie...</p>
-        </div>
+        <AuthLayout>
+          <div className="flex justify-center py-4">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        </AuthLayout>
       }
     >
       <LoginForm />

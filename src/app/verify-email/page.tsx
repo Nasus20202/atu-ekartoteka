@@ -1,8 +1,13 @@
 'use client';
 
 import { CheckCircle, Loader2, XCircle } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useState } from 'react';
+
+import { AuthLayout } from '@/components/auth-layout';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 
 function VerifyEmailContent() {
   const router = useRouter();
@@ -47,55 +52,56 @@ function VerifyEmailContent() {
 
   if (verifying) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
-        <div className="w-full max-w-md space-y-8 text-center">
-          <Loader2 className="mx-auto h-16 w-16 animate-spin text-blue-600" />
-          <h2 className="text-3xl font-bold text-gray-900">
-            Weryfikacja email...
-          </h2>
-          <p className="text-sm text-gray-600">Proszę czekać</p>
+      <AuthLayout
+        title="Weryfikacja email..."
+        description="Proszę czekać"
+        icon={
+          <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-950/50">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600 dark:text-blue-400" />
+          </div>
+        }
+      >
+        <div className="flex justify-center py-4">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
-      </div>
+      </AuthLayout>
     );
   }
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
-        <div className="w-full max-w-md space-y-8 text-center">
-          <CheckCircle className="mx-auto h-16 w-16 text-green-500" />
-          <h2 className="text-3xl font-bold text-gray-900">
-            Email zweryfikowany!
-          </h2>
-          <p className="text-sm text-gray-600">
-            Twój adres email został pomyślnie zweryfikowany.
-          </p>
-          <p className="text-sm text-gray-600">
-            Przekierowywanie do strony logowania...
-          </p>
-        </div>
-      </div>
+      <AuthLayout
+        title="Email zweryfikowany!"
+        description="Twój adres email został pomyślnie zweryfikowany."
+        icon={
+          <div className="rounded-full bg-green-100 p-3 dark:bg-green-950/50">
+            <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+          </div>
+        }
+      >
+        <p className="text-center text-sm text-muted-foreground">
+          Przekierowywanie do strony logowania...
+        </p>
+      </AuthLayout>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
-      <div className="w-full max-w-md space-y-8 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-          <XCircle className="h-6 w-6 text-red-600" />
+    <AuthLayout
+      title="Błąd weryfikacji"
+      icon={
+        <div className="rounded-full bg-red-100 p-3 dark:bg-red-950/50">
+          <XCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
         </div>
-        <h2 className="text-3xl font-bold text-gray-900">Błąd weryfikacji</h2>
-        <div className="rounded-md bg-red-50 p-4 text-sm text-red-800">
-          {error || 'Wystąpił nieznany błąd'}
-        </div>
-        <a
-          href="/login"
-          className="inline-block rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-        >
-          Wróć do logowania
-        </a>
-      </div>
-    </div>
+      }
+    >
+      <Alert variant="destructive" className="mb-4">
+        <AlertDescription>{error || 'Wystąpił nieznany błąd'}</AlertDescription>
+      </Alert>
+      <Button asChild className="w-full">
+        <Link href="/login">Wróć do logowania</Link>
+      </Button>
+    </AuthLayout>
   );
 }
 
@@ -103,9 +109,11 @@ export default function VerifyEmailPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-        </div>
+        <AuthLayout>
+          <div className="flex justify-center py-4">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        </AuthLayout>
       }
     >
       <VerifyEmailContent />

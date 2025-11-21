@@ -2,6 +2,7 @@ import { Building2, Home, Upload, Users } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
+import packageJson from '@/../package.json';
 import { auth } from '@/auth';
 import { LogoutButton } from '@/components/logout-button';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -58,6 +59,11 @@ export default async function AdminLayout({
         </div>
       </nav>
       <main>{children}</main>
+      <div className="fixed bottom-4 left-4 z-10">
+        <p className="text-xs text-muted-foreground/60">
+          v{packageJson.version}
+        </p>
+      </div>
     </div>
   );
 }
