@@ -170,7 +170,7 @@ export default function RegisterPage() {
           <Input
             id="name"
             type="text"
-            placeholder="Jan Kowalski"
+            placeholder="Imię i nazwisko"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             disabled={loading}
@@ -182,7 +182,7 @@ export default function RegisterPage() {
           <Input
             id="email"
             type="email"
-            placeholder="jan.kowalski@example.com"
+            placeholder="email@example.com"
             value={formData.email}
             onChange={(e) =>
               setFormData({ ...formData, email: e.target.value })
@@ -197,7 +197,7 @@ export default function RegisterPage() {
           <Input
             id="password"
             type="password"
-            placeholder="••••••••"
+            placeholder="Hasło"
             value={formData.password}
             onChange={(e) =>
               setFormData({ ...formData, password: e.target.value })
@@ -216,7 +216,7 @@ export default function RegisterPage() {
           <Input
             id="confirmPassword"
             type="password"
-            placeholder="••••••••"
+            placeholder="Potwierdź hasło"
             value={formData.confirmPassword}
             onChange={(e) =>
               setFormData({ ...formData, confirmPassword: e.target.value })

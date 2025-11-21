@@ -116,7 +116,7 @@ export function ProfileForm({ initialName }: ProfileFormProps) {
           <Label htmlFor="name">Imię i nazwisko</Label>
           <Input
             id="name"
-            placeholder="Jan Kowalski"
+            placeholder="Imię i nazwisko"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           />
@@ -134,7 +134,7 @@ export function ProfileForm({ initialName }: ProfileFormProps) {
             <Input
               id="currentPassword"
               type={showCurrentPassword ? 'text' : 'password'}
-              placeholder="••••••••"
+              placeholder="Hasło"
               value={formData.currentPassword}
               onChange={(e) =>
                 setFormData({
@@ -163,7 +163,7 @@ export function ProfileForm({ initialName }: ProfileFormProps) {
             <Input
               id="newPassword"
               type={showNewPassword ? 'text' : 'password'}
-              placeholder="••••••••"
+              placeholder="Nowe hasło"
               value={formData.newPassword}
               onChange={(e) =>
                 setFormData({
@@ -191,7 +191,7 @@ export function ProfileForm({ initialName }: ProfileFormProps) {
           <Input
             id="confirmPassword"
             type="password"
-            placeholder="••••••••"
+            placeholder="Potwierdź nowe hasło"
             value={formData.confirmPassword}
             onChange={(e) =>
               setFormData({

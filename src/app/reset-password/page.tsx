@@ -114,7 +114,7 @@ function ResetPasswordContent() {
           <Input
             id="password"
             type="password"
-            placeholder="••••••••"
+            placeholder="Hasło"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -129,7 +129,7 @@ function ResetPasswordContent() {
           <Input
             id="confirmPassword"
             type="password"
-            placeholder="••••••••"
+            placeholder="Hasło"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required

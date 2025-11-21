@@ -789,7 +789,7 @@ export default function AdminUsersPage() {
                     <Input
                       id="password"
                       type="password"
-                      placeholder="••••••••"
+                      placeholder="Hasło"
                       value={newUserData.password}
                       onChange={(e) =>
                         setNewUserData({
