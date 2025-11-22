@@ -5,8 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:pretty": "next dev | pino-pretty",
-    "build": "next build && npm run copy:templates",
-    "copy:templates": "mkdir -p .next/standalone/src/lib/email/templates && cp -r src/lib/email/templates/* .next/standalone/src/lib/email/templates/",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
