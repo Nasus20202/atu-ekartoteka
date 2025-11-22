@@ -1,11 +1,11 @@
 'use client';
 
-import { Turnstile } from '@marsidev/react-turnstile';
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn, useSession } from 'next-auth/react';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 
 import { AuthLayout } from '@/components/auth-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -19,6 +19,7 @@ function LoginForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { status } = useSession();
@@ -55,6 +56,11 @@ function LoginForm() {
       }
     } finally {
       setLoading(false);
+      // Reset Turnstile token after any login attempt (success or failure)
+      setTurnstileToken(null);
+      if (turnstileRef.current) {
+        turnstileRef.current.reset();
+      }
     }
   };
 
@@ -136,9 +142,11 @@ function LoginForm() {
 
         <div className="pt-2 flex items-center justify-center">
           <Turnstile
+            ref={turnstileRef}
             siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY as string}
             onSuccess={(token: string) => setTurnstileToken(token)}
             onExpire={() => setTurnstileToken(null)}
+            onError={() => setTurnstileToken(null)}
           />
         </div>
         <div className="text-center text-sm">

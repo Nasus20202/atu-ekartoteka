@@ -1,11 +1,11 @@
 'use client';
 
-import { Turnstile } from '@marsidev/react-turnstile';
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
 import { CheckCircle, Loader2, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { AuthLayout } from '@/components/auth-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -27,6 +27,7 @@ export default function RegisterPage() {
   const [isFirstAdmin, setIsFirstAdmin] = useState(false);
   const [checkingSetup, setCheckingSetup] = useState(true);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance>(null);
 
   useEffect(() => {
     // Check if this is first run (no admin exists)
@@ -111,6 +112,11 @@ export default function RegisterPage() {
       setError(err instanceof Error ? err.message : 'Wystąpił błąd');
     } finally {
       setLoading(false);
+      // Reset Turnstile token after any registration attempt (success or failure)
+      setTurnstileToken(null);
+      if (turnstileRef.current) {
+        turnstileRef.current.reset();
+      }
     }
   };
 
@@ -233,9 +239,11 @@ export default function RegisterPage() {
 
         <div className="pt-2 flex items-center justify-center">
           <Turnstile
+            ref={turnstileRef}
             siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY as string}
             onSuccess={(token: string) => setTurnstileToken(token)}
             onExpire={() => setTurnstileToken(null)}
+            onError={() => setTurnstileToken(null)}
           />
         </div>
 

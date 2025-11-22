@@ -26,7 +26,7 @@ describe('Turnstile helper', () => {
       vi.fn(() =>
         Promise.resolve({
           json: () => Promise.resolve({ success: true }),
-        } as any)
+        } as Response)
       )
     );
 
@@ -43,7 +43,39 @@ describe('Turnstile helper', () => {
       vi.fn(() =>
         Promise.resolve({
           json: () => Promise.resolve({ success: false }),
-        } as any)
+        } as Response)
+      )
+    );
+
+    const result = await verifyTurnstileToken('token-value');
+    expect(result).toBe(false);
+  });
+
+  it('returns false on network error', async () => {
+    process.env.TURNSTILE_SECRET_KEY = 'secret';
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => Promise.reject(new Error('Network error')))
+    );
+
+    const result = await verifyTurnstileToken('token-value');
+    expect(result).toBe(false);
+  });
+
+  it('returns false when API returns error codes', async () => {
+    process.env.TURNSTILE_SECRET_KEY = 'secret';
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        Promise.resolve({
+          json: () =>
+            Promise.resolve({
+              success: false,
+              'error-codes': ['invalid-input-response'],
+            }),
+        } as Response)
       )
     );
 

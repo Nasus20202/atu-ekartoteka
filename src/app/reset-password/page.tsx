@@ -1,10 +1,10 @@
 'use client';
 
-import { Turnstile } from '@marsidev/react-turnstile';
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
 import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useState } from 'react';
+import { Suspense, useRef, useState } from 'react';
 
 import { AuthLayout } from '@/components/auth-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -23,6 +23,7 @@ function ResetPasswordContent() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,6 +67,11 @@ function ResetPasswordContent() {
       setError(err instanceof Error ? err.message : 'Wystąpił błąd');
     } finally {
       setLoading(false);
+      // Reset Turnstile token after any reset attempt (success or failure)
+      setTurnstileToken(null);
+      if (turnstileRef.current) {
+        turnstileRef.current.reset();
+      }
     }
   };
 
@@ -128,9 +134,11 @@ function ResetPasswordContent() {
 
         <div className="pt-2 flex items-center justify-center">
           <Turnstile
+            ref={turnstileRef}
             siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY as string}
             onSuccess={(token: string) => setTurnstileToken(token)}
             onExpire={() => setTurnstileToken(null)}
+            onError={() => setTurnstileToken(null)}
           />
         </div>
 

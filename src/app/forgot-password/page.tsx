@@ -1,9 +1,9 @@
 'use client';
 
-import { Turnstile } from '@marsidev/react-turnstile';
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
 import { Mail } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { AuthLayout } from '@/components/auth-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -17,6 +17,7 @@ export default function ForgotPasswordPage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +42,11 @@ export default function ForgotPasswordPage() {
       setError(err instanceof Error ? err.message : 'Wystąpił błąd');
     } finally {
       setLoading(false);
+      // Reset Turnstile token after any request attempt (success or failure)
+      setTurnstileToken(null);
+      if (turnstileRef.current) {
+        turnstileRef.current.reset();
+      }
     }
   };
 
@@ -97,9 +103,11 @@ export default function ForgotPasswordPage() {
 
         <div className="pt-2 flex items-center justify-center">
           <Turnstile
+            ref={turnstileRef}
             siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY as string}
             onSuccess={(token: string) => setTurnstileToken(token)}
             onExpire={() => setTurnstileToken(null)}
+            onError={() => setTurnstileToken(null)}
           />
         </div>
 
