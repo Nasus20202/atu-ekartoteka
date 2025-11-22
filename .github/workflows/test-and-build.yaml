@@ -56,6 +56,9 @@ jobs:
       contents: read
       packages: write
 
+    env:
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY}}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -96,3 +99,5 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64
+          build-args: |
+            NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ env.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}

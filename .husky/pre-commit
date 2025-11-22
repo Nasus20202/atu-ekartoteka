@@ -1,4 +1,5 @@
 pnpm lint-staged
 pnpm test -- run
-pnpm format --log-level silent
+pnpm format:check
 pnpm tsc
+git add -A
