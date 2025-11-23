@@ -1,10 +1,11 @@
-import { PrismaAdapter } from '@auth/prisma-adapter';
 import bcrypt from 'bcryptjs';
-import NextAuth from 'next-auth';
+import NextAuth, { type NextAuthConfig } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
+import Google from 'next-auth/providers/google';
 
 import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
+import { notifyAdminsOfNewUser } from '@/lib/notifications/new-user-registration';
 import { verifyTurnstileToken } from '@/lib/turnstile';
 
 const logger = createLogger('auth');
@@ -18,8 +19,7 @@ interface ExtendedUser {
   emailVerified: boolean;
 }
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+const authOptions: NextAuthConfig = {
   session: {
     strategy: 'jwt',
   },
@@ -27,11 +27,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: '/login',
   },
   providers: [
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
     Credentials({
+      id: 'credentials',
       name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
+        password: { label: 'Hasło', type: 'password' },
         turnstileToken: { label: 'Turnstile Token', type: 'text' },
       },
       async authorize(credentials) {
@@ -39,30 +44,36 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        // Validate turnstile token
-        const turnstileToken =
-          typeof credentials.turnstileToken === 'string'
-            ? credentials.turnstileToken
-            : undefined;
-        const valid = await verifyTurnstileToken(turnstileToken);
+        // Validate Turnstile
+        const valid = await verifyTurnstileToken(
+          credentials.turnstileToken as string
+        );
         if (!valid) {
           logger.warn(
             { email: credentials.email },
-            'Login failed: invalid Turnstile token'
+            'Login attempt failed: invalid Turnstile token'
           );
           return null;
         }
 
+        // Find user
         const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email as string,
-          },
+          where: { email: credentials.email as string },
         });
 
         if (!user) {
           logger.warn(
             { email: credentials.email },
             'Failed login attempt: user not found'
+          );
+          return null;
+        }
+
+        // For credentials provider, password should never be null
+        if (!user.password) {
+          logger.error(
+            { email: credentials.email },
+            'User has no password but trying to use credentials'
           );
           return null;
         }
@@ -102,7 +113,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account: _account }) {
       if (user) {
         const extendedUser = user as ExtendedUser;
         token.id = extendedUser.id;
@@ -137,5 +148,62 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return session;
     },
+    async signIn({ user, account }) {
+      if (account?.provider === 'google') {
+        try {
+          // Check if user already exists
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email! },
+          });
+
+          if (!existingUser) {
+            // Create new user from Google credentials
+            const newUser = await prisma.user.create({
+              data: {
+                email: user.email!,
+                name: user.name,
+                emailVerified: true, // Google accounts are verified
+                password: null, // No password for OAuth users
+                authMethod: 'GOOGLE',
+              },
+            });
+
+            // Notify admins about new Google user registration
+            try {
+              await notifyAdminsOfNewUser(
+                newUser.email,
+                newUser.name || 'Nie podano imienia',
+                newUser.createdAt
+              );
+            } catch (notificationError) {
+              logger.error(
+                { notificationError, email: newUser.email },
+                'Failed to notify admins about new Google user'
+              );
+              // Don't fail the login process if notification fails
+            }
+
+            // Add user ID to the returned user object
+            user.id = newUser.id;
+            return true;
+          }
+
+          // Add existing user ID to the returned user object
+          user.id = existingUser.id;
+          return true;
+        } catch (error) {
+          logger.error(
+            { error, email: user.email },
+            'Error during Google sign in'
+          );
+          return false;
+        }
+      }
+
+      return true; // Allow credentials provider
+    },
   },
-});
+};
+
+export const { handlers, auth, signIn, signOut } = NextAuth(authOptions);
+export { authOptions };

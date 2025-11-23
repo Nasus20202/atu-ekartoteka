@@ -11,9 +11,10 @@ import { logger } from '@/lib/logger';
 
 type ProfileFormProps = {
   initialName: string | null;
+  authMethod: 'CREDENTIALS' | 'GOOGLE';
 };
 
-export function ProfileForm({ initialName }: ProfileFormProps) {
+export function ProfileForm({ initialName, authMethod }: ProfileFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -127,89 +128,101 @@ export function ProfileForm({ initialName }: ProfileFormProps) {
       </div>
 
       {/* Password Section */}
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor="currentPassword">Obecne hasło</Label>
-          <div className="relative">
+      {authMethod === 'CREDENTIALS' ? (
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="currentPassword">Obecne hasło</Label>
+            <div className="relative">
+              <Input
+                id="currentPassword"
+                type={showCurrentPassword ? 'text' : 'password'}
+                placeholder="Hasło"
+                value={formData.currentPassword}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    currentPassword: e.target.value,
+                  })
+                }
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+              >
+                {showCurrentPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="newPassword">Nowe hasło</Label>
+            <div className="relative">
+              <Input
+                id="newPassword"
+                type={showNewPassword ? 'text' : 'password'}
+                placeholder="Nowe hasło"
+                value={formData.newPassword}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    newPassword: e.target.value,
+                  })
+                }
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+              >
+                {showNewPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="confirmPassword">Potwierdź nowe hasło</Label>
             <Input
-              id="currentPassword"
-              type={showCurrentPassword ? 'text' : 'password'}
-              placeholder="Hasło"
-              value={formData.currentPassword}
+              id="confirmPassword"
+              type="password"
+              placeholder="Potwierdź nowe hasło"
+              value={formData.confirmPassword}
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  currentPassword: e.target.value,
+                  confirmPassword: e.target.value,
                 })
               }
             />
-            <button
-              type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-            >
-              {showCurrentPassword ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
-            </button>
+          </div>
+
+          {errors.password && (
+            <p className="text-sm text-red-600">{errors.password}</p>
+          )}
+
+          <p className="text-sm text-muted-foreground">
+            Pozostaw puste aby nie zmieniać hasła
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="rounded-md bg-blue-50 p-4 text-sm text-blue-800 dark:bg-blue-950 dark:text-blue-200">
+            <p className="font-medium">
+              Użytkownik zalogowany przez{' '}
+              {authMethod.charAt(0).toUpperCase() +
+                authMethod.slice(1).toLowerCase()}
+            </p>
           </div>
         </div>
-
-        <div>
-          <Label htmlFor="newPassword">Nowe hasło</Label>
-          <div className="relative">
-            <Input
-              id="newPassword"
-              type={showNewPassword ? 'text' : 'password'}
-              placeholder="Nowe hasło"
-              value={formData.newPassword}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  newPassword: e.target.value,
-                })
-              }
-            />
-            <button
-              type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              onClick={() => setShowNewPassword(!showNewPassword)}
-            >
-              {showNewPassword ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <Label htmlFor="confirmPassword">Potwierdź nowe hasło</Label>
-          <Input
-            id="confirmPassword"
-            type="password"
-            placeholder="Potwierdź nowe hasło"
-            value={formData.confirmPassword}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                confirmPassword: e.target.value,
-              })
-            }
-          />
-        </div>
-
-        {errors.password && (
-          <p className="text-sm text-red-600">{errors.password}</p>
-        )}
-
-        <p className="text-sm text-muted-foreground">
-          Pozostaw puste aby nie zmieniać hasła
-        </p>
-      </div>
+      )}
 
       <div className="flex gap-4">
         <Button type="submit" disabled={loading}>

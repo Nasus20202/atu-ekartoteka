@@ -46,6 +46,15 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Check if user uses OAuth authentication
+    if (user.authMethod === 'GOOGLE') {
+      logger.warn({ email }, 'Password reset requested for OAuth user');
+      return NextResponse.json({
+        message:
+          'Konto Google nie może resetować hasła. Użyj logowania przez Google.',
+      });
+    }
+
     // Delete old password reset tokens
     await prisma.passwordReset.deleteMany({
       where: { userId: user.id },

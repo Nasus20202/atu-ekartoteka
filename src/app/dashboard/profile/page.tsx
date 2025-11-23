@@ -25,6 +25,7 @@ export default async function ProfilePage() {
     select: {
       name: true,
       email: true,
+      authMethod: true,
     },
   });
 
@@ -47,7 +48,7 @@ export default async function ProfilePage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ProfileForm initialName={user.name} />
+          <ProfileForm initialName={user.name} authMethod={user.authMethod} />
         </CardContent>
       </Card>
     </Page>

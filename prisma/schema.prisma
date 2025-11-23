@@ -10,6 +10,11 @@ datasource db {
   provider = "postgresql"
 }
 
+enum AuthMethod {
+  CREDENTIALS
+  GOOGLE
+}
+
 enum UserRole {
   ADMIN
   TENANT
@@ -37,11 +42,12 @@ model HomeownersAssociation {
 model User {
   id             String   @id @default(cuid())
   email          String   @unique
-  password       String
+  password       String?
   name           String?
   role           UserRole @default(TENANT)
   status         AccountStatus @default(PENDING)
   emailVerified  Boolean  @default(false)
+  authMethod     AuthMethod? @default(CREDENTIALS)
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

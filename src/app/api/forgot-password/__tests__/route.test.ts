@@ -145,6 +145,92 @@ describe('POST /api/forgot-password', () => {
     expect(prisma.passwordReset.create).toHaveBeenCalled();
   });
 
+  it('should block OAuth users from password reset', async () => {
+    const mockOAuthUser = {
+      id: 'oauth-user-123',
+      email: 'google@example.com',
+      name: 'Google User',
+      password: null,
+      role: 'TENANT' as const,
+      status: 'APPROVED' as const,
+      emailVerified: true,
+      authMethod: 'GOOGLE' as const,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockOAuthUser as any);
+
+    const req = new NextRequest('http://localhost:3000/api/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: 'google@example.com',
+        turnstileToken: 'test-turnstile-token',
+      }),
+    });
+
+    const response = await POST(req);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.message).toBe(
+      'Konto Google nie może resetować hasła. Użyj logowania przez Google.'
+    );
+
+    // Ensure no password reset token was created
+    expect(prisma.passwordReset.deleteMany).not.toHaveBeenCalled();
+    expect(prisma.passwordReset.create).not.toHaveBeenCalled();
+  });
+
+  it('should allow credentials users to reset password', async () => {
+    const mockCredentialsUser = {
+      id: 'credentials-user-123',
+      email: 'credentials@example.com',
+      name: 'Credentials User',
+      password: 'hashed-password',
+      role: 'TENANT' as const,
+      status: 'APPROVED' as const,
+      emailVerified: true,
+      authMethod: 'CREDENTIALS' as const,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(
+      mockCredentialsUser as any
+    );
+    vi.mocked(prisma.passwordReset.deleteMany).mockResolvedValue({ count: 0 });
+    vi.mocked(prisma.passwordReset.create).mockResolvedValue({
+      id: 'reset-123',
+      userId: mockCredentialsUser.id,
+      token: 'test-token-123',
+      expiresAt: new Date(),
+      used: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const req = new NextRequest('http://localhost:3000/api/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: 'credentials@example.com',
+        turnstileToken: 'test-turnstile-token',
+      }),
+    });
+
+    const response = await POST(req);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.message).toBe(
+      'Jeśli konto istnieje, email z instrukcjami został wysłany'
+    );
+    expect(prisma.passwordReset.deleteMany).toHaveBeenCalledWith({
+      where: { userId: mockCredentialsUser.id },
+    });
+    expect(prisma.passwordReset.create).toHaveBeenCalled();
+  });
+
   it('should handle errors gracefully', async () => {
     vi.mocked(prisma.user.findUnique).mockRejectedValue(
       new Error('Database error')

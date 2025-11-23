@@ -56,6 +56,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Check if user uses OAuth authentication
+    if (resetToken.user.authMethod === 'GOOGLE') {
+      logger.warn(
+        { email: resetToken.user.email },
+        'Password reset attempted for OAuth user'
+      );
+      return NextResponse.json(
+        {
+          error:
+            'Konto Google nie może resetować hasła. Użyj logowania przez Google.',
+        },
+        { status: 400 }
+      );
+    }
+
     // Hash new password
     const hashedPassword = await bcrypt.hash(password, 10);
 

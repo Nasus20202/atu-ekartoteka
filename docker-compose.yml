@@ -56,6 +56,10 @@ services:
       # Cloudflare Turnstile
       TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-}
 
+      # Google OAuth Configuration
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+
       # Tracking Script (optional)
       NEXT_PUBLIC_TRACKING_SCRIPT: ${NEXT_PUBLIC_TRACKING_SCRIPT:-}
     env_file:
