@@ -6,7 +6,7 @@ import Google from 'next-auth/providers/google';
 import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
 import { notifyAdminsOfNewUser } from '@/lib/notifications/new-user-registration';
-import { verifyTurnstileToken } from '@/lib/turnstile';
+import { isTurnstileEnabled, verifyTurnstileToken } from '@/lib/turnstile';
 
 const logger = createLogger('auth');
 
@@ -44,16 +44,26 @@ const authOptions: NextAuthConfig = {
           return null;
         }
 
-        // Validate Turnstile
-        const valid = await verifyTurnstileToken(
-          credentials.turnstileToken as string
-        );
-        if (!valid) {
-          logger.warn(
-            { email: credentials.email },
-            'Login attempt failed: invalid Turnstile token'
+        // Validate Turnstile only if enabled
+        if (isTurnstileEnabled()) {
+          if (!credentials.turnstileToken) {
+            logger.warn(
+              { email: credentials.email },
+              'Login attempt failed: missing Turnstile token'
+            );
+            return null;
+          }
+
+          const valid = await verifyTurnstileToken(
+            credentials.turnstileToken as string
           );
-          return null;
+          if (!valid) {
+            logger.warn(
+              { email: credentials.email },
+              'Login attempt failed: invalid Turnstile token'
+            );
+            return null;
+          }
         }
 
         // Find user

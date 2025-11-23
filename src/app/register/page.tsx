@@ -4,7 +4,6 @@ import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
 import { CheckCircle, Loader2, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
 import { useEffect, useRef, useState } from 'react';
 
 import { AuthLayout } from '@/components/auth-layout';
@@ -12,6 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { TurnstileConfig } from '@/lib/types/turnstile';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -27,6 +27,8 @@ export default function RegisterPage() {
   const [isFirstAdmin, setIsFirstAdmin] = useState(false);
   const [checkingSetup, setCheckingSetup] = useState(true);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileConfig, setTurnstileConfig] =
+    useState<TurnstileConfig | null>(null);
   const turnstileRef = useRef<TurnstileInstance>(null);
 
   useEffect(() => {
@@ -43,7 +45,21 @@ export default function RegisterPage() {
       }
     };
 
+    // Fetch turnstile configuration
+    const fetchTurnstileConfig = async () => {
+      try {
+        const response = await fetch('/api/config/turnstile');
+        const config = await response.json();
+        setTurnstileConfig(config);
+      } catch (error) {
+        console.error('Failed to fetch turnstile config:', error);
+        // Default to disabled if fetch fails
+        setTurnstileConfig({ siteKey: null, enabled: false });
+      }
+    };
+
     checkSetupStatus();
+    fetchTurnstileConfig();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -88,26 +104,11 @@ export default function RegisterPage() {
 
       setSuccess(true);
 
-      // Automatically sign in the user after registration
-      const signInResult = await signIn('credentials', {
-        email: formData.email,
-        password: formData.password,
-        turnstileToken,
-        redirect: false,
-      });
-
-      if (signInResult?.error) {
-        // If auto-login fails, redirect to login page
-        setTimeout(() => {
-          router.push('/login?registered=true');
-        }, 2000);
-      } else {
-        // Successful login, redirect to dashboard
-        setTimeout(() => {
-          router.push('/dashboard');
-          router.refresh();
-        }, 1500);
-      }
+      // Don't auto-login - redirect to login page for manual login
+      // This is more secure and avoids turnstile token reuse issues
+      setTimeout(() => {
+        router.push('/login?registered=true');
+      }, 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Wystąpił błąd');
     } finally {
@@ -119,6 +120,9 @@ export default function RegisterPage() {
       }
     }
   };
+
+  const isFormDisabled =
+    loading || (turnstileConfig?.enabled && !turnstileToken);
 
   if (success) {
     return (
@@ -237,15 +241,17 @@ export default function RegisterPage() {
           />
         </div>
 
-        <div className="pt-2 flex items-center justify-center">
-          <Turnstile
-            ref={turnstileRef}
-            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY as string}
-            onSuccess={(token: string) => setTurnstileToken(token)}
-            onExpire={() => setTurnstileToken(null)}
-            onError={() => setTurnstileToken(null)}
-          />
-        </div>
+        {turnstileConfig?.enabled && (
+          <div className="pt-2 flex items-center justify-center">
+            <Turnstile
+              ref={turnstileRef}
+              siteKey={turnstileConfig.siteKey!}
+              onSuccess={(token: string) => setTurnstileToken(token)}
+              onExpire={() => setTurnstileToken(null)}
+              onError={() => setTurnstileToken(null)}
+            />
+          </div>
+        )}
 
         {error && (
           <Alert variant="destructive">
@@ -253,11 +259,7 @@ export default function RegisterPage() {
           </Alert>
         )}
 
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={loading || !turnstileToken}
-        >
+        <Button type="submit" className="w-full" disabled={isFormDisabled}>
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

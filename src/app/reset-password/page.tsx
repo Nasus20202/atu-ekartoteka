@@ -4,13 +4,14 @@ import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
 import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 
 import { AuthLayout } from '@/components/auth-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { TurnstileConfig } from '@/lib/types/turnstile';
 
 function ResetPasswordContent() {
   const router = useRouter();
@@ -23,7 +24,26 @@ function ResetPasswordContent() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileConfig, setTurnstileConfig] =
+    useState<TurnstileConfig | null>(null);
   const turnstileRef = useRef<TurnstileInstance>(null);
+
+  // Fetch turnstile configuration on mount
+  useEffect(() => {
+    const fetchTurnstileConfig = async () => {
+      try {
+        const response = await fetch('/api/config/turnstile');
+        const config = await response.json();
+        setTurnstileConfig(config);
+      } catch (error) {
+        console.error('Failed to fetch turnstile config:', error);
+        // Default to disabled if fetch fails
+        setTurnstileConfig({ siteKey: null, enabled: false });
+      }
+    };
+
+    fetchTurnstileConfig();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,6 +94,9 @@ function ResetPasswordContent() {
       }
     }
   };
+
+  const isFormDisabled =
+    loading || (turnstileConfig?.enabled && !turnstileToken);
 
   if (!token) {
     return (
@@ -152,21 +175,19 @@ function ResetPasswordContent() {
           </Alert>
         )}
 
-        <div className="pt-2 flex items-center justify-center">
-          <Turnstile
-            ref={turnstileRef}
-            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY as string}
-            onSuccess={(token: string) => setTurnstileToken(token)}
-            onExpire={() => setTurnstileToken(null)}
-            onError={() => setTurnstileToken(null)}
-          />
-        </div>
+        {turnstileConfig?.enabled && (
+          <div className="pt-2 flex items-center justify-center">
+            <Turnstile
+              ref={turnstileRef}
+              siteKey={turnstileConfig.siteKey!}
+              onSuccess={(token: string) => setTurnstileToken(token)}
+              onExpire={() => setTurnstileToken(null)}
+              onError={() => setTurnstileToken(null)}
+            />
+          </div>
+        )}
 
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={loading || !turnstileToken}
-        >
+        <Button type="submit" className="w-full" disabled={isFormDisabled}>
           {loading ? 'Resetowanie...' : 'Zresetuj hasło'}
         </Button>
 

@@ -12,12 +12,27 @@ export interface TurnstileServerValidationResponse {
 }
 
 /**
+ * Check if Turnstile is properly configured and enabled.
+ */
+export function isTurnstileEnabled(): boolean {
+  const siteKey = process.env.TURNSTILE_SITE_KEY;
+  const secretKey = process.env.TURNSTILE_SECRET_KEY;
+  return !!(siteKey && secretKey);
+}
+
+/**
  * Verify a Turnstile token server-side using the Cloudflare Turnstile API.
- * Returns true when token is valid, false otherwise.
+ * Returns true when token is valid or when Turnstile is disabled.
  */
 export async function verifyTurnstileToken(
   token: string | undefined
 ): Promise<boolean> {
+  // If Turnstile is not configured, skip verification
+  if (!isTurnstileEnabled()) {
+    logger.info('Turnstile is not configured; skipping verification');
+    return true;
+  }
+
   if (!token) {
     logger.warn({ token }, 'No turnstile token provided');
     return false;

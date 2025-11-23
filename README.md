@@ -50,8 +50,8 @@ Visit `http://localhost:3000/register` to create the first admin user.
   - `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` - Standard SMTP configuration.
 
 - Application URLs & client-side script:
-  - `NEXT_PUBLIC_APP_URL` - Public URL used in email links and frontend redirection.
-  - `NEXT_PUBLIC_TRACKING_SCRIPT` - Optional: inline script used to load tracking providers (be cautious; sanitized strings only).
+  - `APP_URL` - Public URL used in email links and frontend redirection.
+  - `TRACKING_SCRIPT` - Optional: inline script used to load tracking providers (be cautious; sanitized strings only).
 
 - Security / process:
   - `CRON_SECRET` - Optional secret used to protect cron-trigger endpoints.

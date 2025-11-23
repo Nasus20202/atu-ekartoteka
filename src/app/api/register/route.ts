@@ -9,7 +9,7 @@ import {
 } from '@/lib/email/verification-utils';
 import { createLogger } from '@/lib/logger';
 import { notifyAdminsOfNewUser } from '@/lib/notifications/new-user-registration';
-import { verifyTurnstileToken } from '@/lib/turnstile';
+import { isTurnstileEnabled, verifyTurnstileToken } from '@/lib/turnstile';
 import { AccountStatus, UserRole } from '@/lib/types';
 
 const logger = createLogger('api:register');
@@ -45,14 +45,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify Turnstile token
-    const isTurnstileValid = await verifyTurnstileToken(turnstileToken);
-    if (!isTurnstileValid) {
-      logger.warn({ email }, 'Registration failed: invalid Turnstile token');
-      return NextResponse.json(
-        { error: 'Nieprawidłowe potwierdzenie turnstile' },
-        { status: 400 }
-      );
+    // Verify Turnstile token only if enabled
+    if (isTurnstileEnabled()) {
+      const isTurnstileValid = await verifyTurnstileToken(turnstileToken);
+      if (!isTurnstileValid) {
+        logger.warn({ email }, 'Registration failed: invalid Turnstile token');
+        return NextResponse.json(
+          { error: 'Nieprawidłowe potwierdzenie turnstile' },
+          { status: 400 }
+        );
+      }
     }
 
     // Check if user already exists

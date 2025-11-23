@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { TurnstileConfig } from '@/lib/types/turnstile';
 
 function LoginForm() {
   const [email, setEmail] = useState('');
@@ -20,6 +21,8 @@ function LoginForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileConfig, setTurnstileConfig] =
+    useState<TurnstileConfig | null>(null);
   const turnstileRef = useRef<TurnstileInstance>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -28,6 +31,23 @@ function LoginForm() {
   const resetSuccess = searchParams.get('reset') === 'success';
   const registered = searchParams.get('registered') === 'true';
   const verified = searchParams.get('verified') === 'true';
+
+  // Fetch turnstile configuration on mount
+  useEffect(() => {
+    const fetchTurnstileConfig = async () => {
+      try {
+        const response = await fetch('/api/config/turnstile');
+        const config = await response.json();
+        setTurnstileConfig(config);
+      } catch (error) {
+        console.error('Failed to fetch turnstile config:', error);
+        // Default to disabled if fetch fails
+        setTurnstileConfig({ siteKey: null, enabled: false });
+      }
+    };
+
+    fetchTurnstileConfig();
+  }, []);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -68,6 +88,9 @@ function LoginForm() {
       }
     }
   };
+
+  const isFormDisabled =
+    loading || (turnstileConfig?.enabled && !turnstileToken);
 
   return (
     <AuthLayout
@@ -138,21 +161,19 @@ function LoginForm() {
           </Alert>
         )}
 
-        <div className="pt-2 flex items-center justify-center">
-          <Turnstile
-            ref={turnstileRef}
-            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY as string}
-            onSuccess={(token: string) => setTurnstileToken(token)}
-            onExpire={() => setTurnstileToken(null)}
-            onError={() => setTurnstileToken(null)}
-          />
-        </div>
+        {turnstileConfig?.enabled && (
+          <div className="pt-2 flex items-center justify-center">
+            <Turnstile
+              ref={turnstileRef}
+              siteKey={turnstileConfig.siteKey!}
+              onSuccess={(token: string) => setTurnstileToken(token)}
+              onExpire={() => setTurnstileToken(null)}
+              onError={() => setTurnstileToken(null)}
+            />
+          </div>
+        )}
 
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={loading || !turnstileToken}
-        >
+        <Button type="submit" className="w-full" disabled={isFormDisabled}>
           Zaloguj się
         </Button>
 

@@ -117,7 +117,7 @@ export class EmailService {
     token: string,
     name?: string
   ): Promise<boolean> {
-    const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/verify-email?token=${token}`;
+    const verificationUrl = `${process.env.APP_URL || 'http://localhost:3000'}/verify-email?token=${token}`;
 
     logger.info(
       {
@@ -161,7 +161,7 @@ export class EmailService {
     resetToken: string,
     name?: string
   ): Promise<boolean> {
-    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+    const resetUrl = `${process.env.APP_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
 
     const variables = {
       NAME: name ? ` ${name}` : '',
@@ -183,7 +183,7 @@ export class EmailService {
    * Send account approval notification
    */
   async sendAccountApprovedEmail(to: string, name?: string): Promise<boolean> {
-    const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login`;
+    const loginUrl = `${process.env.APP_URL || 'http://localhost:3000'}/login`;
 
     const variables = {
       NAME: name ? ` ${name}` : '',
@@ -210,7 +210,7 @@ export class EmailService {
     userName: string,
     registrationDate: string
   ): Promise<boolean> {
-    const adminUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin/users`;
+    const adminUrl = `${process.env.APP_URL || 'http://localhost:3000'}/admin/users`;
 
     const variables = {
       USER_NAME: userName,
