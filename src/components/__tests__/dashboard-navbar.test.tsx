@@ -1,82 +1,39 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it, type Mock, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { DashboardNavbar } from '@/components/dashboard-navbar';
-import { UserRole } from '@/lib/types';
-
-vi.mock('@/lib/database/prisma', () => ({
-  prisma: {
-    user: {
-      findUnique: vi.fn(),
-    },
-  },
-}));
 
 describe('DashboardNavbar', () => {
-  it('renders navbar with profile button', async () => {
-    const { prisma } = await import('@/lib/database/prisma');
-    (prisma.user.findUnique as Mock).mockResolvedValue({
-      email: 'test@example.com',
-      role: UserRole.TENANT,
+  describe('Dashboard Mode', () => {
+    it('renders navbar with profile button', () => {
+      render(<DashboardNavbar mode="dashboard" isAdmin={false} />);
+      expect(screen.getByText('ATU Ekartoteka')).toBeInTheDocument();
+      const profileButtons = screen.getAllByRole('button', { name: /profil/i });
+      expect(profileButtons.length).toBeGreaterThan(0);
     });
 
-    const Navbar = await DashboardNavbar({ userId: 'user-1' });
-    render(Navbar as React.ReactElement);
-
-    expect(screen.getByText('ATU Ekartoteka')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /profil/i })).toBeInTheDocument();
-  });
-
-  it('renders admin panel button for admin users', async () => {
-    const { prisma } = await import('@/lib/database/prisma');
-    (prisma.user.findUnique as Mock).mockResolvedValue({
-      email: 'admin@example.com',
-      role: UserRole.ADMIN,
+    it('renders admin panel button for admin users', () => {
+      render(<DashboardNavbar mode="dashboard" isAdmin={true} />);
+      const adminButtons = screen.getAllByRole('button', {
+        name: /panel administratora/i,
+      });
+      expect(adminButtons.length).toBeGreaterThan(0);
     });
 
-    const Navbar = await DashboardNavbar({ userId: 'admin-1' });
-    render(Navbar as React.ReactElement);
-
-    expect(
-      screen.getByRole('button', { name: /panel administratora/i })
-    ).toBeInTheDocument();
-  });
-
-  it('does not render admin panel button for regular users', async () => {
-    const { prisma } = await import('@/lib/database/prisma');
-    (prisma.user.findUnique as Mock).mockResolvedValue({
-      email: 'user@example.com',
-      role: UserRole.TENANT,
+    it('does not render admin panel button for regular users', () => {
+      render(<DashboardNavbar mode="dashboard" isAdmin={false} />);
+      expect(
+        screen.queryByRole('button', { name: /panel administratora/i })
+      ).not.toBeInTheDocument();
     });
-
-    const Navbar = await DashboardNavbar({ userId: 'user-1' });
-    render(Navbar as React.ReactElement);
-
-    expect(
-      screen.queryByRole('button', { name: /panel administratora/i })
-    ).not.toBeInTheDocument();
   });
 
-  it('returns null if user not found', async () => {
-    const { prisma } = await import('@/lib/database/prisma');
-    (prisma.user.findUnique as Mock).mockResolvedValue(null);
-
-    const Navbar = await DashboardNavbar({ userId: 'nonexistent' });
-    expect(Navbar).toBeNull();
-  });
-
-  it('renders theme toggle and logout button', async () => {
-    const { prisma } = await import('@/lib/database/prisma');
-    (prisma.user.findUnique as Mock).mockResolvedValue({
-      email: 'test@example.com',
-      role: UserRole.TENANT,
+  describe('Admin Mode', () => {
+    it('renders navbar with all admin navigation items', () => {
+      render(<DashboardNavbar mode="admin" />);
+      expect(screen.getByText('ATU Ekartoteka')).toBeInTheDocument();
+      expect(screen.getAllByText('Panel klienta').length).toBe(2);
+      expect(screen.getAllByText('Mieszkania').length).toBe(2);
     });
-
-    const Navbar = await DashboardNavbar({ userId: 'user-1' });
-    render(Navbar as React.ReactElement);
-
-    expect(
-      screen.getByRole('button', { name: /wyloguj/i })
-    ).toBeInTheDocument();
   });
 });

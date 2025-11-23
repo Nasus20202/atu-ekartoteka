@@ -73,9 +73,6 @@ services:
 
       # Cloudflare Turnstile
       TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-}
-
-      # Cron Job Secret
-      CRON_SECRET: ${CRON_SECRET}
     env_file:
       - .env
     ports:

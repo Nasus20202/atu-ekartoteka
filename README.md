@@ -55,7 +55,6 @@ Visit `http://localhost:3000/register` to create the first admin user.
   - `TRACKING_SCRIPT` - Optional: inline script used to load tracking providers (be cautious; sanitized strings only).
 
 - Security / process:
-  - `CRON_SECRET` - Optional secret used to protect cron-trigger endpoints.
   - `LOG_LEVEL` - Optional: logging level used in production (e.g., `info`, `debug`).
   - `ENABLE_TEST_LOGS` - Optional: set `true` to enable logs while running tests.
 

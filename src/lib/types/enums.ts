@@ -1,3 +1,3 @@
-import { AccountStatus, UserRole } from '@/generated/prisma/enums';
+import { AccountStatus, UserRole, AuthMethod } from '@/generated/prisma/enums';
 
-export { AccountStatus, UserRole };
+export { AccountStatus, UserRole, AuthMethod };

@@ -123,38 +123,44 @@ const authOptions: NextAuthConfig = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         const extendedUser = user as ExtendedUser;
         token.id = extendedUser.id;
         token.role = extendedUser.role;
+        token.status = extendedUser.status;
+        token.emailVerified = extendedUser.emailVerified;
       }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user && token.id) {
-        // Fetch fresh user data from database to get current status
-        const user = await prisma.user.findUnique({
+
+      // Refresh user data from database only on update trigger
+      if (trigger === 'update' && token.id) {
+        const freshUser = await prisma.user.findUnique({
           where: { id: token.id as string },
           select: {
-            id: true,
-            email: true,
-            name: true,
             role: true,
             status: true,
             emailVerified: true,
           },
         });
 
-        if (user) {
-          // Extend session with user data
-          Object.assign(session.user, {
-            id: user.id,
-            role: user.role,
-            status: user.status,
-            emailVerified: user.emailVerified,
-          });
+        if (freshUser) {
+          token.role = freshUser.role;
+          token.status = freshUser.status;
+          token.emailVerified = freshUser.emailVerified;
         }
+      }
+
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user && token.id) {
+        // Use data from JWT token instead of fetching from database
+        Object.assign(session.user, {
+          id: token.id as string,
+          role: token.role as string,
+          status: token.status as string,
+          emailVerified: token.emailVerified as boolean,
+        });
       }
       return session;
     },
