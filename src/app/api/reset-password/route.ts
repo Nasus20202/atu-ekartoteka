@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
 import { verifyTurnstileToken } from '@/lib/turnstile';
+import { AuthMethod } from '@/lib/types';
 
 const logger = createLogger('api:reset-password');
 
@@ -57,7 +58,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if user uses OAuth authentication
-    if (resetToken.user.authMethod === 'GOOGLE') {
+    if (resetToken.user.authMethod === AuthMethod.GOOGLE) {
       logger.warn(
         { email: resetToken.user.email },
         'Password reset attempted for OAuth user'

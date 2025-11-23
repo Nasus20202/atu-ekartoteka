@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { AccountStatus, UserRole } from '@/lib/types';
+import { AccountStatus, AuthMethod, UserRole } from '@/lib/types';
 
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
@@ -34,7 +34,7 @@ describe('Admin Users API', () => {
           status: AccountStatus.PENDING,
           emailVerified: true,
 
-          authMethod: 'CREDENTIALS',
+          authMethod: AuthMethod.CREDENTIALS,
           createdAt: new Date(),
           updatedAt: new Date(),
           apartments: [],
@@ -48,7 +48,7 @@ describe('Admin Users API', () => {
           status: AccountStatus.APPROVED,
           emailVerified: true,
 
-          authMethod: 'CREDENTIALS',
+          authMethod: AuthMethod.CREDENTIALS,
           createdAt: new Date(),
           updatedAt: new Date(),
           apartments: [
@@ -96,7 +96,7 @@ describe('Admin Users API', () => {
           status: AccountStatus.PENDING,
           emailVerified: true,
 
-          authMethod: 'CREDENTIALS',
+          authMethod: AuthMethod.CREDENTIALS,
           createdAt: new Date(),
           updatedAt: new Date(),
           apartments: [],
@@ -112,7 +112,7 @@ describe('Admin Users API', () => {
           status: AccountStatus.PENDING,
           emailVerified: true,
 
-          authMethod: 'CREDENTIALS',
+          authMethod: AuthMethod.CREDENTIALS,
           role: UserRole.TENANT,
         },
         include: { apartments: true },
@@ -134,7 +134,7 @@ describe('Admin Users API', () => {
           status: AccountStatus.APPROVED,
           emailVerified: true,
 
-          authMethod: 'CREDENTIALS',
+          authMethod: AuthMethod.CREDENTIALS,
           createdAt: new Date(),
           updatedAt: new Date(),
           apartment: {
@@ -164,7 +164,7 @@ describe('Admin Users API', () => {
           status: AccountStatus.APPROVED,
           emailVerified: true,
 
-          authMethod: 'CREDENTIALS',
+          authMethod: AuthMethod.CREDENTIALS,
           role: UserRole.TENANT,
         },
         include: { apartments: true },
@@ -187,7 +187,7 @@ describe('Admin Users API', () => {
         status: AccountStatus.PENDING,
         emailVerified: true,
 
-        authMethod: 'CREDENTIALS',
+        authMethod: AuthMethod.CREDENTIALS,
         createdAt: new Date(),
         updatedAt: new Date(),
         apartments: [],
@@ -198,7 +198,7 @@ describe('Admin Users API', () => {
         status: AccountStatus.APPROVED,
         emailVerified: true,
 
-        authMethod: 'CREDENTIALS',
+        authMethod: AuthMethod.CREDENTIALS,
         apartments: [],
       };
 
@@ -211,7 +211,7 @@ describe('Admin Users API', () => {
           status: AccountStatus.APPROVED,
           emailVerified: true,
 
-          authMethod: 'CREDENTIALS',
+          authMethod: AuthMethod.CREDENTIALS,
           apartments: { set: [] },
         },
         include: { apartments: true },
@@ -231,7 +231,7 @@ describe('Admin Users API', () => {
         status: AccountStatus.PENDING,
         emailVerified: true,
 
-        authMethod: 'CREDENTIALS',
+        authMethod: AuthMethod.CREDENTIALS,
         createdAt: new Date(),
         updatedAt: new Date(),
         apartments: [],
@@ -262,7 +262,7 @@ describe('Admin Users API', () => {
         status: AccountStatus.APPROVED,
         emailVerified: true,
 
-        authMethod: 'CREDENTIALS',
+        authMethod: AuthMethod.CREDENTIALS,
         apartments: [mockApartment],
       };
 
@@ -287,7 +287,7 @@ describe('Admin Users API', () => {
           status: AccountStatus.APPROVED,
           emailVerified: true,
 
-          authMethod: 'CREDENTIALS',
+          authMethod: AuthMethod.CREDENTIALS,
         },
         include: { apartments: true },
       });
@@ -306,7 +306,7 @@ describe('Admin Users API', () => {
         status: AccountStatus.PENDING,
         emailVerified: true,
 
-        authMethod: 'CREDENTIALS',
+        authMethod: AuthMethod.CREDENTIALS,
         createdAt: new Date(),
         updatedAt: new Date(),
         apartments: [],
@@ -317,7 +317,7 @@ describe('Admin Users API', () => {
         status: AccountStatus.REJECTED,
         emailVerified: true,
 
-        authMethod: 'CREDENTIALS',
+        authMethod: AuthMethod.CREDENTIALS,
         apartments: [],
       };
 
@@ -330,7 +330,7 @@ describe('Admin Users API', () => {
           status: AccountStatus.REJECTED,
           emailVerified: true,
 
-          authMethod: 'CREDENTIALS',
+          authMethod: AuthMethod.CREDENTIALS,
           apartments: { set: [] },
         },
         include: { apartments: true },
@@ -350,7 +350,7 @@ describe('Admin Users API', () => {
         status: AccountStatus.PENDING,
         emailVerified: true,
 
-        authMethod: 'CREDENTIALS',
+        authMethod: AuthMethod.CREDENTIALS,
         createdAt: new Date(),
         updatedAt: new Date(),
         apartments: [],
@@ -382,7 +382,7 @@ describe('Admin Users API', () => {
           status: AccountStatus.APPROVED,
           emailVerified: true,
 
-          authMethod: 'CREDENTIALS',
+          authMethod: AuthMethod.CREDENTIALS,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -426,7 +426,7 @@ describe('Admin Users API', () => {
         status: AccountStatus.APPROVED,
         emailVerified: true,
 
-        authMethod: 'CREDENTIALS',
+        authMethod: AuthMethod.CREDENTIALS,
         createdAt: new Date(),
         updatedAt: new Date(),
         apartments: [{ id: 'apt1', externalId: 'EXT1', number: '1' }],
@@ -437,7 +437,7 @@ describe('Admin Users API', () => {
         status: AccountStatus.REJECTED,
         emailVerified: true,
 
-        authMethod: 'CREDENTIALS',
+        authMethod: AuthMethod.CREDENTIALS,
         apartments: [],
       };
 
@@ -450,7 +450,7 @@ describe('Admin Users API', () => {
           status: AccountStatus.REJECTED,
           emailVerified: true,
 
-          authMethod: 'CREDENTIALS',
+          authMethod: AuthMethod.CREDENTIALS,
           apartments: { set: [] },
         },
         include: { apartments: true },

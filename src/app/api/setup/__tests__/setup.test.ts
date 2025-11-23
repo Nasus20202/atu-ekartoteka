@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { prisma } from '@/lib/database/prisma';
-import { AccountStatus, UserRole } from '@/lib/types';
+import { AccountStatus, AuthMethod, UserRole } from '@/lib/types';
 
 // Mock the prisma client
 vi.mock('@/lib/database/prisma', () => ({
@@ -54,7 +54,7 @@ describe('Setup Check Endpoint', () => {
         role: UserRole.ADMIN,
         status: AccountStatus.APPROVED,
         emailVerified: true,
-        authMethod: 'CREDENTIALS' as any,
+        authMethod: AuthMethod.CREDENTIALS,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -106,7 +106,7 @@ describe('Setup Check Endpoint', () => {
         role: UserRole.ADMIN,
         status: AccountStatus.APPROVED,
         emailVerified: true,
-        authMethod: 'CREDENTIALS' as any,
+        authMethod: AuthMethod.CREDENTIALS,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -128,7 +128,7 @@ describe('Setup Check Endpoint', () => {
         role: UserRole.ADMIN,
         status: AccountStatus.APPROVED,
         emailVerified: true,
-        authMethod: 'CREDENTIALS' as any,
+        authMethod: AuthMethod.CREDENTIALS,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -210,7 +210,7 @@ describe('Setup Check Endpoint', () => {
         role: UserRole.ADMIN,
         status: AccountStatus.PENDING,
         emailVerified: true,
-        authMethod: 'CREDENTIALS' as any,
+        authMethod: AuthMethod.CREDENTIALS,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -233,7 +233,7 @@ describe('Setup Check Endpoint', () => {
         role: UserRole.ADMIN,
         status: AccountStatus.REJECTED,
         emailVerified: true,
-        authMethod: 'CREDENTIALS' as any,
+        authMethod: AuthMethod.CREDENTIALS,
         createdAt: new Date(),
         updatedAt: new Date(),
       });

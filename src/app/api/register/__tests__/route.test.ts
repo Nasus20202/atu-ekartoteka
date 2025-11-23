@@ -1,7 +1,7 @@
 import { hash } from 'bcryptjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { AccountStatus, UserRole } from '@/lib/types';
+import { AccountStatus, AuthMethod, UserRole } from '@/lib/types';
 
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
@@ -45,7 +45,7 @@ describe('Registration API', () => {
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
         emailVerified: true,
-        authMethod: 'CREDENTIALS',
+        authMethod: AuthMethod.CREDENTIALS,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -59,7 +59,7 @@ describe('Registration API', () => {
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
           emailVerified: true,
-          authMethod: 'CREDENTIALS',
+          authMethod: AuthMethod.CREDENTIALS,
         },
       });
 
@@ -102,7 +102,7 @@ describe('Registration API', () => {
         role: UserRole.TENANT,
         status: AccountStatus.APPROVED,
         emailVerified: true,
-        authMethod: 'CREDENTIALS',
+        authMethod: AuthMethod.CREDENTIALS,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -142,7 +142,7 @@ describe('Registration API', () => {
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
         emailVerified: true,
-        authMethod: 'CREDENTIALS',
+        authMethod: AuthMethod.CREDENTIALS,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -155,7 +155,7 @@ describe('Registration API', () => {
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
           emailVerified: true,
-          authMethod: 'CREDENTIALS',
+          authMethod: AuthMethod.CREDENTIALS,
         },
       });
 
@@ -178,7 +178,7 @@ describe('Registration API', () => {
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
         emailVerified: true,
-        authMethod: 'CREDENTIALS',
+        authMethod: AuthMethod.CREDENTIALS,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -191,7 +191,7 @@ describe('Registration API', () => {
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
           emailVerified: true,
-          authMethod: 'CREDENTIALS',
+          authMethod: AuthMethod.CREDENTIALS,
         },
       });
 
@@ -213,7 +213,7 @@ describe('Registration API', () => {
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
         emailVerified: true,
-        authMethod: 'CREDENTIALS',
+        authMethod: AuthMethod.CREDENTIALS,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -226,7 +226,7 @@ describe('Registration API', () => {
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
           emailVerified: true,
-          authMethod: 'CREDENTIALS',
+          authMethod: AuthMethod.CREDENTIALS,
         },
       });
 
@@ -255,7 +255,7 @@ describe('Registration API', () => {
         role: UserRole.ADMIN,
         status: AccountStatus.APPROVED,
         emailVerified: true,
-        authMethod: 'CREDENTIALS',
+        authMethod: AuthMethod.CREDENTIALS,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -268,7 +268,7 @@ describe('Registration API', () => {
           role: UserRole.ADMIN,
           status: AccountStatus.APPROVED,
           emailVerified: true,
-          authMethod: 'CREDENTIALS',
+          authMethod: AuthMethod.CREDENTIALS,
         },
       });
 
@@ -286,7 +286,7 @@ describe('Registration API', () => {
         role: UserRole.ADMIN,
         status: AccountStatus.APPROVED,
         emailVerified: true,
-        authMethod: 'CREDENTIALS',
+        authMethod: AuthMethod.CREDENTIALS,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -319,7 +319,7 @@ describe('Registration API', () => {
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
         emailVerified: true,
-        authMethod: 'CREDENTIALS',
+        authMethod: AuthMethod.CREDENTIALS,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -332,7 +332,7 @@ describe('Registration API', () => {
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
           emailVerified: true,
-          authMethod: 'CREDENTIALS',
+          authMethod: AuthMethod.CREDENTIALS,
         },
       });
 
@@ -363,7 +363,7 @@ describe('Registration API', () => {
         role: UserRole.ADMIN,
         status: AccountStatus.APPROVED,
         emailVerified: true,
-        authMethod: 'CREDENTIALS',
+        authMethod: AuthMethod.CREDENTIALS,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -378,7 +378,7 @@ describe('Registration API', () => {
           role: UserRole.ADMIN,
           status: AccountStatus.APPROVED,
           emailVerified: true,
-          authMethod: 'CREDENTIALS',
+          authMethod: AuthMethod.CREDENTIALS,
         },
       });
 
@@ -396,7 +396,7 @@ describe('Registration API', () => {
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
         emailVerified: true,
-        authMethod: 'CREDENTIALS',
+        authMethod: AuthMethod.CREDENTIALS,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -411,7 +411,7 @@ describe('Registration API', () => {
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
           emailVerified: true,
-          authMethod: 'CREDENTIALS',
+          authMethod: AuthMethod.CREDENTIALS,
         },
       });
 

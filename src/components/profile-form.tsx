@@ -8,10 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { logger } from '@/lib/logger';
+import { AuthMethod } from '@/lib/types';
 
 type ProfileFormProps = {
   initialName: string | null;
-  authMethod: 'CREDENTIALS' | 'GOOGLE';
+  authMethod: AuthMethod;
 };
 
 export function ProfileForm({ initialName, authMethod }: ProfileFormProps) {
@@ -128,7 +129,7 @@ export function ProfileForm({ initialName, authMethod }: ProfileFormProps) {
       </div>
 
       {/* Password Section */}
-      {authMethod === 'CREDENTIALS' ? (
+      {authMethod === AuthMethod.CREDENTIALS ? (
         <div className="space-y-4">
           <div>
             <Label htmlFor="currentPassword">Obecne hasło</Label>

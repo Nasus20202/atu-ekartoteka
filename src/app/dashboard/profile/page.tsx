@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { prisma } from '@/lib/database/prisma';
+import { AuthMethod } from '@/lib/types';
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -50,7 +51,7 @@ export default async function ProfilePage() {
         <CardContent>
           <ProfileForm
             initialName={user.name}
-            authMethod={user.authMethod || 'CREDENTIALS'}
+            authMethod={user.authMethod || AuthMethod.CREDENTIALS}
           />
         </CardContent>
       </Card>

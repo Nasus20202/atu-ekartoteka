@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { POST } from '@/app/api/forgot-password/route';
+import { AuthMethod } from '@/lib/types';
 
 // Mock dependencies
 vi.mock('@/lib/database/prisma', () => ({
@@ -39,6 +40,7 @@ vi.mock('@/lib/turnstile', () => ({
   verifyTurnstileToken: vi.fn(() => Promise.resolve(true)),
 }));
 
+// Import mocked prisma after mocking
 const { prisma } = await import('@/lib/database/prisma');
 
 describe('POST /api/forgot-password', () => {
@@ -154,7 +156,7 @@ describe('POST /api/forgot-password', () => {
       role: 'TENANT' as const,
       status: 'APPROVED' as const,
       emailVerified: true,
-      authMethod: 'GOOGLE' as const,
+      authMethod: AuthMethod.GOOGLE,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -191,7 +193,7 @@ describe('POST /api/forgot-password', () => {
       role: 'TENANT' as const,
       status: 'APPROVED' as const,
       emailVerified: true,
-      authMethod: 'CREDENTIALS' as const,
+      authMethod: AuthMethod.CREDENTIALS,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

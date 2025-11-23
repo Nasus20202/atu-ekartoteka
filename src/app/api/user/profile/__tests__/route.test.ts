@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { AccountStatus, UserRole } from '@/lib/types';
+import { AccountStatus, AuthMethod, UserRole } from '@/lib/types';
 
 // Mock dependencies
 vi.mock('@/auth', () => ({
@@ -49,7 +49,7 @@ describe('User Profile API', () => {
       role: UserRole.TENANT,
       status: AccountStatus.APPROVED,
       emailVerified: true,
-      authMethod: 'CREDENTIALS' as any,
+      authMethod: AuthMethod.CREDENTIALS,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

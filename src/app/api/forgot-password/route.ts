@@ -5,6 +5,7 @@ import { getEmailService } from '@/lib/email/email-service';
 import { generateSecureToken } from '@/lib/email/verification-utils';
 import { createLogger } from '@/lib/logger';
 import { verifyTurnstileToken } from '@/lib/turnstile';
+import { AuthMethod } from '@/lib/types';
 
 const logger = createLogger('api:forgot-password');
 
@@ -47,7 +48,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if user uses OAuth authentication
-    if (user.authMethod === 'GOOGLE') {
+    if (user.authMethod === AuthMethod.GOOGLE) {
       logger.warn({ email }, 'Password reset requested for OAuth user');
       return NextResponse.json({
         message:

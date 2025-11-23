@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ProfileForm } from '@/components/profile-form';
+import { AuthMethod } from '@/lib/types';
 
 vi.mock('next/navigation', () => ({
   useRouter: vi.fn(),
@@ -26,21 +27,28 @@ describe('ProfileForm', () => {
   });
 
   it('should render form with initial name', () => {
-    render(<ProfileForm initialName="Jan Kowalski" authMethod="CREDENTIALS" />);
+    render(
+      <ProfileForm
+        initialName="Jan Kowalski"
+        authMethod={AuthMethod.CREDENTIALS}
+      />
+    );
 
     const nameInput = screen.getByLabelText(/imię i nazwisko/i);
     expect(nameInput).toHaveValue('Jan Kowalski');
   });
 
   it('should render form with empty name when null', () => {
-    render(<ProfileForm initialName={null} authMethod="CREDENTIALS" />);
+    render(
+      <ProfileForm initialName={null} authMethod={AuthMethod.CREDENTIALS} />
+    );
 
     const nameInput = screen.getByLabelText(/imię i nazwisko/i);
     expect(nameInput).toHaveValue('');
   });
 
   it('should update name field on change', () => {
-    render(<ProfileForm initialName="" authMethod="CREDENTIALS" />);
+    render(<ProfileForm initialName="" authMethod={AuthMethod.CREDENTIALS} />);
 
     const nameInput = screen.getByLabelText(/imię i nazwisko/i);
     fireEvent.change(nameInput, { target: { value: 'New Name' } });
@@ -49,7 +57,7 @@ describe('ProfileForm', () => {
   });
 
   it('should toggle current password visibility', () => {
-    render(<ProfileForm initialName="" authMethod="CREDENTIALS" />);
+    render(<ProfileForm initialName="" authMethod={AuthMethod.CREDENTIALS} />);
 
     const currentPasswordInput = screen.getByLabelText(/obecne hasło/i);
     expect(currentPasswordInput).toHaveAttribute('type', 'password');
@@ -62,7 +70,7 @@ describe('ProfileForm', () => {
 
   it('should toggle new password visibility', () => {
     const { container } = render(
-      <ProfileForm initialName="" authMethod="CREDENTIALS" />
+      <ProfileForm initialName="" authMethod={AuthMethod.CREDENTIALS} />
     );
 
     const newPasswordField = container.querySelector(
@@ -78,7 +86,7 @@ describe('ProfileForm', () => {
 
   it('should show error when new password provided without current password', async () => {
     const { container } = render(
-      <ProfileForm initialName="" authMethod="CREDENTIALS" />
+      <ProfileForm initialName="" authMethod={AuthMethod.CREDENTIALS} />
     );
 
     const newPasswordInput = container.querySelector(
@@ -98,7 +106,7 @@ describe('ProfileForm', () => {
 
   it('should show error when passwords do not match', async () => {
     const { container } = render(
-      <ProfileForm initialName="" authMethod="CREDENTIALS" />
+      <ProfileForm initialName="" authMethod={AuthMethod.CREDENTIALS} />
     );
 
     const currentPasswordInput = container.querySelector(
@@ -125,7 +133,7 @@ describe('ProfileForm', () => {
 
   it('should show error when new password is too short', async () => {
     const { container } = render(
-      <ProfileForm initialName="" authMethod="CREDENTIALS" />
+      <ProfileForm initialName="" authMethod={AuthMethod.CREDENTIALS} />
     );
 
     const currentPasswordInput = container.querySelector(
@@ -153,7 +161,7 @@ describe('ProfileForm', () => {
   });
 
   it('should submit name only when no password provided', async () => {
-    render(<ProfileForm initialName="" authMethod="CREDENTIALS" />);
+    render(<ProfileForm initialName="" authMethod={AuthMethod.CREDENTIALS} />);
 
     const nameInput = screen.getByLabelText(/imię i nazwisko/i);
     fireEvent.change(nameInput, { target: { value: 'New Name' } });
@@ -172,7 +180,7 @@ describe('ProfileForm', () => {
 
   it('should submit password change with current password', async () => {
     const { container } = render(
-      <ProfileForm initialName="" authMethod="CREDENTIALS" />
+      <ProfileForm initialName="" authMethod={AuthMethod.CREDENTIALS} />
     );
 
     const currentPasswordInput = container.querySelector(
@@ -205,7 +213,7 @@ describe('ProfileForm', () => {
   });
 
   it('should show success message after successful update', async () => {
-    render(<ProfileForm initialName="" authMethod="CREDENTIALS" />);
+    render(<ProfileForm initialName="" authMethod={AuthMethod.CREDENTIALS} />);
 
     const nameInput = screen.getByLabelText(/imię i nazwisko/i);
     fireEvent.change(nameInput, { target: { value: 'New Name' } });
@@ -222,7 +230,7 @@ describe('ProfileForm', () => {
 
   it('should clear password fields after successful update', async () => {
     const { container } = render(
-      <ProfileForm initialName="" authMethod="CREDENTIALS" />
+      <ProfileForm initialName="" authMethod={AuthMethod.CREDENTIALS} />
     );
 
     const currentPasswordInput = container.querySelector(
@@ -250,7 +258,7 @@ describe('ProfileForm', () => {
   });
 
   it('should call router.refresh after successful update', async () => {
-    render(<ProfileForm initialName="" authMethod="CREDENTIALS" />);
+    render(<ProfileForm initialName="" authMethod={AuthMethod.CREDENTIALS} />);
 
     const nameInput = screen.getByLabelText(/imię i nazwisko/i);
     fireEvent.change(nameInput, { target: { value: 'New Name' } });
@@ -269,7 +277,7 @@ describe('ProfileForm', () => {
       json: async () => ({ error: 'Invalid password' }),
     } as Response);
 
-    render(<ProfileForm initialName="" authMethod="CREDENTIALS" />);
+    render(<ProfileForm initialName="" authMethod={AuthMethod.CREDENTIALS} />);
 
     const nameInput = screen.getByLabelText(/imię i nazwisko/i);
     fireEvent.change(nameInput, { target: { value: 'New Name' } });
@@ -283,7 +291,7 @@ describe('ProfileForm', () => {
   });
 
   it('should disable submit button while loading', async () => {
-    render(<ProfileForm initialName="" authMethod="CREDENTIALS" />);
+    render(<ProfileForm initialName="" authMethod={AuthMethod.CREDENTIALS} />);
 
     const nameInput = screen.getByLabelText(/imię i nazwisko/i);
     fireEvent.change(nameInput, { target: { value: 'New Name' } });
@@ -300,7 +308,7 @@ describe('ProfileForm', () => {
   });
 
   it('should call router.back when cancel button clicked', () => {
-    render(<ProfileForm initialName="" authMethod="CREDENTIALS" />);
+    render(<ProfileForm initialName="" authMethod={AuthMethod.CREDENTIALS} />);
 
     const cancelButton = screen.getByRole('button', { name: /anuluj/i });
     fireEvent.click(cancelButton);
@@ -309,7 +317,9 @@ describe('ProfileForm', () => {
   });
 
   it('should show OAuth message for Google users', () => {
-    render(<ProfileForm initialName="Google User" authMethod="GOOGLE" />);
+    render(
+      <ProfileForm initialName="Google User" authMethod={AuthMethod.GOOGLE} />
+    );
 
     // Should show OAuth message instead of password fields
     expect(
@@ -323,7 +333,7 @@ describe('ProfileForm', () => {
   it('should handle network errors gracefully', async () => {
     vi.mocked(fetch).mockRejectedValueOnce(new Error('Network error'));
 
-    render(<ProfileForm initialName="" authMethod="CREDENTIALS" />);
+    render(<ProfileForm initialName="" authMethod={AuthMethod.CREDENTIALS} />);
 
     const nameInput = screen.getByLabelText(/imię i nazwisko/i);
     fireEvent.change(nameInput, { target: { value: 'New Name' } });

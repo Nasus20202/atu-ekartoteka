@@ -7,6 +7,7 @@ import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
 import { notifyAdminsOfNewUser } from '@/lib/notifications/new-user-registration';
 import { isTurnstileEnabled, verifyTurnstileToken } from '@/lib/turnstile';
+import { AuthMethod } from '@/lib/types';
 
 const logger = createLogger('auth');
 
@@ -180,7 +181,7 @@ const authOptions: NextAuthConfig = {
                 name: user.name,
                 emailVerified: true, // Google accounts are verified
                 password: null, // No password for OAuth users
-                authMethod: 'GOOGLE',
+                authMethod: AuthMethod.GOOGLE,
               },
             });
 
