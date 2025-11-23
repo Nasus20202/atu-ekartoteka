@@ -45,6 +45,7 @@ describe('Registration API', () => {
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
         emailVerified: true,
+        authMethod: 'CREDENTIALS',
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -58,6 +59,7 @@ describe('Registration API', () => {
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
           emailVerified: true,
+          authMethod: 'CREDENTIALS',
         },
       });
 
@@ -100,11 +102,12 @@ describe('Registration API', () => {
         role: UserRole.TENANT,
         status: AccountStatus.APPROVED,
         emailVerified: true,
+        authMethod: 'CREDENTIALS',
         createdAt: new Date(),
         updatedAt: new Date(),
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(existingUser);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(existingUser as any);
 
       const foundUser = await prisma.user.findUnique({
         where: { email: 'existing@example.com' },
@@ -139,6 +142,7 @@ describe('Registration API', () => {
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
         emailVerified: true,
+        authMethod: 'CREDENTIALS',
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -151,6 +155,7 @@ describe('Registration API', () => {
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
           emailVerified: true,
+          authMethod: 'CREDENTIALS',
         },
       });
 
@@ -173,6 +178,7 @@ describe('Registration API', () => {
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
         emailVerified: true,
+        authMethod: 'CREDENTIALS',
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -185,6 +191,7 @@ describe('Registration API', () => {
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
           emailVerified: true,
+          authMethod: 'CREDENTIALS',
         },
       });
 
@@ -206,6 +213,7 @@ describe('Registration API', () => {
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
         emailVerified: true,
+        authMethod: 'CREDENTIALS',
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -218,6 +226,7 @@ describe('Registration API', () => {
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
           emailVerified: true,
+          authMethod: 'CREDENTIALS',
         },
       });
 
@@ -246,6 +255,7 @@ describe('Registration API', () => {
         role: UserRole.ADMIN,
         status: AccountStatus.APPROVED,
         emailVerified: true,
+        authMethod: 'CREDENTIALS',
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -258,6 +268,7 @@ describe('Registration API', () => {
           role: UserRole.ADMIN,
           status: AccountStatus.APPROVED,
           emailVerified: true,
+          authMethod: 'CREDENTIALS',
         },
       });
 
@@ -275,12 +286,13 @@ describe('Registration API', () => {
         role: UserRole.ADMIN,
         status: AccountStatus.APPROVED,
         emailVerified: true,
+        authMethod: 'CREDENTIALS',
         createdAt: new Date(),
         updatedAt: new Date(),
       };
 
       // Mock admin exists
-      vi.mocked(prisma.user.findFirst).mockResolvedValue(existingAdmin);
+      vi.mocked(prisma.user.findFirst).mockResolvedValue(existingAdmin as any);
 
       const foundAdmin = await prisma.user.findFirst({
         where: { role: UserRole.ADMIN },
@@ -307,6 +319,7 @@ describe('Registration API', () => {
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
         emailVerified: true,
+        authMethod: 'CREDENTIALS',
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -319,6 +332,7 @@ describe('Registration API', () => {
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
           emailVerified: true,
+          authMethod: 'CREDENTIALS',
         },
       });
 
@@ -349,11 +363,12 @@ describe('Registration API', () => {
         role: UserRole.ADMIN,
         status: AccountStatus.APPROVED,
         emailVerified: true,
+        authMethod: 'CREDENTIALS',
         createdAt: new Date(),
         updatedAt: new Date(),
       };
 
-      vi.mocked(prisma.user.create).mockResolvedValue(firstAdmin);
+      vi.mocked(prisma.user.create).mockResolvedValue(firstAdmin as any);
 
       const result = await prisma.user.create({
         data: {
@@ -363,6 +378,7 @@ describe('Registration API', () => {
           role: UserRole.ADMIN,
           status: AccountStatus.APPROVED,
           emailVerified: true,
+          authMethod: 'CREDENTIALS',
         },
       });
 
@@ -380,11 +396,12 @@ describe('Registration API', () => {
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
         emailVerified: true,
+        authMethod: 'CREDENTIALS',
         createdAt: new Date(),
         updatedAt: new Date(),
       };
 
-      vi.mocked(prisma.user.create).mockResolvedValue(regularUser);
+      vi.mocked(prisma.user.create).mockResolvedValue(regularUser as any);
 
       const result = await prisma.user.create({
         data: {
@@ -394,6 +411,7 @@ describe('Registration API', () => {
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
           emailVerified: true,
+          authMethod: 'CREDENTIALS',
         },
       });
 

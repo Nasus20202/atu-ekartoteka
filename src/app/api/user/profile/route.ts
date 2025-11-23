@@ -53,6 +53,13 @@ export async function PATCH(request: NextRequest) {
       }
 
       // Verify current password
+      if (!user.password) {
+        return NextResponse.json(
+          { error: 'Current password is incorrect' },
+          { status: 400 }
+        );
+      }
+
       const isPasswordValid = await bcrypt.compare(
         currentPassword,
         user.password

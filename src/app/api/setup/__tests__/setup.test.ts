@@ -54,6 +54,7 @@ describe('Setup Check Endpoint', () => {
         role: UserRole.ADMIN,
         status: AccountStatus.APPROVED,
         emailVerified: true,
+        authMethod: 'CREDENTIALS' as any,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -105,6 +106,7 @@ describe('Setup Check Endpoint', () => {
         role: UserRole.ADMIN,
         status: AccountStatus.APPROVED,
         emailVerified: true,
+        authMethod: 'CREDENTIALS' as any,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -126,6 +128,7 @@ describe('Setup Check Endpoint', () => {
         role: UserRole.ADMIN,
         status: AccountStatus.APPROVED,
         emailVerified: true,
+        authMethod: 'CREDENTIALS' as any,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -207,6 +210,7 @@ describe('Setup Check Endpoint', () => {
         role: UserRole.ADMIN,
         status: AccountStatus.PENDING,
         emailVerified: true,
+        authMethod: 'CREDENTIALS' as any,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -229,6 +233,7 @@ describe('Setup Check Endpoint', () => {
         role: UserRole.ADMIN,
         status: AccountStatus.REJECTED,
         emailVerified: true,
+        authMethod: 'CREDENTIALS' as any,
         createdAt: new Date(),
         updatedAt: new Date(),
       });

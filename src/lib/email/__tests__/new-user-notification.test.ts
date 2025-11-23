@@ -103,8 +103,8 @@ describe('EmailService - New User Notification', () => {
     });
 
     it('should use correct admin URL', async () => {
-      const originalEnv = process.env.NEXT_PUBLIC_APP_URL;
-      process.env.NEXT_PUBLIC_APP_URL = 'https://example.com';
+      const originalEnv = process.env.APP_URL;
+      process.env.APP_URL = 'https://example.com';
 
       await emailService.sendNewUserNotificationToAdmin(
         'admin@example.com',
@@ -124,7 +124,7 @@ describe('EmailService - New User Notification', () => {
         })
       );
 
-      process.env.NEXT_PUBLIC_APP_URL = originalEnv;
+      process.env.APP_URL = originalEnv;
     });
   });
 });

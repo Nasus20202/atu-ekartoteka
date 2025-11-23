@@ -33,6 +33,8 @@ describe('Admin Users API', () => {
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
           emailVerified: true,
+
+          authMethod: 'CREDENTIALS',
           createdAt: new Date(),
           updatedAt: new Date(),
           apartments: [],
@@ -45,6 +47,8 @@ describe('Admin Users API', () => {
           role: UserRole.TENANT,
           status: AccountStatus.APPROVED,
           emailVerified: true,
+
+          authMethod: 'CREDENTIALS',
           createdAt: new Date(),
           updatedAt: new Date(),
           apartments: [
@@ -68,7 +72,7 @@ describe('Admin Users API', () => {
         },
       ];
 
-      vi.mocked(prisma.user.findMany).mockResolvedValue(mockUsers);
+      vi.mocked(prisma.user.findMany).mockResolvedValue(mockUsers as any);
 
       const result = await prisma.user.findMany({
         where: { role: UserRole.TENANT },
@@ -91,18 +95,24 @@ describe('Admin Users API', () => {
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
           emailVerified: true,
+
+          authMethod: 'CREDENTIALS',
           createdAt: new Date(),
           updatedAt: new Date(),
           apartments: [],
         },
       ];
 
-      vi.mocked(prisma.user.findMany).mockResolvedValue(mockPendingUsers);
+      vi.mocked(prisma.user.findMany).mockResolvedValue(
+        mockPendingUsers as any
+      );
 
       const result = await prisma.user.findMany({
         where: {
           status: AccountStatus.PENDING,
           emailVerified: true,
+
+          authMethod: 'CREDENTIALS',
           role: UserRole.TENANT,
         },
         include: { apartments: true },
@@ -123,6 +133,8 @@ describe('Admin Users API', () => {
           role: UserRole.TENANT,
           status: AccountStatus.APPROVED,
           emailVerified: true,
+
+          authMethod: 'CREDENTIALS',
           createdAt: new Date(),
           updatedAt: new Date(),
           apartment: {
@@ -143,12 +155,16 @@ describe('Admin Users API', () => {
         },
       ];
 
-      vi.mocked(prisma.user.findMany).mockResolvedValue(mockApprovedUsers);
+      vi.mocked(prisma.user.findMany).mockResolvedValue(
+        mockApprovedUsers as any
+      );
 
       const result = await prisma.user.findMany({
         where: {
           status: AccountStatus.APPROVED,
           emailVerified: true,
+
+          authMethod: 'CREDENTIALS',
           role: UserRole.TENANT,
         },
         include: { apartments: true },
@@ -170,6 +186,8 @@ describe('Admin Users API', () => {
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
         emailVerified: true,
+
+        authMethod: 'CREDENTIALS',
         createdAt: new Date(),
         updatedAt: new Date(),
         apartments: [],
@@ -179,17 +197,21 @@ describe('Admin Users API', () => {
         ...mockUser,
         status: AccountStatus.APPROVED,
         emailVerified: true,
+
+        authMethod: 'CREDENTIALS',
         apartments: [],
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
-      vi.mocked(prisma.user.update).mockResolvedValue(updatedUser);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
+      vi.mocked(prisma.user.update).mockResolvedValue(updatedUser as any);
 
       const result = await prisma.user.update({
         where: { id: '1' },
         data: {
           status: AccountStatus.APPROVED,
           emailVerified: true,
+
+          authMethod: 'CREDENTIALS',
           apartments: { set: [] },
         },
         include: { apartments: true },
@@ -208,6 +230,8 @@ describe('Admin Users API', () => {
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
         emailVerified: true,
+
+        authMethod: 'CREDENTIALS',
         createdAt: new Date(),
         updatedAt: new Date(),
         apartments: [],
@@ -237,12 +261,16 @@ describe('Admin Users API', () => {
         ...mockUser,
         status: AccountStatus.APPROVED,
         emailVerified: true,
+
+        authMethod: 'CREDENTIALS',
         apartments: [mockApartment],
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
-      vi.mocked(prisma.apartment.findUnique).mockResolvedValue(mockApartment);
-      vi.mocked(prisma.user.update).mockResolvedValue(updatedUser);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
+      vi.mocked(prisma.apartment.findUnique).mockResolvedValue(
+        mockApartment as any
+      );
+      vi.mocked(prisma.user.update).mockResolvedValue(updatedUser as any);
 
       // Check apartment is available
       const apartment = await prisma.apartment.findUnique({
@@ -258,6 +286,8 @@ describe('Admin Users API', () => {
         data: {
           status: AccountStatus.APPROVED,
           emailVerified: true,
+
+          authMethod: 'CREDENTIALS',
         },
         include: { apartments: true },
       });
@@ -275,6 +305,8 @@ describe('Admin Users API', () => {
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
         emailVerified: true,
+
+        authMethod: 'CREDENTIALS',
         createdAt: new Date(),
         updatedAt: new Date(),
         apartments: [],
@@ -284,17 +316,21 @@ describe('Admin Users API', () => {
         ...mockUser,
         status: AccountStatus.REJECTED,
         emailVerified: true,
+
+        authMethod: 'CREDENTIALS',
         apartments: [],
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
-      vi.mocked(prisma.user.update).mockResolvedValue(updatedUser);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
+      vi.mocked(prisma.user.update).mockResolvedValue(updatedUser as any);
 
       const result = await prisma.user.update({
         where: { id: '1' },
         data: {
           status: AccountStatus.REJECTED,
           emailVerified: true,
+
+          authMethod: 'CREDENTIALS',
           apartments: { set: [] },
         },
         include: { apartments: true },
@@ -313,6 +349,8 @@ describe('Admin Users API', () => {
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
         emailVerified: true,
+
+        authMethod: 'CREDENTIALS',
         createdAt: new Date(),
         updatedAt: new Date(),
         apartments: [],
@@ -343,14 +381,16 @@ describe('Admin Users API', () => {
           role: UserRole.TENANT,
           status: AccountStatus.APPROVED,
           emailVerified: true,
+
+          authMethod: 'CREDENTIALS',
           createdAt: new Date(),
           updatedAt: new Date(),
         },
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
       vi.mocked(prisma.apartment.findUnique).mockResolvedValue(
-        occupiedApartment
+        occupiedApartment as any
       );
 
       const apartment = await prisma.apartment.findUnique({
@@ -385,6 +425,8 @@ describe('Admin Users API', () => {
         role: UserRole.TENANT,
         status: AccountStatus.APPROVED,
         emailVerified: true,
+
+        authMethod: 'CREDENTIALS',
         createdAt: new Date(),
         updatedAt: new Date(),
         apartments: [{ id: 'apt1', externalId: 'EXT1', number: '1' }],
@@ -394,17 +436,21 @@ describe('Admin Users API', () => {
         ...mockUser,
         status: AccountStatus.REJECTED,
         emailVerified: true,
+
+        authMethod: 'CREDENTIALS',
         apartments: [],
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
-      vi.mocked(prisma.user.update).mockResolvedValue(updatedUser);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
+      vi.mocked(prisma.user.update).mockResolvedValue(updatedUser as any);
 
       const result = await prisma.user.update({
         where: { id: '1' },
         data: {
           status: AccountStatus.REJECTED,
           emailVerified: true,
+
+          authMethod: 'CREDENTIALS',
           apartments: { set: [] },
         },
         include: { apartments: true },

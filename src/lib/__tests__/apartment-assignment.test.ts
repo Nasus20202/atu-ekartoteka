@@ -36,8 +36,10 @@ describe('Apartment Assignment', () => {
 
       const mockApartment = createMockApartment();
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
-      vi.mocked(prisma.apartment.findUnique).mockResolvedValue(mockApartment);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
+      vi.mocked(prisma.apartment.findUnique).mockResolvedValue(
+        mockApartment as any
+      );
 
       const user = await prisma.user.findUnique({ where: { id: 'user1' } });
       const apartment = await prisma.apartment.findUnique({
@@ -95,8 +97,10 @@ describe('Apartment Assignment', () => {
 
       const mockApartment = createMockApartment({ user: mockUser });
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
-      vi.mocked(prisma.apartment.findUnique).mockResolvedValue(mockApartment);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
+      vi.mocked(prisma.apartment.findUnique).mockResolvedValue(
+        mockApartment as any
+      );
 
       const apartment = await prisma.apartment.findUnique({
         where: { id: 'apt1' },
@@ -178,8 +182,8 @@ describe('Apartment Assignment', () => {
         apartments: [],
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
-      vi.mocked(prisma.user.update).mockResolvedValue(updatedUser);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
+      vi.mocked(prisma.user.update).mockResolvedValue(updatedUser as any);
 
       const user = await prisma.user.findUnique({
         where: { id: 'user1' },
@@ -210,7 +214,7 @@ describe('Apartment Assignment', () => {
         apartment: null,
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
 
       const user = await prisma.user.findUnique({
         where: { id: 'user1' },
@@ -232,7 +236,7 @@ describe('Apartment Assignment', () => {
         apartment: null,
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
 
       const user = await prisma.user.findUnique({
         where: { id: 'user1' },
@@ -260,7 +264,7 @@ describe('Apartment Assignment', () => {
         userId: 'user1',
       });
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
       vi.mocked(prisma.apartment.findUnique).mockResolvedValue(mockApartment);
 
       const user = await prisma.user.findUnique({

@@ -47,6 +47,7 @@ vi.mock('@/lib/logger', () => ({
 
 // Mock turnstile verification as always valid for tests
 vi.mock('@/lib/turnstile', () => ({
+  isTurnstileEnabled: vi.fn(() => false),
   verifyTurnstileToken: vi.fn(() => Promise.resolve(true)),
 }));
 

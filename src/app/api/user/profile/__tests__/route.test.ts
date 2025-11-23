@@ -49,6 +49,7 @@ describe('User Profile API', () => {
       role: UserRole.TENANT,
       status: AccountStatus.APPROVED,
       emailVerified: true,
+      authMethod: 'CREDENTIALS' as any,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -96,7 +97,7 @@ describe('User Profile API', () => {
         },
         expires: new Date().toISOString(),
       } as any);
-      vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(mockUser);
+      vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(mockUser as any);
       vi.mocked(prisma.user.update).mockResolvedValueOnce({
         ...mockUser,
         name: 'Updated Name',

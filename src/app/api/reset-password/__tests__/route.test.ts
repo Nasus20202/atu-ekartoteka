@@ -299,7 +299,7 @@ describe('POST /api/reset-password', () => {
     vi.mocked(prisma.passwordReset.findUnique).mockResolvedValue(
       mockResetToken as any
     );
-    vi.mocked(prisma.$transaction).mockImplementation((_operations) => {
+    vi.mocked(prisma.$transaction).mockImplementation(() => {
       return Promise.resolve([{}, {}]);
     });
 

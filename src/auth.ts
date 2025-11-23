@@ -123,7 +123,7 @@ const authOptions: NextAuthConfig = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user, account: _account }) {
+    async jwt({ token, user }) {
       if (user) {
         const extendedUser = user as ExtendedUser;
         token.id = extendedUser.id;
