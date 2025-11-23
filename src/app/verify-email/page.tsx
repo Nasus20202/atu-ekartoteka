@@ -3,6 +3,7 @@
 import { CheckCircle, Loader2, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Suspense, useCallback, useEffect, useState } from 'react';
 
 import { AuthLayout } from '@/components/auth-layout';
@@ -12,6 +13,7 @@ import { Button } from '@/components/ui/button';
 function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { update } = useSession();
   const [verifying, setVerifying] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -30,6 +32,8 @@ function VerifyEmailContent() {
         if (!response.ok)
           throw new Error(data.error || 'Weryfikacja nie powiodła się');
         setSuccess(true);
+        // Update session to refresh emailVerified status
+        await update();
         setTimeout(() => router.push('/login?verified=true'), 2000);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Wystąpił błąd');
@@ -37,7 +41,7 @@ function VerifyEmailContent() {
         setVerifying(false);
       }
     },
-    [router]
+    [router, update]
   );
 
   useEffect(() => {

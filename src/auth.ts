@@ -200,13 +200,19 @@ const authOptions: NextAuthConfig = {
               // Don't fail the login process if notification fails
             }
 
-            // Add user ID to the returned user object
+            // Populate user object with all required fields for JWT callback
             user.id = newUser.id;
+            (user as ExtendedUser).role = newUser.role;
+            (user as ExtendedUser).status = newUser.status;
+            (user as ExtendedUser).emailVerified = newUser.emailVerified;
             return true;
           }
 
-          // Add existing user ID to the returned user object
+          // Populate user object with all required fields for JWT callback
           user.id = existingUser.id;
+          (user as ExtendedUser).role = existingUser.role;
+          (user as ExtendedUser).status = existingUser.status;
+          (user as ExtendedUser).emailVerified = existingUser.emailVerified;
           return true;
         } catch (error) {
           logger.error(
