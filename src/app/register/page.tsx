@@ -146,7 +146,7 @@ export default function RegisterPage() {
         }
       >
         <p className="text-center text-sm text-muted-foreground">
-          Logowanie...
+          Przekierowanie do strony logowania...
         </p>
       </AuthLayout>
     );

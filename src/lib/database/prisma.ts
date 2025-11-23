@@ -22,13 +22,26 @@ function createPrismaClient() {
 
   // Configure read replicas if replica URLs are provided
   const replicaUrls = process.env.DATABASE_REPLICA_URLS
-    ? process.env.DATABASE_REPLICA_URLS.split(',').map((url) => url.trim())
+    ? process.env.DATABASE_REPLICA_URLS.split(',')
+        .map((url) => url.trim())
+        .filter((url) => url.length > 0)
     : [];
 
   if (replicaUrls.length > 0) {
     return client.$extends(
       readReplicas({
-        url: replicaUrls,
+        replicas: replicaUrls.map((readUrl) => {
+          const replicaAdapter = new PrismaPg({
+            connectionString: readUrl,
+          });
+          return new PrismaClient({
+            adapter: replicaAdapter,
+            log:
+              process.env.NODE_ENV === 'development'
+                ? ['error', 'warn', 'info', 'query']
+                : ['error', 'warn'],
+          });
+        }),
       })
     );
   }
