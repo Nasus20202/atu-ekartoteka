@@ -48,7 +48,10 @@ export default async function ProfilePage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ProfileForm initialName={user.name} authMethod={user.authMethod} />
+          <ProfileForm
+            initialName={user.name}
+            authMethod={user.authMethod || 'CREDENTIALS'}
+          />
         </CardContent>
       </Card>
     </Page>

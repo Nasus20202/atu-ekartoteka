@@ -23,7 +23,13 @@ export function Page({ children, maxWidth = '6xl', className }: PageProps) {
   return (
     <div className="min-h-screen bg-background">
       <main className="p-8">
-        <div className={cn('mx-auto', maxWidthClasses[maxWidth], className)}>
+        <div
+          className={cn(
+            'mx-auto animate-fade-in',
+            maxWidthClasses[maxWidth],
+            className
+          )}
+        >
           {children}
         </div>
       </main>

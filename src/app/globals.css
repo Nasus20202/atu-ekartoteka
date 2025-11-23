@@ -142,6 +142,17 @@
     }
   }
 
+  @keyframes fade-in-up {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
   @keyframes scale-in {
     from {
       transform: scale(0.95);

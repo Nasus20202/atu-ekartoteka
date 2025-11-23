@@ -26,7 +26,7 @@ export function ChargesSummaryCard({
     currentMonthCharges.length > 0 || previousMonthCharges.length > 0;
 
   return (
-    <Card className="animate-scale-in" style={{ animationDelay: '100ms' }}>
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <FileText className="h-5 w-5" />

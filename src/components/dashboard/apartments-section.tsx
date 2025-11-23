@@ -33,7 +33,7 @@ export function ApartmentsSection({ apartments }: ApartmentsSectionProps) {
         : `Mieszkania (${apartmentCount})`;
 
   return (
-    <Card className="animate-scale-in" style={{ animationDelay: '200ms' }}>
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Building2 className="h-5 w-5" />

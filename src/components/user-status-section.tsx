@@ -30,7 +30,7 @@ export function UserStatusSection({
   const isApproved = status === AccountStatus.APPROVED;
 
   return (
-    <Card className="animate-scale-in">
+    <Card>
       <Collapsible defaultOpen={!isApproved}>
         <CardHeader>
           <CollapsibleTrigger className="flex w-full items-center justify-between hover:opacity-70 transition-opacity [&[data-state=open]>svg]:rotate-180">
