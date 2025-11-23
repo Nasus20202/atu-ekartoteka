@@ -47,62 +47,68 @@ export default async function PaymentsPage() {
       />
 
       <div className="space-y-6">
-        {userData.apartments.map((apartment) => (
-          <Card key={apartment.id}>
-            <CardHeader>
-              <CardTitle>
-                {apartment.address} {apartment.building || ''}/
-                {apartment.number}
-              </CardTitle>
-              <CardDescription>
-                {apartment.postalCode} {apartment.city}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {apartment.payments.length === 0 ? (
-                <p className="text-muted-foreground">Brak danych o wpłatach</p>
-              ) : (
-                <div className="space-y-3">
-                  {apartment.payments.map((payment) => (
-                    <Link
-                      key={payment.id}
-                      href={`/dashboard/payments/${apartment.id}/${payment.year}`}
-                      className="block"
-                    >
-                      <div className="rounded-lg border p-4 transition-colors hover:bg-muted">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-medium">
-                              Rok {payment.year}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              {payment.dateFrom.toLocaleDateString('pl-PL')} -{' '}
-                              {payment.dateTo.toLocaleDateString('pl-PL')}
+        {userData.apartments.map(
+          (apartment: (typeof userData.apartments)[number]) => (
+            <Card key={apartment.id}>
+              <CardHeader>
+                <CardTitle>
+                  {apartment.address} {apartment.building || ''}/
+                  {apartment.number}
+                </CardTitle>
+                <CardDescription>
+                  {apartment.postalCode} {apartment.city}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {apartment.payments.length === 0 ? (
+                  <p className="text-muted-foreground">
+                    Brak danych o wpłatach
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {apartment.payments.map(
+                      (payment: (typeof apartment.payments)[number]) => (
+                        <Link
+                          key={payment.id}
+                          href={`/dashboard/payments/${apartment.id}/${payment.year}`}
+                          className="block"
+                        >
+                          <div className="rounded-lg border p-4 transition-colors hover:bg-muted">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="font-medium">
+                                  Rok {payment.year}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  {payment.dateFrom.toLocaleDateString('pl-PL')}{' '}
+                                  - {payment.dateTo.toLocaleDateString('pl-PL')}
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div
+                                  className={`text-xl font-bold ${
+                                    payment.closingBalance >= 0
+                                      ? 'text-green-600'
+                                      : 'text-red-600'
+                                  }`}
+                                >
+                                  {payment.closingBalance.toFixed(2)} zł
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  Saldo końcowe
+                                </div>
+                              </div>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <div
-                              className={`text-xl font-bold ${
-                                payment.closingBalance >= 0
-                                  ? 'text-green-600'
-                                  : 'text-red-600'
-                              }`}
-                            >
-                              {payment.closingBalance.toFixed(2)} zł
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              Saldo końcowe
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+                        </Link>
+                      )
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )
+        )}
       </div>
     </Page>
   );

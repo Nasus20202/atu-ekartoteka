@@ -52,7 +52,10 @@ export const importChargeNotifications = async (
   });
 
   const apartmentMap = new Map(
-    apartments.map((apt) => [apt.externalId, apt.id])
+    apartments.map((apt: (typeof apartments)[number]) => [
+      apt.externalId,
+      apt.id,
+    ])
   );
 
   // Get existing notifications to determine creates vs updates
@@ -70,7 +73,10 @@ export const importChargeNotifications = async (
   });
 
   const existingMap = new Map(
-    existingNotifications.map((n) => [`${n.apartmentId}-${n.lineNo}`, n.id])
+    existingNotifications.map((n: (typeof existingNotifications)[number]) => [
+      `${n.apartmentId}-${n.lineNo}`,
+      n.id,
+    ])
   );
 
   const toCreate: Array<{
@@ -97,7 +103,9 @@ export const importChargeNotifications = async (
   const notificationsInFile = new Set<string>();
 
   for (const entry of entries) {
-    const apartmentId = apartmentMap.get(entry.apartmentCode);
+    const apartmentId = apartmentMap.get(entry.apartmentCode) as
+      | string
+      | undefined;
 
     if (!apartmentId) {
       continue;
@@ -105,7 +113,7 @@ export const importChargeNotifications = async (
 
     const key = `${apartmentId}-${entry.lineNo}`;
     notificationsInFile.add(key);
-    const existingId = existingMap.get(key);
+    const existingId = existingMap.get(key) as string | undefined;
 
     if (existingId) {
       toUpdate.push({
@@ -119,7 +127,7 @@ export const importChargeNotifications = async (
     } else {
       toCreate.push({
         externalId: entry.externalId,
-        apartmentId,
+        apartmentId: apartmentId,
         lineNo: entry.lineNo,
         description: entry.description,
         quantity: entry.quantity,
@@ -132,8 +140,11 @@ export const importChargeNotifications = async (
 
   // Find notifications to delete (exist in DB but not in file)
   const toDelete = existingNotifications
-    .filter((n) => !notificationsInFile.has(`${n.apartmentId}-${n.lineNo}`))
-    .map((n) => n.id);
+    .filter(
+      (n: (typeof existingNotifications)[number]) =>
+        !notificationsInFile.has(`${n.apartmentId}-${n.lineNo}`)
+    )
+    .map((n: (typeof existingNotifications)[number]) => n.id);
 
   // Bulk create
   if (toCreate.length > 0) {
@@ -236,7 +247,10 @@ export const importPayments = async (
   });
 
   const apartmentMap = new Map(
-    apartments.map((apt) => [apt.externalId, apt.id])
+    apartments.map((apt: (typeof apartments)[number]) => [
+      apt.externalId,
+      apt.id,
+    ])
   );
 
   // Get existing payments to determine creates vs updates
@@ -254,7 +268,10 @@ export const importPayments = async (
   });
 
   const existingMap = new Map(
-    existingPayments.map((p) => [`${p.apartmentId}-${p.year}`, p.id])
+    existingPayments.map((p: (typeof existingPayments)[number]) => [
+      `${p.apartmentId}-${p.year}`,
+      p.id,
+    ])
   );
 
   const toCreate: Array<{
@@ -303,7 +320,9 @@ export const importPayments = async (
   }> = [];
 
   for (const entry of entries) {
-    const apartmentId = apartmentMap.get(entry.apartmentCode);
+    const apartmentId = apartmentMap.get(entry.apartmentCode) as
+      | string
+      | undefined;
 
     if (!apartmentId) {
       skipped++;
@@ -325,7 +344,9 @@ export const importPayments = async (
       december,
     ] = entry.monthlyPayments;
 
-    const existingId = existingMap.get(`${apartmentId}-${entry.year}`);
+    const existingId = existingMap.get(`${apartmentId}-${entry.year}`) as
+      | string
+      | undefined;
 
     if (existingId) {
       toUpdate.push({
@@ -352,7 +373,7 @@ export const importPayments = async (
     } else {
       toCreate.push({
         externalId: entry.externalId,
-        apartmentId,
+        apartmentId: apartmentId,
         year: entry.year,
         dateFrom: entry.dateFrom,
         dateTo: entry.dateTo,

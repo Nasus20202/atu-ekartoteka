@@ -16,9 +16,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Set a dummy DATABASE_URL for Prisma generation (not used during build)
-ARG NEXT_PUBLIC_TURNSTILE_SITE_KEY
-ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" \
-    NEXT_PUBLIC_TURNSTILE_SITE_KEY=$NEXT_PUBLIC_TURNSTILE_SITE_KEY
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 
 # Generate Prisma Client and build the application
 RUN pnpm exec prisma generate && pnpm build

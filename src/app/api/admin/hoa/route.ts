@@ -40,14 +40,16 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json({
-      homeownersAssociations: homeownersAssociations.map((hoa) => ({
-        id: hoa.id,
-        externalId: hoa.externalId,
-        name: hoa.name,
-        apartmentCount: hoa._count.apartments,
-        createdAt: hoa.createdAt,
-        updatedAt: hoa.updatedAt,
-      })),
+      homeownersAssociations: homeownersAssociations.map(
+        (hoa: (typeof homeownersAssociations)[number]) => ({
+          id: hoa.id,
+          externalId: hoa.externalId,
+          name: hoa.name,
+          apartmentCount: hoa._count.apartments,
+          createdAt: hoa.createdAt,
+          updatedAt: hoa.updatedAt,
+        })
+      ),
     });
   } catch (error) {
     logger.error({ error }, 'HOA fetch error');

@@ -40,7 +40,7 @@ export async function notifyAdminsOfNewUser(
     });
 
     // Send notification to each admin
-    const notifications = admins.map(async (admin) => {
+    const notifications = admins.map(async (admin: (typeof admins)[number]) => {
       try {
         await emailService.sendNewUserNotificationToAdmin(
           admin.email,

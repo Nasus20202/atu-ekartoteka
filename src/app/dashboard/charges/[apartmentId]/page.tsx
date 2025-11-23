@@ -61,7 +61,7 @@ export default async function ApartmentChargesPage({
     }>
   >();
 
-  apartment.charges.forEach((charge) => {
+  apartment.charges.forEach((charge: (typeof apartment.charges)[number]) => {
     if (!chargesByPeriod.has(charge.period)) {
       chargesByPeriod.set(charge.period, []);
     }

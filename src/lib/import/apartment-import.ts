@@ -78,7 +78,9 @@ export async function importApartmentsFromBuffer(
     });
 
     const existingIds = new Set(
-      existingApartments.map((apt) => apt.externalId)
+      existingApartments.map(
+        (apt: (typeof existingApartments)[number]) => apt.externalId
+      )
     );
 
     // Separate into create and update batches

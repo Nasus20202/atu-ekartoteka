@@ -114,7 +114,7 @@ export async function PATCH(req: NextRequest) {
       }
 
       const occupiedApartments = apartments.filter(
-        (apt) => apt.user && apt.user.id !== userId
+        (apt: (typeof apartments)[number]) => apt.user && apt.user.id !== userId
       );
       if (occupiedApartments.length > 0) {
         return NextResponse.json(

@@ -49,37 +49,52 @@ export default async function DashboardPage() {
   const previousPeriod = `${prevMonth.getFullYear()}${String(prevMonth.getMonth() + 1).padStart(2, '0')}`;
 
   // Calculate charges for current and previous month
-  const currentMonthCharges = userData.apartments.flatMap((apt) =>
-    apt.charges.filter((charge) => charge.period === currentPeriod)
+  const currentMonthCharges = userData.apartments.flatMap(
+    (apt: (typeof userData.apartments)[number]) =>
+      apt.charges.filter(
+        (charge: (typeof apt.charges)[number]) =>
+          charge.period === currentPeriod
+      )
   );
-  const previousMonthCharges = userData.apartments.flatMap((apt) =>
-    apt.charges.filter((charge) => charge.period === previousPeriod)
+  const previousMonthCharges = userData.apartments.flatMap(
+    (apt: (typeof userData.apartments)[number]) =>
+      apt.charges.filter(
+        (charge: (typeof apt.charges)[number]) =>
+          charge.period === previousPeriod
+      )
   );
 
   const currentMonthTotal = currentMonthCharges.reduce(
-    (sum, charge) => sum + charge.totalAmount,
+    (sum: number, charge: (typeof currentMonthCharges)[number]) =>
+      sum + charge.totalAmount,
     0
   );
   const previousMonthTotal = previousMonthCharges.reduce(
-    (sum, charge) => sum + charge.totalAmount,
+    (sum: number, charge: (typeof previousMonthCharges)[number]) =>
+      sum + charge.totalAmount,
     0
   );
 
   // Prepare notifications with apartment details for sidebar
-  const allNotifications = userData.apartments.flatMap((apt) =>
-    apt.chargeNotifications.map((n) => ({
-      ...n,
-      apartmentNumber: apt.number,
-      apartmentAddress: `${apt.address} ${apt.building || ''}/${apt.number}`
-        .replace(/\s+\//g, ' /')
-        .trim(),
-    }))
+  const allNotifications = userData.apartments.flatMap(
+    (apt: (typeof userData.apartments)[number]) =>
+      apt.chargeNotifications.map(
+        (n: (typeof apt.chargeNotifications)[number]) => ({
+          ...n,
+          apartmentNumber: apt.number,
+          apartmentAddress: `${apt.address} ${apt.building || ''}/${apt.number}`
+            .replace(/\s+\//g, ' /')
+            .trim(),
+        })
+      )
   );
 
   // Prepare payments with apartment details
   const latestPayments = userData.apartments
-    .filter((apt) => apt.payments.length > 0)
-    .map((apt) => ({
+    .filter(
+      (apt: (typeof userData.apartments)[number]) => apt.payments.length > 0
+    )
+    .map((apt: (typeof userData.apartments)[number]) => ({
       ...apt.payments[0],
       apartmentNumber: apt.number,
       apartmentAddress: `${apt.address} ${apt.building || ''}/${apt.number}`

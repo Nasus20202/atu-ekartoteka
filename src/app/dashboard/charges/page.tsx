@@ -45,41 +45,45 @@ export default async function ChargesPage() {
     }>
   >();
 
-  userData.apartments.forEach((apartment) => {
-    apartment.charges.forEach((charge) => {
-      if (!chargesByPeriod.has(charge.period)) {
-        chargesByPeriod.set(charge.period, []);
-      }
+  userData.apartments.forEach(
+    (apartment: (typeof userData.apartments)[number]) => {
+      apartment.charges.forEach(
+        (charge: (typeof apartment.charges)[number]) => {
+          if (!chargesByPeriod.has(charge.period)) {
+            chargesByPeriod.set(charge.period, []);
+          }
 
-      const periodData = chargesByPeriod.get(charge.period)!;
-      let apartmentData = periodData.find(
-        (a) => a.apartmentNumber === apartment.number
+          const periodData = chargesByPeriod.get(charge.period)!;
+          let apartmentData = periodData.find(
+            (a) => a.apartmentNumber === apartment.number
+          );
+
+          if (!apartmentData) {
+            apartmentData = {
+              apartmentNumber: apartment.number,
+              apartmentAddress:
+                `${apartment.address || ''} ${apartment.building || ''}/${apartment.number}`
+                  .replace(/\s+\//g, ' /')
+                  .trim(),
+              charges: [],
+            };
+            periodData.push(apartmentData);
+          }
+
+          apartmentData.charges.push({
+            id: charge.id,
+            description: charge.description,
+            quantity: charge.quantity,
+            unit: charge.unit,
+            unitPrice: charge.unitPrice,
+            totalAmount: charge.totalAmount,
+            dateFrom: charge.dateFrom,
+            dateTo: charge.dateTo,
+          });
+        }
       );
-
-      if (!apartmentData) {
-        apartmentData = {
-          apartmentNumber: apartment.number,
-          apartmentAddress:
-            `${apartment.address || ''} ${apartment.building || ''}/${apartment.number}`
-              .replace(/\s+\//g, ' /')
-              .trim(),
-          charges: [],
-        };
-        periodData.push(apartmentData);
-      }
-
-      apartmentData.charges.push({
-        id: charge.id,
-        description: charge.description,
-        quantity: charge.quantity,
-        unit: charge.unit,
-        unitPrice: charge.unitPrice,
-        totalAmount: charge.totalAmount,
-        dateFrom: charge.dateFrom,
-        dateTo: charge.dateTo,
-      });
-    });
-  });
+    }
+  );
 
   const periods = Array.from(chargesByPeriod.keys()).sort().reverse();
 

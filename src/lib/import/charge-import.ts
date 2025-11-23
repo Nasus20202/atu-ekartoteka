@@ -62,7 +62,10 @@ export async function importChargesFromBuffer(
     });
 
     const apartmentMap = new Map(
-      apartments.map((apt) => [apt.externalId, apt.id])
+      apartments.map((apt: (typeof apartments)[number]) => [
+        apt.externalId,
+        apt.id,
+      ])
     );
 
     // Separate entries into those with valid apartments and those without
@@ -99,7 +102,7 @@ export async function importChargesFromBuffer(
     });
 
     const existingChargeMap = new Map(
-      existingCharges.map((charge) => [
+      existingCharges.map((charge: (typeof existingCharges)[number]) => [
         `${charge.apartmentId}-${charge.period}-${charge.externalLineNo}`,
         charge.id,
       ])
