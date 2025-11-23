@@ -132,13 +132,6 @@ function LoginForm() {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={loading || !turnstileToken}
-        >
-          Zaloguj się
-        </Button>
 
         <div className="pt-2 flex items-center justify-center">
           <Turnstile
@@ -149,6 +142,14 @@ function LoginForm() {
             onError={() => setTurnstileToken(null)}
           />
         </div>
+
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={loading || !turnstileToken}
+        >
+          Zaloguj się
+        </Button>
         <div className="text-center text-sm">
           <span className="text-muted-foreground">Nie masz konta? </span>
           <Link

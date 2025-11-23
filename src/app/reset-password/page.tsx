@@ -132,16 +132,6 @@ function ResetPasswordContent() {
           <p className="text-xs text-muted-foreground">Minimum 8 znaków</p>
         </div>
 
-        <div className="pt-2 flex items-center justify-center">
-          <Turnstile
-            ref={turnstileRef}
-            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY as string}
-            onSuccess={(token: string) => setTurnstileToken(token)}
-            onExpire={() => setTurnstileToken(null)}
-            onError={() => setTurnstileToken(null)}
-          />
-        </div>
-
         <div className="space-y-2">
           <Label htmlFor="confirmPassword">Potwierdź hasło</Label>
           <Input
@@ -161,6 +151,16 @@ function ResetPasswordContent() {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
+
+        <div className="pt-2 flex items-center justify-center">
+          <Turnstile
+            ref={turnstileRef}
+            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY as string}
+            onSuccess={(token: string) => setTurnstileToken(token)}
+            onExpire={() => setTurnstileToken(null)}
+            onError={() => setTurnstileToken(null)}
+          />
+        </div>
 
         <Button
           type="submit"

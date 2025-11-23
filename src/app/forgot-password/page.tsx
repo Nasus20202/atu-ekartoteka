@@ -93,14 +93,6 @@ export default function ForgotPasswordPage() {
           </Alert>
         )}
 
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={loading || !turnstileToken}
-        >
-          {loading ? 'Wysyłanie...' : 'Wyślij link resetowania'}
-        </Button>
-
         <div className="pt-2 flex items-center justify-center">
           <Turnstile
             ref={turnstileRef}
@@ -110,6 +102,14 @@ export default function ForgotPasswordPage() {
             onError={() => setTurnstileToken(null)}
           />
         </div>
+
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={loading || !turnstileToken}
+        >
+          {loading ? 'Wysyłanie...' : 'Wyślij link resetowania'}
+        </Button>
 
         <div className="text-center text-sm">
           <Link
