@@ -59,7 +59,7 @@ Visit `http://localhost:3000/register` to create the first admin user.
   - `ENABLE_TEST_LOGS` - Optional: set `true` to enable logs while running tests.
 
 - Cloudflare Turnstile (Captcha):
-  - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` - Client site key (public), used by the React widget.
+  - `TURNSTILE_SITE_KEY` - Client site key (public), used by the React widget.
   - `TURNSTILE_SECRET_KEY` - Server secret key for token verification.
 
 Examples can be found in [`.env.example`](.env.example) and [`.env.docker.example`](.env.docker.example).
