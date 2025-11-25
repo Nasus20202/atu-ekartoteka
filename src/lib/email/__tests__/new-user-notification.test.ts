@@ -24,6 +24,7 @@ vi.mock('@/lib/logger', () => ({
   createLogger: vi.fn(() => ({
     info: vi.fn(),
     error: vi.fn(),
+    warn: vi.fn(),
   })),
 }));
 
@@ -46,6 +47,9 @@ describe('EmailService - New User Notification', () => {
     mockSendMail.mockClear();
     mockVerify.mockClear();
     mockSendMail.mockResolvedValue({ messageId: 'test-123' });
+
+    // Set SMTP_HOST so email service is configured
+    process.env.SMTP_HOST = 'smtp.example.com';
 
     mockConfig = {
       from: 'test@example.com',

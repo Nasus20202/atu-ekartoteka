@@ -31,10 +31,18 @@ export interface EmailServiceConfig {
  */
 export class EmailService {
   private config: EmailServiceConfig;
-  private transporter: Transporter;
+  private transporter: Transporter | null;
+  private isConfigured: boolean;
 
   constructor(config: EmailServiceConfig) {
     this.config = config;
+    this.isConfigured = !!process.env.SMTP_HOST;
+
+    if (!this.isConfigured) {
+      logger.warn('SMTP_HOST not configured - emails will be skipped');
+      this.transporter = null;
+      return;
+    }
 
     // Create reusable transporter with TLS/SSL
     this.transporter = nodemailer.createTransport({
@@ -58,13 +66,24 @@ export class EmailService {
    * Supports TLS encryption based on configuration
    */
   async sendEmail(options: EmailOptions): Promise<boolean> {
+    if (!this.isConfigured) {
+      logger.info(
+        {
+          to: options.to,
+          subject: options.subject,
+        },
+        'Email skipped (SMTP not configured)'
+      );
+      return true;
+    }
+
     try {
       // Format sender with name if provided
       const from = this.config.fromName
         ? `"${this.config.fromName}" <${this.config.from}>`
         : this.config.from;
 
-      const info = await this.transporter.sendMail({
+      const info = await this.transporter!.sendMail({
         from,
         to: options.to,
         subject: options.subject,
@@ -99,8 +118,13 @@ export class EmailService {
    * Verify SMTP connection
    */
   async verifyConnection(): Promise<boolean> {
+    if (!this.isConfigured) {
+      logger.info('SMTP connection verification skipped (SMTP not configured)');
+      return true;
+    }
+
     try {
-      await this.transporter.verify();
+      await this.transporter!.verify();
       logger.info('SMTP connection verified successfully');
       return true;
     } catch (error) {
@@ -246,7 +270,7 @@ export function getEmailService(): EmailService {
   const config: EmailServiceConfig = {
     from: process.env.EMAIL_FROM || 'noreply@example.com',
     fromName: process.env.EMAIL_FROM_NAME,
-    host: process.env.SMTP_HOST || 'email-smtp.us-east-1.amazonaws.com',
+    host: process.env.SMTP_HOST || 'localhost',
     port: parseInt(process.env.SMTP_PORT || '465', 10),
     secure: process.env.SMTP_SECURE?.toLowerCase() === 'true' || true,
     auth: {

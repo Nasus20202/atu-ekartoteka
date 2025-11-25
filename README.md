@@ -45,10 +45,14 @@ Visit `http://localhost:3000/register` to create the first admin user.
   - `APP_IMAGE` - For production Docker image definition.
   - `RUN_MIGRATIONS_ON_STARTUP` - If `true`, the app will attempt to run DB migrations at startup.
 
-- Email (SMTP):
+- Email (SMTP) - **Optional**: If `SMTP_HOST` is not configured, the application will skip sending emails and log them instead:
   - `EMAIL_FROM` - From email address used in outbound messages.
   - `EMAIL_FROM_NAME` - From display name.
-  - `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` - Standard SMTP configuration.
+  - `SMTP_HOST` - SMTP server hostname (required to enable email sending).
+  - `SMTP_PORT` - SMTP server port (default: 465).
+  - `SMTP_SECURE` - Use TLS/SSL (default: true).
+  - `SMTP_USER` - SMTP authentication username.
+  - `SMTP_PASS` - SMTP authentication password.
 
 - Application URLs & client-side script:
   - `APP_URL` - Public URL used in email links and frontend redirection.

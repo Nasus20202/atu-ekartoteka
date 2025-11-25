@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   EmailService,
@@ -24,6 +24,7 @@ vi.mock('@/lib/logger', () => ({
   createLogger: vi.fn(() => ({
     info: vi.fn(),
     error: vi.fn(),
+    warn: vi.fn(),
   })),
 }));
 
@@ -34,6 +35,7 @@ vi.mock('@/lib/email/template-loader', () => ({
 describe('EmailService', () => {
   let emailService: EmailService;
   let mockConfig: EmailServiceConfig;
+  const originalSmtpHost = process.env.SMTP_HOST;
 
   beforeEach(() => {
     mockSendMail.mockClear();
@@ -52,7 +54,20 @@ describe('EmailService', () => {
     };
   });
 
+  afterEach(() => {
+    // Restore original SMTP_HOST
+    if (originalSmtpHost) {
+      process.env.SMTP_HOST = originalSmtpHost;
+    } else {
+      delete process.env.SMTP_HOST;
+    }
+  });
+
   describe('sender name configuration', () => {
+    beforeEach(() => {
+      process.env.SMTP_HOST = 'smtp.example.com';
+    });
+
     it('should use email address only when fromName is not provided', async () => {
       emailService = new EmailService(mockConfig);
 
@@ -112,6 +127,7 @@ describe('EmailService', () => {
 
   describe('sendEmail', () => {
     beforeEach(() => {
+      process.env.SMTP_HOST = 'smtp.example.com';
       emailService = new EmailService(mockConfig);
     });
 
@@ -136,6 +152,32 @@ describe('EmailService', () => {
       });
 
       expect(result).toBe(false);
+    });
+  });
+
+  describe('SMTP not configured', () => {
+    beforeEach(() => {
+      delete process.env.SMTP_HOST;
+      emailService = new EmailService(mockConfig);
+    });
+
+    it('should skip sending email when SMTP_HOST is not configured', async () => {
+      const result = await emailService.sendEmail({
+        to: 'test@example.com',
+        subject: 'Test Subject',
+        html: '<p>Test</p>',
+        text: 'Test',
+      });
+
+      expect(result).toBe(true);
+      expect(mockSendMail).not.toHaveBeenCalled();
+    });
+
+    it('should skip connection verification when SMTP_HOST is not configured', async () => {
+      const result = await emailService.verifyConnection();
+
+      expect(result).toBe(true);
+      expect(mockVerify).not.toHaveBeenCalled();
     });
   });
 });
