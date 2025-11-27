@@ -83,6 +83,31 @@ describe('apartment-parser', () => {
       expect(entries[0].address).toBe('ul. Łąkowa');
       expect(entries[0].city).toBe('Kraków');
     });
+
+    it('should handle owner names with one hashtag', async () => {
+      const mockData =
+        'W1#Jan#Kowalski##EXT001#ul. Testowa#1#1#00-001#Warszawa#jan@example.com###50.5#250\n';
+      const iconv = await import('iconv-lite');
+      const buffer = iconv.encode(mockData, 'iso-8859-2');
+      const entries = await parseApartmentBuffer(buffer);
+
+      expect(entries[0].owner).toBe('Jan#Kowalski');
+      expect(entries[0].externalId).toBe('EXT001');
+      expect(entries[0].email).toBe('jan@example.com');
+    });
+
+    it('should handle owner names with multiple hashtags', async () => {
+      const mockData =
+        'W1#Jan#Piotr#Kowalski##EXT001#ul. Testowa#1#1#00-001#Warszawa#jan@example.com###50.5#250\n';
+      const iconv = await import('iconv-lite');
+      const buffer = iconv.encode(mockData, 'iso-8859-2');
+      const entries = await parseApartmentBuffer(buffer);
+
+      expect(entries[0].owner).toBe('Jan#Piotr#Kowalski');
+      expect(entries[0].externalId).toBe('EXT001');
+      expect(entries[0].address).toBe('ul. Testowa');
+      expect(entries[0].city).toBe('Warszawa');
+    });
   });
 
   describe('getUniqueApartments', () => {

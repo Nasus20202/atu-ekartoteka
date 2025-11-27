@@ -162,7 +162,8 @@ export default function HOAApartmentsPage() {
                   <div className="flex items-start justify-between">
                     <div>
                       <CardTitle className="text-lg">
-                        {apartment.address} {apartment.number}
+                        {apartment.address} {apartment.building}/
+                        {apartment.number}
                       </CardTitle>
                       <CardDescription>
                         {apartment.postalCode} {apartment.city}
@@ -184,10 +185,6 @@ export default function HOAApartmentsPage() {
                     <div className="flex justify-between">
                       <dt className="text-muted-foreground">Właściciel:</dt>
                       <dd className="font-medium">{apartment.owner}</dd>
-                    </div>
-                    <div className="flex justify-between">
-                      <dt className="text-muted-foreground">Budynek:</dt>
-                      <dd className="font-medium">{apartment.building}</dd>
                     </div>
                     <div className="flex justify-between">
                       <dt className="text-muted-foreground">Powierzchnia:</dt>
