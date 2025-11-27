@@ -1,7 +1,13 @@
 'use client';
 
-import { AlertCircle, CheckCircle, Upload, XCircle } from 'lucide-react';
-import { useState } from 'react';
+import {
+  AlertCircle,
+  CheckCircle,
+  Database,
+  Upload,
+  XCircle,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
@@ -15,6 +21,23 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+
+interface DatabaseStats {
+  hoa: number;
+  apartments: number;
+  charges: number;
+  notifications: number;
+  payments: number;
+  users: number;
+}
 
 interface EntityStats {
   created: number;
@@ -44,6 +67,34 @@ export default function AdminImportPage() {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<ImportResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [dbStats, setDbStats] = useState<DatabaseStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  const fetchStats = async () => {
+    try {
+      setStatsLoading(true);
+      const res = await fetch('/api/admin/stats');
+      if (res.ok) {
+        const data = await res.json();
+        setDbStats(data);
+      }
+    } catch {
+      // Ignore stats errors
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  // Refresh stats after successful import
+  useEffect(() => {
+    if (response?.success) {
+      fetchStats();
+    }
+  }, [response]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -121,6 +172,55 @@ export default function AdminImportPage() {
   return (
     <Page maxWidth="4xl">
       <PageHeader title="Import danych" showBackButton={false} />
+
+      <Card className="mb-6">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Database className="h-4 w-4" />
+            Stan bazy danych
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {statsLoading ? (
+            <p className="text-sm text-muted-foreground">Ładowanie...</p>
+          ) : dbStats ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Wspólnoty</TableHead>
+                  <TableHead>Mieszkania</TableHead>
+                  <TableHead>Naliczenia</TableHead>
+                  <TableHead>Powiadomienia</TableHead>
+                  <TableHead>Wpłaty</TableHead>
+                  <TableHead>Użytkownicy</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="font-medium">{dbStats.hoa}</TableCell>
+                  <TableCell className="font-medium">
+                    {dbStats.apartments}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {dbStats.charges}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {dbStats.notifications}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {dbStats.payments}
+                  </TableCell>
+                  <TableCell className="font-medium">{dbStats.users}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Nie udało się pobrać statystyk
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
