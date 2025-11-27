@@ -12,8 +12,8 @@ describe('ApartmentCard', () => {
     city: 'Warszawa',
     owner: 'Jan Kowalski',
     building: 'A',
-    area: 5000,
-    height: 250,
+    shareNumerator: 5000,
+    shareDenominator: 250,
   };
 
   it('renders apartment basic information', () => {
@@ -39,15 +39,8 @@ describe('ApartmentCard', () => {
   it('renders area in square meters', () => {
     render(<ApartmentCard apartment={mockApartment} index={0} />);
 
-    expect(screen.getByText('Powierzchnia')).toBeInTheDocument();
-    expect(screen.getByText('50 m²')).toBeInTheDocument();
-  });
-
-  it('renders height in centimeters', () => {
-    render(<ApartmentCard apartment={mockApartment} index={0} />);
-
-    expect(screen.getByText('Wysokość')).toBeInTheDocument();
-    expect(screen.getByText('2.5 cm')).toBeInTheDocument();
+    expect(screen.getByText('Udział')).toBeInTheDocument();
+    expect(screen.getByText('2000.0%')).toBeInTheDocument();
   });
 
   it('renders links to apartment charges and payments', () => {
@@ -72,16 +65,15 @@ describe('ApartmentCard', () => {
       city: null,
       owner: null,
       building: null,
-      area: null,
-      height: null,
+      shareNumerator: null,
+      shareDenominator: null,
     };
 
     render(<ApartmentCard apartment={apartmentWithNulls} index={0} />);
 
     expect(screen.getByText(/\/5/)).toBeInTheDocument();
     expect(screen.queryByText('Właściciel')).not.toBeInTheDocument();
-    expect(screen.queryByText('Powierzchnia')).not.toBeInTheDocument();
-    expect(screen.queryByText('Wysokość')).not.toBeInTheDocument();
+    expect(screen.queryByText('Udział')).not.toBeInTheDocument();
   });
 
   it('applies animation delay based on index', () => {

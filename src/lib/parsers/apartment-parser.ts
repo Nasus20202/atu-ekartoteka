@@ -8,8 +8,8 @@ export interface ApartmentEntry {
   number: string;
   postalCode: string;
   city: string;
-  area: number;
-  height: number;
+  shareNumerator: number;
+  shareDenominator: number;
   isOwner: boolean;
 }
 
@@ -60,8 +60,8 @@ export async function parseApartmentBuffer(
     const heightStr = fields[externalIdIndex + 10];
 
     const isOwner = id.startsWith('W');
-    const area = parseFloat(areaStr) || 0;
-    const height = parseFloat(heightStr) || 0;
+    const shareNumerator = parseFloat(areaStr) || 0;
+    const shareDenominator = parseFloat(heightStr) || 0;
 
     entries.push({
       id: id.trim(),
@@ -73,8 +73,8 @@ export async function parseApartmentBuffer(
       number: number?.trim(),
       postalCode: postalCode?.trim(),
       city: city?.trim(),
-      area,
-      height,
+      shareNumerator,
+      shareDenominator,
       isOwner,
     });
   }

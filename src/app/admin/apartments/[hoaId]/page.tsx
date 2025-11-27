@@ -153,68 +153,79 @@ export default function HOAApartmentsPage() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            {apartments.map((apartment) => (
-              <Card
-                key={apartment.id}
-                className={`transition-all duration-300 hover:shadow-lg ${!apartment.isActive ? 'opacity-60 grayscale' : ''}`}
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-lg">
-                        {apartment.address} {apartment.building}/
-                        {apartment.number}
-                      </CardTitle>
-                      <CardDescription>
-                        {apartment.postalCode} {apartment.city}
-                      </CardDescription>
+            {apartments
+              .sort((ap1, ap2) => +ap1.number - +ap2.number)
+              .map((apartment) => (
+                <Card
+                  key={apartment.id}
+                  className={`transition-all duration-300 hover:shadow-lg ${!apartment.isActive ? 'opacity-60 grayscale' : ''}`}
+                >
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="text-lg">
+                          {apartment.address} {apartment.building}/
+                          {apartment.number}
+                        </CardTitle>
+                        <CardDescription>
+                          {apartment.postalCode} {apartment.city}
+                        </CardDescription>
+                      </div>
+                      {apartment.isActive ? (
+                        <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-200">
+                          Aktywne
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+                          Nieaktywne
+                        </span>
+                      )}
                     </div>
-                    {apartment.isActive ? (
-                      <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-200">
-                        Aktywne
-                      </span>
-                    ) : (
-                      <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800 dark:bg-gray-800 dark:text-gray-200">
-                        Nieaktywne
-                      </span>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <dl className="space-y-1 text-sm">
-                    <div className="flex justify-between">
-                      <dt className="text-muted-foreground">Właściciel:</dt>
-                      <dd className="font-medium">{apartment.owner}</dd>
+                  </CardHeader>
+                  <CardContent>
+                    <dl className="space-y-1 text-sm">
+                      <div className="flex justify-between">
+                        <dt className="text-muted-foreground">Właściciel:</dt>
+                        <dd className="font-medium">{apartment.owner}</dd>
+                      </div>
+                      {(apartment.shareNumerator ||
+                        apartment.shareDenominator) && (
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">Udział:</dt>
+                          <dd className="font-medium">
+                            {apartment.shareNumerator &&
+                            apartment.shareDenominator &&
+                            apartment.shareDenominator > 0
+                              ? `${Number(
+                                  (
+                                    (apartment.shareNumerator /
+                                      apartment.shareDenominator) *
+                                    100
+                                  ).toFixed(1)
+                                )}%`
+                              : '-'}
+                          </dd>
+                        </div>
+                      )}
+                      <div className="flex justify-between">
+                        <dt className="text-muted-foreground">
+                          ID zewnętrzne:
+                        </dt>
+                        <dd className="font-mono text-xs">
+                          {apartment.externalId}
+                        </dd>
+                      </div>
+                    </dl>
+                    <div className="mt-4">
+                      <Link href={`/admin/apartments/${hoaId}/${apartment.id}`}>
+                        <Button variant="outline" size="sm" className="w-full">
+                          Zobacz szczegóły
+                        </Button>
+                      </Link>
                     </div>
-                    <div className="flex justify-between">
-                      <dt className="text-muted-foreground">Powierzchnia:</dt>
-                      <dd className="font-medium">
-                        {apartment.area ? apartment.area / 100 : '-'} m²
-                      </dd>
-                    </div>
-                    <div className="flex justify-between">
-                      <dt className="text-muted-foreground">Wysokość:</dt>
-                      <dd className="font-medium">
-                        {apartment.height ? apartment.height / 100 : '-'} cm
-                      </dd>
-                    </div>
-                    <div className="flex justify-between">
-                      <dt className="text-muted-foreground">ID zewnętrzne:</dt>
-                      <dd className="font-mono text-xs">
-                        {apartment.externalId}
-                      </dd>
-                    </div>
-                  </dl>
-                  <div className="mt-4">
-                    <Link href={`/admin/apartments/${hoaId}/${apartment.id}`}>
-                      <Button variant="outline" size="sm" className="w-full">
-                        Zobacz szczegóły
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))}
           </div>
 
           {apartments.length === 0 && (

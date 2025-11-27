@@ -10,8 +10,8 @@ export const createMockApartment = (
     number?: string;
     postalCode?: string;
     city?: string;
-    area?: number;
-    height?: number;
+    shareNumerator?: number;
+    shareDenominator?: number;
     isActive?: boolean;
     user?: unknown;
     userId?: string | null;
@@ -27,8 +27,8 @@ export const createMockApartment = (
   number: '101',
   postalCode: '00-001',
   city: 'Warsaw',
-  area: 55.5,
-  height: 2.7,
+  shareNumerator: 55.5,
+  shareDenominator: 2.7,
   isActive: true,
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -47,8 +47,8 @@ export const mockApartments = {
     building: 'B',
     number: '202',
     postalCode: '00-002',
-    area: 60,
-    height: 2.6,
+    shareNumerator: 60,
+    shareDenominator: 2.6,
     isActive: false,
   }),
 };

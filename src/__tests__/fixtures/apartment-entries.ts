@@ -12,8 +12,8 @@ export const createMockApartmentEntry = (
   number: '1',
   postalCode: '00-001',
   city: 'Warszawa',
-  area: 50.5,
-  height: 2.5,
+  shareNumerator: 50.5,
+  shareDenominator: 2.5,
   isOwner: true,
   ...overrides,
 });
@@ -35,7 +35,7 @@ export const mockApartmentEntries = {
     number: '2',
     postalCode: '00-002',
     city: 'Kraków',
-    area: 60.0,
-    height: 2.6,
+    shareNumerator: 60.0,
+    shareDenominator: 2.6,
   }),
 };

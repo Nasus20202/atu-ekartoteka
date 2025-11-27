@@ -12,8 +12,8 @@ interface ApartmentCardProps {
     city: string | null;
     owner: string | null;
     building: string | null;
-    area: number | null;
-    height: number | null;
+    shareNumerator: number | null;
+    shareDenominator: number | null;
   };
   latestPaymentBalance?: number | null;
   index: number;
@@ -77,22 +77,21 @@ export function ApartmentCard({
               </dd>
             </div>
           )}
-        {apartment.area && (
-          <div>
-            <dt className="text-sm text-muted-foreground">Powierzchnia</dt>
-            <dd className="font-medium">
-              {apartment.area ? apartment.area / 100 : '-'} m²
-            </dd>
-          </div>
-        )}
-        {apartment.height && (
-          <div>
-            <dt className="text-sm text-muted-foreground">Wysokość</dt>
-            <dd className="font-medium">
-              {apartment.height ? apartment.height / 100 : '-'} cm
-            </dd>
-          </div>
-        )}
+        {apartment.shareNumerator !== null &&
+          apartment.shareNumerator !== undefined &&
+          apartment.shareDenominator !== null &&
+          apartment.shareDenominator !== undefined && (
+            <div>
+              <dt className="text-sm text-muted-foreground">Udział</dt>
+              <dd className="font-medium">
+                {(
+                  (apartment.shareNumerator / apartment.shareDenominator) *
+                  100
+                ).toFixed(1)}
+                %
+              </dd>
+            </div>
+          )}
       </dl>
     </div>
   );

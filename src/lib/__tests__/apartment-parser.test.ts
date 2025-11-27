@@ -41,8 +41,8 @@ describe('apartment-parser', () => {
       expect(firstEntry).toHaveProperty('number', '1');
       expect(firstEntry).toHaveProperty('postalCode', '00-001');
       expect(firstEntry).toHaveProperty('city', 'Warszawa');
-      expect(firstEntry).toHaveProperty('area', 50.5);
-      expect(firstEntry).toHaveProperty('height', 250);
+      expect(firstEntry).toHaveProperty('shareNumerator', 50.5);
+      expect(firstEntry).toHaveProperty('shareDenominator', 250);
       expect(firstEntry).toHaveProperty('isOwner', true);
     });
 
@@ -66,10 +66,10 @@ describe('apartment-parser', () => {
       const entries = await parseApartmentBuffer(buffer);
       const firstEntry = entries[0];
 
-      expect(typeof firstEntry.area).toBe('number');
-      expect(firstEntry.area).toBe(50.5);
-      expect(typeof firstEntry.height).toBe('number');
-      expect(firstEntry.height).toBe(250.75);
+      expect(typeof firstEntry.shareNumerator).toBe('number');
+      expect(firstEntry.shareNumerator).toBe(50.5);
+      expect(typeof firstEntry.shareDenominator).toBe('number');
+      expect(firstEntry.shareDenominator).toBe(250.75);
     });
 
     it('should handle Polish characters correctly', async () => {
@@ -116,8 +116,8 @@ describe('apartment-parser', () => {
         createMockApartmentEntry({
           owner: 'Owner 1',
           address: 'Address 1',
-          area: 50,
-          height: 2.5,
+          shareNumerator: 50,
+          shareDenominator: 2.5,
         }),
         mockApartmentEntries.tenant,
       ];
@@ -134,15 +134,15 @@ describe('apartment-parser', () => {
         createMockApartmentEntry({
           owner: 'Owner 1',
           address: 'Address 1',
-          area: 50,
-          height: 2.5,
+          shareNumerator: 50,
+          shareDenominator: 2.5,
         }),
         createMockApartmentEntry({
           id: 'W2',
           owner: 'Owner 2',
           address: 'Address 1',
-          area: 50,
-          height: 2.5,
+          shareNumerator: 50,
+          shareDenominator: 2.5,
         }),
         mockApartmentEntries.secondOwner,
       ];

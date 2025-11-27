@@ -73,8 +73,8 @@ model Apartment {
   number      String             // apartment number (can be "3A")
   postalCode  String?
   city        String?
-  area        Float?             // surface area
-  height      Float?             // height (from lokal_ost_wys.wmb)
+  shareNumerator        Float?             // numerator of ownership share (udział)
+  shareDenominator      Float?             // denominator of ownership share (udział)
   
   // Activity status
   isActive    Boolean  @default(true)  // whether apartment is in current file

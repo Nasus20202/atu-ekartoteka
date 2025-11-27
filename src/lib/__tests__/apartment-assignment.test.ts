@@ -117,8 +117,8 @@ describe('Apartment Assignment', () => {
         createMockApartment({
           owner: 'Owner 1',
           address: 'Street 1',
-          area: 50,
-          height: 2.5,
+          shareNumerator: 50,
+          shareDenominator: 2.5,
         }),
         mockApartments.inactive,
       ];
@@ -146,8 +146,8 @@ describe('Apartment Assignment', () => {
         createMockApartment({
           owner: 'Owner 1',
           address: 'Street 1',
-          area: 50,
-          height: 2.5,
+          shareNumerator: 50,
+          shareDenominator: 2.5,
           user: user1,
         }),
         mockApartments.inactive,
@@ -259,8 +259,8 @@ describe('Apartment Assignment', () => {
       const mockApartment = createMockApartment({
         owner: 'Owner',
         address: 'Street',
-        area: 50,
-        height: 2.5,
+        shareNumerator: 50,
+        shareDenominator: 2.5,
         userId: 'user1',
       });
 

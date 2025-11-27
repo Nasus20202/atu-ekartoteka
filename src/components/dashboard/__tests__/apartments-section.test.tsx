@@ -13,8 +13,8 @@ describe('ApartmentsSection', () => {
       city: 'Warszawa',
       owner: 'Jan Kowalski',
       building: 'A',
-      area: 5000,
-      height: 250,
+      shareNumerator: 5000,
+      shareDenominator: 250,
     },
     {
       id: 'apt-2',
@@ -24,8 +24,8 @@ describe('ApartmentsSection', () => {
       city: 'Kraków',
       owner: 'Anna Nowak',
       building: 'B',
-      area: 6000,
-      height: 280,
+      shareNumerator: 6000,
+      shareDenominator: 280,
     },
   ];
 

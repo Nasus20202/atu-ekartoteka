@@ -33,8 +33,8 @@ type ApartmentDetailsData = Pick<
   | 'number'
   | 'postalCode'
   | 'city'
-  | 'area'
-  | 'height'
+  | 'shareNumerator'
+  | 'shareDenominator'
   | 'isActive'
 > & {
   homeownersAssociation: HomeownersAssociation;
@@ -141,15 +141,18 @@ export default function ApartmentDetailsPage() {
                 </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Powierzchnia</p>
+                <p className="text-sm text-muted-foreground">Procent udziału</p>
                 <p className="font-medium">
-                  {apartment.area ? `${apartment.area / 100} m²` : 'Brak'}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Wysokość</p>
-                <p className="font-medium">
-                  {apartment.height ? `${apartment.height / 100} cm` : 'Brak'}
+                  {apartment.shareNumerator &&
+                  apartment.shareDenominator &&
+                  apartment.shareDenominator > 0
+                    ? (
+                        (apartment.shareNumerator /
+                          apartment.shareDenominator) *
+                        100
+                      ).toFixed(1)
+                    : 'Brak'}
+                  %
                 </p>
               </div>
             </div>

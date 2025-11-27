@@ -620,8 +620,17 @@ export default function AdminUsersPage() {
                               </p>
                             )}
                             <p className="text-xs text-muted-foreground">
-                              Powierzchnia: {apt.area ? apt.area / 100 : '-'} m²
-                              • ID: {apt.externalId}
+                              Procent:{' '}
+                              {apt.shareNumerator &&
+                              apt.shareDenominator &&
+                              apt.shareDenominator > 0
+                                ? (
+                                    (apt.shareNumerator /
+                                      apt.shareDenominator) *
+                                    100
+                                  ).toFixed(1)
+                                : '-'}
+                              % • ID: {apt.externalId}
                             </p>
                           </div>
                         </label>

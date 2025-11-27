@@ -180,9 +180,20 @@ export default async function PaymentDetailsPage({
               </div>
               <div>
                 <div className="font-medium text-muted-foreground">
-                  Powierzchnia
+                  Procent udziału
                 </div>
-                <div>{apartment.area ? apartment.area / 100 : '-'} m²</div>
+                <div>
+                  {apartment.shareNumerator &&
+                  apartment.shareDenominator &&
+                  apartment.shareDenominator > 0
+                    ? (
+                        (apartment.shareNumerator /
+                          apartment.shareDenominator) *
+                        100
+                      ).toFixed(1)
+                    : '-'}
+                  %
+                </div>
               </div>
             </div>
           </CardContent>
