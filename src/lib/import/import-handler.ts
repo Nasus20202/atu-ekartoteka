@@ -1,252 +1,201 @@
+import { prisma } from '@/lib/database/prisma';
 import {
-  importApartmentsFromBuffer,
-  ImportResult,
-} from '@/lib/import/apartment-import';
-import {
-  ChargeImportResult,
-  importChargesFromBuffer,
-} from '@/lib/import/charge-import';
-import {
-  importChargeNotifications,
+  importApartments,
+  importCharges,
+  importNotifications,
   importPayments,
-} from '@/lib/import/notification-payment-import';
+} from '@/lib/import/importers';
+import {
+  BatchImportResult,
+  HOAImportResult,
+  ImportError,
+  ImportFileGroup,
+  TransactionClient,
+} from '@/lib/import/types';
+import {
+  createEmptyStats,
+  groupFilesByHOA,
+  parseFileToBuffer,
+} from '@/lib/import/utils';
 import { createLogger } from '@/lib/logger';
+import {
+  getUniqueApartments,
+  parseApartmentBuffer,
+} from '@/lib/parsers/apartment-parser';
+import { parseNalCzynszBuffer } from '@/lib/parsers/nal-czynsz-parser';
+import { parsePowCzynszFile } from '@/lib/parsers/pow-czynsz-parser';
+import { parseWplatyFile } from '@/lib/parsers/wplaty-parser';
 
 const logger = createLogger('import:handler');
 
-export interface ImportFileGroup {
-  lokFile?: File;
-  chargesFile?: File;
-  notificationsFile?: File;
-  paymentsFile?: File;
-}
+export type { BatchImportResult, HOAImportResult, ImportError };
 
-export interface HOAImportResult extends ImportResult {
-  hoaId: string;
-  charges?: {
-    created: number;
-    updated: number;
-    skipped: number;
-    total: number;
+async function importSingleHOA(
+  hoaId: string,
+  fileGroup: ImportFileGroup
+): Promise<HOAImportResult> {
+  const result: HOAImportResult = {
+    hoaId,
+    apartments: createEmptyStats(),
+    errors: [],
   };
-  notifications?: {
-    created: number;
-    updated: number;
-    deleted: number;
-    total: number;
-  };
-  payments?: {
-    created: number;
-    updated: number;
-    skipped: number;
-    total: number;
-  };
-}
 
-export interface ImportError {
-  hoaId?: string;
-  file?: string;
-  error: string;
-}
+  const { lokFile, chargesFile, notificationsFile, paymentsFile } = fileGroup;
 
-export interface BatchImportResult {
-  success: boolean;
-  results: HOAImportResult[];
-  errors: ImportError[];
+  if (!lokFile) {
+    result.errors.push(
+      `Brak pliku lok.txt dla wspólnoty ${hoaId}. Plik lok.txt jest wymagany.`
+    );
+    return result;
+  }
+
+  try {
+    logger.info({ hoaId }, 'Starting import for HOA');
+
+    // Parse all files outside of transaction
+    const lokBuffer = await parseFileToBuffer(lokFile);
+    const apartmentEntries = await parseApartmentBuffer(lokBuffer);
+    const apartments = getUniqueApartments(apartmentEntries);
+    result.apartments.total = apartments.length;
+
+    const chargeEntries = chargesFile
+      ? await parseNalCzynszBuffer(await parseFileToBuffer(chargesFile))
+      : null;
+    if (chargeEntries) {
+      result.charges = createEmptyStats();
+      result.charges.total = chargeEntries.length;
+    }
+
+    const notificationData = notificationsFile
+      ? await parsePowCzynszFile(await parseFileToBuffer(notificationsFile))
+      : null;
+    if (notificationData) {
+      result.notifications = createEmptyStats();
+      result.notifications.total = notificationData.entries.length;
+    }
+
+    const paymentData = paymentsFile
+      ? await parseWplatyFile(await parseFileToBuffer(paymentsFile))
+      : null;
+    if (paymentData) {
+      result.payments = createEmptyStats();
+      result.payments.total = paymentData.entries.length;
+    }
+
+    // Execute all database operations in a single transaction
+    // Increase timeout to 30s for large imports
+    await prisma.$transaction(
+      async (tx: TransactionClient) => {
+        // Upsert HOA
+        const hoa = await tx.homeownersAssociation.upsert({
+          where: { externalId: hoaId },
+          create: { externalId: hoaId, name: hoaId },
+          update: {},
+        });
+
+        // Process apartments
+        const { map: apartmentMap } = await importApartments(
+          tx,
+          hoa,
+          apartments,
+          result.apartments,
+          result.errors
+        );
+
+        // Process charges
+        if (chargeEntries && result.charges) {
+          await importCharges(
+            tx,
+            apartmentMap,
+            chargeEntries,
+            result.charges,
+            result.errors
+          );
+        }
+
+        // Process notifications
+        if (notificationData && result.notifications) {
+          await importNotifications(
+            tx,
+            hoa,
+            apartmentMap,
+            notificationData.entries,
+            result.notifications,
+            result.errors
+          );
+        }
+
+        // Process payments
+        if (paymentData && result.payments) {
+          await importPayments(
+            tx,
+            apartmentMap,
+            paymentData.entries,
+            result.payments,
+            result.errors
+          );
+        }
+      },
+      { timeout: 30000 }
+    );
+
+    logger.info(
+      {
+        hoaId,
+        apartments: result.apartments,
+        charges: result.charges,
+        notifications: result.notifications,
+        payments: result.payments,
+        errorCount: result.errors.length,
+      },
+      'Import completed for HOA'
+    );
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : 'Nieznany błąd';
+    logger.error({ hoaId, error: errorMsg }, 'Transaction failed for HOA');
+    result.errors.push(`Błąd transakcji: ${errorMsg}`);
+  }
+
+  return result;
 }
 
 export async function processBatchImport(
   files: File[]
 ): Promise<BatchImportResult> {
-  const results: HOAImportResult[] = [];
   const errors: ImportError[] = [];
+  const filesByHOA = groupFilesByHOA(files, errors);
 
-  // Group files by HOA ID
-  const filesByHOA = new Map<string, ImportFileGroup>();
-
-  for (const file of files) {
-    try {
-      const pathParts = file.name.split('/');
-      if (pathParts.length < 2) {
-        throw new Error(
-          `Nieprawidłowa struktura pliku: ${file.name}. Oczekiwano {ID_WSPÓLNOTY}/lok.txt lub {ID_WSPÓLNOTY}/nal_czynsz.txt`
-        );
-      }
-
-      const fileName = pathParts[pathParts.length - 1];
-      const hoaId = pathParts[pathParts.length - 2];
-
-      if (fileName === 'lok.txt') {
-        const entry = filesByHOA.get(hoaId) || {};
-        entry.lokFile = file;
-        filesByHOA.set(hoaId, entry);
-      } else if (fileName === 'nal_czynsz.txt') {
-        const entry = filesByHOA.get(hoaId) || {};
-        entry.chargesFile = file;
-        filesByHOA.set(hoaId, entry);
-      } else if (fileName === 'pow_czynsz.txt') {
-        const entry = filesByHOA.get(hoaId) || {};
-        entry.notificationsFile = file;
-        filesByHOA.set(hoaId, entry);
-      } else if (fileName === 'wplaty.txt') {
-        const entry = filesByHOA.get(hoaId) || {};
-        entry.paymentsFile = file;
-        filesByHOA.set(hoaId, entry);
-      } else if (!fileName.endsWith('.wmb')) {
-        throw new Error(
-          `Nieprawidłowa nazwa pliku: ${fileName}. Oczekiwano lok.txt, nal_czynsz.txt, pow_czynsz.txt lub wplaty.txt`
-        );
-      }
-    } catch (error) {
-      errors.push({
-        file: file.name,
-        error: error instanceof Error ? error.message : 'Nieznany błąd',
-      });
-    }
-  }
-
-  // Process each HOA asynchronously in parallel
   const hoaImportPromises = Array.from(filesByHOA.entries()).map(
-    async ([
-      hoaId,
-      { lokFile, chargesFile, notificationsFile, paymentsFile },
-    ]) => {
+    async ([hoaId, fileGroup]) => {
       try {
-        if (!lokFile) {
-          throw new Error(
-            `Brak pliku lok.txt dla wspólnoty ${hoaId}. Plik lok.txt jest wymagany.`
-          );
-        }
-
-        logger.info({ hoaId }, 'Starting import for HOA');
-
-        // Import apartments
-        logger.info({ hoaId }, 'Importing apartments');
-        const lokBytes = await lokFile.arrayBuffer();
-        const lokBuffer = Buffer.from(lokBytes);
-        const result = await importApartmentsFromBuffer(lokBuffer, hoaId);
-
-        // Import charges if available
-        let chargesResult: ChargeImportResult | undefined;
-        if (chargesFile) {
-          logger.info({ hoaId }, 'Found charges file');
-          const chargesBytes = await chargesFile.arrayBuffer();
-          const chargesBuffer = Buffer.from(chargesBytes);
-          logger.info({ hoaId }, 'Importing charges');
-          chargesResult = await importChargesFromBuffer(chargesBuffer, hoaId);
-          logger.info(
-            {
-              hoaId,
-              created: chargesResult.created,
-              updated: chargesResult.updated,
-              skipped: chargesResult.skipped,
-            },
-            'Charges imported'
-          );
-        }
-
-        let notificationsBuffer: Buffer | undefined;
-        if (notificationsFile) {
-          logger.info({ hoaId }, 'Found notifications file');
-          const notificationsBytes = await notificationsFile.arrayBuffer();
-          notificationsBuffer = Buffer.from(notificationsBytes);
-        }
-
-        let paymentsBuffer: Buffer | undefined;
-        if (paymentsFile) {
-          logger.info({ hoaId }, 'Found payments file');
-          const paymentsBytes = await paymentsFile.arrayBuffer();
-          paymentsBuffer = Buffer.from(paymentsBytes);
-        }
-
-        // Import notifications if available
-        let notificationsResult;
-        if (notificationsBuffer) {
-          logger.info({ hoaId }, 'Importing charge notifications');
-          notificationsResult = await importChargeNotifications(
-            notificationsBuffer,
-            hoaId
-          );
-          logger.info(
-            {
-              hoaId,
-              created: notificationsResult.created,
-              updated: notificationsResult.updated,
-              deleted: notificationsResult.deleted,
-              total: notificationsResult.total,
-            },
-            'Notifications imported'
-          );
-        }
-
-        // Import payments if available
-        let paymentsResult;
-        if (paymentsBuffer) {
-          logger.info({ hoaId }, 'Importing payments');
-          paymentsResult = await importPayments(paymentsBuffer, hoaId);
-          logger.info(
-            {
-              hoaId,
-              created: paymentsResult.created,
-              updated: paymentsResult.updated,
-              skipped: paymentsResult.skipped,
-              total: paymentsResult.total,
-            },
-            'Payments imported'
-          );
-        }
-
-        logger.info({ hoaId }, 'Import completed for HOA');
-
-        return {
-          status: 'fulfilled' as const,
-          value: {
-            hoaId,
-            ...result,
-            charges: chargesResult
-              ? {
-                  created: chargesResult.created,
-                  updated: chargesResult.updated,
-                  skipped: chargesResult.skipped,
-                  total: chargesResult.total,
-                }
-              : undefined,
-            notifications: notificationsResult,
-            payments: paymentsResult,
-          },
-        };
+        return await importSingleHOA(hoaId, fileGroup);
       } catch (error) {
         const errorMsg =
           error instanceof Error ? error.message : 'Nieznany błąd';
-        logger.error({ hoaId, error: errorMsg }, 'Import failed for HOA');
+        logger.error(
+          { hoaId, error: errorMsg },
+          'Unexpected error during import'
+        );
         return {
-          status: 'rejected' as const,
-          reason: {
-            hoaId,
-            error: errorMsg,
-          },
-        };
+          hoaId,
+          apartments: createEmptyStats(),
+          errors: [`Nieoczekiwany błąd: ${errorMsg}`],
+        } as HOAImportResult;
       }
     }
   );
 
-  // Wait for all HOA imports to complete
-  const settledResults = await Promise.allSettled(hoaImportPromises);
+  const results = await Promise.all(hoaImportPromises);
 
-  // Collect results and errors
-  for (const settled of settledResults) {
-    if (settled.status === 'fulfilled') {
-      const innerResult = settled.value;
-      if (innerResult.status === 'fulfilled') {
-        results.push(innerResult.value);
-      } else {
-        errors.push(innerResult.reason);
-      }
+  // Collect HOA-level errors into batch errors
+  for (const result of results) {
+    if (result.errors.length > 0 && result.apartments.total === 0) {
+      errors.push({ hoaId: result.hoaId, error: result.errors.join('; ') });
     }
   }
 
   return {
-    success: errors.length === 0,
+    success: errors.length === 0 && results.every((r) => r.errors.length === 0),
     results,
     errors,
   };

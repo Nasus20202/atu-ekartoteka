@@ -210,7 +210,7 @@ export function ProfileForm({ initialName, authMethod }: ProfileFormProps) {
           )}
 
           <p className="text-sm text-muted-foreground">
-            Pozostaw puste aby nie zmieniać hasła
+            Pozostaw puste, aby nie zmieniać hasła
           </p>
         </div>
       ) : (

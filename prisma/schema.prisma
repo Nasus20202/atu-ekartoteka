@@ -125,7 +125,7 @@ model Charge {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   
-  @@unique([apartmentId, period, externalLineNo])
+  @@unique([apartmentId, period, externalLineNo, externalId])
   @@index([apartmentId])
   @@index([period])
   @@index([dateFrom])
@@ -150,9 +150,8 @@ model ChargeNotification {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   
-  @@unique([apartmentId, lineNo])
+  @@unique([apartmentId, lineNo, externalId])
   @@index([apartmentId])
-  @@index([externalId])
 }
 
 model Payment {
@@ -190,7 +189,7 @@ model Payment {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   
-  @@unique([apartmentId, year])
+  @@unique([apartmentId, year, externalId])
   @@index([apartmentId])
   @@index([year])
 }

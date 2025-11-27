@@ -16,37 +16,27 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-interface ImportResult {
-  hoaId: string;
+interface EntityStats {
   created: number;
   updated: number;
-  deactivated: number;
+  skipped: number;
+  deleted: number;
   total: number;
+}
+
+interface ImportResult {
+  hoaId: string;
+  apartments: EntityStats;
   errors: string[];
-  charges?: {
-    created: number;
-    updated: number;
-    skipped: number;
-    total: number;
-  };
-  notifications?: {
-    created: number;
-    updated: number;
-    deleted: number;
-    total: number;
-  };
-  payments?: {
-    created: number;
-    updated: number;
-    skipped: number;
-    total: number;
-  };
+  charges?: EntityStats;
+  notifications?: EntityStats;
+  payments?: EntityStats;
 }
 
 interface ImportResponse {
   success: boolean;
   results: ImportResult[];
-  errors: Array<{ file: string; error: string }>;
+  errors: Array<{ hoaId?: string; file?: string; error: string }>;
 }
 
 export default function AdminImportPage() {
@@ -208,7 +198,7 @@ export default function AdminImportPage() {
                   <ul className="space-y-1 text-sm text-orange-700 dark:text-orange-300">
                     {response.errors.map((err, idx) => (
                       <li key={idx}>
-                        • {err.file}: {err.error}
+                        • {err.file || err.hoaId}: {err.error}
                       </li>
                     ))}
                   </ul>
@@ -230,7 +220,7 @@ export default function AdminImportPage() {
                       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <div className="rounded-lg border p-4">
                           <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                            {result.created}
+                            {result.apartments.created}
                           </div>
                           <p className="text-sm text-muted-foreground">
                             Utworzonych
@@ -239,7 +229,7 @@ export default function AdminImportPage() {
 
                         <div className="rounded-lg border p-4">
                           <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                            {result.updated}
+                            {result.apartments.updated}
                           </div>
                           <p className="text-sm text-muted-foreground">
                             Zaktualizowanych
@@ -248,7 +238,7 @@ export default function AdminImportPage() {
 
                         <div className="rounded-lg border p-4">
                           <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                            {result.deactivated}
+                            {result.apartments.deleted}
                           </div>
                           <p className="text-sm text-muted-foreground">
                             Dezaktywowanych
@@ -257,7 +247,7 @@ export default function AdminImportPage() {
 
                         <div className="rounded-lg border p-4">
                           <div className="text-2xl font-bold">
-                            {result.total}
+                            {result.apartments.total}
                           </div>
                           <p className="text-sm text-muted-foreground">
                             Razem w pliku
