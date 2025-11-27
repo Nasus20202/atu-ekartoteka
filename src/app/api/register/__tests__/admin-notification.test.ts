@@ -52,9 +52,8 @@ vi.mock('@/lib/turnstile', () => ({
 }));
 
 const { prisma } = await import('@/lib/database/prisma');
-const { notifyAdminsOfNewUser } = await import(
-  '@/lib/notifications/new-user-registration'
-);
+const { notifyAdminsOfNewUser } =
+  await import('@/lib/notifications/new-user-registration');
 
 describe('POST /api/register - Admin Notifications', () => {
   beforeEach(() => {

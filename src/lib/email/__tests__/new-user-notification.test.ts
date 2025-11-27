@@ -117,9 +117,8 @@ describe('EmailService - New User Notification', () => {
         '2024-01-15 10:00'
       );
 
-      const { renderEmailTemplate } = await import(
-        '@/lib/email/template-loader'
-      );
+      const { renderEmailTemplate } =
+        await import('@/lib/email/template-loader');
       expect(renderEmailTemplate).toHaveBeenCalledWith(
         'new-user-registration-admin',
         'html',
