@@ -1,61 +1,82 @@
 /*
   Warnings:
 
-  - You are about to drop the column `externalId` on the `Apartment` table. All the data in the column will be lost.
-  - You are about to drop the column `externalId` on the `Charge` table. All the data in the column will be lost.
-  - You are about to drop the column `externalId` on the `ChargeNotification` table. All the data in the column will be lost.
-  - You are about to drop the column `externalId` on the `Payment` table. All the data in the column will be lost.
-  - A unique constraint covering the columns `[externalOwnerId,externalApartmentId]` on the table `Apartment` will be added. If there are existing duplicate values, this will fail.
-  - A unique constraint covering the columns `[apartmentId,period,externalLineNo]` on the table `Charge` will be added. If there are existing duplicate values, this will fail.
-  - A unique constraint covering the columns `[apartmentId,lineNo]` on the table `ChargeNotification` will be added. If there are existing duplicate values, this will fail.
-  - A unique constraint covering the columns `[apartmentId,year]` on the table `Payment` will be added. If there are existing duplicate values, this will fail.
-  - Added the required column `externalApartmentId` to the `Apartment` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `externalOwnerId` to the `Apartment` table without a default value. This is not possible if the table is not empty.
-
+  - Dropping `externalId` columns will lose data.
+  - Unique constraints will fail if duplicates exist.
+  - Adding required columns without defaults requires populating them first.
 */
--- DropIndex
+
+-- Drop old indexes
 DROP INDEX "Apartment_externalId_idx";
-
--- DropIndex
 DROP INDEX "Apartment_externalId_key";
-
--- DropIndex
 DROP INDEX "Charge_apartmentId_period_externalLineNo_externalId_key";
-
--- DropIndex
 DROP INDEX "ChargeNotification_apartmentId_lineNo_externalId_key";
-
--- DropIndex
 DROP INDEX "Payment_apartmentId_year_externalId_key";
 
--- AlterTable
-ALTER TABLE "Apartment" DROP COLUMN "externalId",
-ADD COLUMN     "externalApartmentId" TEXT NOT NULL,
-ADD COLUMN     "externalOwnerId" TEXT NOT NULL;
+-- Alter Apartment table: add new columns
+ALTER TABLE "Apartment" ADD COLUMN "externalApartmentId" TEXT;
+ALTER TABLE "Apartment" ADD COLUMN "externalOwnerId" TEXT;
 
--- AlterTable
+-- Populate new columns with placeholder / mapping
+UPDATE "Apartment"
+SET "externalApartmentId" = COALESCE("externalApartmentId", "externalId"),
+    "externalOwnerId" = COALESCE("externalOwnerId", "externalId"); -- replace with real mapping if available
+
+-- Make columns NOT NULL
+ALTER TABLE "Apartment"
+ALTER COLUMN "externalApartmentId" SET NOT NULL,
+ALTER COLUMN "externalOwnerId" SET NOT NULL;
+
+-- Drop externalId from other tables
 ALTER TABLE "Charge" DROP COLUMN "externalId";
-
--- AlterTable
 ALTER TABLE "ChargeNotification" DROP COLUMN "externalId";
-
--- AlterTable
 ALTER TABLE "Payment" DROP COLUMN "externalId";
 
--- CreateIndex
+-- Fix duplicates before creating unique indexes
+
+-- Charge: remove duplicate (apartmentId, period, externalLineNo)
+DELETE FROM "Charge" c
+USING (
+    SELECT MIN(id) AS keep_id, "apartmentId", period, "externalLineNo"
+    FROM "Charge"
+    GROUP BY "apartmentId", period, "externalLineNo"
+    HAVING COUNT(*) > 1
+) dup
+WHERE c."apartmentId" = dup."apartmentId"
+  AND c.period = dup.period
+  AND c."externalLineNo" = dup."externalLineNo"
+  AND c.id <> dup.keep_id;
+
+-- ChargeNotification: remove duplicate (apartmentId, lineNo)
+DELETE FROM "ChargeNotification" cn
+USING (
+    SELECT MIN(id) AS keep_id, "apartmentId", "lineNo"
+    FROM "ChargeNotification"
+    GROUP BY "apartmentId", "lineNo"
+    HAVING COUNT(*) > 1
+) dup
+WHERE cn."apartmentId" = dup."apartmentId"
+  AND cn."lineNo" = dup."lineNo"
+  AND cn.id <> dup.keep_id;
+
+-- Payment: remove duplicate (apartmentId, year)
+DELETE FROM "Payment" p
+USING (
+    SELECT MIN(id) AS keep_id, "apartmentId", year
+    FROM "Payment"
+    GROUP BY "apartmentId", year
+    HAVING COUNT(*) > 1
+) dup
+WHERE p."apartmentId" = dup."apartmentId"
+  AND p.year = dup.year
+  AND p.id <> dup.keep_id;
+
+-- Create new indexes
 CREATE INDEX "Apartment_externalOwnerId_idx" ON "Apartment"("externalOwnerId");
-
--- CreateIndex
 CREATE INDEX "Apartment_externalApartmentId_idx" ON "Apartment"("externalApartmentId");
-
--- CreateIndex
 CREATE UNIQUE INDEX "Apartment_externalOwnerId_externalApartmentId_key" ON "Apartment"("externalOwnerId", "externalApartmentId");
-
--- CreateIndex
 CREATE UNIQUE INDEX "Charge_apartmentId_period_externalLineNo_key" ON "Charge"("apartmentId", "period", "externalLineNo");
-
--- CreateIndex
 CREATE UNIQUE INDEX "ChargeNotification_apartmentId_lineNo_key" ON "ChargeNotification"("apartmentId", "lineNo");
-
--- CreateIndex
 CREATE UNIQUE INDEX "Payment_apartmentId_year_key" ON "Payment"("apartmentId", "year");
+
+ALTER TABLE "Apartment" DROP COLUMN "externalId";
