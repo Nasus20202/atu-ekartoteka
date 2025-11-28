@@ -8,7 +8,8 @@ import { ApartmentEntry } from '@/lib/parsers/apartment-parser';
 
 type ExistingApartment = {
   id: string;
-  externalId: string;
+  externalOwnerId: string;
+  externalApartmentId: string;
   owner: string;
   email: string | null;
   address: string;
@@ -49,22 +50,28 @@ export async function importApartments(
   stats: EntityStats,
   errors: string[]
 ): Promise<ApartmentMap> {
-  const externalIdsInFile = new Set(apartments.map((a) => a.externalId));
+  const ownerApartmentKeys = apartments.map(
+    (a) => `${a.externalOwnerId}#${a.externalApartmentId}`
+  );
 
   // Fetch all existing apartments with full data for comparison
   const existingApartments = await tx.apartment.findMany({
-    where: { externalId: { in: Array.from(externalIdsInFile) } },
+    where: { homeownersAssociationId: hoa.id },
   });
 
   const existingMap = new Map<string, ExistingApartment>(
-    existingApartments.map((a: ExistingApartment) => [a.externalId, a])
+    existingApartments.map((a: ExistingApartment) => [
+      `${a.externalOwnerId}#${a.externalApartmentId}`,
+      a,
+    ])
   );
 
   const toCreate: ApartmentEntry[] = [];
   const toUpdate: Array<{ entry: ApartmentEntry; id: string }> = [];
 
   for (const apartment of apartments) {
-    const existing = existingMap.get(apartment.externalId);
+    const key = `${apartment.externalOwnerId}#${apartment.externalApartmentId}`;
+    const existing = existingMap.get(key);
     if (existing) {
       if (hasApartmentChanged(existing, apartment, hoa.id)) {
         toUpdate.push({ entry: apartment, id: existing.id });
@@ -80,7 +87,8 @@ export async function importApartments(
     try {
       await tx.apartment.createMany({
         data: toCreate.map((a) => ({
-          externalId: a.externalId,
+          externalOwnerId: a.externalOwnerId,
+          externalApartmentId: a.externalApartmentId,
           owner: a.owner,
           email: a.email || null,
           address: a.address,
@@ -126,35 +134,51 @@ export async function importApartments(
       stats.updated++;
     } catch (error) {
       errors.push(
-        `Błąd aktualizacji mieszkania ${entry.externalId}: ${error instanceof Error ? error.message : 'Nieznany błąd'}`
+        `Błąd aktualizacji mieszkania ${entry.externalOwnerId}#${entry.externalApartmentId}: ${error instanceof Error ? error.message : 'Nieznany błąd'}`
       );
       stats.skipped++;
     }
   }
 
-  // Deactivate apartments not in file
-  const deactivated = await tx.apartment.updateMany({
-    where: {
-      homeownersAssociationId: hoa.id,
-      externalId: { notIn: Array.from(externalIdsInFile) },
-      isActive: true,
-    },
-    data: { isActive: false },
-  });
-  stats.deleted = deactivated.count;
+  // Deactivate apartments not in file (those whose externalOwnerId#externalApartmentId is not in the file)
+  // Only deactivate if we have apartments in the file (lok.txt was provided)
+  const keysInFile = new Set(ownerApartmentKeys);
+  if (apartments.length > 0) {
+    const toDeactivate = existingApartments
+      .filter(
+        (a: ExistingApartment) =>
+          a.isActive &&
+          !keysInFile.has(`${a.externalOwnerId}#${a.externalApartmentId}`)
+      )
+      .map((a: ExistingApartment) => a.id);
 
-  // Build apartment lookup map
+    const deactivated =
+      toDeactivate.length > 0
+        ? await tx.apartment.updateMany({
+            where: { id: { in: toDeactivate } },
+            data: { isActive: false },
+          })
+        : { count: 0 };
+    stats.deleted = deactivated.count;
+  }
+
+  // Build apartment lookup map (externalOwnerId#externalApartmentId -> id)
   const apartmentsInDb = await tx.apartment.findMany({
     where: { homeownersAssociationId: hoa.id, isActive: true },
-    select: { id: true, externalId: true },
+    select: { id: true, externalOwnerId: true, externalApartmentId: true },
   });
 
   const map = new Map<string, string>(
-    apartmentsInDb.map((a: { id: string; externalId: string }) => [
-      a.externalId,
-      a.id,
-    ])
+    apartmentsInDb.map(
+      (a: {
+        id: string;
+        externalOwnerId: string;
+        externalApartmentId: string;
+      }) => [`${a.externalOwnerId}#${a.externalApartmentId}`, a.id]
+    )
   );
 
-  return { map, externalIdsInFile };
+  const apartmentKeysInFile = new Set(ownerApartmentKeys);
+
+  return { map, apartmentKeysInFile };
 }

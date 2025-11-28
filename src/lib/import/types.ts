@@ -46,6 +46,6 @@ export interface HOAContext {
 }
 
 export interface ApartmentMap {
-  map: Map<string, string>;
-  externalIdsInFile: Set<string>;
+  map: Map<string, string>; // "externalOwnerId#externalApartmentId" -> id (UUID)
+  apartmentKeysInFile: Set<string>; // Set of "externalOwnerId#externalApartmentId" keys
 }

@@ -64,17 +64,18 @@ model User {
 }
 
 model Apartment {
-  id          String   @id @default(cuid())
-  externalId  String   @unique  // e.g. "W00016"
-  owner       String?            // owner
-  email       String?            // owner email
-  address     String?            // street
-  building    String?            // building number
-  number      String             // apartment number (can be "3A")
-  postalCode  String?
-  city        String?
-  shareNumerator        Float?             // numerator of ownership share (udział)
-  shareDenominator      Float?             // denominator of ownership share (udział)
+  id                  String   @id @default(cuid())
+  externalOwnerId     String       // Owner ID from file (e.g. "W00164")
+  externalApartmentId String       // Apartment ID from HOA system (e.g. "KLO11-KLO11-00000-00004M")
+  owner         String?            // owner
+  email         String?            // owner email
+  address       String?            // street
+  building      String?            // building number
+  number        String             // apartment number (can be "3A")
+  postalCode    String?
+  city          String?
+  shareNumerator        Float?             // numerator of ownership share
+  shareDenominator      Float?             // denominator of ownership share
   
   // Activity status
   isActive    Boolean  @default(true)  // whether apartment is in current file
@@ -95,7 +96,9 @@ model Apartment {
   chargeNotifications   ChargeNotification[]
   payments              Payment[]
   
-  @@index([externalId])
+  @@unique([externalOwnerId, externalApartmentId])
+  @@index([externalOwnerId])
+  @@index([externalApartmentId])
   @@index([isActive])
   @@index([homeownersAssociationId])
   @@index([userId])
@@ -103,7 +106,6 @@ model Apartment {
 
 model Charge {
   id              String   @id @default(cuid())
-  externalId      String   // from original file
   externalLineNo  Int      // line number from file
   
   // Apartment relation
@@ -125,7 +127,7 @@ model Charge {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   
-  @@unique([apartmentId, period, externalLineNo, externalId])
+  @@unique([apartmentId, period, externalLineNo])
   @@index([apartmentId])
   @@index([period])
   @@index([dateFrom])
@@ -133,7 +135,6 @@ model Charge {
 
 model ChargeNotification {
   id              String   @id @default(cuid())
-  externalId      String   // from pow_czynsz.txt
   lineNo          Int      // position in file
   
   // Apartment relation
@@ -150,13 +151,12 @@ model ChargeNotification {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   
-  @@unique([apartmentId, lineNo, externalId])
+  @@unique([apartmentId, lineNo])
   @@index([apartmentId])
 }
 
 model Payment {
   id              String   @id @default(cuid())
-  externalId      String   // from wplaty.txt
   
   // Apartment relation
   apartment       Apartment @relation(fields: [apartmentId], references: [id])
@@ -189,7 +189,7 @@ model Payment {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   
-  @@unique([apartmentId, year, externalId])
+  @@unique([apartmentId, year])
   @@index([apartmentId])
   @@index([year])
 }

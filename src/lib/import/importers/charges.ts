@@ -5,7 +5,6 @@ type ChargeKey = {
   apartmentId: string;
   period: string;
   externalLineNo: number;
-  externalId: string;
 };
 
 type ExistingCharge = ChargeKey & {
@@ -20,7 +19,7 @@ type ExistingCharge = ChargeKey & {
 };
 
 function makeChargeKey(c: ChargeKey): string {
-  return `${c.apartmentId}|${c.period}|${c.externalLineNo}|${c.externalId}`;
+  return `${c.apartmentId}|${c.period}|${c.externalLineNo}`;
 }
 
 function hasChargeChanged(
@@ -45,11 +44,11 @@ export async function importCharges(
   stats: EntityStats,
   errors: string[]
 ): Promise<void> {
-  // Filter entries with valid apartment IDs
+  // Filter entries with valid apartment IDs (using combined key: externalOwnerId#externalApartmentId)
   const validEntries = chargeEntries
     .map((entry) => ({
       entry,
-      apartmentId: apartmentMap.get(entry.apartmentExternalId),
+      apartmentId: apartmentMap.get(`${entry.id}#${entry.apartmentExternalId}`),
     }))
     .filter(
       (item): item is { entry: NalCzynszEntry; apartmentId: string } =>
@@ -65,7 +64,6 @@ export async function importCharges(
     apartmentId,
     period: entry.period,
     externalLineNo: entry.lineNo,
-    externalId: entry.id,
   }));
 
   const existingCharges = await tx.charge.findMany({
@@ -74,7 +72,6 @@ export async function importCharges(
         apartmentId: k.apartmentId,
         period: k.period,
         externalLineNo: k.externalLineNo,
-        externalId: k.externalId,
       })),
     },
   });
@@ -91,7 +88,6 @@ export async function importCharges(
       apartmentId,
       period: entry.period,
       externalLineNo: entry.lineNo,
-      externalId: entry.id,
     });
     const existing = existingMap.get(key);
 
@@ -110,7 +106,6 @@ export async function importCharges(
     try {
       await tx.charge.createMany({
         data: toCreate.map(({ entry, apartmentId }) => ({
-          externalId: entry.id,
           externalLineNo: entry.lineNo,
           apartmentId,
           period: entry.period,

@@ -12,8 +12,9 @@ import { AccountStatus } from '@/lib/types';
 export default async function ApartmentChargesPage({
   params,
 }: {
-  params: { apartmentId: string };
+  params: Promise<{ apartmentId: string }>;
 }) {
+  const { apartmentId } = await params;
   const session = await auth();
 
   if (!session) {
@@ -31,7 +32,7 @@ export default async function ApartmentChargesPage({
   // Fetch apartment with charges
   const apartment = await prisma.apartment.findFirst({
     where: {
-      id: params.apartmentId,
+      id: apartmentId,
       userId: session.user.id,
       isActive: true,
     },

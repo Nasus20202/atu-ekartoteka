@@ -4,11 +4,13 @@ import {
   AlertCircle,
   CheckCircle,
   Database,
+  Trash2,
   Upload,
   XCircle,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { useConfirm } from '@/components/confirm-dialog';
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
@@ -19,6 +21,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -69,6 +72,8 @@ export default function AdminImportPage() {
   const [error, setError] = useState<string | null>(null);
   const [dbStats, setDbStats] = useState<DatabaseStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
+  const [cleanImport, setCleanImport] = useState(false);
+  const confirm = useConfirm();
 
   const fetchStats = async () => {
     try {
@@ -106,6 +111,20 @@ export default function AdminImportPage() {
 
   const handleImport = async () => {
     if (!files) return;
+
+    // Show confirmation dialog for clean import
+    if (cleanImport) {
+      const confirmed = await confirm({
+        title: 'Potwierdzenie czystego importu',
+        description:
+          'Czy na pewno chcesz wykonać czysty import? Ta operacja usunie wszystkie istniejące naliczenia, powiadomienia o opłatach i wpłaty. Mieszkania i użytkownicy nie zostaną usunięci.',
+        confirmText: 'Tak, usuń i importuj',
+        cancelText: 'Anuluj',
+        variant: 'destructive',
+      });
+
+      if (!confirmed) return;
+    }
 
     setLoading(true);
     setError(null);
@@ -152,7 +171,7 @@ export default function AdminImportPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ files: fileData }),
+        body: JSON.stringify({ files: fileData, cleanImport }),
       });
 
       const data = await res.json();
@@ -250,15 +269,38 @@ export default function AdminImportPage() {
             )}
           </div>
 
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="cleanImport"
+              checked={cleanImport}
+              onCheckedChange={(checked) => setCleanImport(checked === true)}
+              disabled={loading}
+            />
+            <Label
+              htmlFor="cleanImport"
+              className="flex cursor-pointer items-center gap-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              <Trash2 className="h-4 w-4 text-destructive" />
+              Czysty import (usuwa istniejące naliczenia, powiadomienia i
+              wpłaty)
+            </Label>
+          </div>
+
           <Button
             onClick={handleImport}
             disabled={!files || loading}
             className="w-full"
+            variant={cleanImport ? 'destructive' : 'default'}
           >
             {loading ? (
               <>
                 <Upload className="mr-2 h-4 w-4 animate-spin" />
                 Importowanie...
+              </>
+            ) : cleanImport ? (
+              <>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Importuj (z usunięciem danych)
               </>
             ) : (
               <>

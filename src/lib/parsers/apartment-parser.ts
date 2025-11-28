@@ -1,8 +1,8 @@
 export interface ApartmentEntry {
-  id: string;
+  externalOwnerId: string; // Owner ID from file (e.g. "W00164")
+  externalApartmentId: string; // Apartment ID from HOA system (e.g. "KLO11-KLO11-00000-00004M")
   owner: string;
   email: string;
-  externalId: string;
   address: string;
   building: string;
   number: string;
@@ -49,7 +49,7 @@ export async function parseApartmentBuffer(
     const ownerParts = fields.slice(1, ownerEndIndex + 1);
     const owner = ownerParts.join('#');
 
-    const externalId = fields[externalIdIndex];
+    const hoaExternalId = fields[externalIdIndex];
     const address = fields[externalIdIndex + 1];
     const building = fields[externalIdIndex + 2];
     const number = fields[externalIdIndex + 3];
@@ -63,11 +63,14 @@ export async function parseApartmentBuffer(
     const shareNumerator = parseFloat(areaStr) || 0;
     const shareDenominator = parseFloat(heightStr) || 0;
 
+    const trimmedOwnerId = id.trim();
+    const trimmedApartmentId = hoaExternalId?.trim() || '';
+
     entries.push({
-      id: id.trim(),
+      externalOwnerId: trimmedOwnerId,
+      externalApartmentId: trimmedApartmentId,
       owner: owner?.trim(),
       email: email?.trim(),
-      externalId: externalId?.trim(),
       address: address?.trim(),
       building: building?.trim(),
       number: number?.trim(),
@@ -88,8 +91,9 @@ export function getUniqueApartments(
   const apartmentMap = new Map<string, ApartmentEntry>();
 
   for (const entry of entries) {
-    if (entry.isOwner && !apartmentMap.has(entry.externalId)) {
-      apartmentMap.set(entry.externalId, entry);
+    const key = `${entry.externalOwnerId}#${entry.externalApartmentId}`;
+    if (entry.isOwner && !apartmentMap.has(key)) {
+      apartmentMap.set(key, entry);
     }
   }
 

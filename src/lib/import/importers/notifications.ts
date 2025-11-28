@@ -4,7 +4,6 @@ import { ChargeNotificationEntry } from '@/lib/parsers/pow-czynsz-parser';
 type NotificationKey = {
   apartmentId: string;
   lineNo: number;
-  externalId: string;
 };
 
 type ExistingNotification = NotificationKey & {
@@ -17,7 +16,7 @@ type ExistingNotification = NotificationKey & {
 };
 
 function makeNotificationKey(n: NotificationKey): string {
-  return `${n.apartmentId}|${n.lineNo}|${n.externalId}`;
+  return `${n.apartmentId}|${n.lineNo}`;
 }
 
 function hasNotificationChanged(
@@ -41,11 +40,13 @@ export async function importNotifications(
   stats: EntityStats,
   errors: string[]
 ): Promise<void> {
-  // Filter entries with valid apartment IDs
+  // Filter entries with valid apartment IDs (using combined key: externalOwnerId#externalApartmentId)
   const validEntries = entries
     .map((entry) => ({
       entry,
-      apartmentId: apartmentMap.get(entry.apartmentCode),
+      apartmentId: apartmentMap.get(
+        `${entry.externalId}#${entry.apartmentCode}`
+      ),
     }))
     .filter(
       (item): item is { entry: ChargeNotificationEntry; apartmentId: string } =>
@@ -59,7 +60,6 @@ export async function importNotifications(
       makeNotificationKey({
         apartmentId,
         lineNo: entry.lineNo,
-        externalId: entry.externalId,
       })
     )
   );
@@ -74,7 +74,6 @@ export async function importNotifications(
   const uniqueKeys = validEntries.map(({ entry, apartmentId }) => ({
     apartmentId,
     lineNo: entry.lineNo,
-    externalId: entry.externalId,
   }));
 
   const existingNotifications = await tx.chargeNotification.findMany({
@@ -82,7 +81,6 @@ export async function importNotifications(
       OR: uniqueKeys.map((k) => ({
         apartmentId: k.apartmentId,
         lineNo: k.lineNo,
-        externalId: k.externalId,
       })),
     },
   });
@@ -104,7 +102,6 @@ export async function importNotifications(
     const key = makeNotificationKey({
       apartmentId,
       lineNo: entry.lineNo,
-      externalId: entry.externalId,
     });
     const existing = existingMap.get(key);
 
@@ -123,7 +120,6 @@ export async function importNotifications(
     try {
       await tx.chargeNotification.createMany({
         data: toCreate.map(({ entry, apartmentId }) => ({
-          externalId: entry.externalId,
           apartmentId,
           lineNo: entry.lineNo,
           description: entry.description,
@@ -181,7 +177,6 @@ async function deleteStaleNotifications(
       id: true,
       apartmentId: true,
       lineNo: true,
-      externalId: true,
     },
   });
 

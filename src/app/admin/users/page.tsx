@@ -82,7 +82,7 @@ export default function AdminUsersPage() {
       const params = new URLSearchParams({
         page: '1',
         limit: '1000',
-        activeOnly: 'true',
+        activeOnly: 'false',
       });
 
       const response = await fetch(`/api/admin/apartments?${params}`);
@@ -231,16 +231,33 @@ export default function AdminUsersPage() {
   };
 
   const filteredApartments = apartments
-    .filter(
-      (apt) =>
-        apartmentSearch === '' ||
-        apt.number.toLowerCase().includes(apartmentSearch.toLowerCase()) ||
-        apt.address?.toLowerCase().includes(apartmentSearch.toLowerCase()) ||
-        apt.owner?.toLowerCase().includes(apartmentSearch.toLowerCase()) ||
-        apt.email?.toLowerCase().includes(apartmentSearch.toLowerCase())
-    )
+    .filter((apt) => {
+      if (apartmentSearch === '') return true;
+      const search = apartmentSearch.toLowerCase();
+      // Search by number, address, building, owner, email, externalOwnerId, externalApartmentId
+      // Also search by full title: "address building/number"
+      const fullTitle =
+        `${apt.address || ''} ${apt.building || ''}/${apt.number || ''}`.toLowerCase();
+      return (
+        apt.number?.toLowerCase().includes(search) ||
+        apt.address?.toLowerCase().includes(search) ||
+        apt.building?.toLowerCase().includes(search) ||
+        apt.owner?.toLowerCase().includes(search) ||
+        apt.email?.toLowerCase().includes(search) ||
+        apt.externalOwnerId?.toLowerCase().includes(search) ||
+        apt.externalApartmentId?.toLowerCase().includes(search) ||
+        fullTitle.includes(search)
+      );
+    })
     .sort((a, b) => {
-      // Sort matching apartments first
+      // Sort currently assigned apartments first
+      const aSelected = selectedApartments.includes(a.id);
+      const bSelected = selectedApartments.includes(b.id);
+
+      if (aSelected && !bSelected) return -1;
+      if (!aSelected && bSelected) return 1;
+
+      // Then sort matching apartments (by name/email)
       const aMatches = isApartmentMatchingUser(a, selectedUser);
       const bMatches = isApartmentMatchingUser(b, selectedUser);
 
@@ -439,7 +456,8 @@ export default function AdminUsersPage() {
                               key={apartment.id}
                               className="text-sm text-muted-foreground"
                             >
-                              {apartment.address} {apartment.number}
+                              {apartment.address} {apartment.building}/
+                              {apartment.number}
                               <br />
                               {apartment.postalCode} {apartment.city}
                             </p>
@@ -601,7 +619,7 @@ export default function AdminUsersPage() {
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
                               <p className="text-sm font-medium">
-                                {apt.address} {apt.number}
+                                {apt.address} {apt.building}/{apt.number}
                               </p>
                               {isMatching && (
                                 <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-200">
@@ -630,7 +648,8 @@ export default function AdminUsersPage() {
                                     100
                                   ).toFixed(1)
                                 : '-'}
-                              % • ID: {apt.externalId}
+                              % • ID: {apt.externalApartmentId} /{' '}
+                              {apt.externalOwnerId}
                             </p>
                           </div>
                         </label>

@@ -1,10 +1,13 @@
 'use client';
 
+import { Power, PowerOff } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { useConfirm } from '@/components/confirm-dialog';
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -25,7 +28,8 @@ import type {
 type ApartmentDetailsData = Pick<
   Apartment,
   | 'id'
-  | 'externalId'
+  | 'externalOwnerId'
+  | 'externalApartmentId'
   | 'owner'
   | 'email'
   | 'address'
@@ -47,9 +51,11 @@ type ApartmentDetailsData = Pick<
 export default function ApartmentDetailsPage() {
   const params = useParams();
   const apartmentId = params.apartmentId as string;
+  const confirm = useConfirm();
 
   const [apartment, setApartment] = useState<ApartmentDetailsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     const fetchApartment = async () => {
@@ -69,6 +75,42 @@ export default function ApartmentDetailsPage() {
 
     fetchApartment();
   }, [apartmentId]);
+
+  const handleToggleStatus = async () => {
+    if (!apartment) return;
+
+    const newStatus = !apartment.isActive;
+    const confirmed = await confirm({
+      title: newStatus ? 'Aktywuj mieszkanie' : 'Dezaktywuj mieszkanie',
+      description: newStatus
+        ? 'Czy na pewno chcesz aktywować to mieszkanie?'
+        : 'Czy na pewno chcesz dezaktywować to mieszkanie?',
+      confirmText: newStatus ? 'Aktywuj' : 'Dezaktywuj',
+      cancelText: 'Anuluj',
+      variant: newStatus ? 'default' : 'destructive',
+    });
+
+    if (!confirmed) return;
+
+    setUpdating(true);
+    try {
+      const response = await fetch(`/api/admin/apartments/${apartmentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: newStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update apartment status');
+      }
+
+      setApartment({ ...apartment, isActive: newStatus });
+    } catch (error) {
+      console.error('Failed to update apartment status:', error);
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -90,7 +132,7 @@ export default function ApartmentDetailsPage() {
     <Page maxWidth="6xl">
       <PageHeader
         title={`Lokal ${apartment.number} - ${apartment.homeownersAssociation.name}`}
-        description={`${apartment.address} ${apartment.number}, ${apartment.postalCode} ${apartment.city}`}
+        description={`${apartment.address} ${apartment.building}/${apartment.number}, ${apartment.postalCode} ${apartment.city}`}
         showBackButton={true}
       />
 
@@ -104,7 +146,9 @@ export default function ApartmentDetailsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">ID zewnętrzne</p>
-                <p className="font-medium">{apartment.externalId}</p>
+                <p className="font-medium">
+                  {apartment.externalApartmentId} / {apartment.externalOwnerId}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Numer lokalu</p>
@@ -118,15 +162,42 @@ export default function ApartmentDetailsPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Status</p>
-                <p className="font-medium">
-                  {apartment.isActive ? 'Aktywny' : 'Nieaktywny'}
-                </p>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                      apartment.isActive
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                    }`}
+                  >
+                    {apartment.isActive ? 'Aktywny' : 'Nieaktywny'}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-6 px-2 text-xs"
+                    onClick={handleToggleStatus}
+                    disabled={updating}
+                  >
+                    {apartment.isActive ? (
+                      <>
+                        <PowerOff className="mr-1 h-3 w-3" />
+                        Dezaktywuj
+                      </>
+                    ) : (
+                      <>
+                        <Power className="mr-1 h-3 w-3" />
+                        Aktywuj
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Adres</p>
                 <p className="font-medium">
                   {apartment.address
-                    ? `${apartment.address} ${apartment.number || ''}`
+                    ? `${apartment.address} ${apartment.building || ''}/${apartment.number || ''}`
                     : 'Brak'}
                 </p>
               </div>

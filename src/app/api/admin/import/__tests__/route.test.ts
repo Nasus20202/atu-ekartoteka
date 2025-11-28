@@ -163,7 +163,9 @@ describe('Admin Import API', () => {
 
       expect(response.status).toBe(200);
       expect(data.results).toHaveLength(1);
-      expect(processBatchImport).toHaveBeenCalledWith([file]);
+      expect(processBatchImport).toHaveBeenCalledWith([file], {
+        cleanImport: false,
+      });
     });
 
     it('should process multiple files successfully', async () => {
@@ -209,7 +211,9 @@ describe('Admin Import API', () => {
 
       expect(response.status).toBe(200);
       expect(data.results).toHaveLength(2);
-      expect(processBatchImport).toHaveBeenCalledWith([file1, file2]);
+      expect(processBatchImport).toHaveBeenCalledWith([file1, file2], {
+        cleanImport: false,
+      });
     });
 
     it('should handle import errors gracefully', async () => {

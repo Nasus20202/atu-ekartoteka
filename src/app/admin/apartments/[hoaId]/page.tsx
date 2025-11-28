@@ -120,7 +120,8 @@ export default function HOAApartmentsPage() {
         <CardHeader>
           <CardTitle>Wyszukiwanie</CardTitle>
           <CardDescription>
-            Szukaj po numerze, właścicielu, adresie lub mieście
+            Szukaj po adresie, budynku, numerze, właścicielu, mieście lub ID
+            zewnętrznym
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -212,7 +213,8 @@ export default function HOAApartmentsPage() {
                           ID zewnętrzne:
                         </dt>
                         <dd className="font-mono text-xs">
-                          {apartment.externalId}
+                          {apartment.externalApartmentId} /{' '}
+                          {apartment.externalOwnerId}
                         </dd>
                       </div>
                     </dl>

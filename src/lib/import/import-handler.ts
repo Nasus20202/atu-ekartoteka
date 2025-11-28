@@ -30,9 +30,14 @@ const logger = createLogger('import:handler');
 
 export type { BatchImportResult, HOAImportResult, ImportError };
 
+export interface ImportOptions {
+  cleanImport?: boolean;
+}
+
 async function importSingleHOA(
   hoaId: string,
-  fileGroup: ImportFileGroup
+  fileGroup: ImportFileGroup,
+  options: ImportOptions = {}
 ): Promise<HOAImportResult> {
   const result: HOAImportResult = {
     hoaId,
@@ -42,10 +47,9 @@ async function importSingleHOA(
 
   const { lokFile, chargesFile, notificationsFile, paymentsFile } = fileGroup;
 
-  if (!lokFile) {
-    result.errors.push(
-      `Brak pliku lok.txt dla wspólnoty ${hoaId}. Plik lok.txt jest wymagany.`
-    );
+  // Check if at least one file is present
+  if (!lokFile && !chargesFile && !notificationsFile && !paymentsFile) {
+    result.errors.push(`Brak plików do importu dla wspólnoty ${hoaId}.`);
     return result;
   }
 
@@ -53,9 +57,11 @@ async function importSingleHOA(
     logger.info({ hoaId }, 'Starting import for HOA');
 
     // Parse all files outside of transaction
-    const lokBuffer = await parseFileToBuffer(lokFile);
-    const apartmentEntries = await parseApartmentBuffer(lokBuffer);
-    const apartments = getUniqueApartments(apartmentEntries);
+    const apartments = lokFile
+      ? getUniqueApartments(
+          await parseApartmentBuffer(await parseFileToBuffer(lokFile))
+        )
+      : [];
     result.apartments.total = apartments.length;
 
     const chargeEntries = chargesFile
@@ -92,6 +98,47 @@ async function importSingleHOA(
           create: { externalId: hoaId, name: hoaId },
           update: {},
         });
+
+        // If clean import, delete all existing charges, notifications, and payments for this HOA
+        if (options.cleanImport) {
+          logger.info({ hoaId }, 'Clean import: deleting existing data');
+
+          // Get all apartment IDs for this HOA
+          const apartmentIds = await tx.apartment.findMany({
+            where: { homeownersAssociationId: hoa.id },
+            select: { id: true },
+          });
+          const ids = apartmentIds.map((a: { id: string }) => a.id);
+
+          if (ids.length > 0) {
+            // Delete charges
+            const deletedCharges = await tx.charge.deleteMany({
+              where: { apartmentId: { in: ids } },
+            });
+
+            // Delete notifications
+            const deletedNotifications = await tx.chargeNotification.deleteMany(
+              {
+                where: { apartmentId: { in: ids } },
+              }
+            );
+
+            // Delete payments
+            const deletedPayments = await tx.payment.deleteMany({
+              where: { apartmentId: { in: ids } },
+            });
+
+            logger.info(
+              {
+                hoaId,
+                deletedCharges: deletedCharges.count,
+                deletedNotifications: deletedNotifications.count,
+                deletedPayments: deletedPayments.count,
+              },
+              'Clean import: deleted existing data'
+            );
+          }
+        }
 
         // Process apartments
         const { map: apartmentMap } = await importApartments(
@@ -160,7 +207,8 @@ async function importSingleHOA(
 }
 
 export async function processBatchImport(
-  files: File[]
+  files: File[],
+  options: ImportOptions = {}
 ): Promise<BatchImportResult> {
   const errors: ImportError[] = [];
   const filesByHOA = groupFilesByHOA(files, errors);
@@ -168,7 +216,7 @@ export async function processBatchImport(
   const hoaImportPromises = Array.from(filesByHOA.entries()).map(
     async ([hoaId, fileGroup]) => {
       try {
-        return await importSingleHOA(hoaId, fileGroup);
+        return await importSingleHOA(hoaId, fileGroup, options);
       } catch (error) {
         const errorMsg =
           error instanceof Error ? error.message : 'Nieznany błąd';
