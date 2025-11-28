@@ -32,10 +32,10 @@ describe('apartment-parser', () => {
       const entries = await parseApartmentBuffer(buffer);
       const firstEntry = entries[0];
 
-      expect(firstEntry).toHaveProperty('id', 'W1');
+      expect(firstEntry).toHaveProperty('externalOwnerId', 'W1');
+      expect(firstEntry).toHaveProperty('externalApartmentId', 'EXT001');
       expect(firstEntry).toHaveProperty('owner', 'Jan Kowalski');
       expect(firstEntry).toHaveProperty('email', 'jan@example.com');
-      expect(firstEntry).toHaveProperty('externalId', 'EXT001');
       expect(firstEntry).toHaveProperty('address', 'ul. Testowa');
       expect(firstEntry).toHaveProperty('building', '1');
       expect(firstEntry).toHaveProperty('number', '1');
@@ -55,7 +55,7 @@ describe('apartment-parser', () => {
 
       const ownerEntries = entries.filter((e) => e.isOwner);
       expect(ownerEntries.length).toBe(1);
-      expect(ownerEntries[0].id).toBe('W1');
+      expect(ownerEntries[0].externalOwnerId).toBe('W1');
     });
 
     it('should parse area and height as numbers', async () => {
@@ -92,7 +92,8 @@ describe('apartment-parser', () => {
       const entries = await parseApartmentBuffer(buffer);
 
       expect(entries[0].owner).toBe('Jan#Kowalski');
-      expect(entries[0].externalId).toBe('EXT001');
+      expect(entries[0].externalOwnerId).toBe('W1');
+      expect(entries[0].externalApartmentId).toBe('EXT001');
       expect(entries[0].email).toBe('jan@example.com');
     });
 
@@ -104,7 +105,8 @@ describe('apartment-parser', () => {
       const entries = await parseApartmentBuffer(buffer);
 
       expect(entries[0].owner).toBe('Jan#Piotr#Kowalski');
-      expect(entries[0].externalId).toBe('EXT001');
+      expect(entries[0].externalOwnerId).toBe('W1');
+      expect(entries[0].externalApartmentId).toBe('EXT001');
       expect(entries[0].address).toBe('ul. Testowa');
       expect(entries[0].city).toBe('Warszawa');
     });
@@ -126,10 +128,10 @@ describe('apartment-parser', () => {
 
       expect(unique.length).toBe(1);
       expect(unique[0].isOwner).toBe(true);
-      expect(unique[0].id).toBe('W1');
+      expect(unique[0].externalOwnerId).toBe('W1');
     });
 
-    it('should return unique apartments by externalId', () => {
+    it('should return unique apartments by externalOwnerId+externalApartmentId', () => {
       const entries: ApartmentEntry[] = [
         createMockApartmentEntry({
           owner: 'Owner 1',
@@ -138,7 +140,8 @@ describe('apartment-parser', () => {
           shareDenominator: 2.5,
         }),
         createMockApartmentEntry({
-          id: 'W2',
+          externalOwnerId: 'W2',
+          externalApartmentId: 'EXT2',
           owner: 'Owner 2',
           address: 'Address 1',
           shareNumerator: 50,
@@ -150,8 +153,10 @@ describe('apartment-parser', () => {
       const unique = getUniqueApartments(entries);
 
       expect(unique.length).toBe(2);
-      expect(unique[0].externalId).toBe('EXT1');
-      expect(unique[1].externalId).toBe('EXT2');
+      expect(unique[0].externalOwnerId).toBe('W1');
+      expect(unique[0].externalApartmentId).toBe('EXT1');
+      expect(unique[1].externalOwnerId).toBe('W2');
+      expect(unique[1].externalApartmentId).toBe('EXT2');
     });
 
     it('should return empty array when no owner entries exist', () => {

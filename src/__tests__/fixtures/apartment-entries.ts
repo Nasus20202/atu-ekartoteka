@@ -3,10 +3,10 @@ import type { ApartmentEntry } from '@/lib/parsers/apartment-parser';
 export const createMockApartmentEntry = (
   overrides: Partial<ApartmentEntry> = {}
 ): ApartmentEntry => ({
-  id: 'W1',
+  externalOwnerId: 'W1',
+  externalApartmentId: 'EXT1',
   owner: 'Jan Kowalski',
   email: 'jan.kowalski@example.com',
-  externalId: 'EXT1',
   address: 'ul. Testowa 1',
   building: 'B1',
   number: '1',
@@ -21,15 +21,15 @@ export const createMockApartmentEntry = (
 export const mockApartmentEntries = {
   owner: createMockApartmentEntry(),
   tenant: createMockApartmentEntry({
-    id: 'L1',
+    externalOwnerId: 'L1',
     owner: 'Tenant 1',
     isOwner: false,
   }),
   secondOwner: createMockApartmentEntry({
-    id: 'W2',
+    externalOwnerId: 'W2',
+    externalApartmentId: 'EXT2',
     owner: 'Anna Nowak',
     email: 'anna.nowak@example.com',
-    externalId: 'EXT2',
     address: 'ul. Testowa 2',
     building: 'B2',
     number: '2',

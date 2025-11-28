@@ -58,9 +58,6 @@ export const NotificationsSidebar = ({
                     {notification.totalAmount.toFixed(2)} zł
                   </span>
                 </div>
-                <div className="mb-1 text-xs text-muted-foreground">
-                  Lokal {notification.apartmentNumber}
-                </div>
                 <div className="text-xs text-muted-foreground">
                   {notification.description}
                 </div>

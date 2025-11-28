@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
       include: {
         _count: {
           select: {
-            apartments: true,
+            apartments: { where: { isActive: true } },
           },
         },
       },

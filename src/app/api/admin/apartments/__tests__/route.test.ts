@@ -58,6 +58,8 @@ describe('Admin Apartments API', () => {
         city: 'Warszawa',
         isActive: true,
         homeownersAssociationId: 'hoa-1',
+        externalOwnerId: 'W00123',
+        externalApartmentId: 'HOA1-00001',
       },
       {
         id: 'apt-2',
@@ -68,6 +70,8 @@ describe('Admin Apartments API', () => {
         city: 'Warszawa',
         isActive: true,
         homeownersAssociationId: 'hoa-1',
+        externalOwnerId: 'W00456',
+        externalApartmentId: 'HOA1-00002',
       },
     ];
 
@@ -455,6 +459,90 @@ describe('Admin Apartments API', () => {
 
       expect(response.status).toBe(500);
       expect(data.error).toBe('Nie udało się pobrać mieszkań');
+    });
+
+    it('should filter by search term (externalOwnerId)', async () => {
+      vi.mocked(auth).mockResolvedValueOnce({
+        user: {
+          id: 'admin-id',
+          email: 'admin@example.com',
+          role: UserRole.ADMIN,
+        },
+        expires: new Date().toISOString(),
+      } as any);
+      vi.mocked(prisma.apartment.findMany).mockResolvedValueOnce([
+        mockApartments[0],
+      ] as any);
+      vi.mocked(prisma.apartment.count).mockResolvedValueOnce(1);
+      vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValueOnce(
+        null
+      );
+
+      const { GET } = await import('../route');
+      const request = createMockRequest({ search: 'W00123' });
+
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.apartments).toHaveLength(1);
+      expect(data.apartments[0].externalOwnerId).toBe('W00123');
+    });
+
+    it('should filter by search term (externalApartmentId)', async () => {
+      vi.mocked(auth).mockResolvedValueOnce({
+        user: {
+          id: 'admin-id',
+          email: 'admin@example.com',
+          role: UserRole.ADMIN,
+        },
+        expires: new Date().toISOString(),
+      } as any);
+      vi.mocked(prisma.apartment.findMany).mockResolvedValueOnce([
+        mockApartments[1],
+      ] as any);
+      vi.mocked(prisma.apartment.count).mockResolvedValueOnce(1);
+      vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValueOnce(
+        null
+      );
+
+      const { GET } = await import('../route');
+      const request = createMockRequest({ search: 'HOA1-00002' });
+
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.apartments).toHaveLength(1);
+      expect(data.apartments[0].externalApartmentId).toBe('HOA1-00002');
+    });
+
+    it('should filter by search term (building)', async () => {
+      vi.mocked(auth).mockResolvedValueOnce({
+        user: {
+          id: 'admin-id',
+          email: 'admin@example.com',
+          role: UserRole.ADMIN,
+        },
+        expires: new Date().toISOString(),
+      } as any);
+      vi.mocked(prisma.apartment.findMany).mockResolvedValueOnce(
+        mockApartments as any
+      );
+      vi.mocked(prisma.apartment.count).mockResolvedValueOnce(2);
+      vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValueOnce(
+        null
+      );
+
+      const { GET } = await import('../route');
+      const request = createMockRequest({ search: 'A' });
+
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.apartments).toHaveLength(2);
+      expect(data.apartments[0].building).toBe('A');
     });
   });
 });

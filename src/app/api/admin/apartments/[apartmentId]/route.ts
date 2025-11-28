@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
 import { prisma } from '@/lib/database/prisma';
@@ -58,6 +58,48 @@ export async function GET(
     return NextResponse.json(apartment);
   } catch (error) {
     logger.error({ error }, 'Error fetching apartment details');
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ apartmentId: string }> }
+) {
+  try {
+    const session = await auth();
+
+    if (!session?.user || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { apartmentId } = await params;
+    const body = await request.json();
+
+    // Validate request body
+    if (typeof body.isActive !== 'boolean') {
+      return NextResponse.json(
+        { error: 'Invalid request body' },
+        { status: 400 }
+      );
+    }
+
+    const apartment = await prisma.apartment.update({
+      where: { id: apartmentId },
+      data: { isActive: body.isActive },
+    });
+
+    logger.info(
+      { apartmentId, isActive: body.isActive, adminEmail: session.user.email },
+      'Apartment status updated'
+    );
+
+    return NextResponse.json(apartment);
+  } catch (error) {
+    logger.error({ error }, 'Error updating apartment status');
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

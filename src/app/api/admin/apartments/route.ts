@@ -24,22 +24,61 @@ export async function GET(req: NextRequest) {
 
     const skip = (page - 1) * limit;
 
+    // Handle search with "/" (e.g., "17/12" means building 17, number 12)
+    let searchCondition = {};
+    if (search) {
+      if (search.includes('/')) {
+        const [buildingPart, numberPart] = search.split('/');
+        searchCondition = {
+          AND: [
+            buildingPart.trim()
+              ? {
+                  building: {
+                    contains: buildingPart.trim(),
+                    mode: 'insensitive' as const,
+                  },
+                }
+              : {},
+            numberPart.trim()
+              ? {
+                  number: {
+                    contains: numberPart.trim(),
+                    mode: 'insensitive' as const,
+                  },
+                }
+              : {},
+          ],
+        };
+      } else {
+        searchCondition = {
+          OR: [
+            { number: { contains: search, mode: 'insensitive' as const } },
+            { owner: { contains: search, mode: 'insensitive' as const } },
+            { address: { contains: search, mode: 'insensitive' as const } },
+            { building: { contains: search, mode: 'insensitive' as const } },
+            { city: { contains: search, mode: 'insensitive' as const } },
+            {
+              externalOwnerId: {
+                contains: search,
+                mode: 'insensitive' as const,
+              },
+            },
+            {
+              externalApartmentId: {
+                contains: search,
+                mode: 'insensitive' as const,
+              },
+            },
+          ],
+        };
+      }
+    }
+
     const where = {
       AND: [
         hoaId ? { homeownersAssociationId: hoaId } : {},
         activeOnly ? { isActive: true } : {},
-        search
-          ? {
-              OR: [
-                { number: { contains: search, mode: 'insensitive' as const } },
-                { owner: { contains: search, mode: 'insensitive' as const } },
-                {
-                  address: { contains: search, mode: 'insensitive' as const },
-                },
-                { city: { contains: search, mode: 'insensitive' as const } },
-              ],
-            }
-          : {},
+        searchCondition,
       ],
     };
 

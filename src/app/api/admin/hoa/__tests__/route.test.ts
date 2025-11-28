@@ -129,7 +129,7 @@ describe('Admin HOA API', () => {
         include: {
           _count: {
             select: {
-              apartments: true,
+              apartments: { where: { isActive: true } },
             },
           },
         },
@@ -168,7 +168,7 @@ describe('Admin HOA API', () => {
         include: {
           _count: {
             select: {
-              apartments: true,
+              apartments: { where: { isActive: true } },
             },
           },
         },

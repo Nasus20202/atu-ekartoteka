@@ -27,6 +27,8 @@ export async function POST(req: NextRequest) {
     let files: File[];
 
     // Handle both JSON (base64) and FormData (multipart) formats
+    let cleanImport = false;
+
     if (contentType.includes('application/json')) {
       // JSON format with base64 encoded files
       const body = await req.json();
@@ -35,6 +37,7 @@ export async function POST(req: NextRequest) {
         name: string;
         content: string;
       }>;
+      cleanImport = body.cleanImport === true;
 
       if (!fileData || fileData.length === 0) {
         return NextResponse.json(
@@ -58,7 +61,7 @@ export async function POST(req: NextRequest) {
     }
 
     logger.info(
-      { email: session.user.email, fileCount: files.length },
+      { email: session.user.email, fileCount: files.length, cleanImport },
       'Import initiated'
     );
 
@@ -69,7 +72,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const result = await processBatchImport(files);
+    const result = await processBatchImport(files, { cleanImport });
 
     logger.info(
       { email: session.user.email, hoaCount: result.results.length },

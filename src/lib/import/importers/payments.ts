@@ -4,7 +4,6 @@ import { PaymentEntry } from '@/lib/parsers/wplaty-parser';
 type PaymentKey = {
   apartmentId: string;
   year: number;
-  externalId: string;
 };
 
 type ExistingPayment = PaymentKey & {
@@ -29,7 +28,7 @@ type ExistingPayment = PaymentKey & {
 };
 
 function makePaymentKey(p: PaymentKey): string {
-  return `${p.apartmentId}|${p.year}|${p.externalId}`;
+  return `${p.apartmentId}|${p.year}`;
 }
 
 function hasPaymentChanged(
@@ -67,11 +66,13 @@ export async function importPayments(
   stats: EntityStats,
   errors: string[]
 ): Promise<void> {
-  // Filter entries with valid apartment IDs
+  // Filter entries with valid apartment IDs (using combined key: externalOwnerId#externalApartmentId)
   const validEntries = entries
     .map((entry) => ({
       entry,
-      apartmentId: apartmentMap.get(entry.apartmentCode),
+      apartmentId: apartmentMap.get(
+        `${entry.externalId}#${entry.apartmentCode}`
+      ),
     }))
     .filter(
       (item): item is { entry: PaymentEntry; apartmentId: string } =>
@@ -86,7 +87,6 @@ export async function importPayments(
   const uniqueKeys = validEntries.map(({ entry, apartmentId }) => ({
     apartmentId,
     year: entry.year,
-    externalId: entry.externalId,
   }));
 
   const existingPayments = await tx.payment.findMany({
@@ -94,7 +94,6 @@ export async function importPayments(
       OR: uniqueKeys.map((k) => ({
         apartmentId: k.apartmentId,
         year: k.year,
-        externalId: k.externalId,
       })),
     },
   });
@@ -110,7 +109,6 @@ export async function importPayments(
     const key = makePaymentKey({
       apartmentId,
       year: entry.year,
-      externalId: entry.externalId,
     });
     const existing = existingMap.get(key);
 
@@ -132,7 +130,6 @@ export async function importPayments(
           const [jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec] =
             entry.monthlyPayments;
           return {
-            externalId: entry.externalId,
             apartmentId,
             year: entry.year,
             dateFrom: entry.dateFrom,
