@@ -34,7 +34,6 @@ export default async function ApartmentChargesPage({
     where: {
       id: apartmentId,
       userId: session.user.id,
-      isActive: true,
     },
     include: {
       charges: {

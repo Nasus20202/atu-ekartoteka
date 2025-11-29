@@ -21,7 +21,6 @@ export default async function ChargesPage() {
     where: { id: session.user.id },
     include: {
       apartments: {
-        where: { isActive: true },
         include: {
           charges: {
             orderBy: [{ period: 'desc' }, { externalLineNo: 'asc' }],
