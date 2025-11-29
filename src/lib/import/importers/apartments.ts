@@ -164,7 +164,7 @@ export async function importApartments(
 
   // Build apartment lookup map (externalOwnerId#externalApartmentId -> id)
   const apartmentsInDb = await tx.apartment.findMany({
-    where: { homeownersAssociationId: hoa.id, isActive: true },
+    where: { homeownersAssociationId: hoa.id },
     select: { id: true, externalOwnerId: true, externalApartmentId: true },
   });
 
