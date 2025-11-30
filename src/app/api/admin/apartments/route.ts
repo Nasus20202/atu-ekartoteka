@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
-import { UserRole } from '@/lib/types';
+import { Apartment, UserRole } from '@/lib/types';
 
 const logger = createLogger('api:admin:apartments');
 
@@ -98,17 +98,25 @@ export async function GET(req: NextRequest) {
         : Promise.resolve(null),
     ]);
 
-    // Sort apartments: by building asc, then by number numerically
-    const sortedApartments = apartmentsData.sort((a: any, b: any) => {
-      const buildingA = a.building || '';
-      const buildingB = b.building || '';
-      if (buildingA !== buildingB) {
-        return buildingA.localeCompare(buildingB);
+    // Sort apartments: by building asc, then by number (numerically if both are numbers, otherwise lexically)
+    const sortedApartments = apartmentsData.sort(
+      (a: Apartment, b: Apartment) => {
+        const buildingA = a.building || '';
+        const buildingB = b.building || '';
+        if (buildingA !== buildingB) {
+          return buildingA.localeCompare(buildingB);
+        }
+        const numA = parseInt(a.number);
+        const numB = parseInt(b.number);
+        const isNumA = !isNaN(numA);
+        const isNumB = !isNaN(numB);
+        if (isNumA && isNumB) {
+          return numA - numB;
+        } else {
+          return a.number.localeCompare(b.number);
+        }
       }
-      const numA = parseInt(a.number) || 0;
-      const numB = parseInt(b.number) || 0;
-      return numA - numB;
-    });
+    );
 
     const apartments = sortedApartments.slice(skip, skip + limit);
 
