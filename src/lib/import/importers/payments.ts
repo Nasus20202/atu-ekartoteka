@@ -11,7 +11,6 @@ type ExistingPayment = PaymentKey & {
   dateFrom: Date;
   dateTo: Date;
   openingBalance: number;
-  totalCharges: number;
   closingBalance: number;
   januaryPayments: number;
   februaryPayments: number;
@@ -80,7 +79,6 @@ function hasPaymentChanged(
     existing.dateFrom.getTime() !== entry.dateFrom.getTime() ||
     existing.dateTo.getTime() !== entry.dateTo.getTime() ||
     existing.openingBalance !== entry.openingBalance ||
-    existing.totalCharges !== entry.totalCharges ||
     existing.closingBalance !== entry.closingBalance ||
     existing.januaryPayments !== janP ||
     existing.februaryPayments !== febP ||
@@ -211,7 +209,6 @@ export async function importPayments(
             dateFrom: entry.dateFrom,
             dateTo: entry.dateTo,
             openingBalance: entry.openingBalance,
-            totalCharges: entry.totalCharges,
             closingBalance: entry.closingBalance,
             januaryPayments: janP,
             februaryPayments: febP,
@@ -287,7 +284,6 @@ export async function importPayments(
           dateFrom: entry.dateFrom,
           dateTo: entry.dateTo,
           openingBalance: entry.openingBalance,
-          totalCharges: entry.totalCharges,
           closingBalance: entry.closingBalance,
           januaryPayments: janP,
           februaryPayments: febP,

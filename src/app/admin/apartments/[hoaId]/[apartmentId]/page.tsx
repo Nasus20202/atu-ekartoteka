@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { useConfirm } from '@/components/confirm-dialog';
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
+import { PaymentTable } from '@/components/payment-table';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -313,25 +314,33 @@ export default function ApartmentDetailsPage() {
             <CardContent>
               <div className="space-y-6">
                 {apartment.payments.map((payment) => {
-                  const months = [
-                    { name: 'Styczeń', value: payment.januaryPayments },
-                    { name: 'Luty', value: payment.februaryPayments },
-                    { name: 'Marzec', value: payment.marchPayments },
-                    { name: 'Kwiecień', value: payment.aprilPayments },
-                    { name: 'Maj', value: payment.mayPayments },
-                    { name: 'Czerwiec', value: payment.junePayments },
-                    { name: 'Lipiec', value: payment.julyPayments },
-                    { name: 'Sierpień', value: payment.augustPayments },
-                    { name: 'Wrzesień', value: payment.septemberPayments },
-                    { name: 'Październik', value: payment.octoberPayments },
-                    { name: 'Listopad', value: payment.novemberPayments },
-                    { name: 'Grudzień', value: payment.decemberPayments },
-                  ];
+                  const totalPayments =
+                    payment.januaryPayments +
+                    payment.februaryPayments +
+                    payment.marchPayments +
+                    payment.aprilPayments +
+                    payment.mayPayments +
+                    payment.junePayments +
+                    payment.julyPayments +
+                    payment.augustPayments +
+                    payment.septemberPayments +
+                    payment.octoberPayments +
+                    payment.novemberPayments +
+                    payment.decemberPayments;
 
-                  const totalPayments = months.reduce(
-                    (sum, month) => sum + month.value,
-                    0
-                  );
+                  const totalCharges =
+                    payment.januaryCharges +
+                    payment.februaryCharges +
+                    payment.marchCharges +
+                    payment.aprilCharges +
+                    payment.mayCharges +
+                    payment.juneCharges +
+                    payment.julyCharges +
+                    payment.augustCharges +
+                    payment.septemberCharges +
+                    payment.octoberCharges +
+                    payment.novemberCharges +
+                    payment.decemberCharges;
 
                   return (
                     <div key={payment.id} className="space-y-4">
@@ -344,7 +353,7 @@ export default function ApartmentDetailsPage() {
 
                         <div className="font-medium">Naliczenie:</div>
                         <div className="text-right">
-                          {payment.totalCharges.toFixed(2)} zł
+                          {totalCharges.toFixed(2)} zł
                         </div>
 
                         <div className="font-medium">Suma wpłat:</div>
@@ -370,23 +379,9 @@ export default function ApartmentDetailsPage() {
 
                       <div className="border-t pt-4">
                         <h4 className="mb-2 text-sm font-semibold">
-                          Wpłaty miesięczne:
+                          Wpłaty / Naliczenia miesięczne:
                         </h4>
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          {months.map((month) => (
-                            <div
-                              key={month.name}
-                              className="flex justify-between"
-                            >
-                              <span className="text-muted-foreground">
-                                {month.name}:
-                              </span>
-                              <span className="font-medium">
-                                {month.value.toFixed(2)} zł
-                              </span>
-                            </div>
-                          ))}
-                        </div>
+                        <PaymentTable payment={payment} />
                       </div>
                     </div>
                   );

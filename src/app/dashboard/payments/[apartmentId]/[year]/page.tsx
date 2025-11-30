@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
+import { PaymentTable } from '@/components/payment-table';
 import {
   Card,
   CardContent,
@@ -44,6 +45,7 @@ export default async function PaymentDetailsPage({
       payments: {
         where: { year: yearNumber },
       },
+      charges: true,
     },
   });
 
@@ -53,22 +55,33 @@ export default async function PaymentDetailsPage({
 
   const payment = apartment.payments[0];
 
-  const months = [
-    { name: 'Styczeń', value: payment.januaryPayments },
-    { name: 'Luty', value: payment.februaryPayments },
-    { name: 'Marzec', value: payment.marchPayments },
-    { name: 'Kwiecień', value: payment.aprilPayments },
-    { name: 'Maj', value: payment.mayPayments },
-    { name: 'Czerwiec', value: payment.junePayments },
-    { name: 'Lipiec', value: payment.julyPayments },
-    { name: 'Sierpień', value: payment.augustPayments },
-    { name: 'Wrzesień', value: payment.septemberPayments },
-    { name: 'Październik', value: payment.octoberPayments },
-    { name: 'Listopad', value: payment.novemberPayments },
-    { name: 'Grudzień', value: payment.decemberPayments },
-  ];
+  const totalPayments =
+    payment.januaryPayments +
+    payment.februaryPayments +
+    payment.marchPayments +
+    payment.aprilPayments +
+    payment.mayPayments +
+    payment.junePayments +
+    payment.julyPayments +
+    payment.augustPayments +
+    payment.septemberPayments +
+    payment.octoberPayments +
+    payment.novemberPayments +
+    payment.decemberPayments;
 
-  const totalPayments = months.reduce((sum, month) => sum + month.value, 0);
+  const totalCharges =
+    payment.januaryCharges +
+    payment.februaryCharges +
+    payment.marchCharges +
+    payment.aprilCharges +
+    payment.mayCharges +
+    payment.juneCharges +
+    payment.julyCharges +
+    payment.augustCharges +
+    payment.septemberCharges +
+    payment.octoberCharges +
+    payment.novemberCharges +
+    payment.decemberCharges;
 
   return (
     <Page maxWidth="4xl">
@@ -100,7 +113,7 @@ export default async function PaymentDetailsPage({
               <div className="rounded-lg bg-muted p-4">
                 <div className="text-sm text-muted-foreground">Naliczenia</div>
                 <div className="text-2xl font-bold">
-                  {payment.totalCharges.toFixed(2)} zł
+                  {totalCharges.toFixed(2)} zł
                 </div>
               </div>
               <div className="rounded-lg bg-muted p-4">
@@ -127,28 +140,16 @@ export default async function PaymentDetailsPage({
           </CardContent>
         </Card>
 
-        {/* Monthly Payments Card */}
+        {/* Monthly Payments Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Wpłaty miesięczne</CardTitle>
-            <CardDescription>Szczegółowy wykaz wpłat</CardDescription>
+            <CardTitle>Wpłaty i naliczenia miesięczne</CardTitle>
+            <CardDescription>
+              Szczegółowy wykaz wpłat i naliczeń z bilansem
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {months.map((month) => (
-                <div
-                  key={month.name}
-                  className={`flex items-center justify-between rounded-lg p-3 ${
-                    month.value > 0 ? 'bg-muted' : 'opacity-50'
-                  }`}
-                >
-                  <div className="font-medium">{month.name}</div>
-                  <div className="text-lg font-semibold">
-                    {month.value.toFixed(2)} zł
-                  </div>
-                </div>
-              ))}
-            </div>
+            <PaymentTable payment={payment} />
           </CardContent>
         </Card>
 

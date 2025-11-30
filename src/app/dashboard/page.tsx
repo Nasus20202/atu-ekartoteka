@@ -94,13 +94,15 @@ export default async function DashboardPage() {
     .filter(
       (apt: (typeof userData.apartments)[number]) => apt.payments.length > 0
     )
-    .map((apt: (typeof userData.apartments)[number]) => ({
-      ...apt.payments[0],
-      apartmentNumber: apt.number,
-      apartmentAddress: `${apt.address} ${apt.building || ''}/${apt.number}`
-        .replace(/\s+\//g, ' /')
-        .trim(),
-    }));
+    .flatMap((apt: (typeof userData.apartments)[number]) =>
+      apt.payments.map((payment: (typeof apt.payments)[number]) => ({
+        ...payment,
+        apartmentNumber: apt.number,
+        apartmentAddress: `${apt.address} ${apt.building || ''}/${apt.number}`
+          .replace(/\s+\//g, ' /')
+          .trim(),
+      }))
+    );
 
   return (
     <div className="bg-background animate-fade-in">

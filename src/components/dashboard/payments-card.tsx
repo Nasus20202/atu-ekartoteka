@@ -46,11 +46,6 @@ export const PaymentsCard = ({ payment }: PaymentsCardProps) => {
               {payment.openingBalance.toFixed(2)} zł
             </div>
 
-            <div className="font-medium">Naliczenie:</div>
-            <div className="text-right">
-              {payment.totalCharges.toFixed(2)} zł
-            </div>
-
             <div className="font-medium">Suma wpłat:</div>
             <div className="text-right">{totalPayments.toFixed(2)} zł</div>
 

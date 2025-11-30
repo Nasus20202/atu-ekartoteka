@@ -14,6 +14,9 @@ interface ApartmentCardProps {
     building: string | null;
     shareNumerator: number | null;
     shareDenominator: number | null;
+    payments?: Array<{
+      year: number;
+    }>;
   };
   latestPaymentBalance?: number | null;
   index: number;
@@ -42,7 +45,7 @@ export function ApartmentCard({
         </div>
         <div className="flex flex-row gap-1">
           <Link
-            href={`/dashboard/payments/${apartment.id}/${new Date().getFullYear()}`}
+            href={`/dashboard/payments/${apartment.id}/${apartment.payments?.[0]?.year || new Date().getFullYear()}`}
           >
             <Button variant="outline" size="sm">
               <Wallet className="mr-2 h-4 w-4" />

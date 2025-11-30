@@ -169,7 +169,6 @@ model Payment {
   
   // Balances
   openingBalance  Float
-  totalCharges    Float
   closingBalance  Float
   
   // Monthly payments (12 months)

@@ -11,7 +11,6 @@ describe('PaymentsCard', () => {
     dateFrom: new Date('2024-01-01'),
     dateTo: new Date('2024-12-31'),
     openingBalance: 100.0,
-    totalCharges: 6000.0,
     closingBalance: -500.0,
     januaryPayments: 500.0,
     februaryPayments: 500.0,
@@ -57,13 +56,6 @@ describe('PaymentsCard', () => {
     render(<PaymentsCard payment={mockPayment} />);
     expect(screen.getByText('Saldo początkowe:')).toBeInTheDocument();
     expect(screen.getByText('100.00 zł')).toBeInTheDocument();
-  });
-
-  it('should display total charges', () => {
-    render(<PaymentsCard payment={mockPayment} />);
-    expect(screen.getByText('Naliczenie:')).toBeInTheDocument();
-    const chargesElements = screen.getAllByText('6000.00 zł');
-    expect(chargesElements.length).toBeGreaterThan(0);
   });
 
   it('should calculate and display sum of payments', () => {
@@ -129,7 +121,6 @@ describe('PaymentsCard', () => {
     const payment = {
       ...mockPayment,
       openingBalance: 123.456,
-      totalCharges: 789.123,
       closingBalance: -45.678,
       januaryPayments: 99.994,
     };
@@ -137,7 +128,6 @@ describe('PaymentsCard', () => {
     render(<PaymentsCard payment={payment} />);
 
     expect(screen.getByText('123.46 zł')).toBeInTheDocument();
-    expect(screen.getByText('789.12 zł')).toBeInTheDocument();
     expect(screen.getByText('-45.68 zł')).toBeInTheDocument();
     expect(screen.getByText('99.99 zł')).toBeInTheDocument();
   });

@@ -94,7 +94,7 @@ export function ChargesSummaryCard({
               Brak naliczeń dla ostatnich miesięcy.
             </p>
             <Link href="/dashboard/charges">
-              <Button className="w-full" variant="outline">
+              <Button className="w-full" variant="secondary">
                 Zobacz naliczenia
               </Button>
             </Link>

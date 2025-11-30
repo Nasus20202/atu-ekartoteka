@@ -16,7 +16,7 @@ type ApartmentCardData = Pick<
   | 'shareNumerator'
   | 'shareDenominator'
 > & {
-  payments?: Pick<Payment, 'closingBalance'>[];
+  payments?: Pick<Payment, 'closingBalance' | 'year'>[];
 };
 
 interface ApartmentsSectionProps {
