@@ -13,18 +13,18 @@ interface PaymentsCardProps {
 
 export const PaymentsCard = ({ payment }: PaymentsCardProps) => {
   const months = [
-    { name: 'Styczeń', value: payment.january },
-    { name: 'Luty', value: payment.february },
-    { name: 'Marzec', value: payment.march },
-    { name: 'Kwiecień', value: payment.april },
-    { name: 'Maj', value: payment.may },
-    { name: 'Czerwiec', value: payment.june },
-    { name: 'Lipiec', value: payment.july },
-    { name: 'Sierpień', value: payment.august },
-    { name: 'Wrzesień', value: payment.september },
-    { name: 'Październik', value: payment.october },
-    { name: 'Listopad', value: payment.november },
-    { name: 'Grudzień', value: payment.december },
+    { name: 'Styczeń', value: payment.januaryPayments },
+    { name: 'Luty', value: payment.februaryPayments },
+    { name: 'Marzec', value: payment.marchPayments },
+    { name: 'Kwiecień', value: payment.aprilPayments },
+    { name: 'Maj', value: payment.mayPayments },
+    { name: 'Czerwiec', value: payment.junePayments },
+    { name: 'Lipiec', value: payment.julyPayments },
+    { name: 'Sierpień', value: payment.augustPayments },
+    { name: 'Wrzesień', value: payment.septemberPayments },
+    { name: 'Październik', value: payment.octoberPayments },
+    { name: 'Listopad', value: payment.novemberPayments },
+    { name: 'Grudzień', value: payment.decemberPayments },
   ];
 
   const totalPayments = months.reduce((sum, month) => sum + month.value, 0);

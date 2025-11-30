@@ -168,23 +168,37 @@ model Payment {
   dateTo          DateTime
   
   // Balances
-  openingBalance  Float    // saldo początkowe
-  totalCharges    Float    // naliczenie
-  closingBalance  Float    // saldo końcowe
+  openingBalance  Float
+  totalCharges    Float
+  closingBalance  Float
   
   // Monthly payments (12 months)
-  january         Float    @default(0)
-  february        Float    @default(0)
-  march           Float    @default(0)
-  april           Float    @default(0)
-  may             Float    @default(0)
-  june            Float    @default(0)
-  july            Float    @default(0)
-  august          Float    @default(0)
-  september       Float    @default(0)
-  october         Float    @default(0)
-  november        Float    @default(0)
-  december        Float    @default(0)
+  januaryPayments         Float    @default(0)
+  februaryPayments        Float    @default(0)
+  marchPayments           Float    @default(0)
+  aprilPayments           Float    @default(0)
+  mayPayments             Float    @default(0)
+  junePayments            Float    @default(0)
+  julyPayments            Float    @default(0)
+  augustPayments          Float    @default(0)
+  septemberPayments       Float    @default(0)
+  octoberPayments         Float    @default(0)
+  novemberPayments        Float    @default(0)
+  decemberPayments        Float    @default(0)
+  
+  // Monthly charges (12 months)
+  januaryCharges   Float    @default(0)
+  februaryCharges  Float    @default(0)
+  marchCharges     Float    @default(0)
+  aprilCharges     Float    @default(0)
+  mayCharges       Float    @default(0)
+  juneCharges      Float    @default(0)
+  julyCharges      Float    @default(0)
+  augustCharges    Float    @default(0)
+  septemberCharges Float    @default(0)
+  octoberCharges   Float    @default(0)
+  novemberCharges  Float    @default(0)
+  decemberCharges  Float    @default(0)
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

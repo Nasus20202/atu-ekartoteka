@@ -13,18 +13,30 @@ type ExistingPayment = PaymentKey & {
   openingBalance: number;
   totalCharges: number;
   closingBalance: number;
-  january: number;
-  february: number;
-  march: number;
-  april: number;
-  may: number;
-  june: number;
-  july: number;
-  august: number;
-  september: number;
-  october: number;
-  november: number;
-  december: number;
+  januaryPayments: number;
+  februaryPayments: number;
+  marchPayments: number;
+  aprilPayments: number;
+  mayPayments: number;
+  junePayments: number;
+  julyPayments: number;
+  augustPayments: number;
+  septemberPayments: number;
+  octoberPayments: number;
+  novemberPayments: number;
+  decemberPayments: number;
+  januaryCharges: number;
+  februaryCharges: number;
+  marchCharges: number;
+  aprilCharges: number;
+  mayCharges: number;
+  juneCharges: number;
+  julyCharges: number;
+  augustCharges: number;
+  septemberCharges: number;
+  octoberCharges: number;
+  novemberCharges: number;
+  decemberCharges: number;
 };
 
 function makePaymentKey(p: PaymentKey): string {
@@ -35,8 +47,34 @@ function hasPaymentChanged(
   existing: ExistingPayment,
   entry: PaymentEntry
 ): boolean {
-  const [jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec] =
-    entry.monthlyPayments;
+  const [
+    janP,
+    febP,
+    marP,
+    aprP,
+    mayP,
+    junP,
+    julP,
+    augP,
+    sepP,
+    octP,
+    novP,
+    decP,
+  ] = entry.monthlyPayments;
+  const [
+    janC,
+    febC,
+    marC,
+    aprC,
+    mayC,
+    junC,
+    julC,
+    augC,
+    sepC,
+    octC,
+    novC,
+    decC,
+  ] = entry.monthlyCharges;
 
   return (
     existing.dateFrom.getTime() !== entry.dateFrom.getTime() ||
@@ -44,18 +82,30 @@ function hasPaymentChanged(
     existing.openingBalance !== entry.openingBalance ||
     existing.totalCharges !== entry.totalCharges ||
     existing.closingBalance !== entry.closingBalance ||
-    existing.january !== jan ||
-    existing.february !== feb ||
-    existing.march !== mar ||
-    existing.april !== apr ||
-    existing.may !== may ||
-    existing.june !== jun ||
-    existing.july !== jul ||
-    existing.august !== aug ||
-    existing.september !== sep ||
-    existing.october !== oct ||
-    existing.november !== nov ||
-    existing.december !== dec
+    existing.januaryPayments !== janP ||
+    existing.februaryPayments !== febP ||
+    existing.marchPayments !== marP ||
+    existing.aprilPayments !== aprP ||
+    existing.mayPayments !== mayP ||
+    existing.junePayments !== junP ||
+    existing.julyPayments !== julP ||
+    existing.augustPayments !== augP ||
+    existing.septemberPayments !== sepP ||
+    existing.octoberPayments !== octP ||
+    existing.novemberPayments !== novP ||
+    existing.decemberPayments !== decP ||
+    existing.januaryCharges !== janC ||
+    existing.februaryCharges !== febC ||
+    existing.marchCharges !== marC ||
+    existing.aprilCharges !== aprC ||
+    existing.mayCharges !== mayC ||
+    existing.juneCharges !== junC ||
+    existing.julyCharges !== julC ||
+    existing.augustCharges !== augC ||
+    existing.septemberCharges !== sepC ||
+    existing.octoberCharges !== octC ||
+    existing.novemberCharges !== novC ||
+    existing.decemberCharges !== decC
   );
 }
 
@@ -127,8 +177,34 @@ export async function importPayments(
     try {
       await tx.payment.createMany({
         data: toCreate.map(({ entry, apartmentId }) => {
-          const [jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec] =
-            entry.monthlyPayments;
+          const [
+            janP,
+            febP,
+            marP,
+            aprP,
+            mayP,
+            junP,
+            julP,
+            augP,
+            sepP,
+            octP,
+            novP,
+            decP,
+          ] = entry.monthlyPayments;
+          const [
+            janC,
+            febC,
+            marC,
+            aprC,
+            mayC,
+            junC,
+            julC,
+            augC,
+            sepC,
+            octC,
+            novC,
+            decC,
+          ] = entry.monthlyCharges;
           return {
             apartmentId,
             year: entry.year,
@@ -137,18 +213,30 @@ export async function importPayments(
             openingBalance: entry.openingBalance,
             totalCharges: entry.totalCharges,
             closingBalance: entry.closingBalance,
-            january: jan,
-            february: feb,
-            march: mar,
-            april: apr,
-            may: may,
-            june: jun,
-            july: jul,
-            august: aug,
-            september: sep,
-            october: oct,
-            november: nov,
-            december: dec,
+            januaryPayments: janP,
+            februaryPayments: febP,
+            marchPayments: marP,
+            aprilPayments: aprP,
+            mayPayments: mayP,
+            junePayments: junP,
+            julyPayments: julP,
+            augustPayments: augP,
+            septemberPayments: sepP,
+            octoberPayments: octP,
+            novemberPayments: novP,
+            decemberPayments: decP,
+            januaryCharges: janC,
+            februaryCharges: febC,
+            marchCharges: marC,
+            aprilCharges: aprC,
+            mayCharges: mayC,
+            juneCharges: junC,
+            julyCharges: julC,
+            augustCharges: augC,
+            septemberCharges: sepC,
+            octoberCharges: octC,
+            novemberCharges: novC,
+            decemberCharges: decC,
           };
         }),
         skipDuplicates: true,
@@ -165,8 +253,34 @@ export async function importPayments(
   // Update only changed payments
   for (const { id, entry } of toUpdate) {
     try {
-      const [jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec] =
-        entry.monthlyPayments;
+      const [
+        janP,
+        febP,
+        marP,
+        aprP,
+        mayP,
+        junP,
+        julP,
+        augP,
+        sepP,
+        octP,
+        novP,
+        decP,
+      ] = entry.monthlyPayments;
+      const [
+        janC,
+        febC,
+        marC,
+        aprC,
+        mayC,
+        junC,
+        julC,
+        augC,
+        sepC,
+        octC,
+        novC,
+        decC,
+      ] = entry.monthlyCharges;
       await tx.payment.update({
         where: { id },
         data: {
@@ -175,18 +289,30 @@ export async function importPayments(
           openingBalance: entry.openingBalance,
           totalCharges: entry.totalCharges,
           closingBalance: entry.closingBalance,
-          january: jan,
-          february: feb,
-          march: mar,
-          april: apr,
-          may: may,
-          june: jun,
-          july: jul,
-          august: aug,
-          september: sep,
-          october: oct,
-          november: nov,
-          december: dec,
+          januaryPayments: janP,
+          februaryPayments: febP,
+          marchPayments: marP,
+          aprilPayments: aprP,
+          mayPayments: mayP,
+          junePayments: junP,
+          julyPayments: julP,
+          augustPayments: augP,
+          septemberPayments: sepP,
+          octoberPayments: octP,
+          novemberPayments: novP,
+          decemberPayments: decP,
+          januaryCharges: janC,
+          februaryCharges: febC,
+          marchCharges: marC,
+          aprilCharges: aprC,
+          mayCharges: mayC,
+          juneCharges: junC,
+          julyCharges: julC,
+          augustCharges: augC,
+          septemberCharges: sepC,
+          octoberCharges: octC,
+          novemberCharges: novC,
+          decemberCharges: decC,
         },
       });
       stats.updated++;
