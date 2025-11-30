@@ -367,13 +367,13 @@ describe('Admin Apartments API', () => {
       const { GET } = await import('../route');
       const request = createMockRequest();
 
-      await GET(request);
+      const response = await GET(request);
+      const data = await response.json();
 
-      expect(prisma.apartment.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          orderBy: [{ building: 'asc' }, { number: 'asc' }],
-        })
-      );
+      expect(response.status).toBe(200);
+      expect(data.apartments).toHaveLength(2);
+      expect(data.apartments[0].number).toBe('101');
+      expect(data.apartments[1].number).toBe('102');
     });
 
     it('should handle invalid pagination parameters', async () => {

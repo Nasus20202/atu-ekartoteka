@@ -16,8 +16,11 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1') || 1);
+    const limit = Math.max(
+      1,
+      parseInt(searchParams.get('limit') || '20') || 20
+    );
     const search = searchParams.get('search') || '';
     const activeOnly = searchParams.get('activeOnly') === 'true';
     const hoaId = searchParams.get('hoaId');
@@ -82,12 +85,9 @@ export async function GET(req: NextRequest) {
       ],
     };
 
-    const [apartments, total, hoa] = await Promise.all([
+    const [apartmentsData, total, hoa] = await Promise.all([
       prisma.apartment.findMany({
         where,
-        skip,
-        take: limit,
-        orderBy: [{ building: 'asc' }, { number: 'asc' }],
       }),
       prisma.apartment.count({ where }),
       hoaId
@@ -97,6 +97,20 @@ export async function GET(req: NextRequest) {
           })
         : Promise.resolve(null),
     ]);
+
+    // Sort apartments: by building asc, then by number numerically
+    const sortedApartments = apartmentsData.sort((a: any, b: any) => {
+      const buildingA = a.building || '';
+      const buildingB = b.building || '';
+      if (buildingA !== buildingB) {
+        return buildingA.localeCompare(buildingB);
+      }
+      const numA = parseInt(a.number) || 0;
+      const numB = parseInt(b.number) || 0;
+      return numA - numB;
+    });
+
+    const apartments = sortedApartments.slice(skip, skip + limit);
 
     return NextResponse.json({
       apartments,
