@@ -2,7 +2,8 @@ export const createMockApartment = (
   overrides: {
     id?: string;
     homeownersAssociationId?: string;
-    externalId?: string;
+    externalOwnerId?: string;
+    externalApartmentId?: string;
     owner?: string;
     email?: string | null;
     address?: string;
@@ -19,7 +20,8 @@ export const createMockApartment = (
 ) => ({
   id: 'apt1',
   homeownersAssociationId: 'hoa1',
-  externalId: 'EXT1',
+  externalOwnerId: 'W00001',
+  externalApartmentId: 'APT-001',
   owner: 'John Doe',
   email: 'john.doe@example.com',
   address: 'Main Street 1',
@@ -41,7 +43,8 @@ export const mockApartments = {
   active: createMockApartment(),
   inactive: createMockApartment({
     id: 'apt2',
-    externalId: 'EXT2',
+    externalOwnerId: 'W00002',
+    externalApartmentId: 'APT-002',
     owner: 'Owner 2',
     address: 'Street 2',
     building: 'B',

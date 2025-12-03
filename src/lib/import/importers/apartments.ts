@@ -10,15 +10,15 @@ type ExistingApartment = {
   id: string;
   externalOwnerId: string;
   externalApartmentId: string;
-  owner: string;
+  owner: string | null;
   email: string | null;
-  address: string;
+  address: string | null;
   building: string | null;
   number: string;
-  postalCode: string;
-  city: string;
-  shareNumerator: number;
-  shareDenominator: number;
+  postalCode: string | null;
+  city: string | null;
+  shareNumerator: number | null;
+  shareDenominator: number | null;
   isActive: boolean;
   homeownersAssociationId: string;
 };
@@ -29,13 +29,13 @@ function hasApartmentChanged(
   hoaId: string
 ): boolean {
   return (
-    existing.owner !== entry.owner ||
+    existing.owner !== (entry.owner || null) ||
     existing.email !== (entry.email || null) ||
-    existing.address !== entry.address ||
-    existing.building !== entry.building ||
+    existing.address !== (entry.address || null) ||
+    existing.building !== (entry.building || null) ||
     existing.number !== entry.number ||
-    existing.postalCode !== entry.postalCode ||
-    existing.city !== entry.city ||
+    existing.postalCode !== (entry.postalCode || null) ||
+    existing.city !== (entry.city || null) ||
     existing.shareNumerator !== entry.shareNumerator ||
     existing.shareDenominator !== entry.shareDenominator ||
     existing.isActive !== true ||

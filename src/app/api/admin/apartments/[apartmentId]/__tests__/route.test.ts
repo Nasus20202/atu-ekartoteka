@@ -7,10 +7,15 @@ vi.mock('@/auth', () => ({
   auth: vi.fn(),
 }));
 
+import { auth } from '@/auth';
+const mockAuth = vi.mocked(auth);
+
+const mockApartmentFindUnique = vi.fn();
+
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     apartment: {
-      findUnique: vi.fn(),
+      findUnique: mockApartmentFindUnique,
     },
   },
 }));
@@ -21,9 +26,6 @@ vi.mock('@/lib/logger', () => ({
     error: vi.fn(),
   }),
 }));
-
-const { auth } = await import('@/auth');
-const { prisma } = await import('@/lib/database/prisma');
 
 describe('Admin Apartment Detail API', () => {
   beforeEach(() => {
@@ -55,7 +57,7 @@ describe('Admin Apartment Detail API', () => {
     };
 
     it('should return 401 when not authenticated', async () => {
-      vi.mocked(auth).mockResolvedValueOnce(null as any);
+      mockAuth.mockResolvedValueOnce(null as any);
 
       const { GET } = await import('../route');
       const params = Promise.resolve({ apartmentId: 'apt-1' });
@@ -68,7 +70,7 @@ describe('Admin Apartment Detail API', () => {
     });
 
     it('should return 401 when user is not admin', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'user-id',
           email: 'user@example.com',
@@ -88,7 +90,7 @@ describe('Admin Apartment Detail API', () => {
     });
 
     it('should return apartment with all relations', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
@@ -96,9 +98,7 @@ describe('Admin Apartment Detail API', () => {
         },
         expires: new Date().toISOString(),
       } as any);
-      vi.mocked(prisma.apartment.findUnique).mockResolvedValueOnce(
-        mockApartment as any
-      );
+      mockApartmentFindUnique.mockResolvedValueOnce(mockApartment);
 
       const { GET } = await import('../route');
       const params = Promise.resolve({ apartmentId: 'apt-1' });
@@ -116,7 +116,7 @@ describe('Admin Apartment Detail API', () => {
     });
 
     it('should return 404 when apartment not found', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
@@ -124,7 +124,7 @@ describe('Admin Apartment Detail API', () => {
         },
         expires: new Date().toISOString(),
       } as any);
-      vi.mocked(prisma.apartment.findUnique).mockResolvedValueOnce(null);
+      mockApartmentFindUnique.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
       const params = Promise.resolve({ apartmentId: 'nonexistent' });
@@ -137,7 +137,7 @@ describe('Admin Apartment Detail API', () => {
     });
 
     it('should include homeownersAssociation details', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
@@ -145,9 +145,7 @@ describe('Admin Apartment Detail API', () => {
         },
         expires: new Date().toISOString(),
       } as any);
-      vi.mocked(prisma.apartment.findUnique).mockResolvedValueOnce(
-        mockApartment as any
-      );
+      mockApartmentFindUnique.mockResolvedValueOnce(mockApartment);
 
       const { GET } = await import('../route');
       const params = Promise.resolve({ apartmentId: 'apt-1' });
@@ -163,7 +161,7 @@ describe('Admin Apartment Detail API', () => {
     });
 
     it('should include user details', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
@@ -171,9 +169,7 @@ describe('Admin Apartment Detail API', () => {
         },
         expires: new Date().toISOString(),
       } as any);
-      vi.mocked(prisma.apartment.findUnique).mockResolvedValueOnce(
-        mockApartment as any
-      );
+      mockApartmentFindUnique.mockResolvedValueOnce(mockApartment);
 
       const { GET } = await import('../route');
       const params = Promise.resolve({ apartmentId: 'apt-1' });
@@ -189,7 +185,7 @@ describe('Admin Apartment Detail API', () => {
     });
 
     it('should include charges sorted by period', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
@@ -197,9 +193,7 @@ describe('Admin Apartment Detail API', () => {
         },
         expires: new Date().toISOString(),
       } as any);
-      vi.mocked(prisma.apartment.findUnique).mockResolvedValueOnce(
-        mockApartment as any
-      );
+      mockApartmentFindUnique.mockResolvedValueOnce(mockApartment);
 
       const { GET } = await import('../route');
       const params = Promise.resolve({ apartmentId: 'apt-1' });
@@ -212,7 +206,7 @@ describe('Admin Apartment Detail API', () => {
     });
 
     it('should handle apartment without user', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
@@ -220,10 +214,10 @@ describe('Admin Apartment Detail API', () => {
         },
         expires: new Date().toISOString(),
       } as any);
-      vi.mocked(prisma.apartment.findUnique).mockResolvedValueOnce({
+      mockApartmentFindUnique.mockResolvedValueOnce({
         ...mockApartment,
         user: null,
-      } as any);
+      });
 
       const { GET } = await import('../route');
       const params = Promise.resolve({ apartmentId: 'apt-1' });
@@ -236,7 +230,7 @@ describe('Admin Apartment Detail API', () => {
     });
 
     it('should handle database errors gracefully', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
@@ -244,7 +238,7 @@ describe('Admin Apartment Detail API', () => {
         },
         expires: new Date().toISOString(),
       } as any);
-      vi.mocked(prisma.apartment.findUnique).mockRejectedValueOnce(
+      mockApartmentFindUnique.mockRejectedValueOnce(
         new Error('Database error')
       );
 

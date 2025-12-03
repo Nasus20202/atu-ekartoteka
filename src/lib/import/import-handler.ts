@@ -1,3 +1,4 @@
+import { PrismaClient } from '@/generated/prisma/client';
 import { prisma } from '@/lib/database/prisma';
 import {
   importApartments,
@@ -90,7 +91,7 @@ async function importSingleHOA(
 
     // Execute all database operations in a single transaction
     // Increase timeout to 30s for large imports
-    await prisma.$transaction(
+    await (prisma as PrismaClient).$transaction(
       async (tx: TransactionClient) => {
         // Upsert HOA
         const hoa = await tx.homeownersAssociation.upsert({

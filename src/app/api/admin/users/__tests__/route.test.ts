@@ -2,15 +2,20 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AccountStatus, AuthMethod, UserRole } from '@/lib/types';
 
+const mockUserFindMany = vi.fn();
+const mockUserFindUnique = vi.fn();
+const mockUserUpdate = vi.fn();
+const mockApartmentFindUnique = vi.fn();
+
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     user: {
-      findMany: vi.fn(),
-      findUnique: vi.fn(),
-      update: vi.fn(),
+      findMany: mockUserFindMany,
+      findUnique: mockUserFindUnique,
+      update: mockUserUpdate,
     },
     apartment: {
-      findUnique: vi.fn(),
+      findUnique: mockApartmentFindUnique,
     },
   },
 }));
@@ -72,7 +77,7 @@ describe('Admin Users API', () => {
         },
       ];
 
-      vi.mocked(prisma.user.findMany).mockResolvedValue(mockUsers as any);
+      mockUserFindMany.mockResolvedValue(mockUsers);
 
       const result = await prisma.user.findMany({
         where: { role: UserRole.TENANT },
@@ -103,9 +108,7 @@ describe('Admin Users API', () => {
         },
       ];
 
-      vi.mocked(prisma.user.findMany).mockResolvedValue(
-        mockPendingUsers as any
-      );
+      mockUserFindMany.mockResolvedValue(mockPendingUsers);
 
       const result = await prisma.user.findMany({
         where: {
@@ -155,9 +158,7 @@ describe('Admin Users API', () => {
         },
       ];
 
-      vi.mocked(prisma.user.findMany).mockResolvedValue(
-        mockApprovedUsers as any
-      );
+      mockUserFindMany.mockResolvedValue(mockApprovedUsers);
 
       const result = await prisma.user.findMany({
         where: {
@@ -202,8 +203,8 @@ describe('Admin Users API', () => {
         apartments: [],
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
-      vi.mocked(prisma.user.update).mockResolvedValue(updatedUser as any);
+      mockUserFindUnique.mockResolvedValue(mockUser);
+      mockUserUpdate.mockResolvedValue(updatedUser);
 
       const result = await prisma.user.update({
         where: { id: '1' },
@@ -266,11 +267,9 @@ describe('Admin Users API', () => {
         apartments: [mockApartment],
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
-      vi.mocked(prisma.apartment.findUnique).mockResolvedValue(
-        mockApartment as any
-      );
-      vi.mocked(prisma.user.update).mockResolvedValue(updatedUser as any);
+      mockUserFindUnique.mockResolvedValue(mockUser);
+      mockApartmentFindUnique.mockResolvedValue(mockApartment);
+      mockUserUpdate.mockResolvedValue(updatedUser);
 
       // Check apartment is available
       const apartment = await prisma.apartment.findUnique({
@@ -321,8 +320,8 @@ describe('Admin Users API', () => {
         apartments: [],
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
-      vi.mocked(prisma.user.update).mockResolvedValue(updatedUser as any);
+      mockUserFindUnique.mockResolvedValue(mockUser);
+      mockUserUpdate.mockResolvedValue(updatedUser);
 
       const result = await prisma.user.update({
         where: { id: '1' },
@@ -388,10 +387,8 @@ describe('Admin Users API', () => {
         },
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
-      vi.mocked(prisma.apartment.findUnique).mockResolvedValue(
-        occupiedApartment as any
-      );
+      mockUserFindUnique.mockResolvedValue(mockUser);
+      mockApartmentFindUnique.mockResolvedValue(occupiedApartment);
 
       const apartment = await prisma.apartment.findUnique({
         where: { id: 'apt1' },
@@ -441,8 +438,8 @@ describe('Admin Users API', () => {
         apartments: [],
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
-      vi.mocked(prisma.user.update).mockResolvedValue(updatedUser as any);
+      mockUserFindUnique.mockResolvedValue(mockUser);
+      mockUserUpdate.mockResolvedValue(updatedUser);
 
       const result = await prisma.user.update({
         where: { id: '1' },

@@ -1,13 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { prisma } from '@/lib/database/prisma';
 import { AccountStatus, AuthMethod, UserRole } from '@/lib/types';
+
+const { mockUserFindFirst } = vi.hoisted(() => ({
+  mockUserFindFirst: vi.fn(),
+}));
 
 // Mock the prisma client
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     user: {
-      findFirst: vi.fn(),
+      findFirst: mockUserFindFirst,
     },
   },
 }));
@@ -30,7 +33,7 @@ describe('Setup Check Endpoint', () => {
   describe('GET /api/setup/check', () => {
     it('should return needsSetup true when no admin exists', async () => {
       // Mock no admin found
-      vi.mocked(prisma.user.findFirst).mockResolvedValueOnce(null);
+      mockUserFindFirst.mockResolvedValueOnce(null);
 
       const { GET } = await import('../check/route');
       const response = await GET();
@@ -39,14 +42,14 @@ describe('Setup Check Endpoint', () => {
       expect(response.status).toBe(200);
       expect(data.needsSetup).toBe(true);
       expect(data.hasAdmin).toBe(false);
-      expect(prisma.user.findFirst).toHaveBeenCalledWith({
+      expect(mockUserFindFirst).toHaveBeenCalledWith({
         where: { role: UserRole.ADMIN },
       });
     });
 
     it('should return needsSetup false when admin exists', async () => {
       // Mock admin found
-      vi.mocked(prisma.user.findFirst).mockResolvedValueOnce({
+      mockUserFindFirst.mockResolvedValueOnce({
         id: 'admin-id',
         email: 'admin@example.com',
         password: 'hashed',
@@ -70,7 +73,7 @@ describe('Setup Check Endpoint', () => {
 
     it('should handle database errors gracefully', async () => {
       // Mock database error
-      vi.mocked(prisma.user.findFirst).mockRejectedValueOnce(
+      mockUserFindFirst.mockRejectedValueOnce(
         new Error('Database connection failed')
       );
 
@@ -83,7 +86,7 @@ describe('Setup Check Endpoint', () => {
     });
 
     it('should return correct response schema with both required fields', async () => {
-      vi.mocked(prisma.user.findFirst).mockResolvedValueOnce(null);
+      mockUserFindFirst.mockResolvedValueOnce(null);
 
       const { GET } = await import('../check/route');
       const response = await GET();
@@ -98,7 +101,7 @@ describe('Setup Check Endpoint', () => {
 
     it('should return needsSetup false with multiple admins', async () => {
       // Mock admin found (even if multiple exist, findFirst returns one)
-      vi.mocked(prisma.user.findFirst).mockResolvedValueOnce({
+      mockUserFindFirst.mockResolvedValueOnce({
         id: 'admin-1',
         email: 'admin1@example.com',
         password: 'hashed',
@@ -120,7 +123,7 @@ describe('Setup Check Endpoint', () => {
     });
 
     it('should log info when admin exists', async () => {
-      vi.mocked(prisma.user.findFirst).mockResolvedValueOnce({
+      mockUserFindFirst.mockResolvedValueOnce({
         id: 'admin-id',
         email: 'admin@example.com',
         password: 'hashed',
@@ -143,7 +146,7 @@ describe('Setup Check Endpoint', () => {
     });
 
     it('should log info when no admin exists', async () => {
-      vi.mocked(prisma.user.findFirst).mockResolvedValueOnce(null);
+      mockUserFindFirst.mockResolvedValueOnce(null);
 
       const { GET } = await import('../check/route');
       await GET();
@@ -156,7 +159,7 @@ describe('Setup Check Endpoint', () => {
 
     it('should log error when database query fails', async () => {
       const dbError = new Error('Connection timeout');
-      vi.mocked(prisma.user.findFirst).mockRejectedValueOnce(dbError);
+      mockUserFindFirst.mockRejectedValueOnce(dbError);
 
       const { GET } = await import('../check/route');
       await GET();
@@ -168,19 +171,19 @@ describe('Setup Check Endpoint', () => {
     });
 
     it('should use correct database query structure', async () => {
-      vi.mocked(prisma.user.findFirst).mockResolvedValueOnce(null);
+      mockUserFindFirst.mockResolvedValueOnce(null);
 
       const { GET } = await import('../check/route');
       await GET();
 
-      expect(prisma.user.findFirst).toHaveBeenCalledTimes(1);
-      expect(prisma.user.findFirst).toHaveBeenCalledWith({
+      expect(mockUserFindFirst).toHaveBeenCalledTimes(1);
+      expect(mockUserFindFirst).toHaveBeenCalledWith({
         where: { role: UserRole.ADMIN },
       });
     });
 
     it('should handle null response from database', async () => {
-      vi.mocked(prisma.user.findFirst).mockResolvedValueOnce(null);
+      mockUserFindFirst.mockResolvedValueOnce(null);
 
       const { GET } = await import('../check/route');
       const response = await GET();
@@ -192,7 +195,7 @@ describe('Setup Check Endpoint', () => {
     });
 
     it('should return 200 status for successful checks', async () => {
-      vi.mocked(prisma.user.findFirst).mockResolvedValueOnce(null);
+      mockUserFindFirst.mockResolvedValueOnce(null);
 
       const { GET } = await import('../check/route');
       const response = await GET();
@@ -202,7 +205,7 @@ describe('Setup Check Endpoint', () => {
 
     it('should handle admin with PENDING status', async () => {
       // Admin with PENDING status should still count as admin exists
-      vi.mocked(prisma.user.findFirst).mockResolvedValueOnce({
+      mockUserFindFirst.mockResolvedValueOnce({
         id: 'admin-id',
         email: 'admin@example.com',
         password: 'hashed',
@@ -225,7 +228,7 @@ describe('Setup Check Endpoint', () => {
 
     it('should handle admin with REJECTED status', async () => {
       // Admin with REJECTED status should still count as admin exists
-      vi.mocked(prisma.user.findFirst).mockResolvedValueOnce({
+      mockUserFindFirst.mockResolvedValueOnce({
         id: 'admin-id',
         email: 'admin@example.com',
         password: 'hashed',
@@ -255,7 +258,7 @@ describe('Setup Check Endpoint', () => {
 
       for (const error of errors) {
         vi.clearAllMocks();
-        vi.mocked(prisma.user.findFirst).mockRejectedValueOnce(error);
+        mockUserFindFirst.mockRejectedValueOnce(error);
 
         const { GET } = await import('../check/route');
         const response = await GET();
@@ -267,9 +270,7 @@ describe('Setup Check Endpoint', () => {
     });
 
     it('should maintain consistent response structure on error', async () => {
-      vi.mocked(prisma.user.findFirst).mockRejectedValueOnce(
-        new Error('Database error')
-      );
+      mockUserFindFirst.mockRejectedValueOnce(new Error('Database error'));
 
       const { GET } = await import('../check/route');
       const response = await GET();

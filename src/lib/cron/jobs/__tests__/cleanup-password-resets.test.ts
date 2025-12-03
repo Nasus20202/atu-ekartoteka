@@ -2,11 +2,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { cleanupExpiredPasswordResets } from '@/lib/cron/jobs/cleanup-password-resets';
 
+const { mockPasswordResetDeleteMany } = vi.hoisted(() => ({
+  mockPasswordResetDeleteMany: vi.fn(),
+}));
+
 // Mock dependencies
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     passwordReset: {
-      deleteMany: vi.fn(),
+      deleteMany: mockPasswordResetDeleteMany,
     },
   },
 }));
@@ -26,7 +30,7 @@ describe('cleanupExpiredPasswordResets', () => {
   });
 
   it('should delete expired or used password reset tokens', async () => {
-    vi.mocked(prisma.passwordReset.deleteMany).mockResolvedValue({ count: 5 });
+    mockPasswordResetDeleteMany.mockResolvedValue({ count: 5 });
 
     await cleanupExpiredPasswordResets();
 
@@ -48,7 +52,7 @@ describe('cleanupExpiredPasswordResets', () => {
 
   it('should throw errors', async () => {
     const error = new Error('Database error');
-    vi.mocked(prisma.passwordReset.deleteMany).mockRejectedValue(error);
+    mockPasswordResetDeleteMany.mockRejectedValue(error);
 
     // Should throw the error
     await expect(cleanupExpiredPasswordResets()).rejects.toThrow(
@@ -57,7 +61,7 @@ describe('cleanupExpiredPasswordResets', () => {
   });
 
   it('should log the number of deleted tokens', async () => {
-    vi.mocked(prisma.passwordReset.deleteMany).mockResolvedValue({ count: 3 });
+    mockPasswordResetDeleteMany.mockResolvedValue({ count: 3 });
 
     await cleanupExpiredPasswordResets();
 

@@ -1,23 +1,32 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { prisma } from '@/lib/database/prisma';
 import { processBatchImport } from '@/lib/import/import-handler';
-import * as apartmentParser from '@/lib/parsers/apartment-parser';
-import * as nalCzynszParser from '@/lib/parsers/nal-czynsz-parser';
+
+const {
+  mockTransaction,
+  mockParseApartmentBuffer,
+  mockGetUniqueApartments,
+  mockParseNalCzynszBuffer,
+} = vi.hoisted(() => ({
+  mockTransaction: vi.fn(),
+  mockParseApartmentBuffer: vi.fn(),
+  mockGetUniqueApartments: vi.fn(),
+  mockParseNalCzynszBuffer: vi.fn(),
+}));
 
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
-    $transaction: vi.fn(),
+    $transaction: mockTransaction,
   },
 }));
 
 vi.mock('@/lib/parsers/apartment-parser', () => ({
-  parseApartmentBuffer: vi.fn(),
-  getUniqueApartments: vi.fn(),
+  parseApartmentBuffer: mockParseApartmentBuffer,
+  getUniqueApartments: mockGetUniqueApartments,
 }));
 
 vi.mock('@/lib/parsers/nal-czynsz-parser', () => ({
-  parseNalCzynszBuffer: vi.fn(),
+  parseNalCzynszBuffer: mockParseNalCzynszBuffer,
 }));
 
 function createMockFile(content: string, name: string): File {
@@ -56,19 +65,11 @@ describe('import-handler', () => {
         },
       ];
 
-      vi.mocked(apartmentParser.parseApartmentBuffer).mockResolvedValue(
-        mockApartments as ReturnType<
-          typeof apartmentParser.parseApartmentBuffer
-        > extends Promise<infer T>
-          ? T
-          : never
-      );
-      vi.mocked(apartmentParser.getUniqueApartments).mockReturnValue(
-        mockApartments as ReturnType<typeof apartmentParser.getUniqueApartments>
-      );
-      vi.mocked(nalCzynszParser.parseNalCzynszBuffer).mockResolvedValue([]);
+      mockParseApartmentBuffer.mockResolvedValue(mockApartments);
+      mockGetUniqueApartments.mockReturnValue(mockApartments);
+      mockParseNalCzynszBuffer.mockResolvedValue([]);
 
-      vi.mocked(prisma.$transaction).mockImplementation(async (fn: unknown) => {
+      mockTransaction.mockImplementation(async (fn: unknown) => {
         const mockTx = {
           homeownersAssociation: {
             upsert: vi.fn().mockResolvedValue({ id: 'hoa-id' }),
@@ -97,9 +98,9 @@ describe('import-handler', () => {
     it('should process charges without lok.txt file', async () => {
       const chargesFile = createMockFile('charges data', 'hoa1/nal_czynsz.txt');
 
-      vi.mocked(nalCzynszParser.parseNalCzynszBuffer).mockResolvedValue([]);
+      mockParseNalCzynszBuffer.mockResolvedValue([]);
 
-      vi.mocked(prisma.$transaction).mockImplementation(async (fn: unknown) => {
+      mockTransaction.mockImplementation(async (fn: unknown) => {
         const mockTx = {
           homeownersAssociation: {
             upsert: vi
@@ -149,11 +150,9 @@ describe('import-handler', () => {
     it('should handle transaction errors gracefully', async () => {
       const lokFile = createMockFile('lok data', 'hoa1/lok.txt');
 
-      vi.mocked(apartmentParser.parseApartmentBuffer).mockResolvedValue([]);
-      vi.mocked(apartmentParser.getUniqueApartments).mockReturnValue([]);
-      vi.mocked(prisma.$transaction).mockRejectedValue(
-        new Error('Database error')
-      );
+      mockParseApartmentBuffer.mockResolvedValue([]);
+      mockGetUniqueApartments.mockReturnValue([]);
+      mockTransaction.mockRejectedValue(new Error('Database error'));
 
       const result = await processBatchImport([lokFile]);
 
@@ -167,10 +166,10 @@ describe('import-handler', () => {
     it('should process charges only if file is provided', async () => {
       const lokFile = createMockFile('lok data', 'hoa1/lok.txt');
 
-      vi.mocked(apartmentParser.parseApartmentBuffer).mockResolvedValue([]);
-      vi.mocked(apartmentParser.getUniqueApartments).mockReturnValue([]);
+      mockParseApartmentBuffer.mockResolvedValue([]);
+      mockGetUniqueApartments.mockReturnValue([]);
 
-      vi.mocked(prisma.$transaction).mockImplementation(async (fn: any) => {
+      mockTransaction.mockImplementation(async (fn: unknown) => {
         const mockTx = {
           homeownersAssociation: {
             upsert: vi.fn().mockResolvedValue({ id: 'hoa-id' }),
@@ -181,24 +180,24 @@ describe('import-handler', () => {
             findMany: vi.fn().mockResolvedValue([]),
           },
         };
-        return fn(mockTx as never);
+        return (fn as (tx: typeof mockTx) => Promise<void>)(mockTx);
       });
 
       const result = await processBatchImport([lokFile]);
 
       expect(result.success).toBe(true);
       expect(result.results[0].charges).toBeUndefined();
-      expect(nalCzynszParser.parseNalCzynszBuffer).not.toHaveBeenCalled();
+      expect(mockParseNalCzynszBuffer).not.toHaveBeenCalled();
     });
 
     it('should ignore .wmb files without error', async () => {
       const lokFile = createMockFile('lok data', 'hoa1/lok.txt');
       const wmbFile = createMockFile('wmb data', 'hoa1/lokal_ost_wys.wmb');
 
-      vi.mocked(apartmentParser.parseApartmentBuffer).mockResolvedValue([]);
-      vi.mocked(apartmentParser.getUniqueApartments).mockReturnValue([]);
+      mockParseApartmentBuffer.mockResolvedValue([]);
+      mockGetUniqueApartments.mockReturnValue([]);
 
-      vi.mocked(prisma.$transaction).mockImplementation(async (fn: any) => {
+      mockTransaction.mockImplementation(async (fn: unknown) => {
         const mockTx = {
           homeownersAssociation: {
             upsert: vi.fn().mockResolvedValue({ id: 'hoa-id' }),
@@ -209,7 +208,7 @@ describe('import-handler', () => {
             findMany: vi.fn().mockResolvedValue([]),
           },
         };
-        return fn(mockTx as never);
+        return (fn as (tx: typeof mockTx) => Promise<void>)(mockTx);
       });
 
       const result = await processBatchImport([lokFile, wmbFile]);
@@ -238,18 +237,14 @@ describe('import-handler', () => {
         },
       ];
 
-      vi.mocked(apartmentParser.parseApartmentBuffer).mockResolvedValue(
-        mockApartments as any
-      );
-      vi.mocked(apartmentParser.getUniqueApartments).mockReturnValue(
-        mockApartments as any
-      );
+      mockParseApartmentBuffer.mockResolvedValue(mockApartments);
+      mockGetUniqueApartments.mockReturnValue(mockApartments);
 
       const deleteChargeMock = vi.fn().mockResolvedValue({ count: 5 });
       const deleteNotificationMock = vi.fn().mockResolvedValue({ count: 3 });
       const deletePaymentMock = vi.fn().mockResolvedValue({ count: 2 });
 
-      vi.mocked(prisma.$transaction).mockImplementation(async (fn: any) => {
+      mockTransaction.mockImplementation(async (fn: unknown) => {
         const mockTx = {
           homeownersAssociation: {
             upsert: vi.fn().mockResolvedValue({ id: 'hoa-id' }),
@@ -273,7 +268,7 @@ describe('import-handler', () => {
             deleteMany: deletePaymentMock,
           },
         };
-        return fn(mockTx as never);
+        return (fn as (tx: typeof mockTx) => Promise<void>)(mockTx);
       });
 
       const result = await processBatchImport([lokFile], { cleanImport: true });
@@ -293,14 +288,14 @@ describe('import-handler', () => {
     it('should not delete data when cleanImport is false', async () => {
       const lokFile = createMockFile('lok data', 'hoa1/lok.txt');
 
-      vi.mocked(apartmentParser.parseApartmentBuffer).mockResolvedValue([]);
-      vi.mocked(apartmentParser.getUniqueApartments).mockReturnValue([]);
+      mockParseApartmentBuffer.mockResolvedValue([]);
+      mockGetUniqueApartments.mockReturnValue([]);
 
       const deleteChargeMock = vi.fn();
       const deleteNotificationMock = vi.fn();
       const deletePaymentMock = vi.fn();
 
-      vi.mocked(prisma.$transaction).mockImplementation(async (fn: any) => {
+      mockTransaction.mockImplementation(async (fn: unknown) => {
         const mockTx = {
           homeownersAssociation: {
             upsert: vi.fn().mockResolvedValue({ id: 'hoa-id' }),
@@ -319,7 +314,7 @@ describe('import-handler', () => {
             deleteMany: deletePaymentMock,
           },
         };
-        return fn(mockTx as never);
+        return (fn as (tx: typeof mockTx) => Promise<void>)(mockTx);
       });
 
       const result = await processBatchImport([lokFile], {
@@ -335,7 +330,7 @@ describe('import-handler', () => {
     it('should use existing apartments from DB when lok.txt is not provided', async () => {
       const chargesFile = createMockFile('charges data', 'hoa1/nal_czynsz.txt');
 
-      vi.mocked(nalCzynszParser.parseNalCzynszBuffer).mockResolvedValue([
+      mockParseNalCzynszBuffer.mockResolvedValue([
         {
           id: 'W001',
           apartmentExternalId: 'APT001',
@@ -361,7 +356,7 @@ describe('import-handler', () => {
       ]);
       const chargeCreateManyMock = vi.fn().mockResolvedValue({ count: 1 });
 
-      vi.mocked(prisma.$transaction).mockImplementation(async (fn: any) => {
+      mockTransaction.mockImplementation(async (fn: unknown) => {
         const mockTx = {
           homeownersAssociation: {
             upsert: vi
@@ -377,7 +372,7 @@ describe('import-handler', () => {
             createMany: chargeCreateManyMock,
           },
         };
-        return fn(mockTx as never);
+        return (fn as (tx: typeof mockTx) => Promise<void>)(mockTx);
       });
 
       const result = await processBatchImport([chargesFile]);
@@ -391,11 +386,11 @@ describe('import-handler', () => {
     it('should not deactivate apartments when lok.txt is not provided', async () => {
       const chargesFile = createMockFile('charges data', 'hoa1/nal_czynsz.txt');
 
-      vi.mocked(nalCzynszParser.parseNalCzynszBuffer).mockResolvedValue([]);
+      mockParseNalCzynszBuffer.mockResolvedValue([]);
 
       const apartmentUpdateManyMock = vi.fn().mockResolvedValue({ count: 0 });
 
-      vi.mocked(prisma.$transaction).mockImplementation(async (fn: any) => {
+      mockTransaction.mockImplementation(async (fn: unknown) => {
         const mockTx = {
           homeownersAssociation: {
             upsert: vi
@@ -418,7 +413,7 @@ describe('import-handler', () => {
             createMany: vi.fn().mockResolvedValue({ count: 0 }),
           },
         };
-        return fn(mockTx as never);
+        return (fn as (tx: typeof mockTx) => Promise<void>)(mockTx);
       });
 
       const result = await processBatchImport([chargesFile]);
@@ -434,7 +429,7 @@ describe('import-handler', () => {
       const chargesFile = createMockFile('charges data', 'hoa1/nal_czynsz.txt');
 
       // Charge entry with id (externalOwnerId) and apartmentExternalId (externalApartmentId)
-      vi.mocked(nalCzynszParser.parseNalCzynszBuffer).mockResolvedValue([
+      mockParseNalCzynszBuffer.mockResolvedValue([
         {
           id: 'W001', // This is externalOwnerId in the charge file
           apartmentExternalId: 'APT001', // This is externalApartmentId
@@ -465,7 +460,7 @@ describe('import-handler', () => {
 
       const chargeCreateManyMock = vi.fn().mockResolvedValue({ count: 2 });
 
-      vi.mocked(prisma.$transaction).mockImplementation(async (fn: any) => {
+      mockTransaction.mockImplementation(async (fn: unknown) => {
         const mockTx = {
           homeownersAssociation: {
             upsert: vi
@@ -495,7 +490,7 @@ describe('import-handler', () => {
             createMany: chargeCreateManyMock,
           },
         };
-        return fn(mockTx as never);
+        return (fn as (tx: typeof mockTx) => Promise<void>)(mockTx);
       });
 
       const result = await processBatchImport([chargesFile]);
@@ -515,7 +510,7 @@ describe('import-handler', () => {
     it('should skip charges when apartment key does not match', async () => {
       const chargesFile = createMockFile('charges data', 'hoa1/nal_czynsz.txt');
 
-      vi.mocked(nalCzynszParser.parseNalCzynszBuffer).mockResolvedValue([
+      mockParseNalCzynszBuffer.mockResolvedValue([
         {
           id: 'W001',
           apartmentExternalId: 'APT001',
@@ -546,7 +541,7 @@ describe('import-handler', () => {
 
       const chargeCreateManyMock = vi.fn().mockResolvedValue({ count: 1 });
 
-      vi.mocked(prisma.$transaction).mockImplementation(async (fn: any) => {
+      mockTransaction.mockImplementation(async (fn: unknown) => {
         const mockTx = {
           homeownersAssociation: {
             upsert: vi
@@ -570,7 +565,7 @@ describe('import-handler', () => {
             createMany: chargeCreateManyMock,
           },
         };
-        return fn(mockTx as never);
+        return (fn as (tx: typeof mockTx) => Promise<void>)(mockTx);
       });
 
       const result = await processBatchImport([chargesFile]);
@@ -615,16 +610,12 @@ describe('import-handler', () => {
         },
       ];
 
-      vi.mocked(apartmentParser.parseApartmentBuffer).mockResolvedValue(
-        mockApartments as any
-      );
-      vi.mocked(apartmentParser.getUniqueApartments).mockReturnValue(
-        mockApartments as any
-      );
+      mockParseApartmentBuffer.mockResolvedValue(mockApartments);
+      mockGetUniqueApartments.mockReturnValue(mockApartments);
 
       const apartmentCreateManyMock = vi.fn().mockResolvedValue({ count: 2 });
 
-      vi.mocked(prisma.$transaction).mockImplementation(async (fn: any) => {
+      mockTransaction.mockImplementation(async (fn: unknown) => {
         const mockTx = {
           homeownersAssociation: {
             upsert: vi.fn().mockResolvedValue({ id: 'hoa-id' }),
@@ -635,7 +626,7 @@ describe('import-handler', () => {
             updateMany: vi.fn().mockResolvedValue({ count: 0 }),
           },
         };
-        return fn(mockTx as never);
+        return (fn as (tx: typeof mockTx) => Promise<void>)(mockTx);
       });
 
       const result = await processBatchImport([lokFile]);

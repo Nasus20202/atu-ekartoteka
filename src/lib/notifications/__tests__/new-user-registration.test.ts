@@ -2,11 +2,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { notifyAdminsOfNewUser } from '@/lib/notifications/new-user-registration';
 
+const { mockUserFindMany } = vi.hoisted(() => ({
+  mockUserFindMany: vi.fn(),
+}));
+
 // Mock dependencies
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     user: {
-      findMany: vi.fn(),
+      findMany: mockUserFindMany,
     },
   },
 }));
@@ -40,7 +44,7 @@ describe('notifyAdminsOfNewUser', () => {
       { email: 'admin3@example.com', name: 'Admin Three' },
     ];
 
-    vi.mocked(prisma.user.findMany).mockResolvedValue(mockAdmins as any);
+    mockUserFindMany.mockResolvedValue(mockAdmins);
 
     const mockEmailService = {
       sendNewUserNotificationToAdmin: vi.fn().mockResolvedValue(true),
@@ -67,7 +71,7 @@ describe('notifyAdminsOfNewUser', () => {
   });
 
   it('should handle case when no admins exist', async () => {
-    vi.mocked(prisma.user.findMany).mockResolvedValue([]);
+    mockUserFindMany.mockResolvedValue([]);
 
     // Should not throw
     await expect(
@@ -78,7 +82,7 @@ describe('notifyAdminsOfNewUser', () => {
   it('should format registration date in Polish locale', async () => {
     const mockAdmins = [{ email: 'admin@example.com', name: 'Admin' }];
 
-    vi.mocked(prisma.user.findMany).mockResolvedValue(mockAdmins as any);
+    mockUserFindMany.mockResolvedValue(mockAdmins);
 
     const mockEmailService = {
       sendNewUserNotificationToAdmin: vi.fn().mockResolvedValue(true),
@@ -104,7 +108,7 @@ describe('notifyAdminsOfNewUser', () => {
       { email: 'admin2@example.com', name: 'Admin Two' },
     ];
 
-    vi.mocked(prisma.user.findMany).mockResolvedValue(mockAdmins as any);
+    mockUserFindMany.mockResolvedValue(mockAdmins);
 
     const mockEmailService = {
       sendNewUserNotificationToAdmin: vi
@@ -125,9 +129,7 @@ describe('notifyAdminsOfNewUser', () => {
   });
 
   it('should handle database errors gracefully', async () => {
-    vi.mocked(prisma.user.findMany).mockRejectedValue(
-      new Error('Database error')
-    );
+    mockUserFindMany.mockRejectedValue(new Error('Database error'));
 
     // Should not throw
     await expect(
@@ -136,7 +138,7 @@ describe('notifyAdminsOfNewUser', () => {
   });
 
   it('should query only admin users', async () => {
-    vi.mocked(prisma.user.findMany).mockResolvedValue([]);
+    mockUserFindMany.mockResolvedValue([]);
 
     await notifyAdminsOfNewUser('newuser@example.com', 'New User', new Date());
 

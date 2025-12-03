@@ -1,4 +1,5 @@
 import { PrismaPg } from '@prisma/adapter-pg';
+import { SqlDriverAdapterFactory } from '@prisma/client/runtime/client';
 import { readReplicas } from '@prisma/extension-read-replicas';
 
 import { PrismaClient } from '@/generated/prisma/client';
@@ -7,12 +8,13 @@ const globalForPrisma = globalThis as unknown as {
   prisma: ReturnType<typeof createPrismaClient> | undefined;
 };
 
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL!,
-});
+const createNewAdapter = (connectionString: string) =>
+  new PrismaPg({
+    connectionString,
+  });
 
-function createPrismaClient() {
-  const client = new PrismaClient({
+const createNewClient = (adapter: SqlDriverAdapterFactory) =>
+  new PrismaClient({
     adapter,
     log:
       process.env.NODE_ENV === 'development'
@@ -20,33 +22,27 @@ function createPrismaClient() {
         : ['error', 'warn'],
   });
 
-  // Configure read replicas if replica URLs are provided
-  const replicaUrls = process.env.DATABASE_REPLICA_URLS
+function createPrismaClient() {
+  const writerClient = createNewClient(
+    createNewAdapter(process.env.DATABASE_URL!)
+  );
+
+  const replicaClients = process.env.DATABASE_REPLICA_URLS
     ? process.env.DATABASE_REPLICA_URLS.split(',')
         .map((url) => url.trim())
         .filter((url) => url.length > 0)
+        .map((url) => createNewClient(createNewAdapter(url)))
     : [];
 
-  if (replicaUrls.length > 0) {
-    return client.$extends(
+  if (replicaClients.length > 0) {
+    return writerClient.$extends(
       readReplicas({
-        replicas: replicaUrls.map((readUrl) => {
-          const replicaAdapter = new PrismaPg({
-            connectionString: readUrl,
-          });
-          return new PrismaClient({
-            adapter: replicaAdapter,
-            log:
-              process.env.NODE_ENV === 'development'
-                ? ['error', 'warn', 'info', 'query']
-                : ['error', 'warn'],
-          });
-        }),
+        replicas: replicaClients,
       })
     );
   }
 
-  return client;
+  return writerClient;
 }
 
 export const prisma = globalForPrisma.prisma ?? createPrismaClient();

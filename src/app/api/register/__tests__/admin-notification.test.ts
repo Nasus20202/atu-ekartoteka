@@ -1,7 +1,21 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { POST } from '@/app/api/register/route';
+const {
+  mockUserFindUnique,
+  mockUserFindFirst,
+  mockUserCreate,
+  mockUserCount,
+  mockEmailVerificationCreate,
+  mockNotifyAdminsOfNewUser,
+} = vi.hoisted(() => ({
+  mockUserFindUnique: vi.fn(),
+  mockUserFindFirst: vi.fn(),
+  mockUserCreate: vi.fn(),
+  mockUserCount: vi.fn(),
+  mockEmailVerificationCreate: vi.fn(),
+  mockNotifyAdminsOfNewUser: vi.fn().mockResolvedValue(undefined),
+}));
 
 // Mock dependencies
 vi.mock('bcryptjs', () => ({
@@ -11,13 +25,13 @@ vi.mock('bcryptjs', () => ({
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     user: {
-      findUnique: vi.fn(),
-      findFirst: vi.fn(),
-      create: vi.fn(),
-      count: vi.fn(),
+      findUnique: mockUserFindUnique,
+      findFirst: mockUserFindFirst,
+      create: mockUserCreate,
+      count: mockUserCount,
     },
     emailVerification: {
-      create: vi.fn(),
+      create: mockEmailVerificationCreate,
     },
   },
 }));
@@ -34,7 +48,7 @@ vi.mock('@/lib/email/verification-utils', () => ({
 }));
 
 vi.mock('@/lib/notifications/new-user-registration', () => ({
-  notifyAdminsOfNewUser: vi.fn().mockResolvedValue(undefined),
+  notifyAdminsOfNewUser: mockNotifyAdminsOfNewUser,
 }));
 
 vi.mock('@/lib/logger', () => ({
@@ -51,9 +65,7 @@ vi.mock('@/lib/turnstile', () => ({
   verifyTurnstileToken: vi.fn(() => Promise.resolve(true)),
 }));
 
-const { prisma } = await import('@/lib/database/prisma');
-const { notifyAdminsOfNewUser } =
-  await import('@/lib/notifications/new-user-registration');
+import { POST } from '@/app/api/register/route';
 
 describe('POST /api/register - Admin Notifications', () => {
   beforeEach(() => {
@@ -61,9 +73,9 @@ describe('POST /api/register - Admin Notifications', () => {
   });
 
   it('should notify admins when regular user registers', async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
-    vi.mocked(prisma.user.count).mockResolvedValue(1); // Not first user
-    vi.mocked(prisma.user.create).mockResolvedValue({
+    mockUserFindUnique.mockResolvedValue(null);
+    mockUserCount.mockResolvedValue(1); // Not first user
+    mockUserCreate.mockResolvedValue({
       id: 'user-123',
       email: 'newuser@example.com',
       name: 'New User',
@@ -73,7 +85,7 @@ describe('POST /api/register - Admin Notifications', () => {
       emailVerified: false,
       createdAt: new Date(),
       updatedAt: new Date(),
-    } as any);
+    });
 
     const req = new NextRequest('http://localhost:3000/api/register', {
       method: 'POST',
@@ -89,7 +101,7 @@ describe('POST /api/register - Admin Notifications', () => {
     const response = await POST(req);
     expect(response.status).toBe(201);
 
-    expect(notifyAdminsOfNewUser).toHaveBeenCalledWith(
+    expect(mockNotifyAdminsOfNewUser).toHaveBeenCalledWith(
       'newuser@example.com',
       'New User',
       expect.any(Date)
@@ -97,9 +109,9 @@ describe('POST /api/register - Admin Notifications', () => {
   });
 
   it('should NOT notify admins when first admin registers', async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
-    vi.mocked(prisma.user.count).mockResolvedValue(0); // First user
-    vi.mocked(prisma.user.create).mockResolvedValue({
+    mockUserFindUnique.mockResolvedValue(null);
+    mockUserCount.mockResolvedValue(0); // First user
+    mockUserCreate.mockResolvedValue({
       id: 'admin-123',
       email: 'admin@example.com',
       name: 'Admin User',
@@ -109,7 +121,7 @@ describe('POST /api/register - Admin Notifications', () => {
       emailVerified: true,
       createdAt: new Date(),
       updatedAt: new Date(),
-    } as any);
+    });
 
     const req = new NextRequest('http://localhost:3000/api/register', {
       method: 'POST',
@@ -125,13 +137,13 @@ describe('POST /api/register - Admin Notifications', () => {
     const response = await POST(req);
     expect(response.status).toBe(201);
 
-    expect(notifyAdminsOfNewUser).not.toHaveBeenCalled();
+    expect(mockNotifyAdminsOfNewUser).not.toHaveBeenCalled();
   });
 
   it('should continue registration even if admin notification fails', async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
-    vi.mocked(prisma.user.count).mockResolvedValue(1);
-    vi.mocked(prisma.user.create).mockResolvedValue({
+    mockUserFindUnique.mockResolvedValue(null);
+    mockUserCount.mockResolvedValue(1);
+    mockUserCreate.mockResolvedValue({
       id: 'user-123',
       email: 'newuser@example.com',
       name: 'New User',
@@ -141,10 +153,10 @@ describe('POST /api/register - Admin Notifications', () => {
       emailVerified: false,
       createdAt: new Date(),
       updatedAt: new Date(),
-    } as any);
+    });
 
     // Simulate notification failure
-    vi.mocked(notifyAdminsOfNewUser).mockRejectedValueOnce(
+    mockNotifyAdminsOfNewUser.mockRejectedValueOnce(
       new Error('Notification error')
     );
 
@@ -168,9 +180,9 @@ describe('POST /api/register - Admin Notifications', () => {
   });
 
   it('should use "Brak imienia" if name is not provided', async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
-    vi.mocked(prisma.user.count).mockResolvedValue(1);
-    vi.mocked(prisma.user.create).mockResolvedValue({
+    mockUserFindUnique.mockResolvedValue(null);
+    mockUserCount.mockResolvedValue(1);
+    mockUserCreate.mockResolvedValue({
       id: 'user-123',
       email: 'newuser@example.com',
       name: null,
@@ -180,7 +192,7 @@ describe('POST /api/register - Admin Notifications', () => {
       emailVerified: false,
       createdAt: new Date(),
       updatedAt: new Date(),
-    } as any);
+    });
 
     const req = new NextRequest('http://localhost:3000/api/register', {
       method: 'POST',
@@ -194,7 +206,7 @@ describe('POST /api/register - Admin Notifications', () => {
 
     await POST(req);
 
-    expect(notifyAdminsOfNewUser).toHaveBeenCalledWith(
+    expect(mockNotifyAdminsOfNewUser).toHaveBeenCalledWith(
       'newuser@example.com',
       'Brak imienia',
       expect.any(Date)
