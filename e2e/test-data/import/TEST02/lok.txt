@@ -1,0 +1,3 @@
+W10001#Jan Kowalski##TEST02-TEST02-00000-00001M#ul. Importowa#2#1A#00-002#Kraków#jan.kowalski@test.com###50.5#1000
+W10002#Anna Nowak##TEST02-TEST02-00000-00002M#ul. Importowa#2#2B#00-002#Kraków#anna.nowak@test.com###75.0#1000
+W10003#Piotr Wiśniewski##TEST02-TEST02-00000-00003M#ul. Importowa#2#3C#00-002#Kraków#piotr.wisniewski@test.com###100.0#1000
