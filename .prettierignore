@@ -9,3 +9,6 @@ pnpm-lock.yaml
 yarn.lock
 src/generated
 renovate.json
+e2e/fixtures/test-data
+playwright-report
+test-results

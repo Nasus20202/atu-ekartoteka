@@ -67,6 +67,14 @@ const eslintConfig = defineConfig([
       '@typescript-eslint/no-explicit-any': 'off',
     },
   },
+  // E2E tests - allow relative imports and disable React hooks rules
+  {
+    files: ['e2e/**/*.ts'],
+    rules: {
+      'no-restricted-imports': 'off',
+      'react-hooks/rules-of-hooks': 'off',
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
@@ -76,6 +84,7 @@ const eslintConfig = defineConfig([
     'next-env.d.ts',
     'node_modules/**',
     'src/generated/**',
+    'playwright-report/**',
   ]),
 ]);
 

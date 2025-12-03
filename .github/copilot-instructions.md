@@ -14,6 +14,7 @@
 - **Breaking changes**: Always ask before making changes that modify existing behavior
 - **Testing during development**: Verify that everything is working while implementing features
 - **Business logic tests**: Write tests for all business logic, put them in the `__tests__` folder next to the implementation files
+- **End-to-end tests**: Write E2E tests for all user flows, put them in the `e2e` folder
 
 ## Code Style & Quality
 
