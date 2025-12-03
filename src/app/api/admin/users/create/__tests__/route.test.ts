@@ -4,15 +4,19 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AccountStatus, UserRole } from '@/lib/types';
 
+const mockAuth = vi.fn();
+const mockUserFindUnique = vi.fn();
+const mockUserCreate = vi.fn();
+
 vi.mock('@/auth', () => ({
-  auth: vi.fn(),
+  auth: mockAuth,
 }));
 
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     user: {
-      findUnique: vi.fn(),
-      create: vi.fn(),
+      findUnique: mockUserFindUnique,
+      create: mockUserCreate,
     },
   },
 }));
@@ -31,9 +35,6 @@ vi.mock('bcrypt', () => ({
   },
 }));
 
-const { auth } = await import('@/auth');
-const { prisma } = await import('@/lib/database/prisma');
-
 function createMockRequest(body: any): NextRequest {
   return {
     json: async () => body,
@@ -47,7 +48,7 @@ describe('Admin Users Create API', () => {
 
   describe('POST /api/admin/users/create', () => {
     it('should return 401 when not authenticated', async () => {
-      vi.mocked(auth).mockResolvedValueOnce(null as any);
+      mockAuth.mockResolvedValueOnce(null);
 
       const { POST } = await import('../route');
       const request = createMockRequest({
@@ -63,14 +64,14 @@ describe('Admin Users Create API', () => {
     });
 
     it('should return 401 when user is not admin', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'user-id',
           email: 'user@example.com',
           role: UserRole.TENANT,
         },
         expires: new Date().toISOString(),
-      } as any);
+      });
 
       const { POST } = await import('../route');
       const request = createMockRequest({
@@ -86,14 +87,14 @@ describe('Admin Users Create API', () => {
     });
 
     it('should return 400 when email is missing', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
         },
         expires: new Date().toISOString(),
-      } as any);
+      });
 
       const { POST } = await import('../route');
       const request = createMockRequest({ password: 'password123' });
@@ -106,14 +107,14 @@ describe('Admin Users Create API', () => {
     });
 
     it('should return 400 when password is missing', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
         },
         expires: new Date().toISOString(),
-      } as any);
+      });
 
       const { POST } = await import('../route');
       const request = createMockRequest({ email: 'test@example.com' });
@@ -126,14 +127,14 @@ describe('Admin Users Create API', () => {
     });
 
     it('should return 400 when role is invalid', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
         },
         expires: new Date().toISOString(),
-      } as any);
+      });
 
       const { POST } = await import('../route');
       const request = createMockRequest({
@@ -150,14 +151,14 @@ describe('Admin Users Create API', () => {
     });
 
     it('should return 400 when status is invalid', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
         },
         expires: new Date().toISOString(),
-      } as any);
+      });
 
       const { POST } = await import('../route');
       const request = createMockRequest({
@@ -174,18 +175,18 @@ describe('Admin Users Create API', () => {
     });
 
     it('should return 400 when user already exists', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({
+      });
+      mockUserFindUnique.mockResolvedValueOnce({
         id: 'existing-user',
         email: 'test@example.com',
-      } as any);
+      });
 
       const { POST } = await import('../route');
       const request = createMockRequest({
@@ -201,24 +202,24 @@ describe('Admin Users Create API', () => {
     });
 
     it('should create user with default role and status', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(null);
-      vi.mocked(bcrypt.hash).mockResolvedValueOnce('hashed_password' as any);
-      vi.mocked(prisma.user.create).mockResolvedValueOnce({
+      });
+      mockUserFindUnique.mockResolvedValueOnce(null);
+      vi.mocked(bcrypt.hash).mockResolvedValueOnce('hashed_password' as never);
+      mockUserCreate.mockResolvedValueOnce({
         id: 'new-user-id',
         email: 'test@example.com',
         name: null,
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
         createdAt: new Date(),
-      } as any);
+      });
 
       const { POST } = await import('../route');
       const request = createMockRequest({
@@ -233,7 +234,7 @@ describe('Admin Users Create API', () => {
       expect(data.email).toBe('test@example.com');
       expect(data.role).toBe(UserRole.TENANT);
       expect(data.status).toBe(AccountStatus.PENDING);
-      expect(prisma.user.create).toHaveBeenCalledWith({
+      expect(mockUserCreate).toHaveBeenCalledWith({
         data: {
           email: 'test@example.com',
           password: 'hashed_password',
@@ -246,24 +247,24 @@ describe('Admin Users Create API', () => {
     });
 
     it('should create user with specified role and status', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(null);
-      vi.mocked(bcrypt.hash).mockResolvedValueOnce('hashed_password' as any);
-      vi.mocked(prisma.user.create).mockResolvedValueOnce({
+      });
+      mockUserFindUnique.mockResolvedValueOnce(null);
+      vi.mocked(bcrypt.hash).mockResolvedValueOnce('hashed_password' as never);
+      mockUserCreate.mockResolvedValueOnce({
         id: 'new-user-id',
         email: 'test@example.com',
         name: 'Test User',
         role: UserRole.ADMIN,
         status: AccountStatus.APPROVED,
         createdAt: new Date(),
-      } as any);
+      });
 
       const { POST } = await import('../route');
       const request = createMockRequest({
@@ -284,24 +285,24 @@ describe('Admin Users Create API', () => {
     });
 
     it('should hash password before storing', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(null);
-      vi.mocked(bcrypt.hash).mockResolvedValueOnce('hashed_password' as any);
-      vi.mocked(prisma.user.create).mockResolvedValueOnce({
+      });
+      mockUserFindUnique.mockResolvedValueOnce(null);
+      vi.mocked(bcrypt.hash).mockResolvedValueOnce('hashed_password' as never);
+      mockUserCreate.mockResolvedValueOnce({
         id: 'new-user-id',
         email: 'test@example.com',
         name: null,
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
         createdAt: new Date(),
-      } as any);
+      });
 
       const { POST } = await import('../route');
       const request = createMockRequest({
@@ -312,7 +313,7 @@ describe('Admin Users Create API', () => {
       await POST(request);
 
       expect(bcrypt.hash).toHaveBeenCalledWith('password123', 10);
-      expect(prisma.user.create).toHaveBeenCalledWith(
+      expect(mockUserCreate).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
             password: 'hashed_password',
@@ -322,24 +323,24 @@ describe('Admin Users Create API', () => {
     });
 
     it('should not return password in response', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(null);
-      vi.mocked(bcrypt.hash).mockResolvedValueOnce('hashed_password' as any);
-      vi.mocked(prisma.user.create).mockResolvedValueOnce({
+      });
+      mockUserFindUnique.mockResolvedValueOnce(null);
+      vi.mocked(bcrypt.hash).mockResolvedValueOnce('hashed_password' as never);
+      mockUserCreate.mockResolvedValueOnce({
         id: 'new-user-id',
         email: 'test@example.com',
         name: null,
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
         createdAt: new Date(),
-      } as any);
+      });
 
       const { POST } = await import('../route');
       const request = createMockRequest({
@@ -351,7 +352,7 @@ describe('Admin Users Create API', () => {
       const data = await response.json();
 
       expect(data).not.toHaveProperty('password');
-      expect(prisma.user.create).toHaveBeenCalledWith({
+      expect(mockUserCreate).toHaveBeenCalledWith({
         data: expect.any(Object),
         select: {
           id: true,
@@ -365,17 +366,15 @@ describe('Admin Users Create API', () => {
     });
 
     it('should handle database errors gracefully', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.user.findUnique).mockRejectedValueOnce(
-        new Error('Database error')
-      );
+      });
+      mockUserFindUnique.mockRejectedValueOnce(new Error('Database error'));
 
       const { POST } = await import('../route');
       const request = createMockRequest({

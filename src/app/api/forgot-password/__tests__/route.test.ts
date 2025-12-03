@@ -4,15 +4,26 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { POST } from '@/app/api/forgot-password/route';
 import { AuthMethod } from '@/lib/types';
 
+// Create mock functions using vi.hoisted to ensure they're available when vi.mock runs
+const {
+  mockUserFindUnique,
+  mockPasswordResetDeleteMany,
+  mockPasswordResetCreate,
+} = vi.hoisted(() => ({
+  mockUserFindUnique: vi.fn(),
+  mockPasswordResetDeleteMany: vi.fn(),
+  mockPasswordResetCreate: vi.fn(),
+}));
+
 // Mock dependencies
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     user: {
-      findUnique: vi.fn(),
+      findUnique: mockUserFindUnique,
     },
     passwordReset: {
-      deleteMany: vi.fn(),
-      create: vi.fn(),
+      deleteMany: mockPasswordResetDeleteMany,
+      create: mockPasswordResetCreate,
     },
   },
 }));
@@ -40,9 +51,6 @@ vi.mock('@/lib/turnstile', () => ({
   verifyTurnstileToken: vi.fn(() => Promise.resolve(true)),
 }));
 
-// Import mocked prisma after mocking
-const { prisma } = await import('@/lib/database/prisma');
-
 describe('POST /api/forgot-password', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -62,7 +70,7 @@ describe('POST /api/forgot-password', () => {
   });
 
   it('should return success message even if user does not exist', async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
+    mockUserFindUnique.mockResolvedValue(null);
 
     const req = new NextRequest('http://localhost:3000/api/forgot-password', {
       method: 'POST',
@@ -114,9 +122,9 @@ describe('POST /api/forgot-password', () => {
       updatedAt: new Date(),
     };
 
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
-    vi.mocked(prisma.passwordReset.deleteMany).mockResolvedValue({ count: 0 });
-    vi.mocked(prisma.passwordReset.create).mockResolvedValue({
+    mockUserFindUnique.mockResolvedValue(mockUser);
+    mockPasswordResetDeleteMany.mockResolvedValue({ count: 0 });
+    mockPasswordResetCreate.mockResolvedValue({
       id: 'reset-123',
       userId: mockUser.id,
       token: 'test-token-123',
@@ -141,10 +149,10 @@ describe('POST /api/forgot-password', () => {
     expect(data.message).toBe(
       'Jeśli konto istnieje, email z instrukcjami został wysłany'
     );
-    expect(prisma.passwordReset.deleteMany).toHaveBeenCalledWith({
+    expect(mockPasswordResetDeleteMany).toHaveBeenCalledWith({
       where: { userId: mockUser.id },
     });
-    expect(prisma.passwordReset.create).toHaveBeenCalled();
+    expect(mockPasswordResetCreate).toHaveBeenCalled();
   });
 
   it('should block OAuth users from password reset', async () => {
@@ -161,7 +169,7 @@ describe('POST /api/forgot-password', () => {
       updatedAt: new Date(),
     };
 
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockOAuthUser as any);
+    mockUserFindUnique.mockResolvedValue(mockOAuthUser);
 
     const req = new NextRequest('http://localhost:3000/api/forgot-password', {
       method: 'POST',
@@ -180,8 +188,8 @@ describe('POST /api/forgot-password', () => {
     );
 
     // Ensure no password reset token was created
-    expect(prisma.passwordReset.deleteMany).not.toHaveBeenCalled();
-    expect(prisma.passwordReset.create).not.toHaveBeenCalled();
+    expect(mockPasswordResetDeleteMany).not.toHaveBeenCalled();
+    expect(mockPasswordResetCreate).not.toHaveBeenCalled();
   });
 
   it('should allow credentials users to reset password', async () => {
@@ -198,11 +206,9 @@ describe('POST /api/forgot-password', () => {
       updatedAt: new Date(),
     };
 
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(
-      mockCredentialsUser as any
-    );
-    vi.mocked(prisma.passwordReset.deleteMany).mockResolvedValue({ count: 0 });
-    vi.mocked(prisma.passwordReset.create).mockResolvedValue({
+    mockUserFindUnique.mockResolvedValue(mockCredentialsUser);
+    mockPasswordResetDeleteMany.mockResolvedValue({ count: 0 });
+    mockPasswordResetCreate.mockResolvedValue({
       id: 'reset-123',
       userId: mockCredentialsUser.id,
       token: 'test-token-123',
@@ -227,16 +233,14 @@ describe('POST /api/forgot-password', () => {
     expect(data.message).toBe(
       'Jeśli konto istnieje, email z instrukcjami został wysłany'
     );
-    expect(prisma.passwordReset.deleteMany).toHaveBeenCalledWith({
+    expect(mockPasswordResetDeleteMany).toHaveBeenCalledWith({
       where: { userId: mockCredentialsUser.id },
     });
-    expect(prisma.passwordReset.create).toHaveBeenCalled();
+    expect(mockPasswordResetCreate).toHaveBeenCalled();
   });
 
   it('should handle errors gracefully', async () => {
-    vi.mocked(prisma.user.findUnique).mockRejectedValue(
-      new Error('Database error')
-    );
+    mockUserFindUnique.mockRejectedValue(new Error('Database error'));
 
     const req = new NextRequest('http://localhost:3000/api/forgot-password', {
       method: 'POST',

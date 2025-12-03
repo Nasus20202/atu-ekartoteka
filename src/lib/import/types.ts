@@ -1,8 +1,6 @@
-import { prisma } from '@/lib/database/prisma';
+import { Prisma } from '@prisma/client/extension';
 
-export type TransactionClient = Parameters<
-  Parameters<typeof prisma.$transaction>[0]
->[0];
+export type TransactionClient = Prisma.TransactionClient;
 
 export interface ImportFileGroup {
   lokFile?: File;

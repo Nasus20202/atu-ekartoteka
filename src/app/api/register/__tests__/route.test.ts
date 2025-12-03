@@ -3,12 +3,17 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AccountStatus, AuthMethod, UserRole } from '@/lib/types';
 
+// Create mock functions
+const mockUserFindUnique = vi.fn();
+const mockUserFindFirst = vi.fn();
+const mockUserCreate = vi.fn();
+
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     user: {
-      findUnique: vi.fn(),
-      findFirst: vi.fn(),
-      create: vi.fn(),
+      findUnique: mockUserFindUnique,
+      findFirst: mockUserFindFirst,
+      create: mockUserCreate,
     },
   },
 }));
@@ -20,8 +25,6 @@ vi.mock('@/lib/logger', () => ({
     error: vi.fn(),
   }),
 }));
-
-const { prisma } = await import('@/lib/database/prisma');
 
 describe('Registration API', () => {
   beforeEach(() => {
@@ -36,8 +39,8 @@ describe('Registration API', () => {
         name: 'Test User',
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
-      vi.mocked(prisma.user.create).mockResolvedValue({
+      mockUserFindUnique.mockResolvedValue(null);
+      mockUserCreate.mockResolvedValue({
         id: '1',
         email: userData.email,
         password: await hash(userData.password, 10),
@@ -51,7 +54,7 @@ describe('Registration API', () => {
       });
 
       // Simulate API request
-      const result = await prisma.user.create({
+      const result = await mockUserCreate({
         data: {
           email: userData.email,
           password: await hash(userData.password, 10),
@@ -63,7 +66,7 @@ describe('Registration API', () => {
         },
       });
 
-      expect(prisma.user.findUnique).not.toHaveBeenCalled();
+      expect(mockUserFindUnique).not.toHaveBeenCalled();
       expect(result.email).toBe(userData.email);
       expect(result.name).toBe(userData.name);
       expect(result.role).toBe(UserRole.TENANT);
@@ -107,9 +110,9 @@ describe('Registration API', () => {
         updatedAt: new Date(),
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(existingUser as any);
+      mockUserFindUnique.mockResolvedValue(existingUser);
 
-      const foundUser = await prisma.user.findUnique({
+      const foundUser = await mockUserFindUnique({
         where: { email: 'existing@example.com' },
       });
 
@@ -133,8 +136,8 @@ describe('Registration API', () => {
         name: 'New User',
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
-      vi.mocked(prisma.user.create).mockResolvedValue({
+      mockUserFindUnique.mockResolvedValue(null);
+      mockUserCreate.mockResolvedValue({
         id: '1',
         email: userData.email,
         password: await hash(userData.password, 10),
@@ -147,7 +150,7 @@ describe('Registration API', () => {
         updatedAt: new Date(),
       });
 
-      const result = await prisma.user.create({
+      const result = await mockUserCreate({
         data: {
           email: userData.email,
           password: await hash(userData.password, 10),
@@ -169,8 +172,8 @@ describe('Registration API', () => {
         name: 'Tenant User',
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
-      vi.mocked(prisma.user.create).mockResolvedValue({
+      mockUserFindUnique.mockResolvedValue(null);
+      mockUserCreate.mockResolvedValue({
         id: '1',
         email: userData.email,
         password: await hash(userData.password, 10),
@@ -183,7 +186,7 @@ describe('Registration API', () => {
         updatedAt: new Date(),
       });
 
-      const result = await prisma.user.create({
+      const result = await mockUserCreate({
         data: {
           email: userData.email,
           password: await hash(userData.password, 10),
@@ -204,8 +207,8 @@ describe('Registration API', () => {
         password: 'password123',
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
-      vi.mocked(prisma.user.create).mockResolvedValue({
+      mockUserFindUnique.mockResolvedValue(null);
+      mockUserCreate.mockResolvedValue({
         id: '1',
         email: userData.email,
         password: await hash(userData.password, 10),
@@ -218,7 +221,7 @@ describe('Registration API', () => {
         updatedAt: new Date(),
       });
 
-      const result = await prisma.user.create({
+      const result = await mockUserCreate({
         data: {
           email: userData.email,
           password: await hash(userData.password, 10),
@@ -245,9 +248,9 @@ describe('Registration API', () => {
       };
 
       // Mock no admin exists
-      vi.mocked(prisma.user.findFirst).mockResolvedValue(null);
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
-      vi.mocked(prisma.user.create).mockResolvedValue({
+      mockUserFindFirst.mockResolvedValue(null);
+      mockUserFindUnique.mockResolvedValue(null);
+      mockUserCreate.mockResolvedValue({
         id: '1',
         email: adminData.email,
         password: await hash(adminData.password, 10),
@@ -260,7 +263,7 @@ describe('Registration API', () => {
         updatedAt: new Date(),
       });
 
-      const result = await prisma.user.create({
+      const result = await mockUserCreate({
         data: {
           email: adminData.email,
           password: await hash(adminData.password, 10),
@@ -292,9 +295,9 @@ describe('Registration API', () => {
       };
 
       // Mock admin exists
-      vi.mocked(prisma.user.findFirst).mockResolvedValue(existingAdmin as any);
+      mockUserFindFirst.mockResolvedValue(existingAdmin);
 
-      const foundAdmin = await prisma.user.findFirst({
+      const foundAdmin = await mockUserFindFirst({
         where: { role: UserRole.ADMIN },
       });
 
@@ -310,8 +313,8 @@ describe('Registration API', () => {
         isFirstAdmin: false,
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
-      vi.mocked(prisma.user.create).mockResolvedValue({
+      mockUserFindUnique.mockResolvedValue(null);
+      mockUserCreate.mockResolvedValue({
         id: '2',
         email: userData.email,
         password: await hash(userData.password, 10),
@@ -324,7 +327,7 @@ describe('Registration API', () => {
         updatedAt: new Date(),
       });
 
-      const result = await prisma.user.create({
+      const result = await mockUserCreate({
         data: {
           email: userData.email,
           password: await hash(userData.password, 10),
@@ -342,14 +345,14 @@ describe('Registration API', () => {
 
     it('should verify no admin exists before creating first admin', async () => {
       // Mock no admin exists
-      vi.mocked(prisma.user.findFirst).mockResolvedValue(null);
+      mockUserFindFirst.mockResolvedValue(null);
 
-      const adminCheck = await prisma.user.findFirst({
+      const adminCheck = await mockUserFindFirst({
         where: { role: UserRole.ADMIN },
       });
 
       expect(adminCheck).toBeNull();
-      expect(prisma.user.findFirst).toHaveBeenCalledWith({
+      expect(mockUserFindFirst).toHaveBeenCalledWith({
         where: { role: UserRole.ADMIN },
       });
     });
@@ -368,9 +371,9 @@ describe('Registration API', () => {
         updatedAt: new Date(),
       };
 
-      vi.mocked(prisma.user.create).mockResolvedValue(firstAdmin as any);
+      mockUserCreate.mockResolvedValue(firstAdmin);
 
-      const result = await prisma.user.create({
+      const result = await mockUserCreate({
         data: {
           email: firstAdmin.email,
           password: firstAdmin.password,
@@ -401,9 +404,9 @@ describe('Registration API', () => {
         updatedAt: new Date(),
       };
 
-      vi.mocked(prisma.user.create).mockResolvedValue(regularUser as any);
+      mockUserCreate.mockResolvedValue(regularUser);
 
-      const result = await prisma.user.create({
+      const result = await mockUserCreate({
         data: {
           email: regularUser.email,
           password: regularUser.password,

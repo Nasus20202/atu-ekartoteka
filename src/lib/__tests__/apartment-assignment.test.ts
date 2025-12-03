@@ -7,15 +7,20 @@ import {
 } from '@/__tests__/fixtures';
 import { AccountStatus, Apartment } from '@/lib/types';
 
+const mockUserFindUnique = vi.fn();
+const mockUserUpdate = vi.fn();
+const mockApartmentFindUnique = vi.fn();
+const mockApartmentFindMany = vi.fn();
+
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     user: {
-      findUnique: vi.fn(),
-      update: vi.fn(),
+      findUnique: mockUserFindUnique,
+      update: mockUserUpdate,
     },
     apartment: {
-      findUnique: vi.fn(),
-      findMany: vi.fn(),
+      findUnique: mockApartmentFindUnique,
+      findMany: mockApartmentFindMany,
     },
   },
 }));
@@ -36,10 +41,8 @@ describe('Apartment Assignment', () => {
 
       const mockApartment = createMockApartment();
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
-      vi.mocked(prisma.apartment.findUnique).mockResolvedValue(
-        mockApartment as any
-      );
+      mockUserFindUnique.mockResolvedValue(mockUser);
+      mockApartmentFindUnique.mockResolvedValue(mockApartment);
 
       const user = await prisma.user.findUnique({ where: { id: 'user1' } });
       const apartment = await prisma.apartment.findUnique({
@@ -56,7 +59,7 @@ describe('Apartment Assignment', () => {
     it('should prevent assigning inactive apartment', async () => {
       const mockApartment = createMockApartment({ isActive: false });
 
-      vi.mocked(prisma.apartment.findUnique).mockResolvedValue(mockApartment);
+      mockApartmentFindUnique.mockResolvedValue(mockApartment);
 
       const apartment = await prisma.apartment.findUnique({
         where: { id: 'apt1' },
@@ -74,7 +77,7 @@ describe('Apartment Assignment', () => {
 
       const mockApartment = createMockApartment({ user: existingUser });
 
-      vi.mocked(prisma.apartment.findUnique).mockResolvedValue(mockApartment);
+      mockApartmentFindUnique.mockResolvedValue(mockApartment);
 
       const apartment = await prisma.apartment.findUnique({
         where: { id: 'apt1' },
@@ -97,10 +100,8 @@ describe('Apartment Assignment', () => {
 
       const mockApartment = createMockApartment({ user: mockUser });
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
-      vi.mocked(prisma.apartment.findUnique).mockResolvedValue(
-        mockApartment as any
-      );
+      mockUserFindUnique.mockResolvedValue(mockUser);
+      mockApartmentFindUnique.mockResolvedValue(mockApartment);
 
       const apartment = await prisma.apartment.findUnique({
         where: { id: 'apt1' },
@@ -123,7 +124,7 @@ describe('Apartment Assignment', () => {
         mockApartments.inactive,
       ];
 
-      vi.mocked(prisma.apartment.findMany).mockResolvedValue(mockApartmentList);
+      mockApartmentFindMany.mockResolvedValue(mockApartmentList);
 
       const apartments = await prisma.apartment.findMany();
       const activeApartments = apartments.filter(
@@ -132,7 +133,7 @@ describe('Apartment Assignment', () => {
 
       expect(apartments).toHaveLength(2);
       expect(activeApartments).toHaveLength(1);
-      expect(activeApartments[0].externalId).toBe('EXT1');
+      expect(activeApartments[0].id).toBe('apt1');
     });
 
     it('should list unassigned apartments', async () => {
@@ -153,17 +154,16 @@ describe('Apartment Assignment', () => {
         mockApartments.inactive,
       ];
 
-      vi.mocked(prisma.apartment.findMany).mockResolvedValue(
-        mockApartmentList as never
-      );
+      mockApartmentFindMany.mockResolvedValue(mockApartmentList);
 
-      const apartments =
-        (await prisma.apartment.findMany()) as typeof mockApartmentList;
+      const apartments = (await prisma.apartment.findMany()) as Array<
+        (typeof mockApartmentList)[number]
+      >;
       const unassignedApartments = apartments.filter((apt) => !apt.user);
 
       expect(apartments).toHaveLength(2);
       expect(unassignedApartments).toHaveLength(1);
-      expect(unassignedApartments[0].externalId).toBe('EXT2');
+      expect(unassignedApartments[0].id).toBe('apt2');
     });
   });
 
@@ -182,8 +182,8 @@ describe('Apartment Assignment', () => {
         apartments: [],
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
-      vi.mocked(prisma.user.update).mockResolvedValue(updatedUser as any);
+      mockUserFindUnique.mockResolvedValue(mockUser);
+      mockUserUpdate.mockResolvedValue(updatedUser);
 
       const user = await prisma.user.findUnique({
         where: { id: 'user1' },
@@ -214,7 +214,7 @@ describe('Apartment Assignment', () => {
         apartment: null,
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
+      mockUserFindUnique.mockResolvedValue(mockUser);
 
       const user = await prisma.user.findUnique({
         where: { id: 'user1' },
@@ -236,7 +236,7 @@ describe('Apartment Assignment', () => {
         apartment: null,
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
+      mockUserFindUnique.mockResolvedValue(mockUser);
 
       const user = await prisma.user.findUnique({
         where: { id: 'user1' },
@@ -264,8 +264,8 @@ describe('Apartment Assignment', () => {
         userId: 'user1',
       });
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
-      vi.mocked(prisma.apartment.findUnique).mockResolvedValue(mockApartment);
+      mockUserFindUnique.mockResolvedValue(mockUser);
+      mockApartmentFindUnique.mockResolvedValue(mockApartment);
 
       const user = await prisma.user.findUnique({
         where: { id: 'user1' },

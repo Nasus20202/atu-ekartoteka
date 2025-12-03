@@ -48,6 +48,9 @@ jobs:
       - name: Run tests
         run: pnpm test -- run
 
+      - name: Run TypeScript compiler
+        run: pnpm tsc
+
   build-and-push:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest

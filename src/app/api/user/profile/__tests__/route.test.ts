@@ -4,16 +4,21 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AccountStatus, AuthMethod, UserRole } from '@/lib/types';
 
+// Create mock functions
+const mockAuth = vi.fn();
+const mockUserFindUnique = vi.fn();
+const mockUserUpdate = vi.fn();
+
 // Mock dependencies
 vi.mock('@/auth', () => ({
-  auth: vi.fn(),
+  auth: mockAuth,
 }));
 
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     user: {
-      findUnique: vi.fn(),
-      update: vi.fn(),
+      findUnique: mockUserFindUnique,
+      update: mockUserUpdate,
     },
   },
 }));
@@ -26,10 +31,7 @@ vi.mock('@/lib/logger', () => ({
   }),
 }));
 
-const { auth } = await import('@/auth');
-const { prisma } = await import('@/lib/database/prisma');
-
-function createMockRequest(body: any): NextRequest {
+function createMockRequest(body: unknown): NextRequest {
   return {
     json: async () => body,
   } as NextRequest;
@@ -55,7 +57,7 @@ describe('User Profile API', () => {
     };
 
     it('should return 401 when not authenticated', async () => {
-      vi.mocked(auth).mockResolvedValueOnce(null as any);
+      mockAuth.mockResolvedValueOnce(null);
 
       const { PATCH } = await import('../route');
       const request = createMockRequest({ name: 'New Name' });
@@ -68,15 +70,15 @@ describe('User Profile API', () => {
     });
 
     it('should return 404 when user not found', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'user-id',
           email: 'user@example.com',
           role: UserRole.TENANT,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(null);
+      });
+      mockUserFindUnique.mockResolvedValueOnce(null);
 
       const { PATCH } = await import('../route');
       const request = createMockRequest({ name: 'New Name' });
@@ -89,16 +91,16 @@ describe('User Profile API', () => {
     });
 
     it('should update user name successfully', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'user-id',
           email: 'user@example.com',
           role: UserRole.TENANT,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(mockUser as any);
-      vi.mocked(prisma.user.update).mockResolvedValueOnce({
+      });
+      mockUserFindUnique.mockResolvedValueOnce(mockUser);
+      mockUserUpdate.mockResolvedValueOnce({
         ...mockUser,
         name: 'Updated Name',
       });
@@ -111,7 +113,7 @@ describe('User Profile API', () => {
 
       expect(response.status).toBe(200);
       expect(data.name).toBe('Updated Name');
-      expect(prisma.user.update).toHaveBeenCalledWith({
+      expect(mockUserUpdate).toHaveBeenCalledWith({
         where: { id: 'user-id' },
         data: { name: 'Updated Name' },
         select: {
@@ -125,16 +127,16 @@ describe('User Profile API', () => {
     });
 
     it('should set name to null when empty string provided', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'user-id',
           email: 'user@example.com',
           role: UserRole.TENANT,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(mockUser);
-      vi.mocked(prisma.user.update).mockResolvedValueOnce({
+      });
+      mockUserFindUnique.mockResolvedValueOnce(mockUser);
+      mockUserUpdate.mockResolvedValueOnce({
         ...mockUser,
         name: null,
       });
@@ -147,7 +149,7 @@ describe('User Profile API', () => {
 
       expect(response.status).toBe(200);
       expect(data.name).toBeNull();
-      expect(prisma.user.update).toHaveBeenCalledWith({
+      expect(mockUserUpdate).toHaveBeenCalledWith({
         where: { id: 'user-id' },
         data: { name: null },
         select: {
@@ -161,15 +163,15 @@ describe('User Profile API', () => {
     });
 
     it('should require current password when changing password', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'user-id',
           email: 'user@example.com',
           role: UserRole.TENANT,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(mockUser);
+      });
+      mockUserFindUnique.mockResolvedValueOnce(mockUser);
 
       const { PATCH } = await import('../route');
       const request = createMockRequest({ newPassword: 'newPassword123' });
@@ -184,15 +186,15 @@ describe('User Profile API', () => {
     });
 
     it('should reject incorrect current password', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'user-id',
           email: 'user@example.com',
           role: UserRole.TENANT,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(mockUser);
+      });
+      mockUserFindUnique.mockResolvedValueOnce(mockUser);
 
       const { PATCH } = await import('../route');
       const request = createMockRequest({
@@ -208,16 +210,16 @@ describe('User Profile API', () => {
     });
 
     it('should update password with correct current password', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'user-id',
           email: 'user@example.com',
           role: UserRole.TENANT,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(mockUser);
-      vi.mocked(prisma.user.update).mockResolvedValueOnce({
+      });
+      mockUserFindUnique.mockResolvedValueOnce(mockUser);
+      mockUserUpdate.mockResolvedValueOnce({
         ...mockUser,
         password: bcrypt.hashSync('newPassword123', 10),
       });
@@ -231,23 +233,23 @@ describe('User Profile API', () => {
       const response = await PATCH(request);
 
       expect(response.status).toBe(200);
-      expect(prisma.user.update).toHaveBeenCalled();
-      const updateCall = vi.mocked(prisma.user.update).mock.calls[0][0];
+      expect(mockUserUpdate).toHaveBeenCalled();
+      const updateCall = mockUserUpdate.mock.calls[0][0];
       expect(updateCall.where).toEqual({ id: 'user-id' });
       expect(updateCall.data).toHaveProperty('password');
     });
 
     it('should update both name and password together', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'user-id',
           email: 'user@example.com',
           role: UserRole.TENANT,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(mockUser);
-      vi.mocked(prisma.user.update).mockResolvedValueOnce({
+      });
+      mockUserFindUnique.mockResolvedValueOnce(mockUser);
+      mockUserUpdate.mockResolvedValueOnce({
         ...mockUser,
         name: 'New Name',
         password: bcrypt.hashSync('newPassword123', 10),
@@ -265,24 +267,22 @@ describe('User Profile API', () => {
 
       expect(response.status).toBe(200);
       expect(data.name).toBe('New Name');
-      expect(prisma.user.update).toHaveBeenCalled();
-      const updateCall = vi.mocked(prisma.user.update).mock.calls[0][0];
+      expect(mockUserUpdate).toHaveBeenCalled();
+      const updateCall = mockUserUpdate.mock.calls[0][0];
       expect(updateCall.data).toHaveProperty('name', 'New Name');
       expect(updateCall.data).toHaveProperty('password');
     });
 
     it('should handle database errors gracefully', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'user-id',
           email: 'user@example.com',
           role: UserRole.TENANT,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.user.findUnique).mockRejectedValueOnce(
-        new Error('Database error')
-      );
+      });
+      mockUserFindUnique.mockRejectedValueOnce(new Error('Database error'));
 
       const { PATCH } = await import('../route');
       const request = createMockRequest({ name: 'New Name' });
@@ -295,16 +295,16 @@ describe('User Profile API', () => {
     });
 
     it('should not return password in response', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'user-id',
           email: 'user@example.com',
           role: UserRole.TENANT,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(mockUser);
-      vi.mocked(prisma.user.update).mockResolvedValueOnce({
+      });
+      mockUserFindUnique.mockResolvedValueOnce(mockUser);
+      mockUserUpdate.mockResolvedValueOnce({
         id: mockUser.id,
         email: mockUser.email,
         name: 'Updated Name',
@@ -312,7 +312,7 @@ describe('User Profile API', () => {
         status: mockUser.status,
         createdAt: mockUser.createdAt,
         updatedAt: mockUser.updatedAt,
-      } as any);
+      });
 
       const { PATCH } = await import('../route');
       const request = createMockRequest({ name: 'Updated Name' });
@@ -325,16 +325,16 @@ describe('User Profile API', () => {
     });
 
     it('should hash new password before storing', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'user-id',
           email: 'user@example.com',
           role: UserRole.TENANT,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(mockUser);
-      vi.mocked(prisma.user.update).mockResolvedValueOnce({
+      });
+      mockUserFindUnique.mockResolvedValueOnce(mockUser);
+      mockUserUpdate.mockResolvedValueOnce({
         ...mockUser,
       });
 
@@ -346,7 +346,7 @@ describe('User Profile API', () => {
 
       await PATCH(request);
 
-      const updateCall = vi.mocked(prisma.user.update).mock.calls[0][0];
+      const updateCall = mockUserUpdate.mock.calls[0][0];
       const hashedPassword = updateCall.data.password as string;
 
       expect(hashedPassword).not.toBe('newPassword123');

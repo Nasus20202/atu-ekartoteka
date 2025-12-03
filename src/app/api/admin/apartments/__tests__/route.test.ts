@@ -3,18 +3,23 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { UserRole } from '@/lib/types';
 
+const mockAuth = vi.fn();
+const mockApartmentFindMany = vi.fn();
+const mockApartmentCount = vi.fn();
+const mockHoaFindUnique = vi.fn();
+
 vi.mock('@/auth', () => ({
-  auth: vi.fn(),
+  auth: mockAuth,
 }));
 
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     apartment: {
-      findMany: vi.fn(),
-      count: vi.fn(),
+      findMany: mockApartmentFindMany,
+      count: mockApartmentCount,
     },
     homeownersAssociation: {
-      findUnique: vi.fn(),
+      findUnique: mockHoaFindUnique,
     },
   },
 }));
@@ -26,9 +31,6 @@ vi.mock('@/lib/logger', () => ({
     error: vi.fn(),
   }),
 }));
-
-const { auth } = await import('@/auth');
-const { prisma } = await import('@/lib/database/prisma');
 
 function createMockRequest(searchParams?: Record<string, string>): NextRequest {
   const url = new URL('http://localhost/api/admin/apartments');
@@ -82,7 +84,7 @@ describe('Admin Apartments API', () => {
     };
 
     it('should return 401 when not authenticated', async () => {
-      vi.mocked(auth).mockResolvedValueOnce(null as any);
+      mockAuth.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
       const request = createMockRequest();
@@ -95,14 +97,14 @@ describe('Admin Apartments API', () => {
     });
 
     it('should return 401 when user is not admin', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'user-id',
           email: 'user@example.com',
           role: UserRole.TENANT,
         },
         expires: new Date().toISOString(),
-      } as any);
+      });
 
       const { GET } = await import('../route');
       const request = createMockRequest();
@@ -115,21 +117,17 @@ describe('Admin Apartments API', () => {
     });
 
     it('should return paginated apartments', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.apartment.findMany).mockResolvedValueOnce(
-        mockApartments as any
-      );
-      vi.mocked(prisma.apartment.count).mockResolvedValueOnce(2);
-      vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValueOnce(
-        null
-      );
+      });
+      mockApartmentFindMany.mockResolvedValueOnce(mockApartments);
+      mockApartmentCount.mockResolvedValueOnce(2);
+      mockHoaFindUnique.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
       const request = createMockRequest({ page: '1', limit: '20' });
@@ -148,21 +146,17 @@ describe('Admin Apartments API', () => {
     });
 
     it('should filter by search term (number)', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.apartment.findMany).mockResolvedValueOnce([
-        mockApartments[0],
-      ] as any);
-      vi.mocked(prisma.apartment.count).mockResolvedValueOnce(1);
-      vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValueOnce(
-        null
-      );
+      });
+      mockApartmentFindMany.mockResolvedValueOnce([mockApartments[0]]);
+      mockApartmentCount.mockResolvedValueOnce(1);
+      mockHoaFindUnique.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
       const request = createMockRequest({ search: '101' });
@@ -176,21 +170,17 @@ describe('Admin Apartments API', () => {
     });
 
     it('should filter by search term (owner)', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.apartment.findMany).mockResolvedValueOnce([
-        mockApartments[0],
-      ] as any);
-      vi.mocked(prisma.apartment.count).mockResolvedValueOnce(1);
-      vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValueOnce(
-        null
-      );
+      });
+      mockApartmentFindMany.mockResolvedValueOnce([mockApartments[0]]);
+      mockApartmentCount.mockResolvedValueOnce(1);
+      mockHoaFindUnique.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
       const request = createMockRequest({ search: 'Kowalski' });
@@ -204,21 +194,17 @@ describe('Admin Apartments API', () => {
     });
 
     it('should filter by activeOnly flag', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.apartment.findMany).mockResolvedValueOnce(
-        mockApartments as any
-      );
-      vi.mocked(prisma.apartment.count).mockResolvedValueOnce(2);
-      vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValueOnce(
-        null
-      );
+      });
+      mockApartmentFindMany.mockResolvedValueOnce(mockApartments);
+      mockApartmentCount.mockResolvedValueOnce(2);
+      mockHoaFindUnique.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
       const request = createMockRequest({ activeOnly: 'true' });
@@ -226,7 +212,7 @@ describe('Admin Apartments API', () => {
       const response = await GET(request);
 
       expect(response.status).toBe(200);
-      expect(prisma.apartment.findMany).toHaveBeenCalledWith(
+      expect(mockApartmentFindMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             AND: expect.arrayContaining([
@@ -238,21 +224,17 @@ describe('Admin Apartments API', () => {
     });
 
     it('should filter by hoaId', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.apartment.findMany).mockResolvedValueOnce(
-        mockApartments as any
-      );
-      vi.mocked(prisma.apartment.count).mockResolvedValueOnce(2);
-      vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValueOnce(
-        mockHOA as any
-      );
+      });
+      mockApartmentFindMany.mockResolvedValueOnce(mockApartments);
+      mockApartmentCount.mockResolvedValueOnce(2);
+      mockHoaFindUnique.mockResolvedValueOnce(mockHOA);
 
       const { GET } = await import('../route');
       const request = createMockRequest({ hoaId: 'hoa-1' });
@@ -262,35 +244,31 @@ describe('Admin Apartments API', () => {
 
       expect(response.status).toBe(200);
       expect(data).toHaveProperty('hoa');
-      expect(prisma.apartment.findMany).toHaveBeenCalledWith(
+      expect(mockApartmentFindMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             AND: expect.arrayContaining([{ homeownersAssociationId: 'hoa-1' }]),
           }),
         })
       );
-      expect(prisma.homeownersAssociation.findUnique).toHaveBeenCalledWith({
+      expect(mockHoaFindUnique).toHaveBeenCalledWith({
         where: { id: 'hoa-1' },
         select: { id: true, externalId: true, name: true },
       });
     });
 
     it('should combine multiple filters', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.apartment.findMany).mockResolvedValueOnce([
-        mockApartments[0],
-      ] as any);
-      vi.mocked(prisma.apartment.count).mockResolvedValueOnce(1);
-      vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValueOnce(
-        mockHOA as any
-      );
+      });
+      mockApartmentFindMany.mockResolvedValueOnce([mockApartments[0]]);
+      mockApartmentCount.mockResolvedValueOnce(1);
+      mockHoaFindUnique.mockResolvedValueOnce(mockHOA);
 
       const { GET } = await import('../route');
       const request = createMockRequest({
@@ -301,7 +279,7 @@ describe('Admin Apartments API', () => {
 
       await GET(request);
 
-      expect(prisma.apartment.findMany).toHaveBeenCalledWith(
+      expect(mockApartmentFindMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             AND: expect.arrayContaining([
@@ -317,21 +295,17 @@ describe('Admin Apartments API', () => {
     });
 
     it('should return correct pagination metadata', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.apartment.findMany).mockResolvedValueOnce(
-        mockApartments as any
-      );
-      vi.mocked(prisma.apartment.count).mockResolvedValueOnce(45);
-      vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValueOnce(
-        null
-      );
+      });
+      mockApartmentFindMany.mockResolvedValueOnce(mockApartments);
+      mockApartmentCount.mockResolvedValueOnce(45);
+      mockHoaFindUnique.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
       const request = createMockRequest({ page: '2', limit: '20' });
@@ -348,21 +322,17 @@ describe('Admin Apartments API', () => {
     });
 
     it('should sort by building and number', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.apartment.findMany).mockResolvedValueOnce(
-        mockApartments as any
-      );
-      vi.mocked(prisma.apartment.count).mockResolvedValueOnce(2);
-      vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValueOnce(
-        null
-      );
+      });
+      mockApartmentFindMany.mockResolvedValueOnce(mockApartments);
+      mockApartmentCount.mockResolvedValueOnce(2);
+      mockHoaFindUnique.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
       const request = createMockRequest();
@@ -377,21 +347,17 @@ describe('Admin Apartments API', () => {
     });
 
     it('should handle invalid pagination parameters', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.apartment.findMany).mockResolvedValueOnce(
-        mockApartments as any
-      );
-      vi.mocked(prisma.apartment.count).mockResolvedValueOnce(2);
-      vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValueOnce(
-        null
-      );
+      });
+      mockApartmentFindMany.mockResolvedValueOnce(mockApartments);
+      mockApartmentCount.mockResolvedValueOnce(2);
+      mockHoaFindUnique.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
       const request = createMockRequest({ page: 'invalid', limit: 'invalid' });
@@ -406,21 +372,17 @@ describe('Admin Apartments API', () => {
     });
 
     it('should include HOA details when hoaId provided', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.apartment.findMany).mockResolvedValueOnce(
-        mockApartments as any
-      );
-      vi.mocked(prisma.apartment.count).mockResolvedValueOnce(2);
-      vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValueOnce(
-        mockHOA as any
-      );
+      });
+      mockApartmentFindMany.mockResolvedValueOnce(mockApartments);
+      mockApartmentCount.mockResolvedValueOnce(2);
+      mockHoaFindUnique.mockResolvedValueOnce(mockHOA);
 
       const { GET } = await import('../route');
       const request = createMockRequest({ hoaId: 'hoa-1' });
@@ -432,24 +394,22 @@ describe('Admin Apartments API', () => {
       expect(data).toHaveProperty('hoa');
       expect(data).toHaveProperty('apartments');
       expect(data).toHaveProperty('pagination');
-      expect(prisma.homeownersAssociation.findUnique).toHaveBeenCalledWith({
+      expect(mockHoaFindUnique).toHaveBeenCalledWith({
         where: { id: 'hoa-1' },
         select: { id: true, externalId: true, name: true },
       });
     });
 
     it('should handle database errors gracefully', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.apartment.findMany).mockRejectedValueOnce(
-        new Error('Database error')
-      );
+      });
+      mockApartmentFindMany.mockRejectedValueOnce(new Error('Database error'));
 
       const { GET } = await import('../route');
       const request = createMockRequest();
@@ -462,21 +422,17 @@ describe('Admin Apartments API', () => {
     });
 
     it('should filter by search term (externalOwnerId)', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.apartment.findMany).mockResolvedValueOnce([
-        mockApartments[0],
-      ] as any);
-      vi.mocked(prisma.apartment.count).mockResolvedValueOnce(1);
-      vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValueOnce(
-        null
-      );
+      });
+      mockApartmentFindMany.mockResolvedValueOnce([mockApartments[0]]);
+      mockApartmentCount.mockResolvedValueOnce(1);
+      mockHoaFindUnique.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
       const request = createMockRequest({ search: 'W00123' });
@@ -490,21 +446,17 @@ describe('Admin Apartments API', () => {
     });
 
     it('should filter by search term (externalApartmentId)', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.apartment.findMany).mockResolvedValueOnce([
-        mockApartments[1],
-      ] as any);
-      vi.mocked(prisma.apartment.count).mockResolvedValueOnce(1);
-      vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValueOnce(
-        null
-      );
+      });
+      mockApartmentFindMany.mockResolvedValueOnce([mockApartments[1]]);
+      mockApartmentCount.mockResolvedValueOnce(1);
+      mockHoaFindUnique.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
       const request = createMockRequest({ search: 'HOA1-00002' });
@@ -518,21 +470,17 @@ describe('Admin Apartments API', () => {
     });
 
     it('should filter by search term (building)', async () => {
-      vi.mocked(auth).mockResolvedValueOnce({
+      mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
           email: 'admin@example.com',
           role: UserRole.ADMIN,
         },
         expires: new Date().toISOString(),
-      } as any);
-      vi.mocked(prisma.apartment.findMany).mockResolvedValueOnce(
-        mockApartments as any
-      );
-      vi.mocked(prisma.apartment.count).mockResolvedValueOnce(2);
-      vi.mocked(prisma.homeownersAssociation.findUnique).mockResolvedValueOnce(
-        null
-      );
+      });
+      mockApartmentFindMany.mockResolvedValueOnce(mockApartments);
+      mockApartmentCount.mockResolvedValueOnce(2);
+      mockHoaFindUnique.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
       const request = createMockRequest({ search: 'A' });
