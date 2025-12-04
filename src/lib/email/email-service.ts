@@ -2,8 +2,16 @@ import nodemailer, { type Transporter } from 'nodemailer';
 
 import { renderEmailTemplate } from '@/lib/email/template-loader';
 import { createLogger } from '@/lib/logger';
+import { emailMetrics } from '@/lib/opentelemetry/email-metrics';
 
 const logger = createLogger('email-service');
+
+export type EmailType =
+  | 'verification'
+  | 'password_reset'
+  | 'account_approved'
+  | 'admin_notification'
+  | 'other';
 
 export interface EmailOptions {
   to: string;
@@ -65,7 +73,10 @@ export class EmailService {
    * Send an email using SMTP
    * Supports TLS encryption based on configuration
    */
-  async sendEmail(options: EmailOptions): Promise<boolean> {
+  async sendEmail(
+    options: EmailOptions,
+    emailType: EmailType = 'other'
+  ): Promise<boolean> {
     if (!this.isConfigured) {
       logger.info(
         {
@@ -74,6 +85,7 @@ export class EmailService {
         },
         'Email skipped (SMTP not configured)'
       );
+      emailMetrics.recordEmailSent(emailType, 'skipped');
       return true;
     }
 
@@ -100,6 +112,7 @@ export class EmailService {
         'Email sent successfully'
       );
 
+      emailMetrics.recordEmailSent(emailType, 'success');
       return true;
     } catch (error) {
       logger.error(
@@ -110,6 +123,8 @@ export class EmailService {
         },
         'Failed to send email'
       );
+
+      emailMetrics.recordEmailSent(emailType, 'failure');
       return false;
     }
   }
@@ -161,12 +176,15 @@ export class EmailService {
     const html = renderEmailTemplate('verification-email', 'html', variables);
     const text = renderEmailTemplate('verification-email', 'txt', variables);
 
-    const result = await this.sendEmail({
-      to,
-      subject: 'Potwierdź swój adres email',
-      html,
-      text,
-    });
+    const result = await this.sendEmail(
+      {
+        to,
+        subject: 'Potwierdź swój adres email',
+        html,
+        text,
+      },
+      'verification'
+    );
 
     if (result) {
       logger.info({ to }, 'Verification email sent successfully');
@@ -195,12 +213,15 @@ export class EmailService {
     const html = renderEmailTemplate('password-reset', 'html', variables);
     const text = renderEmailTemplate('password-reset', 'txt', variables);
 
-    return this.sendEmail({
-      to,
-      subject: 'Resetowanie hasła',
-      html,
-      text,
-    });
+    return this.sendEmail(
+      {
+        to,
+        subject: 'Resetowanie hasła',
+        html,
+        text,
+      },
+      'password_reset'
+    );
   }
 
   /**
@@ -217,12 +238,15 @@ export class EmailService {
     const html = renderEmailTemplate('account-approved', 'html', variables);
     const text = renderEmailTemplate('account-approved', 'txt', variables);
 
-    return this.sendEmail({
-      to,
-      subject: 'Twoje konto zostało zatwierdzone',
-      html,
-      text,
-    });
+    return this.sendEmail(
+      {
+        to,
+        subject: 'Twoje konto zostało zatwierdzone',
+        html,
+        text,
+      },
+      'account_approved'
+    );
   }
 
   /**
@@ -254,12 +278,15 @@ export class EmailService {
       variables
     );
 
-    return this.sendEmail({
-      to: adminEmail,
-      subject: 'Nowa rejestracja użytkownika - wymaga zatwierdzenia',
-      html,
-      text,
-    });
+    return this.sendEmail(
+      {
+        to: adminEmail,
+        subject: 'Nowa rejestracja użytkownika - wymaga zatwierdzenia',
+        html,
+        text,
+      },
+      'admin_notification'
+    );
   }
 }
 

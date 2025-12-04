@@ -6,6 +6,7 @@ import Google from 'next-auth/providers/google';
 import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
 import { notifyAdminsOfNewUser } from '@/lib/notifications/new-user-registration';
+import { authMetrics } from '@/lib/opentelemetry/auth-metrics';
 import { isTurnstileEnabled, verifyTurnstileToken } from '@/lib/turnstile';
 import { AuthMethod } from '@/lib/types';
 
@@ -66,6 +67,11 @@ const authOptions: NextAuthConfig = {
               { email: credentials.email },
               'Login attempt failed: missing Turnstile token'
             );
+            authMetrics.recordLogin(
+              'credentials',
+              'failure',
+              'missing_turnstile'
+            );
             return null;
           }
 
@@ -76,6 +82,11 @@ const authOptions: NextAuthConfig = {
             logger.warn(
               { email: credentials.email },
               'Login attempt failed: invalid Turnstile token'
+            );
+            authMetrics.recordLogin(
+              'credentials',
+              'failure',
+              'invalid_turnstile'
             );
             return null;
           }
@@ -91,6 +102,7 @@ const authOptions: NextAuthConfig = {
             { email: credentials.email },
             'Failed login attempt: user not found'
           );
+          authMetrics.recordLogin('credentials', 'failure', 'user_not_found');
           return null;
         }
 
@@ -100,6 +112,7 @@ const authOptions: NextAuthConfig = {
             { email: credentials.email },
             'User has no password but trying to use credentials'
           );
+          authMetrics.recordLogin('credentials', 'failure', 'no_password');
           return null;
         }
 
@@ -113,6 +126,11 @@ const authOptions: NextAuthConfig = {
             { email: credentials.email },
             'Failed login attempt: incorrect password'
           );
+          authMetrics.recordLogin(
+            'credentials',
+            'failure',
+            'invalid_credentials'
+          );
           return null;
         }
 
@@ -125,6 +143,8 @@ const authOptions: NextAuthConfig = {
           },
           'User logged in successfully'
         );
+
+        authMetrics.recordLogin('credentials', 'success');
 
         return {
           id: user.id,
@@ -219,6 +239,9 @@ const authOptions: NextAuthConfig = {
             (user as ExtendedUser).role = newUser.role;
             (user as ExtendedUser).status = newUser.status;
             (user as ExtendedUser).emailVerified = newUser.emailVerified;
+
+            authMetrics.recordRegistration('google', 'success');
+            authMetrics.recordLogin('google', 'success');
             return true;
           }
 
@@ -227,12 +250,15 @@ const authOptions: NextAuthConfig = {
           (user as ExtendedUser).role = existingUser.role;
           (user as ExtendedUser).status = existingUser.status;
           (user as ExtendedUser).emailVerified = existingUser.emailVerified;
+
+          authMetrics.recordLogin('google', 'success');
           return true;
         } catch (error) {
           logger.error(
             { error, email: user.email },
             'Error during Google sign in'
           );
+          authMetrics.recordLogin('google', 'failure', 'google_error');
           return false;
         }
       }

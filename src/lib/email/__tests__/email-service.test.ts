@@ -32,6 +32,12 @@ vi.mock('@/lib/email/template-loader', () => ({
   renderEmailTemplate: vi.fn(() => '<html>Test</html>'),
 }));
 
+vi.mock('@/lib/opentelemetry/email-metrics', () => ({
+  emailMetrics: {
+    recordEmailSent: vi.fn(),
+  },
+}));
+
 describe('EmailService', () => {
   let emailService: EmailService;
   let mockConfig: EmailServiceConfig;

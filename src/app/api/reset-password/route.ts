@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
+import { authMetrics } from '@/lib/opentelemetry/auth-metrics';
 import { verifyTurnstileToken } from '@/lib/turnstile';
 import { AuthMethod } from '@/lib/types';
 
@@ -101,11 +102,14 @@ export async function POST(req: NextRequest) {
       'Password reset successfully'
     );
 
+    authMetrics.recordPasswordReset('success');
+
     return NextResponse.json({
       message: 'Hasło zostało zmienione pomyślnie',
     });
   } catch (error) {
     logger.error({ error }, 'Error resetting password');
+    authMetrics.recordPasswordReset('failure');
     return NextResponse.json(
       { error: 'Nie udało się zresetować hasła' },
       { status: 500 }
