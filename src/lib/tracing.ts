@@ -32,6 +32,8 @@ export async function initTracing() {
   const { BatchLogRecordProcessor } = await import('@opentelemetry/sdk-logs');
   const { HttpInstrumentation } =
     await import('@opentelemetry/instrumentation-http');
+  const { RuntimeNodeInstrumentation } =
+    await import('@opentelemetry/instrumentation-runtime-node');
 
   const serviceName = process.env.OTEL_SERVICE_NAME || 'atu-ekartoteka';
 
@@ -58,7 +60,7 @@ export async function initTracing() {
         ignoreIncomingRequestHook: (request) => {
           // Ignore health check and Next.js internal endpoints
           const url = request.url || '';
-          return url.startsWith('/api/health') || url.startsWith('/_next');
+          return url.includes('/api/health') || url.includes('/_next');
         },
         requestHook: (span, request) => {
           // Customize span name to include method and normalized path
@@ -78,6 +80,7 @@ export async function initTracing() {
           }
         },
       }),
+      new RuntimeNodeInstrumentation(),
     ],
   });
 
