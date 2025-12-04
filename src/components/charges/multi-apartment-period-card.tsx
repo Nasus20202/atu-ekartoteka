@@ -1,21 +1,17 @@
 import { Building2, Calendar } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  type ChargeData,
-  formatCurrency,
-  formatDate,
-  formatPeriod,
-} from '@/lib/charge-utils';
+import type { ChargeDisplay } from '@/lib/types';
+import { formatCurrency, formatDate, formatPeriod } from '@/lib/utils';
 
 type ApartmentChargesData = {
   apartmentNumber: string;
   apartmentAddress: string;
-  charges: ChargeData[];
+  charges: ChargeDisplay[];
 };
 
 type ChargeItemProps = {
-  charge: ChargeData;
+  charge: ChargeDisplay;
 };
 
 function ChargeItem({ charge }: ChargeItemProps) {

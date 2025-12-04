@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatCurrency, formatPeriod } from '@/lib/charge-utils';
+import { formatCurrency, formatPeriod } from '@/lib/utils';
 
 interface ChargesSummaryCardProps {
   currentPeriod: string;

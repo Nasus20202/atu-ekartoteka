@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/database/prisma';
 import { isVerificationExpired } from '@/lib/email/verification-utils';
 import { createLogger } from '@/lib/logger';
+import { authMetrics } from '@/lib/opentelemetry/auth-metrics';
 
 const logger = createLogger('api:verify-email');
 
@@ -70,12 +71,15 @@ export async function POST(req: NextRequest) {
       'Email verified successfully'
     );
 
+    authMetrics.recordEmailVerification('success');
+
     return NextResponse.json({
       message: 'Email zweryfikowany pomyślnie',
       success: true,
     });
   } catch (error) {
     logger.error({ error }, 'Email verification error');
+    authMetrics.recordEmailVerification('failure');
     return NextResponse.json(
       { error: 'Nie udało się zweryfikować emaila' },
       { status: 500 }

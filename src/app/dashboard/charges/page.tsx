@@ -6,9 +6,8 @@ import { MultiApartmentPeriodCard } from '@/components/charges/multi-apartment-p
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent } from '@/components/ui/card';
-import type { ChargeData } from '@/lib/charge-utils';
 import { prisma } from '@/lib/database/prisma';
-import { AccountStatus } from '@/lib/types';
+import { AccountStatus, type ChargeDisplay } from '@/lib/types';
 
 export default async function ChargesPage() {
   const session = await auth();
@@ -40,7 +39,7 @@ export default async function ChargesPage() {
     Array<{
       apartmentNumber: string;
       apartmentAddress: string;
-      charges: ChargeData[];
+      charges: ChargeDisplay[];
     }>
   >();
 

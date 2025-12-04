@@ -9,6 +9,7 @@ import {
 } from '@/lib/email/verification-utils';
 import { createLogger } from '@/lib/logger';
 import { notifyAdminsOfNewUser } from '@/lib/notifications/new-user-registration';
+import { authMetrics } from '@/lib/opentelemetry/auth-metrics';
 import { isTurnstileEnabled, verifyTurnstileToken } from '@/lib/turnstile';
 import { AccountStatus, UserRole } from '@/lib/types';
 
@@ -178,6 +179,8 @@ export async function POST(req: NextRequest) {
       'User registered successfully'
     );
 
+    authMetrics.recordRegistration('credentials', 'success');
+
     return NextResponse.json(
       {
         message: isFirstAdmin
@@ -190,6 +193,7 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     logger.error({ error }, 'Registration error');
+    authMetrics.recordRegistration('credentials', 'failure');
     return NextResponse.json(
       {
         error: 'Nie udało się utworzyć konta',

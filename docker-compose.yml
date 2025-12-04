@@ -1,14 +1,12 @@
 services:
-  jaeger:
-    image: jaegertracing/all-in-one:1.76.0
-    container_name: atu-jaeger
+  otel-lgtm:
+    image: grafana/otel-lgtm:0.11.18
+    container_name: atu-otel-lgtm
     restart: unless-stopped
     ports:
-      - '16686:16686' # Jaeger UI
       - '4317:4317' # OTLP gRPC
       - '4318:4318' # OTLP HTTP
-    environment:
-      - COLLECTOR_OTLP_ENABLED=true
+      - '3001:3000' # Grafana
     profiles:
       - debug
 
@@ -76,12 +74,12 @@ services:
       TRACKING_SCRIPT: ${TRACKING_SCRIPT:-}
 
       # OpenTelemetry (optional)
-      OTEL_EXPORTER_ENDPOINT: ${OTEL_EXPORTER_ENDPOINT:-http://jaeger:4318}
+      OTEL_EXPORTER_ENDPOINT: ${OTEL_EXPORTER_ENDPOINT:-http://otel-lgtm:4318}
       OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME:-atu-ekartoteka}
     env_file:
       - .env
     ports:
-      - '3000:3000'
+      - '3001:3000'
     volumes:
       - ./data:/app/data
     healthcheck:

@@ -7,7 +7,7 @@ import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { prisma } from '@/lib/database/prisma';
-import { AccountStatus } from '@/lib/types';
+import { AccountStatus, type ChargeDisplay } from '@/lib/types';
 
 export default async function ApartmentChargesPage({
   params,
@@ -47,19 +47,7 @@ export default async function ApartmentChargesPage({
   }
 
   // Group charges by period
-  const chargesByPeriod = new Map<
-    string,
-    Array<{
-      id: string;
-      description: string;
-      quantity: number;
-      unit: string;
-      unitPrice: number;
-      totalAmount: number;
-      dateFrom: Date;
-      dateTo: Date;
-    }>
-  >();
+  const chargesByPeriod = new Map<string, ChargeDisplay[]>();
 
   apartment.charges.forEach((charge: (typeof apartment.charges)[number]) => {
     if (!chargesByPeriod.has(charge.period)) {
