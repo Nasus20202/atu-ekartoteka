@@ -66,6 +66,10 @@ Visit `http://localhost:3000/register` to create the first admin user.
   - `TURNSTILE_SITE_KEY` - Client site key (public), used by the React widget.
   - `TURNSTILE_SECRET_KEY` - Server secret key for token verification.
 
+- OpenTelemetry (optional):
+  - `OTEL_EXPORTER_ENDPOINT` - OTLP HTTP endpoint for traces, metrics, and logs (e.g., `http://localhost:4318`). If not set, tracing is disabled.
+  - `OTEL_SERVICE_NAME` - Service name for traces (defaults to `atu-ekartoteka`).
+
 Examples can be found in [`.env.example`](.env.example) and [`.env.docker.example`](.env.docker.example).
 
 ### Docker
