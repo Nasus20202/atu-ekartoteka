@@ -22,9 +22,6 @@ const TABLE_COUNTS = {
 } as const;
 
 export async function registerDatabaseMetrics(meter: Meter) {
-  const { createLogger } = await import('@/lib/logger');
-  const logger = createLogger('custom-metrics');
-
   const dbSizeGauge = meter.createObservableGauge('ekartoteka.db.size', {
     description: 'Number of rows in database tables',
   });
@@ -35,11 +32,7 @@ export async function registerDatabaseMetrics(meter: Meter) {
   // Background task to update counts periodically
   async function updateCounts() {
     for (const [table, countFn] of Object.entries(TABLE_COUNTS)) {
-      try {
-        tableCounts[table] = await countFn();
-      } catch (error) {
-        logger.error({ error, table }, 'Failed to get table count');
-      }
+      tableCounts[table] = await countFn();
     }
   }
 

@@ -8,6 +8,7 @@
  * IMPORTANT: Logger and database modules are dynamically imported AFTER SDK starts
  * to allow instrumentations (Pino, Pg) to hook in properly.
  */
+import packageJson from '@/../package.json';
 
 type Logger = ReturnType<typeof import('@/lib/logger').createLogger>;
 let logger: Logger | undefined;
@@ -40,11 +41,32 @@ export async function initTracing() {
     await import('@opentelemetry/instrumentation-pg');
   const { PinoInstrumentation } =
     await import('@opentelemetry/instrumentation-pino');
+  const { resources } = await import('@opentelemetry/sdk-node');
+  const { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } =
+    await import('@opentelemetry/semantic-conventions');
+
+  const K8S_NAMESPACE_NAME = 'k8s.namespace.name';
+  const K8S_POD_NAME = 'k8s.pod.name';
 
   const serviceName = process.env.OTEL_SERVICE_NAME || 'atu-ekartoteka';
+  const k8sNamespace = process.env.K8S_NAMESPACE;
+  const k8sPodName = process.env.K8S_POD_NAME;
+
+  const resourceAttributes: Record<string, string> = {
+    [ATTR_SERVICE_NAME]: serviceName,
+    [ATTR_SERVICE_VERSION]: packageJson.version,
+  };
+
+  if (k8sNamespace) {
+    resourceAttributes[K8S_NAMESPACE_NAME] = k8sNamespace;
+  }
+
+  if (k8sPodName) {
+    resourceAttributes[K8S_POD_NAME] = k8sPodName;
+  }
 
   const sdk = new NodeSDK({
-    serviceName,
+    resource: resources.resourceFromAttributes(resourceAttributes),
     traceExporter: new OTLPTraceExporter({
       url: `${collectorEndpoint}/v1/traces`,
     }),

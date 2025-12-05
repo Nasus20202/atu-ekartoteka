@@ -69,6 +69,8 @@ Visit `http://localhost:3000/register` to create the first admin user.
 - OpenTelemetry (optional):
   - `OTEL_EXPORTER_ENDPOINT` - OTLP HTTP endpoint for traces, metrics, and logs (e.g., `http://localhost:4318`). If not set, tracing is disabled.
   - `OTEL_SERVICE_NAME` - Service name for traces (defaults to `atu-ekartoteka`).
+  - `K8S_NAMESPACE` - Kubernetes namespace (for metrics/traces resource attributes).
+  - `K8S_POD_NAME` - Kubernetes pod name (for metrics/traces resource attributes).
 
 Examples can be found in [`.env.example`](.env.example) and [`.env.docker.example`](.env.docker.example).
 
