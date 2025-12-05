@@ -86,7 +86,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "ekartoteka_db_size{table=\"user\", k8s_namespace_name=~\"$namespace\"}",
+          "expr": "max(ekartoteka_db_size{table=\"user\", k8s_namespace_name=~\"$namespace\"})",
           "legendFormat": "Users",
           "refId": "A"
         }
@@ -146,7 +146,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "ekartoteka_db_size{table=\"apartment\", k8s_namespace_name=~\"$namespace\"}",
+          "expr": "max(ekartoteka_db_size{table=\"apartment\", k8s_namespace_name=~\"$namespace\"})",
           "legendFormat": "Apartments",
           "refId": "A"
         }
@@ -206,7 +206,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "ekartoteka_db_size{table=\"homeownersAssociation\", k8s_namespace_name=~\"$namespace\"}",
+          "expr": "max(ekartoteka_db_size{table=\"homeownersAssociation\", k8s_namespace_name=~\"$namespace\"})",
           "legendFormat": "Homeowner Associations",
           "refId": "A"
         }
@@ -266,7 +266,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "ekartoteka_db_size{table=\"charge\", k8s_namespace_name=~\"$namespace\"}",
+          "expr": "max(ekartoteka_db_size{table=\"charge\", k8s_namespace_name=~\"$namespace\"})",
           "legendFormat": "Charges",
           "refId": "A"
         }
@@ -326,7 +326,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "ekartoteka_db_size{table=\"payment\", k8s_namespace_name=~\"$namespace\"}",
+          "expr": "max(ekartoteka_db_size{table=\"payment\", k8s_namespace_name=~\"$namespace\"})",
           "legendFormat": "Payments",
           "refId": "A"
         }
@@ -386,7 +386,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "ekartoteka_db_size{table=\"chargeNotification\", k8s_namespace_name=~\"$namespace\"}",
+          "expr": "max(ekartoteka_db_size{table=\"chargeNotification\", k8s_namespace_name=~\"$namespace\"})",
           "legendFormat": "Notifications",
           "refId": "A"
         }
@@ -520,7 +520,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "increase(ekartoteka_auth_login_total{result=\"success\", k8s_namespace_name=~\"$namespace\"}[$__rate_interval])",
+          "expr": "sum(increase(ekartoteka_auth_login_total{result=\"success\", k8s_namespace_name=~\"$namespace\"}[$__rate_interval]))",
           "legendFormat": "success",
           "refId": "A"
         },
@@ -529,7 +529,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "increase(ekartoteka_auth_login_total{result=\"failure\", k8s_namespace_name=~\"$namespace\"}[$__rate_interval])",
+          "expr": "sum(increase(ekartoteka_auth_login_total{result=\"failure\", k8s_namespace_name=~\"$namespace\"}[$__rate_interval]))",
           "legendFormat": "failure",
           "refId": "B"
         }
@@ -650,7 +650,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "increase(ekartoteka_auth_registration_total{result=\"success\", k8s_namespace_name=~\"$namespace\"}[$__rate_interval])",
+          "expr": "sum(increase(ekartoteka_auth_registration_total{result=\"success\", k8s_namespace_name=~\"$namespace\"}[$__rate_interval]))",
           "legendFormat": "success",
           "refId": "A"
         },
@@ -659,7 +659,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "increase(ekartoteka_auth_registration_total{result=\"failure\", k8s_namespace_name=~\"$namespace\"}[$__rate_interval])",
+          "expr": "sum(increase(ekartoteka_auth_registration_total{result=\"failure\", k8s_namespace_name=~\"$namespace\"}[$__rate_interval]))",
           "legendFormat": "failure",
           "refId": "B"
         }
@@ -722,7 +722,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "ekartoteka_auth_login_total{k8s_namespace_name=~\"$namespace\"}",
+          "expr": "sum by (provider, result) (ekartoteka_auth_login_total{k8s_namespace_name=~\"$namespace\"})",
           "legendFormat": "{{provider}} - {{result}}",
           "refId": "A"
         }
@@ -785,7 +785,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "ekartoteka_auth_login_total{result=\"failure\", k8s_namespace_name=~\"$namespace\"}",
+          "expr": "sum by (reason) (ekartoteka_auth_login_total{result=\"failure\", k8s_namespace_name=~\"$namespace\"})",
           "legendFormat": "{{reason}}",
           "refId": "A"
         }
@@ -906,7 +906,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "increase(ekartoteka_auth_password_reset_total{k8s_namespace_name=~\"$namespace\"}[$__rate_interval])",
+          "expr": "sum by (result) (increase(ekartoteka_auth_password_reset_total{k8s_namespace_name=~\"$namespace\"}[$__rate_interval]))",
           "legendFormat": "{{result}}",
           "refId": "A"
         }
@@ -1027,7 +1027,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "increase(ekartoteka_auth_email_verification_total{k8s_namespace_name=~\"$namespace\"}[$__rate_interval])",
+          "expr": "sum by (result) (increase(ekartoteka_auth_email_verification_total{k8s_namespace_name=~\"$namespace\"}[$__rate_interval]))",
           "legendFormat": "{{result}}",
           "refId": "A"
         }
@@ -1176,7 +1176,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "increase(ekartoteka_email_sent_total{k8s_namespace_name=~\"$namespace\"}[$__rate_interval])",
+          "expr": "sum by (result) (increase(ekartoteka_email_sent_total{k8s_namespace_name=~\"$namespace\"}[$__rate_interval]))",
           "legendFormat": "{{result}}",
           "refId": "A"
         }
@@ -1239,7 +1239,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "ekartoteka_email_sent_total{k8s_namespace_name=~\"$namespace\"}",
+          "expr": "sum by (type) (ekartoteka_email_sent_total{k8s_namespace_name=~\"$namespace\"})",
           "legendFormat": "{{type}}",
           "refId": "A"
         }
@@ -1348,7 +1348,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "ekartoteka_email_sent_total{k8s_namespace_name=~\"$namespace\"}",
+          "expr": "sum by (result) (ekartoteka_email_sent_total{k8s_namespace_name=~\"$namespace\"})",
           "legendFormat": "{{result}}",
           "refId": "A"
         }
@@ -1451,7 +1451,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "ekartoteka_db_size{k8s_namespace_name=~\"$namespace\"}",
+          "expr": "max by (table) (ekartoteka_db_size{k8s_namespace_name=~\"$namespace\"})",
           "legendFormat": "{{table}}",
           "refId": "A"
         }
@@ -1541,7 +1541,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "db_client_connection_count{service_name=\"atu-ekartoteka\", k8s_namespace_name=~\"$namespace\"}",
+          "expr": "sum(db_client_connection_count{service_name=\"atu-ekartoteka\", k8s_namespace_name=~\"$namespace\"})",
           "legendFormat": "Active Connections",
           "refId": "A"
         },
@@ -1550,7 +1550,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "db_client_connection_pending_requests{service_name=\"atu-ekartoteka\", k8s_namespace_name=~\"$namespace\"}",
+          "expr": "sum(db_client_connection_pending_requests{service_name=\"atu-ekartoteka\", k8s_namespace_name=~\"$namespace\"})",
           "legendFormat": "Pending Requests",
           "refId": "B"
         }
@@ -2080,7 +2080,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "rate(v8js_gc_duration_seconds_sum{service_name=\"atu-ekartoteka\", k8s_namespace_name=~\"$namespace\"}[$__rate_interval])",
+          "expr": "sum(rate(v8js_gc_duration_seconds_sum{service_name=\"atu-ekartoteka\", k8s_namespace_name=~\"$namespace\"}[$__rate_interval]))",
           "legendFormat": "GC Duration",
           "refId": "A"
         }
@@ -2170,7 +2170,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "nodejs_eventloop_delay_p50_seconds{service_name=\"atu-ekartoteka\", k8s_namespace_name=~\"$namespace\"}",
+          "expr": "avg(nodejs_eventloop_delay_p50_seconds{service_name=\"atu-ekartoteka\", k8s_namespace_name=~\"$namespace\"})",
           "legendFormat": "p50",
           "refId": "A"
         },
@@ -2179,7 +2179,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "nodejs_eventloop_delay_p90_seconds{service_name=\"atu-ekartoteka\", k8s_namespace_name=~\"$namespace\"}",
+          "expr": "avg(nodejs_eventloop_delay_p90_seconds{service_name=\"atu-ekartoteka\", k8s_namespace_name=~\"$namespace\"})",
           "legendFormat": "p90",
           "refId": "B"
         },
@@ -2188,7 +2188,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "nodejs_eventloop_delay_p99_seconds{service_name=\"atu-ekartoteka\", k8s_namespace_name=~\"$namespace\"}",
+          "expr": "avg(nodejs_eventloop_delay_p99_seconds{service_name=\"atu-ekartoteka\", k8s_namespace_name=~\"$namespace\"})",
           "legendFormat": "p99",
           "refId": "C"
         }
@@ -2278,7 +2278,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "nodejs_eventloop_utilization_ratio{service_name=\"atu-ekartoteka\", k8s_namespace_name=~\"$namespace\"}",
+          "expr": "avg(nodejs_eventloop_utilization_ratio{service_name=\"atu-ekartoteka\", k8s_namespace_name=~\"$namespace\"})",
           "legendFormat": "Event Loop Utilization",
           "refId": "A"
         }
@@ -2602,7 +2602,7 @@
             "type": "loki",
             "uid": "${loki}"
           },
-          "expr": "{service_name=\"atu-ekartoteka\", k8s_namespace_name=~\"$namespace\"} |= ``",
+          "expr": "{service_name=\"atu-ekartoteka\"} | k8s_namespace_name=~\"$namespace\" or namespace=~\"$namespace\" |= ``",
           "legendFormat": "",
           "refId": "A"
         }
