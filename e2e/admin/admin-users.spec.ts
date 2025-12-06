@@ -30,7 +30,7 @@ test.describe('Admin User Management', () => {
     });
   });
 
-  test('admin can create a new user', async ({ adminPage }) => {
+  test('admin can create and accept a new user', async ({ adminPage }) => {
     // Navigate and wait for network to be idle
     await adminPage.goto('/admin/users', { waitUntil: 'networkidle' });
 
@@ -55,9 +55,69 @@ test.describe('Admin User Management', () => {
 
     // User should appear in the list
     await expect(adminPage.getByText(uniqueEmail)).toBeVisible();
+
+    // Find the newly created user card (should be pending with no apartment)
+    const newUserCard = adminPage
+      .locator('.text-card-foreground')
+      .filter({ hasText: uniqueEmail });
+    await expect(newUserCard).toBeVisible({
+      timeout: 10000,
+    });
+
+    // Click "Zatwierdź" button to approve the user
+    await newUserCard.getByRole('button', { name: /Zatwierdź/i }).click();
+
+    // Should see the approval dialog
+    await expect(adminPage.getByText(/Zatwierdź konto/i)).toBeVisible({
+      timeout: 10000,
+    });
+
+    // Select first available apartment from the list
+    const firstApartmentCheckbox = adminPage.getByRole('checkbox').first();
+    await firstApartmentCheckbox.click();
+
+    // Submit approval and wait for API response
+    await Promise.all([
+      adminPage.waitForResponse(
+        (resp) =>
+          resp.url().includes('/api/admin/users') && resp.status() === 200
+      ),
+      adminPage
+        .getByRole('button', { name: /Zatwierdź/i })
+        .nth(1)
+        .click(),
+    ]);
+
+    // Wait for dialog to close - if it closes without error, approval was successful
+    await expect(adminPage.getByText(/Zatwierdź konto/i)).not.toBeVisible({
+      timeout: 10000,
+    });
+
+    // Click "Wszyscy" to see all users
+    await Promise.all([
+      adminPage.waitForResponse(
+        (resp) =>
+          resp.url().includes('/api/admin/users') && resp.status() === 200
+      ),
+      adminPage.getByRole('button', { name: /Wszyscy/i }).click(),
+    ]);
+
+    // Verify user is approved
+    await expect(newUserCard.getByText(/zatwierdzony/i)).toBeVisible({
+      timeout: 10000,
+    });
+
+    // Verify user has 1 apartment assigned
+    await expect(
+      newUserCard.getByText(/Przypisane mieszkania: 1/i)
+    ).toBeVisible({
+      timeout: 10000,
+    });
   });
 
-  test('admin can assign apartment to user', async ({ adminPage }) => {
+  test('admin can view apartments for a specific user', async ({
+    adminPage,
+  }) => {
     // Navigate to users page
     await adminPage.goto('/admin/users', { waitUntil: 'networkidle' });
 
@@ -71,12 +131,15 @@ test.describe('Admin User Management', () => {
     ]);
 
     // Find the seeded user card
-    await expect(adminPage.getByText(USER_EMAIL)).toBeVisible({
+    const userCard = adminPage
+      .locator('.text-card-foreground')
+      .filter({ hasText: USER_EMAIL });
+    await expect(userCard).toBeVisible({
       timeout: 10000,
     });
 
-    // Click "Mieszkania" button to manage apartments
-    await adminPage.getByRole('button', { name: /Mieszkania/i }).click();
+    // Click "Mieszkania" button within the specific user card
+    await userCard.getByRole('button', { name: /Mieszkania/i }).click();
 
     // Should see the apartment management dialog
     await expect(adminPage.getByText(/Przypisz mieszkanie/i)).toBeVisible({

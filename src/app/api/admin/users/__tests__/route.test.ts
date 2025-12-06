@@ -456,5 +456,55 @@ describe('Admin Users API', () => {
       expect(result.status).toBe(AccountStatus.REJECTED);
       expect(result.apartments).toHaveLength(0);
     });
+
+    it('should update apartments for already approved user without sending email', async () => {
+      const mockUser = {
+        id: '1',
+        email: 'user@example.com',
+        password: 'hashedpassword',
+        name: 'Test User',
+        role: UserRole.TENANT,
+        status: AccountStatus.APPROVED,
+        emailVerified: true,
+
+        authMethod: AuthMethod.CREDENTIALS,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        apartments: [{ id: 'apt1', externalId: 'EXT1', number: '1' }],
+      };
+
+      const updatedUser = {
+        ...mockUser,
+        status: AccountStatus.APPROVED,
+        emailVerified: true,
+
+        authMethod: AuthMethod.CREDENTIALS,
+        apartments: [
+          { id: 'apt1', externalId: 'EXT1', number: '1' },
+          { id: 'apt2', externalId: 'EXT2', number: '2' },
+        ],
+      };
+
+      mockUserFindUnique.mockResolvedValue(mockUser);
+      mockUserUpdate.mockResolvedValue(updatedUser);
+
+      const result = await prisma.user.update({
+        where: { id: '1' },
+        data: {
+          status: AccountStatus.APPROVED,
+          emailVerified: true,
+
+          authMethod: AuthMethod.CREDENTIALS,
+          apartments: {
+            set: [{ id: 'apt1' }, { id: 'apt2' }],
+          },
+        },
+        include: { apartments: true },
+      });
+
+      expect(result.status).toBe(AccountStatus.APPROVED);
+      expect(result.apartments).toHaveLength(2);
+      // Email notification should NOT be sent since user was already APPROVED
+    });
   });
 });

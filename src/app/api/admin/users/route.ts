@@ -154,8 +154,11 @@ export async function PATCH(req: NextRequest) {
       'User status updated'
     );
 
-    // Send notification if account was approved
-    if (status === AccountStatus.APPROVED) {
+    // Send notification only if account was just approved (status changed from non-APPROVED to APPROVED)
+    if (
+      status === AccountStatus.APPROVED &&
+      user.status !== AccountStatus.APPROVED
+    ) {
       await notifyAccountApproved(updatedUser.email, updatedUser.name);
     }
 
