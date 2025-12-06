@@ -1,0 +1,87 @@
+name: Security Scan
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: read
+
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.33.1
+        if: always()
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-fs-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          scanners: 'vuln,secret,misconfig'
+          exit-code: ${{ github.event_name == 'pull_request' && 1 || 0 }}
+
+      - name: Upload Trivy filesystem results
+        uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: 'trivy-fs-results.sarif'
+          category: 'trivy-fs'
+
+      - name: Run Semgrep scan
+        uses: docker://semgrep/semgrep:1.145.0
+        if: always()
+        with:
+          args: semgrep scan --config=auto --sarif --output=semgrep-results.sarif
+        continue-on-error: ${{ github.event_name != 'pull_request' }}
+
+      - name: Upload Semgrep results
+        uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: 'semgrep-results.sarif'
+          category: 'semgrep'
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run Trivy container scan
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest'
+          format: 'sarif'
+          output: 'trivy-image-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          exit-code: ${{ github.event_name == 'pull_request' && 1 || 0 }}
+
+      - name: Upload Trivy container results
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: 'trivy-image-results.sarif'
+          category: 'trivy-container'
