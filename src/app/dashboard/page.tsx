@@ -25,6 +25,7 @@ export default async function DashboardPage() {
         include: {
           charges: {
             orderBy: { period: 'desc' },
+            select: { id: true, period: true, totalAmount: true },
           },
           chargeNotifications: {
             orderBy: { lineNo: 'asc' },

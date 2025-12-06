@@ -43,8 +43,15 @@ describe('ApartmentCard', () => {
     expect(screen.getByText('2000.0%')).toBeInTheDocument();
   });
 
-  it('renders links to apartment charges and payments', () => {
-    render(<ApartmentCard apartment={mockApartment} index={0} />);
+  it('renders links to apartment charges and payments when data is available', () => {
+    render(
+      <ApartmentCard
+        apartment={mockApartment}
+        hasCharges={true}
+        hasPayments={true}
+        index={0}
+      />
+    );
 
     const chargesLink = screen.getByRole('link', { name: /naliczenia/i });
     expect(chargesLink).toHaveAttribute('href', '/dashboard/charges/apt-1');
@@ -54,6 +61,58 @@ describe('ApartmentCard', () => {
       'href',
       '/dashboard/payments/apt-1/2025'
     );
+  });
+
+  it('hides payment button when no payments are available', () => {
+    render(
+      <ApartmentCard
+        apartment={mockApartment}
+        hasCharges={true}
+        hasPayments={false}
+        index={0}
+      />
+    );
+
+    expect(
+      screen.queryByRole('link', { name: /wpłaty/i })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: /naliczenia/i })
+    ).toBeInTheDocument();
+  });
+
+  it('hides charges button when no charges are available', () => {
+    render(
+      <ApartmentCard
+        apartment={mockApartment}
+        hasCharges={false}
+        hasPayments={true}
+        index={0}
+      />
+    );
+
+    expect(
+      screen.queryByRole('link', { name: /naliczenia/i })
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /wpłaty/i })).toBeInTheDocument();
+  });
+
+  it('hides both buttons when no data is available', () => {
+    render(
+      <ApartmentCard
+        apartment={mockApartment}
+        hasCharges={false}
+        hasPayments={false}
+        index={0}
+      />
+    );
+
+    expect(
+      screen.queryByRole('link', { name: /naliczenia/i })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: /wpłaty/i })
+    ).not.toBeInTheDocument();
   });
 
   it('handles null values gracefully', () => {

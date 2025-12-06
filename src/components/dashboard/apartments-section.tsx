@@ -17,6 +17,7 @@ type ApartmentCardData = Pick<
   | 'shareDenominator'
 > & {
   payments?: Pick<Payment, 'closingBalance' | 'year'>[];
+  charges?: Array<{ id: string }>;
 };
 
 interface ApartmentsSectionProps {
@@ -50,6 +51,8 @@ export function ApartmentsSection({ apartments }: ApartmentsSectionProps) {
                 latestPaymentBalance={
                   apartment.payments?.[0]?.closingBalance ?? null
                 }
+                hasCharges={(apartment.charges?.length ?? 0) > 0}
+                hasPayments={(apartment.payments?.length ?? 0) > 0}
                 index={index}
               />
             ))}

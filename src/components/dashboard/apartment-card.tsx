@@ -19,12 +19,16 @@ interface ApartmentCardProps {
     }>;
   };
   latestPaymentBalance?: number | null;
+  hasCharges?: boolean;
+  hasPayments?: boolean;
   index: number;
 }
 
 export function ApartmentCard({
   apartment,
   latestPaymentBalance,
+  hasCharges = false,
+  hasPayments = false,
   index,
 }: ApartmentCardProps) {
   return (
@@ -43,22 +47,28 @@ export function ApartmentCard({
             {apartment.postalCode} {apartment.city}
           </p>
         </div>
-        <div className="flex flex-row gap-1">
-          <Link
-            href={`/dashboard/payments/${apartment.id}/${apartment.payments?.[0]?.year || new Date().getFullYear()}`}
-          >
-            <Button variant="outline" size="sm">
-              <Wallet className="mr-2 h-4 w-4" />
-              Wpłaty
-            </Button>
-          </Link>
-          <Link href={`/dashboard/charges/${apartment.id}`}>
-            <Button variant="outline" size="sm">
-              <FileText className="mr-2 h-4 w-4" />
-              Naliczenia
-            </Button>
-          </Link>
-        </div>
+        {(hasPayments || hasCharges) && (
+          <div className="flex flex-row gap-1">
+            {hasPayments && (
+              <Link
+                href={`/dashboard/payments/${apartment.id}/${apartment.payments?.[0]?.year || new Date().getFullYear()}`}
+              >
+                <Button variant="outline" size="sm">
+                  <Wallet className="mr-2 h-4 w-4" />
+                  Wpłaty
+                </Button>
+              </Link>
+            )}
+            {hasCharges && (
+              <Link href={`/dashboard/charges/${apartment.id}`}>
+                <Button variant="outline" size="sm">
+                  <FileText className="mr-2 h-4 w-4" />
+                  Naliczenia
+                </Button>
+              </Link>
+            )}
+          </div>
+        )}
       </div>
       <dl className="grid gap-3 sm:grid-cols-2">
         {apartment.owner && (
