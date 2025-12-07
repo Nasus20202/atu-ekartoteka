@@ -14,7 +14,16 @@ import * as pg from 'pg';
 const SQL_DIR = path.join(__dirname, '../test-data/seed');
 
 function loadSql(filename: string): string {
-  return fs.readFileSync(path.join(SQL_DIR, filename), 'utf-8');
+  // Prevent path traversal: only allow bare filenames (no path separators)
+  if (path.basename(filename) !== filename) {
+    throw new Error('Invalid SQL filename');
+  }
+  const candidate = path.resolve(path.join(SQL_DIR, filename));
+  const resolvedBase = path.resolve(SQL_DIR) + path.sep;
+  if (!candidate.startsWith(resolvedBase)) {
+    throw new Error('Invalid SQL filename');
+  }
+  return fs.readFileSync(candidate, 'utf-8');
 }
 
 export async function cleanTestData(connectionString?: string) {

@@ -10,8 +10,17 @@ export function renderEmailTemplate(
   format: 'html' | 'txt',
   variables: Record<string, string>
 ): string {
+  // Validate templateName and format to prevent path traversal or injection
+  const validName = /^[a-zA-Z0-9._-]+$/;
+  if (!validName.test(templateName)) {
+    throw new Error('Invalid template name');
+  }
+  if (format !== 'html' && format !== 'txt') {
+    throw new Error('Invalid format');
+  }
+
   // Try multiple paths for development and production
-  const possiblePaths = [
+  const baseDirs = [
     // Development path
     path.join(
       process.cwd(),
@@ -44,15 +53,27 @@ export function renderEmailTemplate(
       `${templateName}.${format}`
     ),
     // Relative to this file
-    path.join(__dirname, 'templates', `${templateName}.${format}`),
+    path.join(__dirname, 'templates'),
   ];
 
   let template: string | null = null;
 
-  for (const templatePath of possiblePaths) {
+  for (const baseDir of baseDirs) {
+    const templatePath = path.join(baseDir, `${templateName}.${format}`);
     try {
-      if (fs.existsSync(templatePath)) {
-        template = fs.readFileSync(templatePath, 'utf-8');
+      // Make sure the resolved path is within the candidate directory to avoid
+      // path traversal vulnerabilities if templateName was tampered with.
+      const resolved = path.resolve(templatePath);
+      const resolvedBase = path.resolve(baseDir) + path.sep;
+      if (
+        !resolved.startsWith(resolvedBase) &&
+        resolved !== resolvedBase.slice(0, -1)
+      ) {
+        continue;
+      }
+
+      if (fs.existsSync(resolved)) {
+        template = fs.readFileSync(resolved, 'utf-8');
         break;
       }
     } catch {

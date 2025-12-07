@@ -45,5 +45,14 @@ USER nextjs
 
 EXPOSE 3000
 
+# Add a HEALTHCHECK so orchestrators can verify the app is up. Install curl to
+# make a simple HTTP check. Keep toolset installation minimal and link to the
+# unprivileged user e.g. nextjs where necessary.
+USER root
+RUN apk add --no-cache curl && chown -R nextjs:nodejs /app
+USER nextjs
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD curl -f http://localhost:3000/ || exit 1
+
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 CMD ["node", "server.js"]
