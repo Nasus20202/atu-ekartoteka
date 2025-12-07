@@ -32,7 +32,15 @@ export async function registerDatabaseMetrics(meter: Meter) {
   // Background task to update counts periodically
   async function updateCounts() {
     for (const [table, countFn] of Object.entries(TABLE_COUNTS)) {
-      tableCounts[table] = await countFn();
+      try {
+        tableCounts[table] = await countFn();
+      } catch (error) {
+        // Lazy import as logger might not be traced yet
+        const { logger } = await import('@/lib/logger');
+        logger.error(
+          `Failed to update count for table ${table}: ${(error as Error).message}`
+        );
+      }
     }
   }
 

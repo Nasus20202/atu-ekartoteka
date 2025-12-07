@@ -44,8 +44,10 @@ jobs:
 
       - name: Bump up ${{ github.event.inputs.increment }} version
         id: increment_version
+        env:
+          INCREMENT: ${{ github.event.inputs.increment }}
         run: |
-          VERSION=$(pnpm version ${{ github.event.inputs.increment }})
+          VERSION=$(pnpm version "$INCREMENT")
           echo "New version: $VERSION"
           echo "new-version=$VERSION" >> $GITHUB_OUTPUT
 
@@ -55,8 +57,8 @@ jobs:
       - name: Publish new version ${{ steps.increment_version.outputs.new-version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.increment_version.outputs.new-version }}
         run: |
-          VERSION=${{ steps.increment_version.outputs.new-version }}
           gh release create "${VERSION}" \
             --title "Release ${VERSION}" \
             --notes "Commit ${{ github.sha }} on $(date)"
