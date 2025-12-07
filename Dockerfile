@@ -44,6 +44,7 @@ COPY --chown=nextjs:nodejs --chmod=755 docker/docker-entrypoint.sh ./docker-entr
 USER nextjs
 
 EXPOSE 3000
+HEALTHCHECK --interval=30s --timeout=5s CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 CMD ["node", "server.js"]

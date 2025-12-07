@@ -1,75 +1,59 @@
 import fs from 'fs';
 import path from 'path';
 
-/**
- * Load and render email template
- * Works in both development and production builds
- */
-export function renderEmailTemplate(
-  templateName: string,
-  format: 'html' | 'txt',
-  variables: Record<string, string>
-): string {
-  // Try multiple paths for development and production
-  const possiblePaths = [
-    // Development path
-    path.join(
-      process.cwd(),
-      'src',
-      'lib',
-      'email',
-      'templates',
-      `${templateName}.${format}`
-    ),
-    // Production build path (standalone)
-    path.join(
-      process.cwd(),
-      '.next',
-      'standalone',
-      'src',
-      'lib',
-      'email',
-      'templates',
-      `${templateName}.${format}`
-    ),
-    // Production build path (server)
-    path.join(
-      process.cwd(),
-      '.next',
-      'server',
-      'src',
-      'lib',
-      'email',
-      'templates',
-      `${templateName}.${format}`
-    ),
-    // Relative to this file
-    path.join(__dirname, 'templates', `${templateName}.${format}`),
-  ];
+const TEMPLATE_NAMES = [
+  'verification-email',
+  'password-reset',
+  'account-approved',
+  'new-user-registration-admin',
+] as const;
 
-  let template: string | null = null;
+const FORMATS = ['html', 'txt'] as const;
 
-  for (const templatePath of possiblePaths) {
-    try {
-      if (fs.existsSync(templatePath)) {
-        template = fs.readFileSync(templatePath, 'utf-8');
-        break;
-      }
-    } catch {
-      // Continue to next path
-      continue;
+type TemplateName = (typeof TEMPLATE_NAMES)[number];
+type Format = (typeof FORMATS)[number];
+
+type TemplateMap = Record<TemplateName, Record<Format, string>>;
+
+function loadTemplates(): TemplateMap {
+  const templates: Partial<TemplateMap> = {};
+
+  for (const templateName of TEMPLATE_NAMES) {
+    templates[templateName] = {} as Record<Format, string>;
+
+    for (const format of FORMATS) {
+      const templatePath = path.join(
+        process.cwd(),
+        'src',
+        'lib',
+        'email',
+        'templates',
+        `${templateName}.${format}`
+      );
+
+      const content = fs.readFileSync(templatePath, 'utf-8');
+      (templates[templateName] as Record<Format, string>)[format] = content;
     }
   }
 
-  if (!template) {
-    throw new Error(`Email template not found: ${templateName}.${format}`);
-  }
+  return templates as TemplateMap;
+}
+
+const templates = loadTemplates();
+
+export function renderEmailTemplate(
+  templateName: TemplateName,
+  format: Format,
+  variables: Record<string, string>
+): string {
+  const template = templates[templateName][format];
 
   // Replace variables
+  let result = template;
   for (const [key, value] of Object.entries(variables)) {
     const placeholder = `{{${key}}}`;
-    template = template.replace(new RegExp(placeholder, 'g'), value);
+    result = result.replace(new RegExp(placeholder, 'g'), value);
   }
 
-  return template;
+  return result;
 }
