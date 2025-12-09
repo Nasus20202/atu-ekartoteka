@@ -16,3 +16,8 @@ coverage
 *.test.tsx
 vitest.config.ts
 data
+e2e
+grafana
+.next/standalone/data
+.next/standalone/e2e
+.next/standalone/grafana
