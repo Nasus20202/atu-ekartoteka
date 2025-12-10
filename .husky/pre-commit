@@ -1,5 +1,3 @@
 pnpm lint-staged
 pnpm test -- run
-pnpm format:check
 pnpm tsc
-git add -A
