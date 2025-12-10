@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/database/prisma';
+import { hashToken } from '@/lib/email/verification-utils';
 import { createLogger } from '@/lib/logger';
 import { authMetrics } from '@/lib/opentelemetry/auth-metrics';
 import { verifyTurnstileToken } from '@/lib/turnstile';
@@ -32,9 +33,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Find valid reset token
+    // Hash the incoming token and find matching reset record
+    const hashedToken = hashToken(token);
     const resetToken = await prisma.passwordReset.findUnique({
-      where: { token },
+      where: { token: hashedToken },
       include: { user: true },
     });
 

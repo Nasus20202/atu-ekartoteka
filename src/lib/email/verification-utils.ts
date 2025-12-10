@@ -1,6 +1,17 @@
 import crypto from 'crypto';
 
 /**
+ * Hash a token using SHA-256 for secure storage
+ * Unlike passwords, tokens are already high-entropy random values,
+ * so we use SHA-256 instead of bcrypt for better performance
+ * @param token - The plain token to hash
+ * @returns The hashed token as hex string
+ */
+export function hashToken(token: string): string {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
+
+/**
  * Generate a random verification code
  * @param length - Length of the code (default: 8)
  * @returns Random alphanumeric code

@@ -36,6 +36,7 @@ vi.mock('@/lib/email/email-service', () => ({
 
 vi.mock('@/lib/email/verification-utils', () => ({
   generateSecureToken: vi.fn(() => 'test-token-123'),
+  hashToken: vi.fn((token: string) => `hashed-${token}`),
 }));
 
 vi.mock('@/lib/logger', () => ({

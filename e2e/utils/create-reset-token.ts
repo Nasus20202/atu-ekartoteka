@@ -2,9 +2,17 @@
  * Create a fresh password reset token for E2E testing.
  */
 
+import * as crypto from 'crypto';
 import * as pg from 'pg';
 
 import { RESET_TOKEN, USER_EMAIL } from './test-credentials';
+
+/**
+ * Hash a token using SHA-256 (same as verification-utils.ts)
+ */
+function hashToken(token: string): string {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
 
 export async function createResetToken() {
   const dbUrl = process.env.DATABASE_URL;
@@ -31,15 +39,18 @@ export async function createResetToken() {
     const userId = userResult.rows[0].id;
     const resetExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
+    // Hash the token before storing (plain token is used in URL)
+    const hashedToken = hashToken(RESET_TOKEN);
+
     // Delete existing token and create fresh one
     await client.query(`DELETE FROM "PasswordReset" WHERE token = $1`, [
-      RESET_TOKEN,
+      hashedToken,
     ]);
 
     await client.query(
       `INSERT INTO "PasswordReset" (id, token, "userId", "expiresAt", used, "createdAt", "updatedAt")
        VALUES (gen_random_uuid(), $1, $2, $3, false, NOW(), NOW())`,
-      [RESET_TOKEN, userId, resetExpiry]
+      [hashedToken, userId, resetExpiry]
     );
   } finally {
     await client.end();

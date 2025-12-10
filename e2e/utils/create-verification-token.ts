@@ -3,6 +3,7 @@
  */
 
 import * as bcrypt from 'bcryptjs';
+import * as crypto from 'crypto';
 import * as pg from 'pg';
 
 import {
@@ -10,6 +11,13 @@ import {
   UNVERIFIED_PASSWORD,
   VERIFICATION_CODE,
 } from './test-credentials';
+
+/**
+ * Hash a token using SHA-256 (same as verification-utils.ts)
+ */
+function hashToken(token: string): string {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
 
 export async function createVerificationToken() {
   const dbUrl = process.env.DATABASE_URL;
@@ -43,10 +51,13 @@ export async function createVerificationToken() {
 
     const codeExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
+    // Hash the verification code before storing (plain code is used in URL)
+    const hashedCode = hashToken(VERIFICATION_CODE);
+
     await client.query(
       `INSERT INTO "EmailVerification" (id, code, "userId", "expiresAt", verified, "createdAt", "updatedAt")
        VALUES (gen_random_uuid(), $1, $2, $3, false, NOW(), NOW())`,
-      [VERIFICATION_CODE, userId, codeExpiry]
+      [hashedCode, userId, codeExpiry]
     );
   } finally {
     await client.end();

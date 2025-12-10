@@ -6,6 +6,7 @@ import { getEmailService } from '@/lib/email/email-service';
 import {
   generateSecureToken,
   getVerificationExpiration,
+  hashToken,
 } from '@/lib/email/verification-utils';
 import { createLogger } from '@/lib/logger';
 import { notifyAdminsOfNewUser } from '@/lib/notifications/new-user-registration';
@@ -127,16 +128,17 @@ export async function POST(req: NextRequest) {
         const verificationToken = generateSecureToken();
         const expiresAt = getVerificationExpiration(24);
 
-        // Store verification token in database
+        // Store hashed verification token in database (plain token is sent via email)
+        const hashedToken = hashToken(verificationToken);
         await prisma.emailVerification.create({
           data: {
             userId: user.id,
-            code: verificationToken,
+            code: hashedToken,
             expiresAt,
           },
         });
 
-        // Send verification email
+        // Send verification email with plain token
         const emailService = getEmailService();
         await emailService.sendVerificationEmail(
           user.email,

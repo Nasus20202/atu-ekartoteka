@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/database/prisma';
 import { getEmailService } from '@/lib/email/email-service';
-import { generateSecureToken } from '@/lib/email/verification-utils';
+import { generateSecureToken, hashToken } from '@/lib/email/verification-utils';
 import { createLogger } from '@/lib/logger';
 import { verifyTurnstileToken } from '@/lib/turnstile';
 import { AuthMethod } from '@/lib/types';
@@ -65,11 +65,12 @@ export async function POST(req: NextRequest) {
     const token = generateSecureToken();
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
-    // Store reset token
+    // Store hashed reset token (plain token is sent via email)
+    const hashedToken = hashToken(token);
     await prisma.passwordReset.create({
       data: {
         userId: user.id,
-        token,
+        token: hashedToken,
         expiresAt,
       },
     });
