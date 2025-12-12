@@ -46,7 +46,7 @@ jobs:
           category: 'trivy-fs'
 
       - name: Run Semgrep scan
-        uses: docker://semgrep/semgrep:1.145.0
+        uses: docker://semgrep/semgrep:1.145.1
         with:
           args: semgrep scan --config=auto --sarif --output=semgrep-results.sarif
         continue-on-error: ${{ github.event_name != 'pull_request' }}
