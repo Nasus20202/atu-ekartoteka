@@ -1,4 +1,4 @@
-FROM node:24.11-alpine AS base
+FROM node:24.12-alpine AS base
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Install dependencies only when needed
