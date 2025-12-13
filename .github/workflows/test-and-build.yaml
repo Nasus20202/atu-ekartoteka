@@ -16,6 +16,9 @@ jobs:
   lint-and-test:
     name: Lint & Test
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -45,8 +48,17 @@ jobs:
       - name: Check formatting
         run: pnpm format:check
 
-      - name: Run tests
-        run: pnpm test -- run
+      - name: Run tests with coverage
+        run: pnpm test:coverage
+
+      - name: Coverage report for changed files
+        if: github.event_name == 'pull_request'
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          json-summary-path: './coverage/coverage-summary.json'
+          json-final-path: './coverage/coverage-final.json'
+          vite-config-path: './vitest.config.ts'
+          file-coverage-mode: 'changes'
 
       - name: Run TypeScript compiler
         run: pnpm tsc

@@ -7,8 +7,8 @@ import { USER_EMAIL } from '../utils/test-credentials';
 
 test.describe('Admin User Management', () => {
   test('admin can view users list', async ({ adminPage }) => {
-    // Navigate and wait for network to be idle
-    await adminPage.goto('/admin/users', { waitUntil: 'networkidle' });
+    // Navigate to users page
+    await adminPage.goto('/admin/users');
 
     // Wait for page to load
     await expect(
@@ -31,8 +31,13 @@ test.describe('Admin User Management', () => {
   });
 
   test('admin can create and accept a new user', async ({ adminPage }) => {
-    // Navigate and wait for network to be idle
-    await adminPage.goto('/admin/users', { waitUntil: 'networkidle' });
+    // Navigate to users page
+    await adminPage.goto('/admin/users');
+
+    // Wait for page to load
+    await expect(
+      adminPage.getByRole('heading', { name: /Użytkownicy/i })
+    ).toBeVisible();
 
     // Click add user button
     await adminPage.getByRole('button', { name: /Dodaj użytkownika/i }).click();
@@ -119,7 +124,12 @@ test.describe('Admin User Management', () => {
     adminPage,
   }) => {
     // Navigate to users page
-    await adminPage.goto('/admin/users', { waitUntil: 'networkidle' });
+    await adminPage.goto('/admin/users');
+
+    // Wait for page to load
+    await expect(
+      adminPage.getByRole('heading', { name: /Użytkownicy/i })
+    ).toBeVisible();
 
     // Click "Wszyscy" (All) tab to see all users
     await Promise.all([

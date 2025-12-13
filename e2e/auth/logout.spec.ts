@@ -31,5 +31,6 @@ test.describe('Logout', () => {
 
     // Should be redirected to login (not logged in)
     await page.waitForURL('**/login**', { timeout: 10000 });
+    await expect(page).toHaveURL(/\/login/);
   });
 });

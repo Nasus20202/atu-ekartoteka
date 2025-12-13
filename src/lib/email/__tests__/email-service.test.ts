@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   EmailService,
   type EmailServiceConfig,
+  getEmailService,
 } from '@/lib/email/email-service';
 
 // Create mock transport
@@ -185,5 +186,168 @@ describe('EmailService', () => {
       expect(result).toBe(true);
       expect(mockVerify).not.toHaveBeenCalled();
     });
+  });
+
+  describe('verifyConnection', () => {
+    beforeEach(() => {
+      process.env.SMTP_HOST = 'smtp.example.com';
+      emailService = new EmailService(mockConfig);
+    });
+
+    it('should verify connection successfully', async () => {
+      mockVerify.mockResolvedValueOnce(true);
+
+      const result = await emailService.verifyConnection();
+
+      expect(result).toBe(true);
+      expect(mockVerify).toHaveBeenCalled();
+    });
+
+    it('should handle verification errors', async () => {
+      mockVerify.mockRejectedValueOnce(new Error('Connection failed'));
+
+      const result = await emailService.verifyConnection();
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('sendVerificationEmail', () => {
+    beforeEach(() => {
+      process.env.SMTP_HOST = 'smtp.example.com';
+      emailService = new EmailService(mockConfig);
+    });
+
+    it('should send verification email with token', async () => {
+      const result = await emailService.sendVerificationEmail(
+        'user@example.com',
+        'test-token-123'
+      );
+
+      expect(result).toBe(true);
+      expect(mockSendMail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'user@example.com',
+          subject: 'Potwierdź swój adres email',
+        })
+      );
+    });
+
+    it('should send verification email with name', async () => {
+      const result = await emailService.sendVerificationEmail(
+        'user@example.com',
+        'test-token-123',
+        'John'
+      );
+
+      expect(result).toBe(true);
+      expect(mockSendMail).toHaveBeenCalled();
+    });
+
+    it('should return false when sending fails', async () => {
+      mockSendMail.mockRejectedValueOnce(new Error('Send failed'));
+
+      const result = await emailService.sendVerificationEmail(
+        'user@example.com',
+        'test-token-123'
+      );
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('sendPasswordResetEmail', () => {
+    beforeEach(() => {
+      process.env.SMTP_HOST = 'smtp.example.com';
+      emailService = new EmailService(mockConfig);
+    });
+
+    it('should send password reset email', async () => {
+      const result = await emailService.sendPasswordResetEmail(
+        'user@example.com',
+        'reset-token-456'
+      );
+
+      expect(result).toBe(true);
+      expect(mockSendMail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'user@example.com',
+          subject: 'Resetowanie hasła',
+        })
+      );
+    });
+
+    it('should send password reset email with name', async () => {
+      const result = await emailService.sendPasswordResetEmail(
+        'user@example.com',
+        'reset-token-456',
+        'Jane'
+      );
+
+      expect(result).toBe(true);
+      expect(mockSendMail).toHaveBeenCalled();
+    });
+  });
+
+  describe('sendAccountApprovedEmail', () => {
+    beforeEach(() => {
+      process.env.SMTP_HOST = 'smtp.example.com';
+      emailService = new EmailService(mockConfig);
+    });
+
+    it('should send account approved email', async () => {
+      const result =
+        await emailService.sendAccountApprovedEmail('user@example.com');
+
+      expect(result).toBe(true);
+      expect(mockSendMail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'user@example.com',
+          subject: 'Twoje konto zostało zatwierdzone',
+        })
+      );
+    });
+
+    it('should send account approved email with name', async () => {
+      const result = await emailService.sendAccountApprovedEmail(
+        'user@example.com',
+        'Bob'
+      );
+
+      expect(result).toBe(true);
+      expect(mockSendMail).toHaveBeenCalled();
+    });
+  });
+
+  describe('sendNewUserNotificationToAdmin', () => {
+    beforeEach(() => {
+      process.env.SMTP_HOST = 'smtp.example.com';
+      emailService = new EmailService(mockConfig);
+    });
+
+    it('should send new user notification to admin', async () => {
+      const result = await emailService.sendNewUserNotificationToAdmin(
+        'admin@example.com',
+        'newuser@example.com',
+        'New User',
+        '2024-01-15'
+      );
+
+      expect(result).toBe(true);
+      expect(mockSendMail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'admin@example.com',
+          subject: 'Nowa rejestracja użytkownika - wymaga zatwierdzenia',
+        })
+      );
+    });
+  });
+});
+
+describe('getEmailService', () => {
+  it('should return EmailService instance with default config', () => {
+    const service = getEmailService();
+
+    expect(service).toBeInstanceOf(EmailService);
   });
 });

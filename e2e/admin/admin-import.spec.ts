@@ -11,7 +11,7 @@ test.describe('Admin Data Import', () => {
     adminPage,
   }) => {
     // Navigate to import page
-    await adminPage.goto('/admin/import', { waitUntil: 'networkidle' });
+    await adminPage.goto('/admin/import');
 
     // Wait for page to load
     await expect(
@@ -42,10 +42,15 @@ test.describe('Admin Data Import', () => {
     });
 
     // Verify no errors were reported
-    await expect(adminPage.getByText(/błąd|błędy|error/i)).not.toBeVisible();
+    await expect(adminPage.getByText(/błąd|błędy|error/i)).toBeHidden();
 
     // Verify the imported data appears in the apartments page
-    await adminPage.goto('/admin/apartments', { waitUntil: 'networkidle' });
+    await adminPage.goto('/admin/apartments');
+
+    // Wait for page to load
+    await expect(
+      adminPage.getByRole('heading', { name: /Mieszkania|Wspólnoty/i })
+    ).toBeVisible();
 
     // Find the TEST02 card by its title
     const test02Card = adminPage
