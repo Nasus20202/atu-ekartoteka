@@ -34,7 +34,7 @@ services:
   ekartoteka:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile
     container_name: atu-ekartoteka
     restart: unless-stopped
     depends_on:
@@ -99,7 +99,7 @@ services:
   ekartoteka-migrations:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile
     container_name: atu-ekartoteka-migrations
     depends_on:
       db:
