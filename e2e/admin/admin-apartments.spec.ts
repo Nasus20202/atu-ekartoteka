@@ -7,7 +7,7 @@ import { expect, test } from '../fixtures';
 test.describe('Admin Apartment Browser', () => {
   test.describe('HOA List', () => {
     test('admin can view HOA list', async ({ adminPage }) => {
-      await adminPage.goto('/admin/apartments', { waitUntil: 'networkidle' });
+      await adminPage.goto('/admin/apartments');
 
       // Should see the apartments/HOA heading
       await expect(
@@ -16,14 +16,22 @@ test.describe('Admin Apartment Browser', () => {
     });
 
     test('admin sees seeded HOA', async ({ adminPage }) => {
-      await adminPage.goto('/admin/apartments', { waitUntil: 'networkidle' });
+      await adminPage.goto('/admin/apartments');
+
+      // Wait for page to load
+      await expect(
+        adminPage.getByRole('heading', { name: /Mieszkania|Wspólnoty/i })
+      ).toBeVisible();
 
       // Should see TEST01 HOA from seeded data
       await expect(adminPage.getByText('TEST01')).toBeVisible();
     });
 
     test('HOA card shows apartment count', async ({ adminPage }) => {
-      await adminPage.goto('/admin/apartments', { waitUntil: 'networkidle' });
+      await adminPage.goto('/admin/apartments');
+
+      // Wait for page to load
+      await expect(adminPage.getByText('TEST01')).toBeVisible();
 
       // TEST01 HOA should show apartment count
       const hoaCard = adminPage.locator('.text-card-foreground').filter({
@@ -35,7 +43,10 @@ test.describe('Admin Apartment Browser', () => {
     });
 
     test('admin can click to view apartments in HOA', async ({ adminPage }) => {
-      await adminPage.goto('/admin/apartments', { waitUntil: 'networkidle' });
+      await adminPage.goto('/admin/apartments');
+
+      // Wait for page to load
+      await expect(adminPage.getByText('TEST01')).toBeVisible();
 
       // Find TEST01 card and click "Zobacz mieszkania"
       const hoaCard = adminPage.locator('.text-card-foreground').filter({
@@ -50,7 +61,10 @@ test.describe('Admin Apartment Browser', () => {
 
   test.describe('Apartments List', () => {
     test('admin can view apartments in HOA', async ({ adminPage }) => {
-      await adminPage.goto('/admin/apartments', { waitUntil: 'networkidle' });
+      await adminPage.goto('/admin/apartments');
+
+      // Wait for page to load
+      await expect(adminPage.getByText('TEST01')).toBeVisible();
 
       // Navigate to TEST01 HOA apartments
       const hoaCard = adminPage.locator('.text-card-foreground').filter({
@@ -63,7 +77,10 @@ test.describe('Admin Apartment Browser', () => {
     });
 
     test('apartment list shows owner info', async ({ adminPage }) => {
-      await adminPage.goto('/admin/apartments', { waitUntil: 'networkidle' });
+      await adminPage.goto('/admin/apartments');
+
+      // Wait for page to load
+      await expect(adminPage.getByText('TEST01')).toBeVisible();
 
       // Navigate to TEST01 HOA apartments
       const hoaCard = adminPage.locator('.text-card-foreground').filter({
@@ -76,7 +93,10 @@ test.describe('Admin Apartment Browser', () => {
     });
 
     test('admin can navigate back to HOA list', async ({ adminPage }) => {
-      await adminPage.goto('/admin/apartments', { waitUntil: 'networkidle' });
+      await adminPage.goto('/admin/apartments');
+
+      // Wait for page to load
+      await expect(adminPage.getByText('TEST01')).toBeVisible();
 
       // Navigate to TEST01 HOA apartments
       const hoaCard = adminPage.locator('.text-card-foreground').filter({
@@ -94,7 +114,10 @@ test.describe('Admin Apartment Browser', () => {
 
   test.describe('Apartment Details', () => {
     test('admin can view apartment details', async ({ adminPage }) => {
-      await adminPage.goto('/admin/apartments', { waitUntil: 'networkidle' });
+      await adminPage.goto('/admin/apartments');
+
+      // Wait for page to load
+      await expect(adminPage.getByText('TEST01')).toBeVisible();
 
       // Navigate to TEST01 HOA apartments
       const hoaCard = adminPage.locator('.text-card-foreground').filter({
@@ -114,7 +137,10 @@ test.describe('Admin Apartment Browser', () => {
     });
 
     test('apartment details shows owner info', async ({ adminPage }) => {
-      await adminPage.goto('/admin/apartments', { waitUntil: 'networkidle' });
+      await adminPage.goto('/admin/apartments');
+
+      // Wait for page to load
+      await expect(adminPage.getByText('TEST01')).toBeVisible();
 
       // Navigate to TEST01 HOA apartments
       const hoaCard = adminPage.locator('.text-card-foreground').filter({
@@ -127,7 +153,10 @@ test.describe('Admin Apartment Browser', () => {
     });
 
     test('apartment details shows address', async ({ adminPage }) => {
-      await adminPage.goto('/admin/apartments', { waitUntil: 'networkidle' });
+      await adminPage.goto('/admin/apartments');
+
+      // Wait for page to load
+      await expect(adminPage.getByText('TEST01')).toBeVisible();
 
       // Navigate to TEST01 HOA apartments
       const hoaCard = adminPage.locator('.text-card-foreground').filter({
@@ -141,7 +170,10 @@ test.describe('Admin Apartment Browser', () => {
     });
 
     test('apartment list shows external ID', async ({ adminPage }) => {
-      await adminPage.goto('/admin/apartments', { waitUntil: 'networkidle' });
+      await adminPage.goto('/admin/apartments');
+
+      // Wait for page to load
+      await expect(adminPage.getByText('TEST01')).toBeVisible();
 
       // Navigate to TEST01 HOA apartments
       const hoaCard = adminPage.locator('.text-card-foreground').filter({

@@ -9,6 +9,7 @@ test.describe('Access Control', () => {
     await page.goto('/dashboard');
 
     await page.waitForURL('**/login**', { timeout: 10000 });
+    await expect(page).toHaveURL(/\/login/);
   });
 
   test('non-admin cannot access admin pages', async ({ userPage }) => {

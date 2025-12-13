@@ -3,6 +3,7 @@ import nextVitals from 'eslint-config-next/core-web-vitals';
 import nextTs from 'eslint-config-next/typescript';
 import prettierConfig from 'eslint-config-prettier';
 import importPlugin from 'eslint-plugin-import';
+import playwright from 'eslint-plugin-playwright';
 import prettierPlugin from 'eslint-plugin-prettier';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import unusedImports from 'eslint-plugin-unused-imports';
@@ -67,12 +68,22 @@ const eslintConfig = defineConfig([
       '@typescript-eslint/no-explicit-any': 'off',
     },
   },
-  // E2E tests - allow relative imports and disable React hooks rules
+  // E2E tests - Playwright ESLint rules
   {
     files: ['e2e/**/*.ts'],
+    ...playwright.configs['flat/recommended'],
     rules: {
+      ...playwright.configs['flat/recommended'].rules,
       'no-restricted-imports': 'off',
       'react-hooks/rules-of-hooks': 'off',
+      // Playwright-specific rules
+      'playwright/expect-expect': 'error',
+      'playwright/no-conditional-in-test': 'warn',
+      'playwright/no-focused-test': 'error',
+      'playwright/no-skipped-test': 'warn',
+      'playwright/valid-expect': 'error',
+      'playwright/no-wait-for-timeout': 'warn',
+      'playwright/no-force-option': 'warn',
     },
   },
   // Override default ignores of eslint-config-next.
@@ -85,6 +96,7 @@ const eslintConfig = defineConfig([
     'node_modules/**',
     'src/generated/**',
     'playwright-report/**',
+    'coverage/**',
   ]),
 ]);
 
