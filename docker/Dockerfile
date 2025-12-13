@@ -1,29 +1,28 @@
 FROM node:24.12-alpine AS base
+WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Install dependencies only when needed
-FROM base AS deps
-WORKDIR /app
-COPY package.json pnpm-lock.yaml prisma.config.ts ./
-COPY prisma ./prisma
-
+# Install all dependencies (for building)
+FROM base AS builder-deps
+COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile
 
-# Rebuild the source code only when needed
+# Install only production dependencies (for runner)
+FROM base AS runner-deps
+COPY package.json pnpm-lock.yaml ./
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile --prod --ignore-scripts
+
+# Build the application
 FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+COPY --from=builder-deps /app/node_modules ./node_modules
 COPY . .
 
-# Set a dummy DATABASE_URL for Prisma generation (not used during build)
 ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 
-# Generate Prisma Client and build the application
 RUN pnpm exec prisma generate && pnpm build
 
-# Production image, copy all the files and run next
+# Production image
 FROM base AS runner
-WORKDIR /app
 
 ENV NODE_ENV=production \
     PORT=3000 \
@@ -32,8 +31,8 @@ ENV NODE_ENV=production \
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-COPY --from=builder --chown=nextjs:nodejs /app/pnpm-lock.yaml ./pnpm-lock.yaml
-RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm install prisma && chown -R nextjs:nodejs /app/node_modules
+COPY --from=runner-deps --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma/
 COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
