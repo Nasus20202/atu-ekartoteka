@@ -1,3 +1,4 @@
+import iconv from 'iconv-lite';
 import { describe, expect, it } from 'vitest';
 
 import { parseNalCzynszBuffer } from '@/lib/parsers/nal-czynsz-parser';
@@ -7,7 +8,6 @@ describe('nal-czynsz-parser', () => {
     it('should parse buffer with ISO 8859-2 encoding', async () => {
       const mockData =
         'W00162#hoa1-hoa1-00000-00001M#01/01/2025#31/01/2025#202501#1#Zarządzanie Nieruchomością Wspólną#1#szt#73#73,00\n';
-      const iconv = await import('iconv-lite');
       const buffer = iconv.encode(mockData, 'iso-8859-2');
       const entries = await parseNalCzynszBuffer(buffer);
 
@@ -19,7 +19,6 @@ describe('nal-czynsz-parser', () => {
     it('should correctly parse entry fields', async () => {
       const mockData =
         'W00162#hoa1-hoa1-00000-00001M#01/01/2025#31/01/2025#202501#1#Zarządzanie Nieruchomością Wspólną#1#szt#73#73,00\n';
-      const iconv = await import('iconv-lite');
       const buffer = iconv.encode(mockData, 'iso-8859-2');
       const entries = await parseNalCzynszBuffer(buffer);
       const firstEntry = entries[0];
@@ -44,7 +43,6 @@ describe('nal-czynsz-parser', () => {
     it('should parse dates correctly', async () => {
       const mockData =
         'W00162#hoa1-hoa1-00000-00001M#01/01/2025#31/01/2025#202501#1#Test#1#szt#73#73,00\n';
-      const iconv = await import('iconv-lite');
       const buffer = iconv.encode(mockData, 'iso-8859-2');
       const entries = await parseNalCzynszBuffer(buffer);
       const firstEntry = entries[0];
@@ -60,7 +58,6 @@ describe('nal-czynsz-parser', () => {
     it('should parse decimal numbers with comma', async () => {
       const mockData =
         'W00162#hoa1-hoa1-00000-00001M#01/01/2025#31/01/2025#202501#1#Test#1,5#szt#73,50#110,25\n';
-      const iconv = await import('iconv-lite');
       const buffer = iconv.encode(mockData, 'iso-8859-2');
       const entries = await parseNalCzynszBuffer(buffer);
       const firstEntry = entries[0];
@@ -73,7 +70,6 @@ describe('nal-czynsz-parser', () => {
     it('should handle Polish characters correctly', async () => {
       const mockData =
         'W00162#hoa1-hoa1-00000-00001M#01/01/2025#31/01/2025#202501#1#Koszta zarządu - eksploatacja#1#szt.#245#245,00\n';
-      const iconv = await import('iconv-lite');
       const buffer = iconv.encode(mockData, 'iso-8859-2');
       const entries = await parseNalCzynszBuffer(buffer);
 
@@ -82,7 +78,6 @@ describe('nal-czynsz-parser', () => {
 
     it('should skip lines with insufficient fields', async () => {
       const mockData = 'W00162#hoa1-hoa1-00000-00001M#01/01/2025\n';
-      const iconv = await import('iconv-lite');
       const buffer = iconv.encode(mockData, 'iso-8859-2');
       const entries = await parseNalCzynszBuffer(buffer);
 
@@ -93,7 +88,6 @@ describe('nal-czynsz-parser', () => {
       const mockData =
         'W00162#hoa1-hoa1-00000-00001M#01/01/2025#31/01/2025#202501#1#Test1#1#szt#73#73,00\n' +
         'W00163#hoa1-hoa1-00000-00002M#01/01/2025#31/01/2025#202501#1#Test2#1#szt#73#73,00\n';
-      const iconv = await import('iconv-lite');
       const buffer = iconv.encode(mockData, 'iso-8859-2');
       const entries = await parseNalCzynszBuffer(buffer);
 
@@ -106,7 +100,6 @@ describe('nal-czynsz-parser', () => {
       const mockData =
         'W00162#hoa1-hoa1-00000-00001M#01/01/2025#31/01/2025#202501#1#Zarządzanie#1#szt#73#73,00\n' +
         'W00162#hoa1-hoa1-00000-00001M#01/01/2025#31/01/2025#202501#2#Eksploatacja#1#szt#245#245,00\n';
-      const iconv = await import('iconv-lite');
       const buffer = iconv.encode(mockData, 'iso-8859-2');
       const entries = await parseNalCzynszBuffer(buffer);
 

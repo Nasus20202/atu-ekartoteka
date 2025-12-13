@@ -1,10 +1,10 @@
+import iconv from 'iconv-lite';
 import { describe, expect, it } from 'vitest';
 
 import { parsePowCzynszFile } from '@/lib/parsers/pow-czynsz-parser';
 
 describe('parsePowCzynszFile', () => {
   it('should parse pow_czynsz.txt file correctly', async () => {
-    const iconv = await import('iconv-lite');
     const content = `Header line 1
 Header line 2
 #
@@ -39,7 +39,6 @@ W00163#hoa1-hoa1-00000-00002M#1#Koszta zarządu - eksploatacja#1#szt.#245#245,00
   });
 
   it('should handle empty file', async () => {
-    const iconv = await import('iconv-lite');
     const content = '';
     const buffer = iconv.encode(content, 'iso-8859-2');
     const result = await parsePowCzynszFile(buffer);
@@ -49,7 +48,6 @@ W00163#hoa1-hoa1-00000-00002M#1#Koszta zarządu - eksploatacja#1#szt.#245#245,00
   });
 
   it('should extract header and footer', async () => {
-    const iconv = await import('iconv-lite');
     const content = `Header line 1
 Header line 2
 #

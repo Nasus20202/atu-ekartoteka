@@ -1,3 +1,4 @@
+import iconv from 'iconv-lite';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -15,7 +16,6 @@ describe('apartment-parser', () => {
     it('should parse buffer with ISO 8859-2 encoding', async () => {
       const mockData =
         'W1#Jan Kowalski##EXT001#ul. Testowa#1#1#00-001#Warszawa#jan@example.com##50.5#250\n';
-      const iconv = await import('iconv-lite');
       const buffer = iconv.encode(mockData, 'iso-8859-2');
       const entries = await parseApartmentBuffer(buffer);
 
@@ -27,7 +27,6 @@ describe('apartment-parser', () => {
     it('should correctly parse entry fields', async () => {
       const mockData =
         'W1#Jan Kowalski##EXT001#ul. Testowa#1#1#00-001#Warszawa#jan@example.com###50.5#250\n';
-      const iconv = await import('iconv-lite');
       const buffer = iconv.encode(mockData, 'iso-8859-2');
       const entries = await parseApartmentBuffer(buffer);
       const firstEntry = entries[0];
@@ -49,7 +48,6 @@ describe('apartment-parser', () => {
     it('should correctly identify owner entries', async () => {
       const mockData =
         'W1#Owner#owner@example.com#EXT001#Address#1#1#00-001#City####50#250\nL1#Tenant#tenant@example.com#EXT001#Address#1#1#00-001#City####50#250\n';
-      const iconv = await import('iconv-lite');
       const buffer = iconv.encode(mockData, 'iso-8859-2');
       const entries = await parseApartmentBuffer(buffer);
 
@@ -61,7 +59,6 @@ describe('apartment-parser', () => {
     it('should parse area and height as numbers', async () => {
       const mockData =
         'W1#Owner##EXT001#Address#1#1#00-001#City#owner@example.com###50.5#250.75\n';
-      const iconv = await import('iconv-lite');
       const buffer = iconv.encode(mockData, 'iso-8859-2');
       const entries = await parseApartmentBuffer(buffer);
       const firstEntry = entries[0];
@@ -75,7 +72,6 @@ describe('apartment-parser', () => {
     it('should handle Polish characters correctly', async () => {
       const mockData =
         'W1#Janusz Kowalski##EXT001#ul. Łąkowa#1#1#00-001#Kraków#janusz@example.com###50.5#250\n';
-      const iconv = await import('iconv-lite');
       const buffer = iconv.encode(mockData, 'iso-8859-2');
       const entries = await parseApartmentBuffer(buffer);
 
@@ -87,7 +83,6 @@ describe('apartment-parser', () => {
     it('should handle owner names with one hashtag', async () => {
       const mockData =
         'W1#Jan#Kowalski##EXT001#ul. Testowa#1#1#00-001#Warszawa#jan@example.com###50.5#250\n';
-      const iconv = await import('iconv-lite');
       const buffer = iconv.encode(mockData, 'iso-8859-2');
       const entries = await parseApartmentBuffer(buffer);
 
@@ -100,7 +95,6 @@ describe('apartment-parser', () => {
     it('should handle owner names with multiple hashtags', async () => {
       const mockData =
         'W1#Jan#Piotr#Kowalski##EXT001#ul. Testowa#1#1#00-001#Warszawa#jan@example.com###50.5#250\n';
-      const iconv = await import('iconv-lite');
       const buffer = iconv.encode(mockData, 'iso-8859-2');
       const entries = await parseApartmentBuffer(buffer);
 

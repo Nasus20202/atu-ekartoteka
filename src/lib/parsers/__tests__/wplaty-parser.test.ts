@@ -1,10 +1,10 @@
+import iconv from 'iconv-lite';
 import { describe, expect, it } from 'vitest';
 
 import { parseWplatyFile } from '@/lib/parsers/wplaty-parser';
 
 describe('parseWplatyFile', () => {
   it('should parse wplaty.txt file correctly', async () => {
-    const iconv = await import('iconv-lite');
     const content = `W00162#hoa1-hoa1-00000-00001M#2025#01/01/2025#30/11/2025#0#20#0#0#318#620#318#0#318#0#318#0#318#638#318#0#318#0#318#636#318#636#318#0#318#0#0#0#-948,00
 W00163#hoa1-hoa1-00000-00002M#2025#01/01/2025#30/11/2025#0#300#0#0#318#310#318#310#318#318#318#318#318#318#318#318#318#0#318#0#318#318#318#318#318#0#0#0#-670,00`;
     const buffer = iconv.encode(content, 'iso-8859-2');
@@ -30,7 +30,6 @@ W00163#hoa1-hoa1-00000-00002M#2025#01/01/2025#30/11/2025#0#300#0#0#318#310#318#3
   });
 
   it('should handle empty file', async () => {
-    const iconv = await import('iconv-lite');
     const content = '';
     const buffer = iconv.encode(content, 'iso-8859-2');
     const result = await parseWplatyFile(buffer);
@@ -39,7 +38,6 @@ W00163#hoa1-hoa1-00000-00002M#2025#01/01/2025#30/11/2025#0#300#0#0#318#310#318#3
   });
 
   it('should parse dates correctly', async () => {
-    const iconv = await import('iconv-lite');
     const content = `W00162#hoa1-hoa1-00000-00001M#2025#01/01/2025#31/12/2025#100,50#200,75#0#0#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#100#0#0#-1180,00`;
     const buffer = iconv.encode(content, 'iso-8859-2');
 
@@ -51,7 +49,6 @@ W00163#hoa1-hoa1-00000-00002M#2025#01/01/2025#30/11/2025#0#300#0#0#318#310#318#3
   });
 
   it('should handle decimal values with comma', async () => {
-    const iconv = await import('iconv-lite');
     const parts: string[] = [];
     parts.push(
       'W00162',
