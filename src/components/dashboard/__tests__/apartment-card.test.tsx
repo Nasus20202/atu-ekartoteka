@@ -1,18 +1,9 @@
 import { render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { ApartmentCard } from '@/components/dashboard/apartment-card';
 
 describe('ApartmentCard', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2025-01-01'));
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
   const mockApartment = {
     id: 'apt-1',
     address: 'ul. Testowa 1',
@@ -68,7 +59,7 @@ describe('ApartmentCard', () => {
     const paymentsLink = screen.getByRole('link', { name: /wpłaty/i });
     expect(paymentsLink).toHaveAttribute(
       'href',
-      '/dashboard/payments/apt-1/2025'
+      `/dashboard/payments/apt-1/${new Date().getFullYear()}`
     );
   });
 
