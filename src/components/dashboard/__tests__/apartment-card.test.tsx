@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ApartmentCard } from '@/components/dashboard/apartment-card';
 
@@ -7,6 +7,10 @@ describe('ApartmentCard', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2025-01-01'));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   const mockApartment = {
