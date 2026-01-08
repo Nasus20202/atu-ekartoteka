@@ -54,4 +54,4 @@ prisma/*.db
 prisma/*.db-journal
 
 # Test data
-/data/
+/data/package-lock.json

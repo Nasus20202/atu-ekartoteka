@@ -1,9 +1,14 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ApartmentCard } from '@/components/dashboard/apartment-card';
 
 describe('ApartmentCard', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2025-01-01'));
+  });
+
   const mockApartment = {
     id: 'apt-1',
     address: 'ul. Testowa 1',
