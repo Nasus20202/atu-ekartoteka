@@ -59,7 +59,7 @@ describe('ApartmentCard', () => {
     const paymentsLink = screen.getByRole('link', { name: /wpłaty/i });
     expect(paymentsLink).toHaveAttribute(
       'href',
-      '/dashboard/payments/apt-1/2025'
+      `/dashboard/payments/apt-1/${new Date().getFullYear()}`
     );
   });
 
