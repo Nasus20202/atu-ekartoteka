@@ -1,6 +1,6 @@
 services:
   otel-lgtm:
-    image: grafana/otel-lgtm:0.15.0
+    image: grafana/otel-lgtm:0.16.0
     container_name: atu-otel-lgtm
     restart: unless-stopped
     ports:
