@@ -82,7 +82,7 @@
     "eslint-plugin-unused-imports": "^4.3.0",
     "husky": "^9.1.7",
     "iconv-lite": "^0.7.1",
-    "import-in-the-middle": "^2.0.0",
+    "import-in-the-middle": "^3.0.0",
     "jsdom": "^27.3.0",
     "lint-staged": "^16.2.7",
     "lucide-react": "^0.563.0",
