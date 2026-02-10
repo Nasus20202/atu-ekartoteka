@@ -50,12 +50,7 @@ jobs:
           # Get current version before bumping
           CURRENT_VERSION=$(git tag --sort=-v:refname | head -n 1)
           
-          # Bump version
-          VERSION=$(pnpm version "$INCREMENT" --no-git-tag-version)
-          echo "New version: $VERSION"
-          echo "new-version=$VERSION" >> $GITHUB_OUTPUT
-          
-          # Get commits for changelog
+          # Get commits for changelog BEFORE bumping version
           if [ -z "$CURRENT_VERSION" ]; then
             echo "No previous tag found, using all commits"
             COMMITS=$(git log --format="- %s" --no-merges)
@@ -63,6 +58,11 @@ jobs:
             echo "Previous tag: $CURRENT_VERSION"
             COMMITS=$(git log "${CURRENT_VERSION}..HEAD" --format="- %s" --no-merges)
           fi
+          
+          # Bump version (without creating commit/tag)
+          VERSION=$(pnpm version "$INCREMENT" --no-git-tag-version)
+          echo "New version: $VERSION"
+          echo "new-version=$VERSION" >> $GITHUB_OUTPUT
           
           # Get current date
           RELEASE_DATE=$(date +%Y-%m-%d)
@@ -73,22 +73,17 @@ jobs:
           ${COMMITS}
           "
           
-          # Update CHANGELOG.md - replace [Unreleased] section with new version and add empty [Unreleased]
+          # Update CHANGELOG.md - prepend new version after header
           if [ -f CHANGELOG.md ]; then
             # Create temporary file with updated changelog
             awk -v new_entry="$NEW_ENTRY" '
-              /^## \[Unreleased\]/ {
+              /^and this project adheres to/ {
                 print $0
                 print ""
                 print new_entry
-                # Skip content until next version header
-                in_unreleased = 1
                 next
               }
-              /^## \[/ && in_unreleased {
-                in_unreleased = 0
-              }
-              !in_unreleased { print }
+              { print }
             ' CHANGELOG.md > CHANGELOG.md.tmp
             mv CHANGELOG.md.tmp CHANGELOG.md
           else

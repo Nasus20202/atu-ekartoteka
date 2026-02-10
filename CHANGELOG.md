@@ -5,11 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
 ## [0.5.20] - 2026-02-10
 
-- 0.5.20
 - chore(deps): update dependency @types/node to v25.2.3 (#160)
 - chore(deps): update dependency @vitejs/plugin-react to v5.1.4 (#159)
 - chore(deps): update dependency pino to v10.3.1 (#158)
@@ -35,7 +32,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.19] - 2026-01-28
 
-- 0.5.19
 - chore(deps): update dependency @types/node to v25.1.0 (#137)
 - chore(deps): update nextjs monorepo to v16.1.6 (#136)
 - chore(deps): update dependency import-in-the-middle to v2.0.6 (#135)
@@ -58,7 +54,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.18] - 2026-01-21
 
-- 0.5.18
 - chore(deps): update prisma monorepo to v7.3.0 (#118)
 - chore(deps): update dependency pg to v8.17.2 (#117)
 - chore(deps): update dependency import-in-the-middle to v2.0.5 (#116)
@@ -67,7 +62,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.17] - 2026-01-19
 
-- 0.5.17
 - chore(deps): update dependency pino to v10.2.1 (#113)
 - chore(deps): update dependency @testing-library/react to v16.3.2 (#112)
 - chore(deps): update nextjs monorepo to v16.1.3 (#110)
@@ -89,7 +83,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.16] - 2026-01-13
 
-- 0.5.16
 - chore(deps): update dependency @types/node to v25.0.8 (#95)
 - chore(deps): update dependency @types/node to v25.0.7 (#94)
 - chore(deps): update dependency import-in-the-middle to v2.0.2 (#93)
@@ -112,7 +105,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.15] - 2025-12-23
 
-- 0.5.15
 - chore(deps): update nextjs monorepo to v16.1.1 (#76)
 - chore(deps): update dependency nodemailer to v7.0.12 (#75)
 - chore(deps): update dependency import-in-the-middle to v2.0.1 (#74)
@@ -129,7 +121,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.14] - 2025-12-13
 
-- 0.5.14
 - feat: adjust dockerfile
 - feat: enable test coverage
 - chore(deps): update dependency iconv-lite to v0.7.1 (#51)
@@ -148,7 +139,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.13] - 2025-12-10
 
-- 0.5.13
 - fix: pnpm lockfile
 - feat: hash one time tokens
 - chore(deps): update dependency @types/pg to v8.16.0 (#49)
@@ -158,7 +148,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.12] - 2025-12-09
 
-- 0.5.12
 - chore(deps): update dependency @marsidev/react-turnstile to v1.4.0
 - chore: add license
 - chore(deps): update dependency @types/node to v24.10.2
@@ -168,13 +157,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.11] - 2025-12-07
 
-- 0.5.11
 - test: add missing test for email template loader
 - fix: security issues
 
 ## [0.5.10] - 2025-12-06
 
-- 0.5.10
 - feat: add security scan workflow
 - fix: emails should not be sent on all user updates
 - fix: hide dashboard buttons if no data is available
@@ -184,35 +171,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.9] - 2025-12-05
 
-- 0.5.9
 - fix: otel resource for metrics
 
 ## [0.5.8] - 2025-12-04
 
-- 0.5.8
 - feat: add grafana dashboard
 - feat: improve otel integration
 
 ## [0.5.7] - 2025-12-04
 
-- 0.5.7
 - feat: add trace id to logger
 
 ## [0.5.6] - 2025-12-04
 
-- 0.5.6
 - fix: skip healtchecks when tracing
 
 ## [0.5.5] - 2025-12-04
 
-- 0.5.5
 - feat: add opentelemetry tracing
 - chore(deps): update actions/upload-artifact action to v5
 - feat: add e2e tests
 
 ## [0.5.4] - 2025-12-03
 
-- 0.5.4
 - chore: update prisma read replicas extension to v0.5.0
 - fix(deps): update react monorepo to v19.2.1
 - fix(deps): update nextjs monorepo to v16.0.7
@@ -223,7 +204,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.3] - 2025-11-30
 
-- 0.5.3
 - feat: improve apartment sorting logic
 - feat: update admin apartments list sorting and URL state
 - feat: update payments tables
@@ -234,19 +214,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.2] - 2025-11-29
 
-- 0.5.2
 - chore(deps): update dependency prettier to v3.7.2
 - fix: inactive apartments should be visible
 
 ## [0.5.1] - 2025-11-28
 
-- 0.5.1
 - fix: migration script
 - feat: owners should be respected during import
 
 ## [0.5.0] - 2025-11-27
 
-- 0.5.0
 - chore: bump up prettier
 - feat: add stats to import page
 - feat: make import process more reliable and fast
@@ -258,7 +235,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.4.4] - 2025-11-25
 
-- 0.4.4
 - chore: skip emails when not configured
 - chore(deps): update dependency @types/react to v19.2.7
 - fix(deps): update nextjs monorepo to v16.0.4
@@ -270,24 +246,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.4.3] - 2025-11-23
 
-- 0.4.3
 - fix: email verification on idp login
 
 ## [0.4.2] - 2025-11-23
 
-- 0.4.2
 - refactor: replace AuthMethod string literals with enum
 - feat: make navbar collapsible on mobile with optimized DB calls
 
 ## [0.4.1] - 2025-11-23
 
-- 0.4.1
 - fix: readonly replicas
 - chore: remove unused workflow parameters
 
 ## [0.4.0] - 2025-11-23
 
-- 0.4.0
 - fix: resolve all TypeScript implicit any type errors
 - feat: add database read replicas support
 - fix: tests
@@ -298,18 +270,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.4] - 2025-11-22
 
-- 0.3.4
 - fix: turnstile on second attempt
 
 ## [0.3.3] - 2025-11-22
 
-- 0.3.3
 - chore: add cf turnstile site key to build env
 - chore: remove unused script
 
 ## [0.3.2] - 2025-11-21
 
-- 0.3.2
 - format: run prettier
 - chore(deps): update vitest monorepo to v4.0.13
 - feat: add cloudflare turnstile
@@ -318,13 +287,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.1] - 2025-11-21
 
-- 0.3.1
 - chore: adjust placeholders
 - feat: add tracking script
 
 ## [0.3.0] - 2025-11-21
 
-- 0.3.0
 - refactor: layout
 - feat: add email notifications
 
