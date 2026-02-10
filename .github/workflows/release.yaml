@@ -47,24 +47,21 @@ jobs:
         env:
           INCREMENT: ${{ github.event.inputs.increment }}
         run: |
-          VERSION=$(pnpm version "$INCREMENT")
+          # Get current version before bumping
+          CURRENT_VERSION=$(git tag --sort=-v:refname | head -n 1)
+          
+          # Bump version
+          VERSION=$(pnpm version "$INCREMENT" --no-git-tag-version)
           echo "New version: $VERSION"
           echo "new-version=$VERSION" >> $GITHUB_OUTPUT
-
-      - name: Update CHANGELOG.md
-        env:
-          VERSION: ${{ steps.increment_version.outputs.new-version }}
-        run: |
-          # Get the previous tag (before the new one was created)
-          PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -v "^${VERSION}$" | head -n 1)
           
           # Get commits for changelog
-          if [ -z "$PREVIOUS_TAG" ]; then
+          if [ -z "$CURRENT_VERSION" ]; then
             echo "No previous tag found, using all commits"
-            COMMITS=$(git log --format="- %s (%h)" --no-merges HEAD~1)
+            COMMITS=$(git log --format="- %s (%h)" --no-merges)
           else
-            echo "Previous tag: $PREVIOUS_TAG"
-            COMMITS=$(git log "${PREVIOUS_TAG}..HEAD~1" --format="- %s (%h)" --no-merges)
+            echo "Previous tag: $CURRENT_VERSION"
+            COMMITS=$(git log "${CURRENT_VERSION}..HEAD" --format="- %s (%h)" --no-merges)
           fi
           
           # Get current date
@@ -76,7 +73,7 @@ jobs:
           ${COMMITS}
           "
           
-          # Update CHANGELOG.md - insert after "## [Unreleased]" line
+          # Update CHANGELOG.md - replace [Unreleased] section with new version and add empty [Unreleased]
           if [ -f CHANGELOG.md ]; then
             # Create temporary file with updated changelog
             awk -v new_entry="$NEW_ENTRY" '
@@ -84,18 +81,24 @@ jobs:
                 print $0
                 print ""
                 print new_entry
+                # Skip content until next version header
+                in_unreleased = 1
                 next
               }
-              { print }
+              /^## \[/ && in_unreleased {
+                in_unreleased = 0
+              }
+              !in_unreleased { print }
             ' CHANGELOG.md > CHANGELOG.md.tmp
             mv CHANGELOG.md.tmp CHANGELOG.md
-            
-            # Commit the changelog update
-            git add CHANGELOG.md
-            git commit -m "Update CHANGELOG.md for ${VERSION}"
           else
             echo "Warning: CHANGELOG.md not found"
           fi
+          
+          # Commit version bump and changelog together
+          git add package.json CHANGELOG.md
+          git commit -m "${VERSION}"
+          git tag "${VERSION}"
 
       - name: Push new version ${{ steps.increment_version.outputs.new-version }}
         run: git push --follow-tags
