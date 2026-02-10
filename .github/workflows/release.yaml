@@ -55,14 +55,64 @@ jobs:
           echo "New version: $VERSION"
           echo "new-version=$VERSION" >> $GITHUB_OUTPUT
           
-          # Get commits for changelog
+          # Function to categorize commits
+          categorize_commit() {
+            local message="$1"
+            local hash="$2"
+            local msg_lower=$(echo "$message" | tr '[:upper:]' '[:lower:]')
+            
+            if echo "$msg_lower" | grep -qE '^(feat|feature|add)'; then
+              echo "Added|$message|$hash"
+            elif echo "$msg_lower" | grep -qE '^(fix|bugfix|hotfix)'; then
+              echo "Fixed|$message|$hash"
+            elif echo "$msg_lower" | grep -qE '^(update|change|modify|refactor|improve)'; then
+              echo "Changed|$message|$hash"
+            elif echo "$msg_lower" | grep -qE '^(remove|delete)'; then
+              echo "Removed|$message|$hash"
+            elif echo "$msg_lower" | grep -qE '^(deprecate)'; then
+              echo "Deprecated|$message|$hash"
+            elif echo "$msg_lower" | grep -qE '^(security|vuln)'; then
+              echo "Security|$message|$hash"
+            else
+              if echo "$msg_lower" | grep -qE '(add|new|create|implement)'; then
+                echo "Added|$message|$hash"
+              elif echo "$msg_lower" | grep -qE '(fix|repair|resolve|correct)'; then
+                echo "Fixed|$message|$hash"
+              elif echo "$msg_lower" | grep -qE '(update|change|modify|refactor|improve)'; then
+                echo "Changed|$message|$hash"
+              elif echo "$msg_lower" | grep -qE '(remove|delete)'; then
+                echo "Removed|$message|$hash"
+              else
+                echo "Changed|$message|$hash"
+              fi
+            fi
+          }
+          
+          # Get commits and categorize them
           if [ -z "$CURRENT_VERSION" ]; then
             echo "No previous tag found, using all commits"
-            COMMITS=$(git log --format="- %s (%h)" --no-merges)
+            RAW_COMMITS=$(git log --format="%s|%h" --no-merges)
           else
             echo "Previous tag: $CURRENT_VERSION"
-            COMMITS=$(git log "${CURRENT_VERSION}..HEAD" --format="- %s (%h)" --no-merges)
+            RAW_COMMITS=$(git log "${CURRENT_VERSION}..HEAD" --format="%s|%h" --no-merges)
           fi
+          
+          # Categorize commits
+          declare -A CATEGORIZED
+          while IFS='|' read -r message hash; do
+            result=$(categorize_commit "$message" "$hash")
+            category=$(echo "$result" | cut -d'|' -f1)
+            CATEGORIZED[$category]+="- ${message} (${hash})"$'\n'
+          done <<< "$RAW_COMMITS"
+          
+          # Build changelog sections in order
+          CHANGELOG_SECTIONS=""
+          for category in "Added" "Changed" "Deprecated" "Removed" "Fixed" "Security"; do
+            if [ -n "${CATEGORIZED[$category]}" ]; then
+              CHANGELOG_SECTIONS+="### ${category}"$'\n'
+              CHANGELOG_SECTIONS+="${CATEGORIZED[$category]}"$'\n'
+            fi
+          done
           
           # Get current date
           RELEASE_DATE=$(date +%Y-%m-%d)
@@ -70,8 +120,7 @@ jobs:
           # Create the new changelog entry
           NEW_ENTRY="## [${VERSION#v}] - ${RELEASE_DATE}
 
-          ${COMMITS}
-          "
+          ${CHANGELOG_SECTIONS}"
           
           # Update CHANGELOG.md - replace [Unreleased] section with new version and add empty [Unreleased]
           if [ -f CHANGELOG.md ]; then
@@ -108,22 +157,74 @@ jobs:
         env:
           VERSION: ${{ steps.increment_version.outputs.new-version }}
         run: |
+          # Function to categorize commits
+          categorize_commit() {
+            local message="$1"
+            local hash="$2"
+            local msg_lower=$(echo "$message" | tr '[:upper:]' '[:lower:]')
+            
+            if echo "$msg_lower" | grep -qE '^(feat|feature|add)'; then
+              echo "Added|$message|$hash"
+            elif echo "$msg_lower" | grep -qE '^(fix|bugfix|hotfix)'; then
+              echo "Fixed|$message|$hash"
+            elif echo "$msg_lower" | grep -qE '^(update|change|modify|refactor|improve)'; then
+              echo "Changed|$message|$hash"
+            elif echo "$msg_lower" | grep -qE '^(remove|delete)'; then
+              echo "Removed|$message|$hash"
+            elif echo "$msg_lower" | grep -qE '^(deprecate)'; then
+              echo "Deprecated|$message|$hash"
+            elif echo "$msg_lower" | grep -qE '^(security|vuln)'; then
+              echo "Security|$message|$hash"
+            else
+              if echo "$msg_lower" | grep -qE '(add|new|create|implement)'; then
+                echo "Added|$message|$hash"
+              elif echo "$msg_lower" | grep -qE '(fix|repair|resolve|correct)'; then
+                echo "Fixed|$message|$hash"
+              elif echo "$msg_lower" | grep -qE '(update|change|modify|refactor|improve)'; then
+                echo "Changed|$message|$hash"
+              elif echo "$msg_lower" | grep -qE '(remove|delete)'; then
+                echo "Removed|$message|$hash"
+              else
+                echo "Changed|$message|$hash"
+              fi
+            fi
+          }
+          
           # Get the previous tag
           PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -v "^${VERSION}$" | head -n 1)
           
+          # Get commits and categorize them
           if [ -z "$PREVIOUS_TAG" ]; then
             echo "No previous tag found, using all commits"
-            COMMITS=$(git log --format="- %s (%h)" --no-merges)
+            RAW_COMMITS=$(git log --format="%s|%h" --no-merges)
           else
             echo "Previous tag: $PREVIOUS_TAG"
-            COMMITS=$(git log "${PREVIOUS_TAG}..${VERSION}" --format="- %s (%h)" --no-merges)
+            RAW_COMMITS=$(git log "${PREVIOUS_TAG}..${VERSION}" --format="%s|%h" --no-merges)
           fi
+          
+          # Categorize commits
+          declare -A CATEGORIZED
+          while IFS='|' read -r message hash; do
+            if [ -n "$message" ]; then
+              result=$(categorize_commit "$message" "$hash")
+              category=$(echo "$result" | cut -d'|' -f1)
+              CATEGORIZED[$category]+="- ${message} (${hash})"$'\n'
+            fi
+          done <<< "$RAW_COMMITS"
+          
+          # Build changelog sections in order
+          CHANGELOG_SECTIONS=""
+          for category in "Added" "Changed" "Deprecated" "Removed" "Fixed" "Security"; do
+            if [ -n "${CATEGORIZED[$category]}" ]; then
+              CHANGELOG_SECTIONS+="### ${category}"$'\n'
+              CHANGELOG_SECTIONS+="${CATEGORIZED[$category]}"$'\n'
+            fi
+          done
           
           # Create release notes
           RELEASE_NOTES="## Changes
 
-          ${COMMITS}
-
+          ${CHANGELOG_SECTIONS}
           **Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREVIOUS_TAG}...${VERSION}"
           
           # Save to file for multiline content
