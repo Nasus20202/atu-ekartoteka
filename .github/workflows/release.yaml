@@ -47,12 +47,83 @@ jobs:
         env:
           INCREMENT: ${{ github.event.inputs.increment }}
         run: |
-          VERSION=$(pnpm version "$INCREMENT")
+          # Get current version before bumping
+          CURRENT_VERSION=$(git tag --sort=-v:refname | head -n 1)
+
+          # Get commits for changelog BEFORE bumping version
+          if [ -z "$CURRENT_VERSION" ]; then
+            echo "No previous tag found, using all commits"
+            COMMITS=$(git log --format="- %s" --no-merges)
+          else
+            echo "Previous tag: $CURRENT_VERSION"
+            COMMITS=$(git log "${CURRENT_VERSION}..HEAD" --format="- %s" --no-merges)
+          fi
+
+          # Bump version (without creating commit/tag)
+          VERSION=$(pnpm version "$INCREMENT" --no-git-tag-version)
           echo "New version: $VERSION"
           echo "new-version=$VERSION" >> $GITHUB_OUTPUT
 
+          # Get current date
+          RELEASE_DATE=$(date +%Y-%m-%d)
+
+          # Create the new changelog entry
+          NEW_ENTRY="## [${VERSION#v}] - ${RELEASE_DATE}
+
+          ${COMMITS}"
+
+          # Update CHANGELOG.md - prepend new version after header
+          if [ -f CHANGELOG.md ]; then
+            # Create temporary file with updated changelog
+            awk -v new_entry="$NEW_ENTRY" '
+              /^and this project adheres to/ {
+                print $0
+                print ""
+                print new_entry
+                next
+              }
+              { print }
+            ' CHANGELOG.md > CHANGELOG.md.tmp
+            mv CHANGELOG.md.tmp CHANGELOG.md
+          else
+            echo "Warning: CHANGELOG.md not found"
+          fi
+
+          # Commit version bump and changelog together
+          git add package.json CHANGELOG.md
+          git commit -m "ci: bump version to ${VERSION}"
+          git tag -a "${VERSION}" -m "Release ${VERSION}"
+
       - name: Push new version ${{ steps.increment_version.outputs.new-version }}
         run: git push --follow-tags
+
+      - name: Generate release notes
+        id: generate_notes
+        env:
+          VERSION: ${{ steps.increment_version.outputs.new-version }}
+        run: |
+          # Get the previous tag
+          PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -v "^${VERSION}$" | head -n 1)
+
+          # Get commits
+          if [ -z "$PREVIOUS_TAG" ]; then
+            echo "No previous tag found, using all commits"
+            COMMITS=$(git log --format="- %s" --no-merges)
+          else
+            echo "Previous tag: $PREVIOUS_TAG"
+            COMMITS=$(git log "${PREVIOUS_TAG}..${VERSION}" --format="- %s" --no-merges)
+          fi
+
+          # Create release notes
+          RELEASE_NOTES="## Changes
+
+          ${COMMITS}
+
+          **Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREVIOUS_TAG}...${VERSION}"
+
+          # Save to file for multiline content
+          echo "$RELEASE_NOTES" > release_notes.md
+          echo "notes-file=release_notes.md" >> $GITHUB_OUTPUT
 
       - name: Publish new version ${{ steps.increment_version.outputs.new-version }}
         env:
@@ -61,4 +132,4 @@ jobs:
         run: |
           gh release create "${VERSION}" \
             --title "Release ${VERSION}" \
-            --notes "Commit ${{ github.sha }} on $(date)"
+            --notes-file "${{ steps.generate_notes.outputs.notes-file }}"
