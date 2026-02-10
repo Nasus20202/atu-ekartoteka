@@ -51,6 +51,52 @@ jobs:
           echo "New version: $VERSION"
           echo "new-version=$VERSION" >> $GITHUB_OUTPUT
 
+      - name: Update CHANGELOG.md
+        env:
+          VERSION: ${{ steps.increment_version.outputs.new-version }}
+        run: |
+          # Get the previous tag (before the new one was created)
+          PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -v "^${VERSION}$" | head -n 1)
+          
+          # Get commits for changelog
+          if [ -z "$PREVIOUS_TAG" ]; then
+            echo "No previous tag found, using all commits"
+            COMMITS=$(git log --format="- %s (%h)" --no-merges HEAD~1)
+          else
+            echo "Previous tag: $PREVIOUS_TAG"
+            COMMITS=$(git log "${PREVIOUS_TAG}..HEAD~1" --format="- %s (%h)" --no-merges)
+          fi
+          
+          # Get current date
+          RELEASE_DATE=$(date +%Y-%m-%d)
+          
+          # Create the new changelog entry
+          NEW_ENTRY="## [${VERSION#v}] - ${RELEASE_DATE}
+
+          ${COMMITS}
+          "
+          
+          # Update CHANGELOG.md - insert after "## [Unreleased]" line
+          if [ -f CHANGELOG.md ]; then
+            # Create temporary file with updated changelog
+            awk -v new_entry="$NEW_ENTRY" '
+              /^## \[Unreleased\]/ {
+                print $0
+                print ""
+                print new_entry
+                next
+              }
+              { print }
+            ' CHANGELOG.md > CHANGELOG.md.tmp
+            mv CHANGELOG.md.tmp CHANGELOG.md
+            
+            # Commit the changelog update
+            git add CHANGELOG.md
+            git commit -m "Update CHANGELOG.md for ${VERSION}"
+          else
+            echo "Warning: CHANGELOG.md not found"
+          fi
+
       - name: Push new version ${{ steps.increment_version.outputs.new-version }}
         run: git push --follow-tags
 
