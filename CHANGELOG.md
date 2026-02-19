@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.21] - 2026-02-19
+
+- chore(deps): update prisma monorepo to v7.4.1 (#183)
+- chore(deps): update dependency lucide-react to ^0.575.0 (#182)
+- chore(deps): update dependency tailwind-merge to v3.5.0 (#181)
+- chore(deps): update dependency @types/node to v25.3.0 (#180)
+- chore(deps): update tailwindcss monorepo to v4.2.0 (#179)
+- chore(deps): update dependency eslint-plugin-playwright to v2.7.0 (#178)
+- chore(deps): update semgrep/semgrep docker tag to v1.152.0 (#177)
+- chore(deps): update dependency eslint-plugin-playwright to v2.6.0 (#176)
+- chore(deps): update dependency lucide-react to ^0.574.0 (#175)
+- chore(deps): update dependency lucide-react to ^0.571.0 (#173)
+- chore(deps): update opentelemetry-js-contrib monorepo (#174)
+- chore(deps): update dependency @types/nodemailer to v7.0.10 (#172)
+- chore(deps): update dependency tailwind-merge to v3.4.1 (#171)
+- chore(deps): update dependency jsdom to v28.1.0 (#170)
+- chore(deps): update grafana/otel-lgtm docker tag to v0.18.1 (#169)
+- chore(deps): update dependency lucide-react to ^0.564.0 (#168)
+- chore(deps): update opentelemetry-js monorepo (#167)
+- chore(deps): update dependency dotenv to v17.3.1 (#166)
+- chore(deps): update aquasecurity/trivy-action action to v0.34.0 (#165)
+- chore(deps): update prisma monorepo to v7.4.0 (#164)
+- chore(deps): update dependency @types/react to v19.2.14 (#163)
+- docs: add changelog
+
 ## [0.5.20] - 2026-02-10
 
 - chore(deps): update dependency @types/node to v25.2.3 (#160)
