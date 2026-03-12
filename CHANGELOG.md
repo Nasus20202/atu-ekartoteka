@@ -5,6 +5,59 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.22] - 2026-03-12
+
+- chore(deps): update dependency vite to v8 and @vitejs/plugin-react to v6
+- chore(deps): update vitest monorepo to v4.1.0 (#229)
+- chore(deps): update dependency @vitejs/plugin-react to v5.2.0 (#231)
+- chore(deps): update dependency @types/node to v25.5.0 (#230)
+- chore(deps): update semgrep/semgrep docker tag to v1.155.0 (#228)
+- chore(deps): update prisma monorepo to v7.5.0 (#227)
+- chore(deps): update dependency lint-staged to v16.3.3 (#226)
+- chore(deps): update dependency @types/node to v25.4.0 (#225)
+- chore(deps): update dependency nodemailer to v8.0.2 (#224)
+- chore(deps): update aquasecurity/trivy-action action to v0.35.0 (#223)
+- chore(deps): update dependency eslint to v9.39.4 (#222)
+- chore(deps): update grafana/otel-lgtm docker tag to v0.20.0 (#221)
+- chore(deps): update docker/build-push-action action to v7
+- chore(deps): update dependency @types/node to v25.3.5 (#220)
+- chore(deps): update dependency @types/node to v25.3.4 (#218)
+- chore(deps): update docker/metadata-action action to v6
+- chore(deps): update docker/login-action action to v4
+- chore(deps): update docker/setup-buildx-action action to v4
+- chore(deps): update dependency pg to v8.20.0 (#215)
+- chore(deps): update opentelemetry-js-contrib monorepo (#213)
+- chore(deps): update semgrep/semgrep docker tag to v1.154.0 (#214)
+- chore(deps): update dependency lucide-react to ^0.577.0 (#211)
+- chore(deps): update opentelemetry-js monorepo (#210)
+- chore(deps): update dependency lint-staged to v16.3.2 (#209)
+- chore(deps): update actions/upload-artifact action to v7
+- chore(deps): update aquasecurity/trivy-action action to v0.34.2 (#208)
+- chore(deps): update dependency lucide-react to ^0.576.0 (#207)
+- chore(deps): update dependency eslint-plugin-playwright to v2.9.0 (#206)
+- chore(deps): update dependency lint-staged to v16.3.1 (#205)
+- chore(deps): update dependency @types/node to v25.3.3 (#204)
+- chore(deps): update dependency @types/pg to v8.18.0 (#203)
+- chore(deps): update dependency lint-staged to v16.3.0 (#202)
+- chore(deps): update semgrep/semgrep docker tag to v1.153.1 (#201)
+- chore(deps): update prisma monorepo to v7.4.2 (#200)
+- chore(deps): update dependency eslint-plugin-playwright to v2.8.0 (#199)
+- chore(deps): update grafana/otel-lgtm docker tag to v0.19.1 (#198)
+- chore(deps): update postgres docker tag to v18.3 (#196)
+- chore(deps): update dependency @types/node to v25.3.2 (#195)
+- chore(deps): update dependency @opentelemetry/semantic-conventions to v1.40.0 (#194)
+- chore(deps): update dependency @types/node to v25.3.1 (#192)
+- chore(deps): update node.js to v24.14.0 (#190)
+- chore(deps): update semgrep/semgrep docker tag to v1.153.0 (#193)
+- chore(deps): update dependency pg to v8.19.0 (#191)
+- chore: change postgres docker tag to 18.2-alpine
+- chore(deps): update tailwindcss monorepo to v4.2.1 (#189)
+- chore(deps): update dependency eslint-plugin-playwright to v2.7.1 (#188)
+- chore(deps): update aquasecurity/trivy-action action to v0.34.1 (#187)
+- chore(deps): update dependency @types/nodemailer to v7.0.11 (#186)
+- chore(deps): update dependency eslint to v9.39.3 (#185)
+- chore(deps): update grafana/otel-lgtm docker tag to v0.19.0 (#184)
+
 ## [0.5.21] - 2026-02-19
 
 - chore(deps): update prisma monorepo to v7.4.1 (#183)
