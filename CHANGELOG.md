@@ -5,6 +5,50 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.23] - 2026-04-03
+
+- chore: onboard openspec
+- chore(deps): update dependency @types/node to v25.5.2 (#272)
+- chore(deps): update dependency @types/node to v25.5.1 (#270)
+- chore(deps): update grafana/otel-lgtm docker tag to v0.23.0 (#271)
+- chore(deps): update dependency dotenv to v17.4.0 (#269)
+- chore(deps): update dependency @playwright/test to v1.59.1 (#268)
+- chore(deps): update dependency @playwright/test to v1.59.0 (#266)
+- chore(deps): update semgrep/semgrep docker tag to v1.157.0 (#267)
+- chore(deps): update nextjs monorepo to v16.2.2 (#265)
+- chore(deps): update dependency @marsidev/react-turnstile to v1.5.0 (#264)
+- chore(deps): update prisma monorepo to v7.6.0 (#263)
+- chore(deps): update grafana/otel-lgtm docker tag to v0.22.1 (#262)
+- chore(deps): update vitest monorepo to v4.1.2 (#261)
+- chore(deps): update dependency vite to v8.0.3 (#260)
+- chore(deps): update opentelemetry-js-contrib monorepo (#259)
+- chore(deps): update dependency lucide-react to v1.7.0 (#258)
+- chore(deps): update opentelemetry-js monorepo (#257)
+- chore(deps): update dependency nodemailer to v8.0.4 (#256)
+- chore(deps): update dependency lucide-react to v1.6.0 (#255)
+- chore(deps): update dependency typescript to v6
+- chore(deps): update dependency lucide-react to v1
+- chore(deps): update vitest monorepo to v4.1.1 (#252)
+- chore(deps): update dependency vite to v8.0.2 (#251)
+- chore(deps): update dependency @types/pg to v8.20.0 (#250)
+- chore(deps): update nextjs monorepo to v16.2.1 (#249)
+- chore(deps): update grafana/otel-lgtm docker tag to v0.22.0 (#248)
+- chore(deps): update dependency jsdom to v29.0.1 (#247)
+- chore(deps): update dependency vite to v8.0.1 (#246)
+- chore(deps): update nextjs monorepo to v16.2.0 (#245)
+- chore: add AGENTS.md
+- chore(deps): update tailwindcss monorepo to v4.2.2 (#244)
+- chore(deps): update dependency eslint-plugin-playwright to v2.10.1 (#243)
+- chore(deps): update dependency nodemailer to v8.0.3 (#242)
+- chore(deps): update semgrep/semgrep docker tag to v1.156.0 (#241)
+- chore(deps): update pnpm/action-setup action to v5
+- chore(deps): update nextjs monorepo to v16.1.7 (#239)
+- chore(deps): update dependency jsdom to v29
+- chore(deps): update dependency eslint-plugin-playwright to v2.10.0 (#237)
+- chore(deps): update dependency lint-staged to v16.4.0 (#236)
+- chore(deps): update dependency @vitejs/plugin-react to v6.0.1 (#234)
+- chore(deps): update grafana/otel-lgtm docker tag to v0.21.0 (#235)
+
 ## [0.5.22] - 2026-03-12
 
 - chore(deps): update dependency vite to v8 and @vitejs/plugin-react to v6
