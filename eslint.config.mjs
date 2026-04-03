@@ -97,6 +97,7 @@ const eslintConfig = defineConfig([
     'src/generated/**',
     'playwright-report/**',
     'coverage/**',
+    '.opencode/**',
   ]),
 ]);
 
