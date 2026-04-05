@@ -155,7 +155,7 @@ describe('ProfileForm', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(/hasło musi mieć minimum 6 znaków/i)
+        screen.getByText(/hasło musi mieć minimum 8 znaków/i)
       ).toBeInTheDocument();
     });
   });

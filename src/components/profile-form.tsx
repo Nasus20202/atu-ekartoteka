@@ -49,8 +49,8 @@ export function ProfileForm({ initialName, authMethod }: ProfileFormProps) {
         setErrors({ password: 'Hasła nie są identyczne' });
         return;
       }
-      if (formData.newPassword.length < 6) {
-        setErrors({ password: 'Hasło musi mieć minimum 6 znaków' });
+      if (formData.newPassword.length < 8) {
+        setErrors({ password: 'Hasło musi mieć minimum 8 znaków' });
         return;
       }
     }

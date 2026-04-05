@@ -197,10 +197,7 @@ export async function POST(req: NextRequest) {
     logger.error({ error }, 'Registration error');
     authMetrics.recordRegistration('credentials', 'failure');
     return NextResponse.json(
-      {
-        error: 'Nie udało się utworzyć konta',
-        message: error instanceof Error ? error.message : 'Nieznany błąd',
-      },
+      { error: 'Nie udało się utworzyć konta' },
       { status: 500 }
     );
   }

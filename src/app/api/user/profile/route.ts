@@ -48,6 +48,17 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Update password if provided
+    if (
+      newPassword &&
+      typeof newPassword === 'string' &&
+      newPassword.length < 8
+    ) {
+      return NextResponse.json(
+        { error: 'Hasło musi mieć co najmniej 8 znaków' },
+        { status: 400 }
+      );
+    }
+
     if (newPassword) {
       // Users with mustChangePassword set may skip the current password check
       const mustChangePassword = session.user.mustChangePassword;
