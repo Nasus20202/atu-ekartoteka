@@ -103,9 +103,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Find verification record
+    // Hash the incoming token and find matching verification record
+    const hashedToken = hashToken(token);
     const verification = await prisma.emailVerification.findUnique({
-      where: { code: token },
+      where: { code: hashedToken },
       select: {
         id: true,
         verified: true,

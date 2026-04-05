@@ -29,7 +29,16 @@ export async function GET(req: NextRequest) {
 
     const users = await prisma.user.findMany({
       where,
-      include: {
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        status: true,
+        emailVerified: true,
+        mustChangePassword: true,
+        createdAt: true,
+        updatedAt: true,
         apartments: true,
       },
       orderBy: [{ createdAt: 'desc' }],
