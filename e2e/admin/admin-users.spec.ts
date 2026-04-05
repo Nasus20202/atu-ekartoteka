@@ -76,13 +76,8 @@ test.describe.serial('Admin User Management', () => {
       timeout: 10000,
     });
 
-    // Click "Zatwierdź" via kebab dropdown on the new user card
-    await newUserCard.getByRole('button', { name: /Akcje/i }).click();
-    const zatwierdźMenuItem = adminPage.getByRole('menuitem', {
-      name: /^Zatwierdź$/i,
-    });
-    await expect(zatwierdźMenuItem).toBeVisible({ timeout: 5000 });
-    await zatwierdźMenuItem.click();
+    // Click "Zatwierdź" inline button on the new user card (desktop viewport)
+    await newUserCard.getByRole('button', { name: /^Zatwierdź$/i }).click();
 
     // Should see the approval dialog
     await expect(adminPage.getByText(/Zatwierdź konto/i)).toBeVisible({
@@ -162,9 +157,8 @@ test.describe.serial('Admin User Management', () => {
       timeout: 10000,
     });
 
-    // Open kebab dropdown for the user card and click "Mieszkania"
-    await userCard.getByRole('button', { name: /Akcje/i }).click();
-    await adminPage.getByRole('menuitem', { name: /Mieszkania/i }).click();
+    // Click "Mieszkania" inline button on the user card (desktop viewport)
+    await userCard.getByRole('button', { name: /Mieszkania/i }).click();
 
     // Should see the apartment management dialog
     await expect(adminPage.getByText(/Przypisz mieszkanie/i)).toBeVisible({

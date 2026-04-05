@@ -12,28 +12,28 @@ test.describe.serial('Admin Bulk User Creation', () => {
     unassignedApartmentId = await createUnassignedApartment();
   });
 
-  test('admin sees bulk-create link on users page', async ({ adminPage }) => {
+  test('admin sees management link on users page', async ({ adminPage }) => {
     await adminPage.goto('/admin/users');
 
     await expect(
       adminPage.getByRole('heading', { name: /Użytkownicy/i })
     ).toBeVisible();
 
-    // Open the "Akcje" dropdown to reveal the bulk-create link
+    // Open the "Akcje" dropdown to reveal the management link
     await adminPage.getByRole('button', { name: /Akcje/i }).click();
 
     await expect(
-      adminPage.getByRole('menuitem', { name: /Utwórz wiele kont/i })
+      adminPage.getByRole('menuitem', { name: /Zarządzanie kontami/i })
     ).toBeVisible();
   });
 
-  test('bulk-create page loads and shows apartment list', async ({
+  test('management page loads and shows apartment list', async ({
     adminPage,
   }) => {
-    await adminPage.goto('/admin/users/bulk-create');
+    await adminPage.goto('/admin/users/management');
 
     await expect(
-      adminPage.getByRole('heading', { name: /Utwórz wiele kont/i })
+      adminPage.getByRole('heading', { name: /Zarządzanie kontami/i })
     ).toBeVisible();
 
     await expect(adminPage.getByRole('checkbox').first()).toBeVisible();
@@ -42,10 +42,10 @@ test.describe.serial('Admin Bulk User Creation', () => {
   test('confirm button is disabled when nothing is selected', async ({
     adminPage,
   }) => {
-    await adminPage.goto('/admin/users/bulk-create');
+    await adminPage.goto('/admin/users/management');
 
     await expect(
-      adminPage.getByRole('heading', { name: /Utwórz wiele kont/i })
+      adminPage.getByRole('heading', { name: /Zarządzanie kontami/i })
     ).toBeVisible();
 
     await expect(adminPage.getByRole('checkbox').first()).toBeVisible();
@@ -58,10 +58,10 @@ test.describe.serial('Admin Bulk User Creation', () => {
   test('admin can select all apartments in a HOA group', async ({
     adminPage,
   }) => {
-    await adminPage.goto('/admin/users/bulk-create');
+    await adminPage.goto('/admin/users/management');
 
     await expect(
-      adminPage.getByRole('heading', { name: /Utwórz wiele kont/i })
+      adminPage.getByRole('heading', { name: /Zarządzanie kontami/i })
     ).toBeVisible();
 
     const hoaCheckbox = adminPage
@@ -80,10 +80,10 @@ test.describe.serial('Admin Bulk User Creation', () => {
   test('admin creates accounts for selected apartments and success message is shown', async ({
     adminPage,
   }) => {
-    await adminPage.goto('/admin/users/bulk-create');
+    await adminPage.goto('/admin/users/management');
 
     await expect(
-      adminPage.getByRole('heading', { name: /Utwórz wiele kont/i })
+      adminPage.getByRole('heading', { name: /Zarządzanie kontami/i })
     ).toBeVisible();
 
     // Select the unassigned apartment checkbox by data attribute or first individual checkbox

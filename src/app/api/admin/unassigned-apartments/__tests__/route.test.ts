@@ -1,9 +1,11 @@
+import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { UserRole } from '@/lib/types';
 
 const mockAuth = vi.fn();
 const mockApartmentFindMany = vi.fn();
+const mockUserFindMany = vi.fn();
 
 vi.mock('@/auth', () => ({
   auth: mockAuth,
@@ -13,6 +15,9 @@ vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     apartment: {
       findMany: mockApartmentFindMany,
+    },
+    user: {
+      findMany: mockUserFindMany,
     },
   },
 }));
@@ -24,6 +29,18 @@ vi.mock('@/lib/logger', () => ({
     error: vi.fn(),
   }),
 }));
+
+function makeRequest(mode?: string) {
+  const url = mode
+    ? `http://localhost/api/admin/unassigned-apartments?mode=${mode}`
+    : 'http://localhost/api/admin/unassigned-apartments';
+  return new NextRequest(url);
+}
+
+const adminSession = {
+  user: { id: 'admin-id', email: 'admin@example.com', role: UserRole.ADMIN },
+  expires: new Date().toISOString(),
+};
 
 const mockApartments = [
   {
@@ -55,13 +72,15 @@ const mockApartments = [
 describe('GET /api/admin/unassigned-apartments', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default: no existing users
+    mockUserFindMany.mockResolvedValue([]);
   });
 
   it('should return 401 when not authenticated', async () => {
     mockAuth.mockResolvedValueOnce(null);
 
     const { GET } = await import('../route');
-    const response = await GET();
+    const response = await GET(makeRequest());
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -75,26 +94,19 @@ describe('GET /api/admin/unassigned-apartments', () => {
     });
 
     const { GET } = await import('../route');
-    const response = await GET();
+    const response = await GET(makeRequest());
     const data = await response.json();
 
     expect(response.status).toBe(401);
     expect(data.error).toBe('Brak uprawnień');
   });
 
-  it('should return apartments grouped by HOA', async () => {
-    mockAuth.mockResolvedValueOnce({
-      user: {
-        id: 'admin-id',
-        email: 'admin@example.com',
-        role: UserRole.ADMIN,
-      },
-      expires: new Date().toISOString(),
-    });
+  it('should return apartments grouped by HOA in creatable mode (default)', async () => {
+    mockAuth.mockResolvedValueOnce(adminSession);
     mockApartmentFindMany.mockResolvedValueOnce(mockApartments);
 
     const { GET } = await import('../route');
-    const response = await GET();
+    const response = await GET(makeRequest());
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -111,59 +123,94 @@ describe('GET /api/admin/unassigned-apartments', () => {
     expect(hoa2.apartments).toHaveLength(1);
   });
 
-  it('should return empty hoas array when no unassigned apartments', async () => {
-    mockAuth.mockResolvedValueOnce({
-      user: {
-        id: 'admin-id',
-        email: 'admin@example.com',
-        role: UserRole.ADMIN,
-      },
-      expires: new Date().toISOString(),
-    });
+  it('should query with notIn filter for creatable mode', async () => {
+    mockAuth.mockResolvedValueOnce(adminSession);
+    mockUserFindMany.mockResolvedValueOnce([{ email: 'existing@example.com' }]);
     mockApartmentFindMany.mockResolvedValueOnce([]);
 
     const { GET } = await import('../route');
-    const response = await GET();
+    await GET(makeRequest());
+
+    expect(mockApartmentFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          userId: null,
+          email: { not: null, notIn: ['existing@example.com'] },
+        },
+      })
+    );
+  });
+
+  it('should return empty hoas array when no unassigned apartments', async () => {
+    mockAuth.mockResolvedValueOnce(adminSession);
+    mockApartmentFindMany.mockResolvedValueOnce([]);
+
+    const { GET } = await import('../route');
+    const response = await GET(makeRequest());
     const data = await response.json();
 
     expect(response.status).toBe(200);
     expect(data.hoas).toEqual([]);
   });
 
-  it('should query with correct filters', async () => {
-    mockAuth.mockResolvedValueOnce({
-      user: {
-        id: 'admin-id',
-        email: 'admin@example.com',
-        role: UserRole.ADMIN,
-      },
-      expires: new Date().toISOString(),
+  describe('mode=assignable', () => {
+    it('should query with in filter matching existing user emails', async () => {
+      mockAuth.mockResolvedValueOnce(adminSession);
+      mockUserFindMany.mockResolvedValueOnce([
+        { email: 'jan@example.com' },
+        { email: 'anna@example.com' },
+      ]);
+      mockApartmentFindMany.mockResolvedValueOnce([]);
+
+      const { GET } = await import('../route');
+      await GET(makeRequest('assignable'));
+
+      expect(mockApartmentFindMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            userId: null,
+            email: expect.objectContaining({
+              in: ['jan@example.com', 'anna@example.com'],
+            }),
+          }),
+        })
+      );
     });
-    mockApartmentFindMany.mockResolvedValueOnce([]);
 
-    const { GET } = await import('../route');
-    await GET();
+    it('should return apartments assignable to existing users grouped by HOA', async () => {
+      mockAuth.mockResolvedValueOnce(adminSession);
+      mockUserFindMany.mockResolvedValueOnce([{ email: 'jan@example.com' }]);
+      mockApartmentFindMany.mockResolvedValueOnce([mockApartments[0]]);
 
-    expect(mockApartmentFindMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { userId: null, email: { not: null } },
-      })
-    );
+      const { GET } = await import('../route');
+      const response = await GET(makeRequest('assignable'));
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.hoas).toHaveLength(1);
+      expect(data.hoas[0].apartments[0].email).toBe('jan@example.com');
+    });
+
+    it('should return empty hoas when no assignable apartments', async () => {
+      mockAuth.mockResolvedValueOnce(adminSession);
+      mockUserFindMany.mockResolvedValueOnce([]);
+      mockApartmentFindMany.mockResolvedValueOnce([]);
+
+      const { GET } = await import('../route');
+      const response = await GET(makeRequest('assignable'));
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.hoas).toEqual([]);
+    });
   });
 
   it('should handle database errors gracefully', async () => {
-    mockAuth.mockResolvedValueOnce({
-      user: {
-        id: 'admin-id',
-        email: 'admin@example.com',
-        role: UserRole.ADMIN,
-      },
-      expires: new Date().toISOString(),
-    });
-    mockApartmentFindMany.mockRejectedValueOnce(new Error('DB failure'));
+    mockAuth.mockResolvedValueOnce(adminSession);
+    mockUserFindMany.mockRejectedValueOnce(new Error('DB failure'));
 
     const { GET } = await import('../route');
-    const response = await GET();
+    const response = await GET(makeRequest());
     const data = await response.json();
 
     expect(response.status).toBe(500);
