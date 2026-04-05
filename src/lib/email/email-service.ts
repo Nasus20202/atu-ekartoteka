@@ -5,11 +5,13 @@ import { createLogger } from '@/lib/logger';
 import { emailMetrics } from '@/lib/opentelemetry/email-metrics';
 
 const logger = createLogger('email-service');
+const isDev = process.env.NODE_ENV === 'development';
 
 export type EmailType =
   | 'verification'
   | 'password_reset'
   | 'account_approved'
+  | 'account_activation'
   | 'admin_notification'
   | 'other';
 
@@ -82,6 +84,7 @@ export class EmailService {
         {
           to: options.to,
           subject: options.subject,
+          ...(isDev && { text: options.text }),
         },
         'Email skipped (SMTP not configured)'
       );
@@ -246,6 +249,36 @@ export class EmailService {
         text,
       },
       'account_approved'
+    );
+  }
+
+  /**
+   * Send account activation email with temporary password
+   */
+  async sendAccountActivationEmail(
+    to: string,
+    tempPassword: string,
+    name?: string
+  ): Promise<boolean> {
+    const loginUrl = `${process.env.APP_URL || 'http://localhost:3000'}/login`;
+
+    const variables = {
+      NAME: name ? ` ${name}` : '',
+      TEMP_PASSWORD: tempPassword,
+      LOGIN_URL: loginUrl,
+    };
+
+    const html = renderEmailTemplate('account-activation', 'html', variables);
+    const text = renderEmailTemplate('account-activation', 'txt', variables);
+
+    return this.sendEmail(
+      {
+        to,
+        subject: 'Twoje konto zostało utworzone – ustaw nowe hasło',
+        html,
+        text,
+      },
+      'account_activation'
     );
   }
 

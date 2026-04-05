@@ -1,4 +1,4 @@
-import { AccountStatus, UserRole } from '@/lib/types';
+import { AccountStatus, AuthMethod, UserRole } from '@/lib/types';
 
 export const createMockUser = (
   overrides: {
@@ -8,7 +8,10 @@ export const createMockUser = (
     role?: UserRole;
     status?: AccountStatus;
     emailVerified?: boolean;
+    mustChangePassword?: boolean;
     apartments?: unknown[];
+    password?: string | null;
+    authMethod?: AuthMethod | null;
   } = {}
 ) => ({
   id: 'user-123',
@@ -18,6 +21,8 @@ export const createMockUser = (
   role: UserRole.TENANT,
   status: AccountStatus.APPROVED,
   emailVerified: true,
+  mustChangePassword: false,
+  authMethod: AuthMethod.CREDENTIALS,
   createdAt: new Date(),
   updatedAt: new Date(),
   apartments: [],
@@ -47,6 +52,12 @@ export const mockUsers = {
   approved: createMockUser({
     email: 'approved@example.com',
     name: 'Approved User',
+  }),
+  mustChangePassword: createMockUser({
+    id: 'user-mcp',
+    email: 'mcp@example.com',
+    name: 'Must Change User',
+    mustChangePassword: true,
   }),
   withApartments: createMockUser({
     apartments: [

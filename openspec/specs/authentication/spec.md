@@ -122,16 +122,34 @@ The system SHALL allow users to reset a forgotten password via email.
 
 ### Requirement: Session Management
 
-The system SHALL use JWT-based sessions that include user role, status, and email verification state.
+The system SHALL use JWT-based sessions that include user role, status, email verification state, and forced password change flag.
 
 #### Scenario: Session token refresh
 
 - **GIVEN** an active session
 - **WHEN** the session `update` trigger fires
-- **THEN** the JWT is refreshed with the latest `role`, `status`, and `emailVerified` values from the database
+- **THEN** the JWT is refreshed with the latest `role`, `status`, `emailVerified`, and `mustChangePassword` values from the database
 
 #### Scenario: Unauthenticated access
 
 - **GIVEN** a user who is not signed in
 - **WHEN** they attempt to access a protected route
 - **THEN** they are redirected to `/login`
+
+---
+
+### Requirement: Forced Password Change Redirect
+
+The system SHALL redirect users who must change their password away from all routes except the change-password page.
+
+#### Scenario: Redirect to change-password
+
+- **GIVEN** an authenticated user with `mustChangePassword: true`
+- **WHEN** they navigate to any route other than `/change-password`, `/api/user/profile`, or `/api/auth/*`
+- **THEN** they are redirected to `/change-password`
+
+#### Scenario: Allowlisted routes pass through
+
+- **GIVEN** an authenticated user with `mustChangePassword: true`
+- **WHEN** they navigate to `/change-password` or call `/api/user/profile`
+- **THEN** the request proceeds normally without a redirect

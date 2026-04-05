@@ -11,11 +11,13 @@ import { auth } from '@/auth';
 const mockAuth = vi.mocked(auth);
 
 const mockApartmentFindUnique = vi.fn();
+const mockApartmentUpdate = vi.fn();
 
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     apartment: {
       findUnique: mockApartmentFindUnique,
+      update: mockApartmentUpdate,
     },
   },
 }));
@@ -246,6 +248,125 @@ describe('Admin Apartment Detail API', () => {
       const params = Promise.resolve({ apartmentId: 'apt-1' });
 
       const response = await GET({} as NextRequest, { params });
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe('Internal server error');
+    });
+  });
+
+  describe('PATCH /api/admin/apartments/[apartmentId]', () => {
+    const mockUpdatedApartment = {
+      id: 'apt-1',
+      number: '101',
+      building: 'A',
+      isActive: false,
+    };
+
+    function createPatchRequest(body: unknown): NextRequest {
+      return {
+        json: () => Promise.resolve(body),
+      } as unknown as NextRequest;
+    }
+
+    it('should return 401 when not authenticated', async () => {
+      mockAuth.mockResolvedValueOnce(null as any);
+
+      const { PATCH } = await import('../route');
+      const params = Promise.resolve({ apartmentId: 'apt-1' });
+      const request = createPatchRequest({ isActive: false });
+
+      const response = await PATCH(request, { params });
+      const data = await response.json();
+
+      expect(response.status).toBe(401);
+      expect(data.error).toBe('Unauthorized');
+    });
+
+    it('should return 401 when user is not admin', async () => {
+      mockAuth.mockResolvedValueOnce({
+        user: {
+          id: 'user-id',
+          email: 'user@example.com',
+          role: UserRole.TENANT,
+        },
+        expires: new Date().toISOString(),
+      } as any);
+
+      const { PATCH } = await import('../route');
+      const params = Promise.resolve({ apartmentId: 'apt-1' });
+      const request = createPatchRequest({ isActive: false });
+
+      const response = await PATCH(request, { params });
+      const data = await response.json();
+
+      expect(response.status).toBe(401);
+      expect(data.error).toBe('Unauthorized');
+    });
+
+    it('should return 400 when isActive is not a boolean', async () => {
+      mockAuth.mockResolvedValueOnce({
+        user: {
+          id: 'admin-id',
+          email: 'admin@example.com',
+          role: UserRole.ADMIN,
+        },
+        expires: new Date().toISOString(),
+      } as any);
+
+      const { PATCH } = await import('../route');
+      const params = Promise.resolve({ apartmentId: 'apt-1' });
+      const request = createPatchRequest({ isActive: 'yes' });
+
+      const response = await PATCH(request, { params });
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe('Invalid request body');
+    });
+
+    it('should update apartment isActive and return updated apartment', async () => {
+      mockAuth.mockResolvedValueOnce({
+        user: {
+          id: 'admin-id',
+          email: 'admin@example.com',
+          role: UserRole.ADMIN,
+        },
+        expires: new Date().toISOString(),
+      } as any);
+      mockApartmentUpdate.mockResolvedValueOnce(mockUpdatedApartment);
+
+      const { PATCH } = await import('../route');
+      const params = Promise.resolve({ apartmentId: 'apt-1' });
+      const request = createPatchRequest({ isActive: false });
+
+      const response = await PATCH(request, { params });
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.isActive).toBe(false);
+      expect(mockApartmentUpdate).toHaveBeenCalledWith({
+        where: { id: 'apt-1' },
+        data: { isActive: false },
+      });
+    });
+
+    it('should handle database errors gracefully', async () => {
+      mockAuth.mockResolvedValueOnce({
+        user: {
+          id: 'admin-id',
+          email: 'admin@example.com',
+          role: UserRole.ADMIN,
+        },
+        expires: new Date().toISOString(),
+      } as any);
+      mockApartmentUpdate.mockRejectedValueOnce(new Error('Database error'));
+
+      const { PATCH } = await import('../route');
+      const params = Promise.resolve({ apartmentId: 'apt-1' });
+      const request = createPatchRequest({ isActive: true });
+
+      const response = await PATCH(request, { params });
       const data = await response.json();
 
       expect(response.status).toBe(500);

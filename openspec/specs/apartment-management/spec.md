@@ -90,6 +90,30 @@ The system SHALL present tenants with a summary of their assigned apartments and
 
 ---
 
+### Requirement: Unassigned Apartments for Bulk User Creation
+
+The system SHALL expose an admin endpoint listing apartments that have no linked user account but do have an email address, enabling admins to create accounts in bulk.
+
+#### Scenario: List unassigned apartments grouped by HOA
+
+- **GIVEN** an authenticated admin
+- **WHEN** they call `GET /api/admin/unassigned-apartments`
+- **THEN** all apartments where `userId IS NULL` and `email IS NOT NULL` are returned, grouped by HOA, sorted by HOA name, then building, then apartment number
+
+#### Scenario: Empty result
+
+- **GIVEN** every apartment either has an assigned user or no email
+- **WHEN** the admin calls the endpoint
+- **THEN** an empty `hoas` array is returned
+
+#### Scenario: Unauthorized access
+
+- **GIVEN** a non-admin user
+- **WHEN** they call the endpoint
+- **THEN** the request is rejected with 401
+
+---
+
 ### Requirement: Apartment Ownership Share
 
 The system SHALL store and display the ownership share (numerator/denominator) of each apartment within its HOA.

@@ -12,6 +12,7 @@ type EmailType =
   | 'verification'
   | 'password_reset'
   | 'account_approved'
+  | 'account_activation'
   | 'admin_notification'
   | 'other';
 type EmailResult = 'success' | 'failure' | 'skipped';

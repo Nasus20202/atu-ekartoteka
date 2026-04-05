@@ -108,6 +108,66 @@ The system SHALL allow authenticated users to update their own display name and 
 
 ---
 
+### Requirement: Bulk User Creation
+
+The system SHALL allow admins to create multiple tenant accounts at once for apartments that have no assigned user but have an email address on file.
+
+#### Scenario: View unassigned apartments
+
+- **GIVEN** an authenticated admin
+- **WHEN** they request the unassigned apartments list
+- **THEN** all apartments with `userId IS NULL` and a non-empty email are returned, grouped by HOA, sorted by HOA name then building then number
+
+#### Scenario: Bulk create accounts
+
+- **GIVEN** an authenticated admin selects one or more unassigned apartments
+- **WHEN** they confirm the bulk creation
+- **THEN** one account per unique email is created with `role: TENANT`, `status: APPROVED`, `emailVerified: true`, `mustChangePassword: true`, all matching apartments are assigned, and an activation email with a temporary password is sent to each new user
+
+#### Scenario: Email deduplication
+
+- **GIVEN** two selected apartments share the same email address
+- **WHEN** the bulk create is processed
+- **THEN** only one account is created and both apartments are assigned to it
+
+#### Scenario: Existing email skipped
+
+- **GIVEN** a selected apartment whose email already corresponds to an existing user
+- **WHEN** the bulk create is processed
+- **THEN** no new account is created for that email; the result includes it in the `skipped` count
+
+#### Scenario: Unauthorized bulk create
+
+- **GIVEN** a non-admin user
+- **WHEN** they call the bulk-create or unassigned-apartments endpoints
+- **THEN** the request is rejected with 401
+
+---
+
+### Requirement: Forced Password Change
+
+The system SHALL force users created via bulk creation to change their temporary password before accessing any other functionality.
+
+#### Scenario: Redirect on first login
+
+- **GIVEN** a user with `mustChangePassword: true`
+- **WHEN** they log in
+- **THEN** they are redirected to `/change-password` and cannot access any other route until the password is changed
+
+#### Scenario: Password change clears flag
+
+- **GIVEN** a user with `mustChangePassword: true`
+- **WHEN** they successfully set a new password on `/change-password`
+- **THEN** `mustChangePassword` is set to `false`, the session is refreshed, and the user is redirected to the dashboard
+
+#### Scenario: Bypass routes not blocked
+
+- **GIVEN** a user with `mustChangePassword: true`
+- **WHEN** they navigate to `/change-password` or `/api/user/profile`
+- **THEN** the middleware does not redirect (allowing the password change to proceed)
+
+---
+
 ### Requirement: New User Notifications
 
 The system SHALL notify admins when new users register so they can take action promptly.

@@ -148,6 +148,11 @@ test.describe('Admin Apartment Browser', () => {
       });
       await hoaCard.getByRole('button', { name: /Zobacz mieszkania/i }).click();
 
+      // Wait for navigation to the apartments list
+      await adminPage.waitForURL(/\/admin\/apartments\/[a-f0-9-]+$/, {
+        timeout: 10000,
+      });
+
       // Should see owner name in apartment card
       await expect(adminPage.getByText(/E2E Test User/i)).toBeVisible();
     });
@@ -164,9 +169,19 @@ test.describe('Admin Apartment Browser', () => {
       });
       await hoaCard.getByRole('button', { name: /Zobacz mieszkania/i }).click();
 
+      // Wait for navigation to the apartments list
+      await adminPage.waitForURL(/\/admin\/apartments\/[a-f0-9-]+$/, {
+        timeout: 10000,
+      });
+
+      // Scope to the seeded apartment card to avoid interference from other apartments
+      const apartmentCard = adminPage
+        .locator('.text-card-foreground')
+        .filter({ hasText: 'ul. Testowa 1/1A' });
+
       // Should see address in apartment card
-      await expect(adminPage.getByText('ul. Testowa 1/1A')).toBeVisible();
-      await expect(adminPage.getByText(/Warszawa/i)).toBeVisible();
+      await expect(apartmentCard.getByText('ul. Testowa 1/1A')).toBeVisible();
+      await expect(apartmentCard.getByText(/Warszawa/i)).toBeVisible();
     });
 
     test('apartment list shows external ID', async ({ adminPage }) => {
@@ -180,6 +195,11 @@ test.describe('Admin Apartment Browser', () => {
         hasText: 'TEST01',
       });
       await hoaCard.getByRole('button', { name: /Zobacz mieszkania/i }).click();
+
+      // Wait for navigation to the apartments list
+      await adminPage.waitForURL(/\/admin\/apartments\/[a-f0-9-]+$/, {
+        timeout: 10000,
+      });
 
       // Should see external ID
       await expect(adminPage.getByText(/W00001/i)).toBeVisible();

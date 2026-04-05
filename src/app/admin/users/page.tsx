@@ -8,9 +8,11 @@ import {
   Search,
   UserCheck,
   UserPlus,
+  Users,
   UserX,
   X,
 } from 'lucide-react';
+import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useConfirm } from '@/components/confirm-dialog';
@@ -352,6 +354,12 @@ export default function AdminUsersPage() {
         >
           <UserPlus className="mr-2 h-4 w-4" />
           Dodaj użytkownika
+        </Button>
+        <Button variant="outline" asChild>
+          <Link href="/admin/users/bulk-create">
+            <Users className="mr-2 h-4 w-4" />
+            Utwórz wiele kont
+          </Link>
         </Button>
       </div>
 

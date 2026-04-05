@@ -36,7 +36,11 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const updateData: { name?: string; password?: string } = {};
+    const updateData: {
+      name?: string | null;
+      password?: string;
+      mustChangePassword?: boolean;
+    } = {};
 
     // Update name if provided
     if (name !== undefined) {
@@ -45,39 +49,46 @@ export async function PATCH(request: NextRequest) {
 
     // Update password if provided
     if (newPassword) {
-      if (!currentPassword) {
-        return NextResponse.json(
-          { error: 'Current password is required to change password' },
-          { status: 400 }
-        );
-      }
+      // Users with mustChangePassword set may skip the current password check
+      const mustChangePassword = session.user.mustChangePassword;
 
-      // Verify current password
-      if (!user.password) {
-        return NextResponse.json(
-          { error: 'Current password is incorrect' },
-          { status: 400 }
-        );
-      }
+      if (!mustChangePassword) {
+        if (!currentPassword) {
+          return NextResponse.json(
+            { error: 'Current password is required to change password' },
+            { status: 400 }
+          );
+        }
 
-      const isPasswordValid = await bcrypt.compare(
-        currentPassword,
-        user.password
-      );
+        // Verify current password
+        if (!user.password) {
+          return NextResponse.json(
+            { error: 'Current password is incorrect' },
+            { status: 400 }
+          );
+        }
 
-      if (!isPasswordValid) {
-        logger.warn(
-          { email: session.user.email },
-          'Failed password change attempt: incorrect current password'
+        const isPasswordValid = await bcrypt.compare(
+          currentPassword,
+          user.password
         );
-        return NextResponse.json(
-          { error: 'Current password is incorrect' },
-          { status: 400 }
-        );
+
+        if (!isPasswordValid) {
+          logger.warn(
+            { email: session.user.email },
+            'Failed password change attempt: incorrect current password'
+          );
+          return NextResponse.json(
+            { error: 'Current password is incorrect' },
+            { status: 400 }
+          );
+        }
       }
 
       // Hash new password
       updateData.password = await bcrypt.hash(newPassword, 10);
+      // Clear the forced change flag whenever a password is successfully changed
+      updateData.mustChangePassword = false;
     }
 
     // Update user

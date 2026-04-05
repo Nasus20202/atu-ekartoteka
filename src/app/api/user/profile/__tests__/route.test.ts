@@ -353,5 +353,57 @@ describe('User Profile API', () => {
       expect(hashedPassword.startsWith('$2')).toBe(true);
       expect(await bcrypt.compare('newPassword123', hashedPassword)).toBe(true);
     });
+    it('should set mustChangePassword to false when password is changed', async () => {
+      mockAuth.mockResolvedValueOnce({
+        user: {
+          id: 'user-id',
+          email: 'user@example.com',
+          role: UserRole.TENANT,
+          mustChangePassword: false,
+        },
+        expires: new Date().toISOString(),
+      });
+      mockUserFindUnique.mockResolvedValueOnce(mockUser);
+      mockUserUpdate.mockResolvedValueOnce({ ...mockUser });
+
+      const { PATCH } = await import('../route');
+      const request = createMockRequest({
+        currentPassword: 'currentPassword123',
+        newPassword: 'newPassword123',
+      });
+
+      const response = await PATCH(request);
+
+      expect(response.status).toBe(200);
+      const updateCall = mockUserUpdate.mock.calls[0][0];
+      expect(updateCall.data).toHaveProperty('mustChangePassword', false);
+    });
+
+    it('should allow password change without currentPassword when mustChangePassword is true', async () => {
+      mockAuth.mockResolvedValueOnce({
+        user: {
+          id: 'user-id',
+          email: 'user@example.com',
+          role: UserRole.TENANT,
+          mustChangePassword: true,
+        },
+        expires: new Date().toISOString(),
+      });
+      mockUserFindUnique.mockResolvedValueOnce(mockUser);
+      mockUserUpdate.mockResolvedValueOnce({ ...mockUser });
+
+      const { PATCH } = await import('../route');
+      const request = createMockRequest({
+        newPassword: 'newPassword123',
+        // no currentPassword
+      });
+
+      const response = await PATCH(request);
+
+      expect(response.status).toBe(200);
+      const updateCall = mockUserUpdate.mock.calls[0][0];
+      expect(updateCall.data).toHaveProperty('mustChangePassword', false);
+      expect(updateCall.data).toHaveProperty('password');
+    });
   });
 });
