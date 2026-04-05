@@ -1,4 +1,5 @@
 import { Building2, Calendar } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { ChargeDisplay } from '@/lib/types';
@@ -40,9 +41,10 @@ function ChargeItem({ charge }: ChargeItemProps) {
 
 type ApartmentSectionProps = {
   apartmentData: ApartmentChargesData;
+  action?: ReactNode;
 };
 
-function ApartmentSection({ apartmentData }: ApartmentSectionProps) {
+function ApartmentSection({ apartmentData, action }: ApartmentSectionProps) {
   const apartmentTotal = apartmentData.charges.reduce(
     (sum, charge) => sum + charge.totalAmount,
     0
@@ -55,7 +57,10 @@ function ApartmentSection({ apartmentData }: ApartmentSectionProps) {
           <Building2 className="h-4 w-4 text-muted-foreground" />
           <h3 className="font-semibold">{apartmentData.apartmentAddress}</h3>
         </div>
-        <p className="text-lg font-bold">{formatCurrency(apartmentTotal)}</p>
+        <div className="flex items-center gap-3">
+          {action}
+          <p className="text-lg font-bold">{formatCurrency(apartmentTotal)}</p>
+        </div>
       </div>
 
       <div className="space-y-2">
@@ -67,9 +72,13 @@ function ApartmentSection({ apartmentData }: ApartmentSectionProps) {
   );
 }
 
+type ApartmentChargesDataWithAction = ApartmentChargesData & {
+  action?: ReactNode;
+};
+
 type MultiApartmentPeriodCardProps = {
   period: string;
-  apartmentsData: ApartmentChargesData[];
+  apartmentsData: ApartmentChargesDataWithAction[];
   totalAmount: number;
 };
 
@@ -102,6 +111,7 @@ export function MultiApartmentPeriodCard({
           <ApartmentSection
             key={apartmentData.apartmentNumber}
             apartmentData={apartmentData}
+            action={apartmentData.action}
           />
         ))}
       </CardContent>

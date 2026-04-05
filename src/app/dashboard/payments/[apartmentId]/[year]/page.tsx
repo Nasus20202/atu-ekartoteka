@@ -5,6 +5,10 @@ import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
 import { PaymentTable } from '@/components/payment-table';
 import {
+  DownloadPaymentPdfButton,
+  type SerializablePayment,
+} from '@/components/pdf/download-payment-pdf-button';
+import {
   Card,
   CardContent,
   CardDescription,
@@ -46,6 +50,7 @@ export default async function PaymentDetailsPage({
         where: { year: yearNumber },
       },
       charges: true,
+      homeownersAssociation: true,
     },
   });
 
@@ -83,6 +88,16 @@ export default async function PaymentDetailsPage({
     payment.novemberCharges +
     payment.decemberCharges;
 
+  const apartmentLabel = `${apartment.address} ${apartment.building || ''}/${apartment.number}`;
+
+  const serializablePayment: SerializablePayment = {
+    ...payment,
+    dateFrom: payment.dateFrom.toISOString(),
+    dateTo: payment.dateTo.toISOString(),
+    createdAt: payment.createdAt.toISOString(),
+    updatedAt: payment.updatedAt.toISOString(),
+  };
+
   return (
     <Page maxWidth="4xl">
       <PageHeader
@@ -94,11 +109,20 @@ export default async function PaymentDetailsPage({
         {/* Summary Card */}
         <Card>
           <CardHeader>
-            <CardTitle>Podsumowanie roku {payment.year}</CardTitle>
-            <CardDescription>
-              Okres: {payment.dateFrom.toLocaleDateString('pl-PL')} -{' '}
-              {payment.dateTo.toLocaleDateString('pl-PL')}
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Podsumowanie roku {payment.year}</CardTitle>
+                <CardDescription>
+                  Okres: {payment.dateFrom.toLocaleDateString('pl-PL')} -{' '}
+                  {payment.dateTo.toLocaleDateString('pl-PL')}
+                </CardDescription>
+              </div>
+              <DownloadPaymentPdfButton
+                apartmentLabel={apartmentLabel}
+                hoaName={apartment.homeownersAssociation.name}
+                payment={serializablePayment}
+              />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4">

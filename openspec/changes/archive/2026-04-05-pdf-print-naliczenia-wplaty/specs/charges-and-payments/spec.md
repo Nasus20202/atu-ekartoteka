@@ -1,10 +1,4 @@
-# Capability: Charges and Payments
-
-## Purpose
-
-Tracks financial obligations (charges) and payment history for each apartment, including itemized charge breakdowns by billing period and year-over-year payment summaries.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Tenant Charge Viewing
 
@@ -40,20 +34,6 @@ The system SHALL allow tenants to view itemized charges for their apartments, gr
 - **WHEN** the page loads
 - **THEN** a "Drukuj / Pobierz PDF" button is visible on the page
 
----
-
-### Requirement: Multi-Apartment Charge Period Card
-
-The system SHALL present charge summaries per period across multiple apartments in a unified view.
-
-#### Scenario: Period card for single period
-
-- **GIVEN** a tenant with multiple apartments and charges in a common billing period
-- **WHEN** they view the charges dashboard
-- **THEN** a summary card shows the combined or per-apartment charge totals for that period
-
----
-
 ### Requirement: Tenant Payment Viewing
 
 The system SHALL allow tenants to view year-by-year payment summaries for their apartments. The per-apartment payment detail page SHALL include a "Drukuj / Pobierz PDF" button that allows the tenant to download a PDF of the displayed payment year.
@@ -87,21 +67,3 @@ The system SHALL allow tenants to view year-by-year payment summaries for their 
 - **GIVEN** an authenticated tenant viewing their apartment's payment detail page for a specific year
 - **WHEN** the page loads
 - **THEN** a "Drukuj / Pobierz PDF" button is visible on the page
-
----
-
-### Requirement: Charge Notifications
-
-The system SHALL store charge notification records (pre-notification of upcoming charges) separately from confirmed charges.
-
-#### Scenario: Notification data stored on import
-
-- **GIVEN** a charge notification file imported for a HOA
-- **WHEN** the import completes
-- **THEN** charge notification records are persisted per apartment with description, quantity, unit, unit price, and total amount
-
-#### Scenario: Notification uniqueness
-
-- **GIVEN** an existing charge notification for an apartment and line number
-- **WHEN** the same file is imported again (non-clean)
-- **THEN** the record is upserted without duplicating data
