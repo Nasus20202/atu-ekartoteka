@@ -368,9 +368,9 @@ export default function AdminUsersPage() {
                 Dodaj użytkownika
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/admin/users/bulk-create">
+                <Link href="/admin/users/management">
                   <Users className="mr-2 h-4 w-4" />
-                  Utwórz wiele kont
+                  Zarządzanie kontami
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -386,6 +386,7 @@ export default function AdminUsersPage() {
             value={userSearch}
             onChange={(e) => setUserSearch(e.target.value)}
             className="pl-9"
+            autoComplete="off"
           />
         </div>
       </div>
@@ -491,16 +492,89 @@ export default function AdminUsersPage() {
                   </div>
                 )}
 
-                <div className="flex gap-2">
+                {/* Desktop: inline buttons */}
+                <div className="hidden gap-2 sm:flex">
+                  {user.status === AccountStatus.PENDING && (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={actionLoading}
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setEditMode('approve');
+                        }}
+                      >
+                        <UserCheck className="mr-1 h-4 w-4" />
+                        Zatwierdź
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={actionLoading}
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => handleUpdateUser(user.id, 'REJECTED')}
+                      >
+                        <UserX className="mr-1 h-4 w-4" />
+                        Odrzuć
+                      </Button>
+                    </>
+                  )}
+                  {user.status === AccountStatus.APPROVED && (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={actionLoading}
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setEditMode('assign-apartment');
+                        }}
+                      >
+                        <Edit className="mr-1 h-4 w-4" />
+                        Mieszkania ({user.apartments?.length || 0})
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={actionLoading}
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setEditMode('change-status');
+                        }}
+                      >
+                        <Edit className="mr-1 h-4 w-4" />
+                        Zmień status
+                      </Button>
+                    </>
+                  )}
+                  {user.status === AccountStatus.REJECTED && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={actionLoading}
+                      onClick={() => {
+                        setSelectedUser(user);
+                        setEditMode('change-status');
+                      }}
+                    >
+                      <Edit className="mr-1 h-4 w-4" />
+                      Zmień status
+                    </Button>
+                  )}
+                </div>
+
+                {/* Mobile: kebab dropdown */}
+                <div className="flex gap-2 sm:hidden">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
                         size="sm"
                         variant="outline"
                         disabled={actionLoading}
+                        aria-label="Akcje"
                       >
                         <MoreVertical className="h-4 w-4" />
-                        <span className="sr-only">Akcje</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
@@ -837,6 +911,7 @@ export default function AdminUsersPage() {
                         email: e.target.value,
                       })
                     }
+                    autoComplete="off"
                   />
                 </div>
                 <div>
@@ -852,6 +927,7 @@ export default function AdminUsersPage() {
                         password: e.target.value,
                       })
                     }
+                    autoComplete="new-password"
                   />
                 </div>
                 <div>

@@ -1,7 +1,8 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import BulkCreateUsersPage from '@/app/admin/users/bulk-create/page';
+import BulkCreateUsersPage from '@/app/admin/users/management/page';
 
 vi.mock('next/navigation', () => ({
   useRouter: vi.fn(),
@@ -214,6 +215,126 @@ describe('BulkCreateUsersPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Błąd serwera/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('Assign existing tab', () => {
+    it('switches to assign tab and fetches with mode=assignable', async () => {
+      const user = userEvent.setup();
+      vi.mocked(fetch)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ hoas: mockHoas }),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ hoas: [mockHoas[0]] }),
+        } as Response);
+
+      render(<BulkCreateUsersPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
+      });
+
+      await user.click(
+        screen.getByRole('tab', { name: /przypisz istniejące/i })
+      );
+
+      await waitFor(() => {
+        const calls = vi.mocked(fetch).mock.calls;
+        expect(
+          calls.some(
+            (c) => typeof c[0] === 'string' && c[0].includes('mode=assignable')
+          )
+        ).toBe(true);
+      });
+    });
+
+    it('shows empty state when no assignable apartments', async () => {
+      const user = userEvent.setup();
+      vi.mocked(fetch)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ hoas: mockHoas }),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ hoas: [] }),
+        } as Response);
+
+      render(<BulkCreateUsersPage />);
+
+      await waitFor(() => screen.getByText('Wspólnota Alfa'));
+
+      await user.click(
+        screen.getByRole('tab', { name: /przypisz istniejące/i })
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/Brak mieszkań do przypisania/i)
+        ).toBeInTheDocument();
+      });
+    });
+
+    it('calls bulk-assign API and shows assign result on success', async () => {
+      const user = userEvent.setup();
+      vi.mocked(fetch)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ hoas: mockHoas }),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ hoas: [mockHoas[0]] }),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ assigned: 2, skipped: 0, errors: 0 }),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ hoas: [] }),
+        } as Response);
+
+      render(<BulkCreateUsersPage />);
+
+      await waitFor(() => screen.getByText('Wspólnota Alfa'));
+
+      await user.click(
+        screen.getByRole('tab', { name: /przypisz istniejące/i })
+      );
+
+      // Wait for assign fetch to complete
+      await waitFor(() => {
+        const calls = vi.mocked(fetch).mock.calls;
+        expect(
+          calls.some(
+            (c) => typeof c[0] === 'string' && c[0].includes('mode=assignable')
+          )
+        ).toBe(true);
+      });
+
+      const hoaCheckboxes = screen.getAllByLabelText(
+        /Zaznacz wszystkie w Wspólnota Alfa/i
+      );
+      await user.click(hoaCheckboxes[hoaCheckboxes.length - 1]);
+
+      const assignButtons = screen.getAllByRole('button', {
+        name: /przypisz konta/i,
+      });
+      await user.click(assignButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByText(/Przypisano 2 mieszkań/i)).toBeInTheDocument();
+      });
+
+      expect(fetch).toHaveBeenCalledWith('/api/admin/users/bulk-assign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: expect.stringContaining('apt'),
+      });
     });
   });
 });

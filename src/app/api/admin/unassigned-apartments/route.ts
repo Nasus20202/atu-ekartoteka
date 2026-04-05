@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
 import { prisma } from '@/lib/database/prisma';
@@ -7,7 +7,10 @@ import { UserRole } from '@/lib/types';
 
 const logger = createLogger('api:admin:unassigned-apartments');
 
-export async function GET() {
+const UNASSIGNED_MODE_CREATABLE = 'creatable';
+const UNASSIGNED_MODE_ASSIGNABLE = 'assignable';
+
+export async function GET(request: NextRequest) {
   try {
     const session = await auth();
 
@@ -15,10 +18,28 @@ export async function GET() {
       return NextResponse.json({ error: 'Brak uprawnień' }, { status: 401 });
     }
 
+    const { searchParams } = request.nextUrl;
+    const mode = searchParams.get('mode') ?? UNASSIGNED_MODE_CREATABLE;
+
+    const existingUsers = await prisma.user.findMany({
+      select: { email: true },
+      where: { email: { not: undefined } },
+    });
+    const existingEmails = existingUsers
+      .map((u) => u.email)
+      .filter((e): e is string => e !== null);
+
+    // assignable: apartments whose email matches an existing user
+    // creatable (default): apartments whose email is NOT yet used by any user
+    const emailWhere =
+      mode === UNASSIGNED_MODE_ASSIGNABLE
+        ? { in: existingEmails }
+        : { notIn: existingEmails };
+
     const apartments = await prisma.apartment.findMany({
       where: {
         userId: null,
-        email: { not: null },
+        email: { not: null, ...emailWhere },
       },
       select: {
         id: true,
@@ -59,7 +80,7 @@ export async function GET() {
     }
 
     logger.info(
-      { hoaCount: hoaMap.size, apartmentCount: apartments.length },
+      { hoaCount: hoaMap.size, apartmentCount: apartments.length, mode },
       'Fetched unassigned apartments'
     );
 
