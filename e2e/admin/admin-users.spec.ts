@@ -3,10 +3,10 @@
  */
 
 import { expect, test } from '../fixtures';
-import { createUnassignedApartment } from '../utils/create-unassigned-apartment';
+import { createUniqueUnassignedApartment } from '../utils/create-unique-unassigned-apartment';
 import { USER_EMAIL } from '../utils/test-credentials';
 
-test.describe('Admin User Management', () => {
+test.describe.serial('Admin User Management', () => {
   test('admin can view users list', async ({ adminPage }) => {
     // Navigate to users page
     await adminPage.goto('/admin/users');
@@ -32,8 +32,8 @@ test.describe('Admin User Management', () => {
   });
 
   test('admin can create and accept a new user', async ({ adminPage }) => {
-    // Seed an unassigned apartment so the approval dialog has something to assign
-    await createUnassignedApartment();
+    // Seed a unique unassigned apartment so the approval dialog has something to assign
+    await createUniqueUnassignedApartment();
 
     // Navigate to users page
     await adminPage.goto('/admin/users');
@@ -43,8 +43,11 @@ test.describe('Admin User Management', () => {
       adminPage.getByRole('heading', { name: /Użytkownicy/i })
     ).toBeVisible();
 
-    // Click add user button
-    await adminPage.getByRole('button', { name: /Dodaj użytkownika/i }).click();
+    // Click add user button (inside "Akcje" dropdown)
+    await adminPage.getByRole('button', { name: /Akcje/i }).click();
+    await adminPage
+      .getByRole('menuitem', { name: /Dodaj użytkownika/i })
+      .click();
 
     // Fill in user form
     const uniqueEmail = `newuser-${Date.now()}@e2e-test.com`;
@@ -73,8 +76,13 @@ test.describe('Admin User Management', () => {
       timeout: 10000,
     });
 
-    // Click "Zatwierdź" button to approve the user
-    await newUserCard.getByRole('button', { name: /Zatwierdź/i }).click();
+    // Click "Zatwierdź" via kebab dropdown on the new user card
+    await newUserCard.getByRole('button', { name: /Akcje/i }).click();
+    const zatwierdźMenuItem = adminPage.getByRole('menuitem', {
+      name: /^Zatwierdź$/i,
+    });
+    await expect(zatwierdźMenuItem).toBeVisible({ timeout: 5000 });
+    await zatwierdźMenuItem.click();
 
     // Should see the approval dialog
     await expect(adminPage.getByText(/Zatwierdź konto/i)).toBeVisible({
@@ -154,8 +162,9 @@ test.describe('Admin User Management', () => {
       timeout: 10000,
     });
 
-    // Click "Mieszkania" button within the specific user card
-    await userCard.getByRole('button', { name: /Mieszkania/i }).click();
+    // Open kebab dropdown for the user card and click "Mieszkania"
+    await userCard.getByRole('button', { name: /Akcje/i }).click();
+    await adminPage.getByRole('menuitem', { name: /Mieszkania/i }).click();
 
     // Should see the apartment management dialog
     await expect(adminPage.getByText(/Przypisz mieszkanie/i)).toBeVisible({

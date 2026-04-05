@@ -51,7 +51,9 @@ describe('PageHeader', () => {
       <PageHeader title="Title" description="Description" />
     );
 
-    const wrapper = container.querySelector('.mb-6.flex.items-center.gap-4');
+    const wrapper = container.querySelector(
+      '.mb-6.flex.flex-wrap.items-center'
+    );
     expect(wrapper).toBeInTheDocument();
   });
 
@@ -59,7 +61,7 @@ describe('PageHeader', () => {
     render(<PageHeader title="Title" />);
 
     const heading = screen.getByRole('heading', { level: 1 });
-    expect(heading).toHaveClass('text-3xl', 'font-bold');
+    expect(heading).toHaveClass('text-2xl', 'font-bold');
   });
 
   it('renders description with correct styling', () => {

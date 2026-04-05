@@ -46,6 +46,13 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      testIgnore: '**/admin/**',
+    },
+    {
+      name: 'chromium-admin',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: '**/admin/**',
+      fullyParallel: false,
     },
   ],
 

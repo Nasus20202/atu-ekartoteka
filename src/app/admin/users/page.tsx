@@ -5,6 +5,7 @@ import {
   Check,
   Clock,
   Edit,
+  MoreVertical,
   Search,
   UserCheck,
   UserPlus,
@@ -27,6 +28,12 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LoadingCard } from '@/components/ui/loading-card';
@@ -324,44 +331,52 @@ export default function AdminUsersPage() {
 
   return (
     <Page maxWidth="7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex-1">
-          <PageHeader
-            title="Użytkownicy"
-            description={
-              pendingCount > 0
-                ? pendingCount === 1
-                  ? '1 konto oczekuje na zatwierdzenie'
-                  : pendingCount < 5
-                    ? `${pendingCount} konta oczekują na zatwierdzenie`
-                    : `${pendingCount} kont oczekuje na zatwierdzenie`
-                : undefined
-            }
-            showBackButton={false}
-          />
-        </div>
-        <Button
-          onClick={() => {
-            setNewUserData({
-              email: '',
-              password: '',
-              name: '',
-              role: 'TENANT',
-              status: 'PENDING',
-            });
-            setEditMode('create-user');
-          }}
-        >
-          <UserPlus className="mr-2 h-4 w-4" />
-          Dodaj użytkownika
-        </Button>
-        <Button variant="outline" asChild>
-          <Link href="/admin/users/bulk-create">
-            <Users className="mr-2 h-4 w-4" />
-            Utwórz wiele kont
-          </Link>
-        </Button>
-      </div>
+      <PageHeader
+        title="Użytkownicy"
+        description={
+          pendingCount > 0
+            ? pendingCount === 1
+              ? '1 konto oczekuje na zatwierdzenie'
+              : pendingCount < 5
+                ? `${pendingCount} konta oczekują na zatwierdzenie`
+                : `${pendingCount} kont oczekuje na zatwierdzenie`
+            : undefined
+        }
+        showBackButton={false}
+        action={
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button>
+                <UserPlus className="mr-2 h-4 w-4" />
+                Akcje
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onSelect={() => {
+                  setNewUserData({
+                    email: '',
+                    password: '',
+                    name: '',
+                    role: 'TENANT',
+                    status: 'PENDING',
+                  });
+                  setEditMode('create-user');
+                }}
+              >
+                <UserPlus className="mr-2 h-4 w-4" />
+                Dodaj użytkownika
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/admin/users/bulk-create">
+                  <Users className="mr-2 h-4 w-4" />
+                  Utwórz wiele kont
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        }
+      />
 
       <div className="mb-4">
         <div className="relative">
@@ -375,7 +390,7 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      <div className="mb-6 flex gap-2">
+      <div className="mb-6 flex flex-wrap gap-2">
         <Button
           variant={filter === 'ALL' ? 'default' : 'outline'}
           onClick={() => setFilter('ALL')}
@@ -477,75 +492,75 @@ export default function AdminUsersPage() {
                 )}
 
                 <div className="flex gap-2">
-                  {user.status === AccountStatus.PENDING && (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="default"
-                        onClick={() => {
-                          setSelectedUser(user);
-                          setEditMode('approve');
-                        }}
-                        disabled={actionLoading}
-                      >
-                        <UserCheck className="mr-1 h-4 w-4" />
-                        Zatwierdź
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleUpdateUser(user.id, 'REJECTED')}
-                        disabled={actionLoading}
-                      >
-                        <UserX className="mr-1 h-4 w-4" />
-                        Odrzuć
-                      </Button>
-                    </>
-                  )}
-
-                  {user.status === AccountStatus.APPROVED && (
-                    <>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => {
-                          setSelectedUser(user);
-                          setEditMode('assign-apartment');
-                        }}
                         disabled={actionLoading}
                       >
-                        <Edit className="mr-1 h-4 w-4" />
-                        Mieszkania ({user.apartments?.length || 0})
+                        <MoreVertical className="h-4 w-4" />
+                        <span className="sr-only">Akcje</span>
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setSelectedUser(user);
-                          setEditMode('change-status');
-                        }}
-                        disabled={actionLoading}
-                      >
-                        <Edit className="mr-1 h-4 w-4" />
-                        Zmień status
-                      </Button>
-                    </>
-                  )}
-
-                  {user.status === AccountStatus.REJECTED && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setSelectedUser(user);
-                        setEditMode('change-status');
-                      }}
-                      disabled={actionLoading}
-                    >
-                      <Edit className="mr-1 h-4 w-4" />
-                      Zmień status
-                    </Button>
-                  )}
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {user.status === AccountStatus.PENDING && (
+                        <>
+                          <DropdownMenuItem
+                            onSelect={() => {
+                              setSelectedUser(user);
+                              setEditMode('approve');
+                            }}
+                          >
+                            <UserCheck className="mr-2 h-4 w-4" />
+                            Zatwierdź
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onSelect={() =>
+                              handleUpdateUser(user.id, 'REJECTED')
+                            }
+                          >
+                            <UserX className="mr-2 h-4 w-4" />
+                            Odrzuć
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                      {user.status === AccountStatus.APPROVED && (
+                        <>
+                          <DropdownMenuItem
+                            onSelect={() => {
+                              setSelectedUser(user);
+                              setEditMode('assign-apartment');
+                            }}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Mieszkania ({user.apartments?.length || 0})
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onSelect={() => {
+                              setSelectedUser(user);
+                              setEditMode('change-status');
+                            }}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Zmień status
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                      {user.status === AccountStatus.REJECTED && (
+                        <DropdownMenuItem
+                          onSelect={() => {
+                            setSelectedUser(user);
+                            setEditMode('change-status');
+                          }}
+                        >
+                          <Edit className="mr-2 h-4 w-4" />
+                          Zmień status
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </CardContent>
             </Card>
@@ -554,7 +569,7 @@ export default function AdminUsersPage() {
       )}
 
       {selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <Card className="max-h-[80vh] w-full max-w-2xl overflow-auto">
             <CardHeader>
               <CardTitle>
@@ -799,7 +814,7 @@ export default function AdminUsersPage() {
 
       {/* Create User Dialog */}
       {editMode === 'create-user' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <Card className="w-full max-w-md">
             <CardHeader>
               <CardTitle>Dodaj nowego użytkownika</CardTitle>

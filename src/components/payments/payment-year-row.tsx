@@ -25,21 +25,23 @@ export function PaymentYearRow({
   dateToLabel,
 }: PaymentYearRowProps) {
   return (
-    <div className="flex items-center gap-3 rounded-lg border p-4 transition-colors hover:bg-muted">
-      <Link
-        href={`/dashboard/payments/${apartmentId}/${payment.year}`}
-        className="shrink-0"
-      >
+    <Link
+      href={`/dashboard/payments/${apartmentId}/${payment.year}`}
+      className="flex flex-wrap items-center gap-3 rounded-lg border p-4 transition-colors hover:bg-muted"
+    >
+      <div className="min-w-0 shrink-0">
         <div className="font-medium">Rok {payment.year}</div>
         <div className="text-sm text-muted-foreground">
           {dateFromLabel} - {dateToLabel}
         </div>
-      </Link>
-      <DownloadPaymentPdfButton
-        apartmentLabel={apartmentLabel}
-        hoaName={hoaName}
-        payment={payment}
-      />
+      </div>
+      <div onClick={(e) => e.preventDefault()} className="shrink-0">
+        <DownloadPaymentPdfButton
+          apartmentLabel={apartmentLabel}
+          hoaName={hoaName}
+          payment={payment}
+        />
+      </div>
       <div className="ml-auto text-right">
         <div
           className={`text-xl font-bold ${
@@ -50,6 +52,6 @@ export function PaymentYearRow({
         </div>
         <div className="text-sm text-muted-foreground">Saldo końcowe</div>
       </div>
-    </div>
+    </Link>
   );
 }

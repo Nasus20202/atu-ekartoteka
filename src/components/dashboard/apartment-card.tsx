@@ -38,8 +38,8 @@ export function ApartmentCard({
         animationDelay: `${100 + index * 50}ms`,
       }}
     >
-      <div className="mb-4 flex items-center justify-between">
-        <div>
+      <div className="mb-4">
+        <div className="mb-2">
           <h3 className="text-lg font-semibold">
             {apartment.address} {apartment.building || ''}/{apartment.number}
           </h3>

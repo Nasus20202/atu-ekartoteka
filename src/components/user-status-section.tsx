@@ -114,17 +114,17 @@ export function UserStatusSection({
 
             <div className="space-y-2 border-t pt-4">
               <div className="flex items-center gap-2 text-sm">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">Email:</span>
-                <span className="font-medium">{email}</span>
+                <Mail className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <span className="shrink-0 text-muted-foreground">Email:</span>
+                <span className="min-w-0 truncate font-medium">{email}</span>
               </div>
               {name && (
                 <div className="flex items-center gap-2 text-sm">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">
+                  <User className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <span className="shrink-0 text-muted-foreground">
                     Imię i nazwisko:
                   </span>
-                  <span className="font-medium">{name}</span>
+                  <span className="min-w-0 truncate font-medium">{name}</span>
                 </div>
               )}
             </div>
