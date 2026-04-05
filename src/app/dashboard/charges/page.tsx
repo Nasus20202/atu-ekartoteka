@@ -5,9 +5,18 @@ import { auth } from '@/auth';
 import { MultiApartmentPeriodCard } from '@/components/charges/multi-apartment-period-card';
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
+import { DownloadChargesPdfButton } from '@/components/pdf/download-charges-pdf-button';
 import { Card, CardContent } from '@/components/ui/card';
 import { prisma } from '@/lib/database/prisma';
 import { AccountStatus, type ChargeDisplay } from '@/lib/types';
+
+type ApartmentPeriodData = {
+  apartmentNumber: string;
+  apartmentAddress: string;
+  hoaName: string;
+  charges: ChargeDisplay[];
+  action?: React.ReactNode;
+};
 
 export default async function ChargesPage() {
   const session = await auth();
@@ -21,6 +30,7 @@ export default async function ChargesPage() {
     include: {
       apartments: {
         include: {
+          homeownersAssociation: true,
           charges: {
             orderBy: [{ period: 'desc' }, { externalLineNo: 'asc' }],
           },
@@ -33,18 +43,15 @@ export default async function ChargesPage() {
     redirect('/dashboard');
   }
 
-  // Group charges by period
-  const chargesByPeriod = new Map<
-    string,
-    Array<{
-      apartmentNumber: string;
-      apartmentAddress: string;
-      charges: ChargeDisplay[];
-    }>
-  >();
+  const chargesByPeriod = new Map<string, ApartmentPeriodData[]>();
 
   userData.apartments.forEach(
     (apartment: (typeof userData.apartments)[number]) => {
+      const apartmentLabel =
+        `${apartment.address || ''} ${apartment.building || ''}/${apartment.number}`
+          .replace(/\s+\//g, ' /')
+          .trim();
+
       apartment.charges.forEach(
         (charge: (typeof apartment.charges)[number]) => {
           if (!chargesByPeriod.has(charge.period)) {
@@ -59,10 +66,8 @@ export default async function ChargesPage() {
           if (!apartmentData) {
             apartmentData = {
               apartmentNumber: apartment.number,
-              apartmentAddress:
-                `${apartment.address || ''} ${apartment.building || ''}/${apartment.number}`
-                  .replace(/\s+\//g, ' /')
-                  .trim(),
+              apartmentAddress: apartmentLabel,
+              hoaName: apartment.homeownersAssociation.name,
               charges: [],
             };
             periodData.push(apartmentData);
@@ -82,6 +87,27 @@ export default async function ChargesPage() {
       );
     }
   );
+
+  // Attach PDF download buttons per apartment per period
+  for (const [period, periodData] of chargesByPeriod.entries()) {
+    for (const apartmentData of periodData) {
+      apartmentData.action = (
+        <DownloadChargesPdfButton
+          apartmentLabel={apartmentData.apartmentAddress}
+          hoaName={apartmentData.hoaName}
+          period={period}
+          charges={apartmentData.charges.map((c) => ({
+            id: c.id,
+            description: c.description,
+            quantity: c.quantity,
+            unit: c.unit,
+            unitPrice: c.unitPrice,
+            totalAmount: c.totalAmount,
+          }))}
+        />
+      );
+    }
+  }
 
   const periods = Array.from(chargesByPeriod.keys()).sort().reverse();
 

@@ -36,9 +36,15 @@ type PeriodCardProps = {
   period: string;
   charges: ChargeDisplay[];
   totalAmount: number;
+  action?: React.ReactNode;
 };
 
-export function PeriodCard({ period, charges, totalAmount }: PeriodCardProps) {
+export function PeriodCard({
+  period,
+  charges,
+  totalAmount,
+  action,
+}: PeriodCardProps) {
   return (
     <Card>
       <CardHeader>
@@ -52,9 +58,12 @@ export function PeriodCard({ period, charges, totalAmount }: PeriodCardProps) {
               Okres rozliczeniowy
             </p>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-muted-foreground">Razem</p>
-            <p className="text-xl font-bold">{formatCurrency(totalAmount)}</p>
+          <div className="flex flex-col items-end gap-2">
+            <div className="text-right">
+              <p className="text-sm text-muted-foreground">Razem</p>
+              <p className="text-xl font-bold">{formatCurrency(totalAmount)}</p>
+            </div>
+            {action}
           </div>
         </div>
       </CardHeader>

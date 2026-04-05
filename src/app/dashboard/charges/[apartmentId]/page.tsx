@@ -5,6 +5,10 @@ import { auth } from '@/auth';
 import { PeriodCard } from '@/components/charges/period-card';
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
+import {
+  DownloadChargesPdfButton,
+  type SerializableCharge,
+} from '@/components/pdf/download-charges-pdf-button';
 import { Card, CardContent } from '@/components/ui/card';
 import { prisma } from '@/lib/database/prisma';
 import { AccountStatus, type ChargeDisplay } from '@/lib/types';
@@ -39,6 +43,7 @@ export default async function ApartmentChargesPage({
       charges: {
         orderBy: [{ period: 'desc' }, { externalLineNo: 'asc' }],
       },
+      homeownersAssociation: true,
     },
   });
 
@@ -48,10 +53,12 @@ export default async function ApartmentChargesPage({
 
   // Group charges by period
   const chargesByPeriod = new Map<string, ChargeDisplay[]>();
+  const serializableByPeriod: Record<string, SerializableCharge[]> = {};
 
   apartment.charges.forEach((charge: (typeof apartment.charges)[number]) => {
     if (!chargesByPeriod.has(charge.period)) {
       chargesByPeriod.set(charge.period, []);
+      serializableByPeriod[charge.period] = [];
     }
 
     chargesByPeriod.get(charge.period)!.push({
@@ -64,9 +71,19 @@ export default async function ApartmentChargesPage({
       dateFrom: charge.dateFrom,
       dateTo: charge.dateTo,
     });
+
+    serializableByPeriod[charge.period].push({
+      id: charge.id,
+      description: charge.description,
+      quantity: charge.quantity,
+      unit: charge.unit,
+      unitPrice: charge.unitPrice,
+      totalAmount: charge.totalAmount,
+    });
   });
 
   const periods = Array.from(chargesByPeriod.keys()).sort().reverse();
+  const apartmentLabel = `${apartment.address} ${apartment.building || ''}/${apartment.number}`;
 
   return (
     <Page maxWidth="4xl">
@@ -102,6 +119,14 @@ export default async function ApartmentChargesPage({
                 period={period}
                 charges={charges}
                 totalAmount={totalAmount}
+                action={
+                  <DownloadChargesPdfButton
+                    apartmentLabel={apartmentLabel}
+                    hoaName={apartment.homeownersAssociation.name}
+                    period={period}
+                    charges={serializableByPeriod[period]}
+                  />
+                }
               />
             );
           })}
