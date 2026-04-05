@@ -107,7 +107,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="bg-background animate-fade-in">
-      <main className="p-8">
+      <main className="p-4 md:p-8">
         <div className="mx-auto max-w-7xl">
           <h1 className="mb-6 text-3xl font-bold">
             Witaj{userData.name ? `, ${userData.name}` : ''}!

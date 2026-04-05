@@ -148,7 +148,7 @@ export default function ApartmentDetailsPage() {
             <CardTitle>Informacje podstawowe</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <p className="text-sm text-muted-foreground">ID zewnętrzne</p>
                 <p className="font-medium">
@@ -242,7 +242,7 @@ export default function ApartmentDetailsPage() {
               <CardTitle>Przypisany użytkownik</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <p className="text-sm text-muted-foreground">
                     Imię i nazwisko
@@ -369,15 +369,17 @@ export default function ApartmentDetailsPage() {
 
                   return (
                     <div key={payment.id} className="space-y-4">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
                         <h3 className="font-semibold">Rok {payment.year}</h3>
-                        <DownloadPaymentPdfButton
-                          apartmentLabel={apartmentLabel}
-                          hoaName={apartment.homeownersAssociation.name}
-                          payment={serializablePayment}
-                        />
+                        <div className="shrink-0">
+                          <DownloadPaymentPdfButton
+                            apartmentLabel={apartmentLabel}
+                            hoaName={apartment.homeownersAssociation.name}
+                            payment={serializablePayment}
+                          />
+                        </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
                         <div className="font-medium">Saldo początkowe:</div>
                         <div className="text-right">
                           {payment.openingBalance.toFixed(2)} zł

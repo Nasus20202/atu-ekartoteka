@@ -117,16 +117,16 @@ export default function BulkCreateUsersPage() {
 
   return (
     <Page maxWidth="4xl">
-      <div className="mb-6 flex items-center justify-between">
-        <PageHeader
-          title="Utwórz wiele kont"
-          description="Wybierz mieszkania, dla których chcesz utworzyć konta użytkowników"
-          showBackButton={false}
-        />
-        <Button variant="outline" asChild>
-          <Link href="/admin/users">Powrót</Link>
-        </Button>
-      </div>
+      <PageHeader
+        title="Utwórz wiele kont"
+        description="Wybierz mieszkania, dla których chcesz utworzyć konta użytkowników"
+        showBackButton={false}
+        action={
+          <Button variant="outline" asChild>
+            <Link href="/admin/users">Powrót</Link>
+          </Button>
+        }
+      />
 
       {result && (
         <Alert className="mb-4 border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
@@ -166,6 +166,7 @@ export default function BulkCreateUsersPage() {
             <Button
               onClick={handleSubmit}
               disabled={selectedIds.size === 0 || submitting}
+              className="shrink-0"
             >
               <UserPlus className="mr-2 h-4 w-4" />
               {submitting ? 'Tworzenie...' : 'Utwórz konta'}

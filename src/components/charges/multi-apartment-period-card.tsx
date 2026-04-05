@@ -17,14 +17,14 @@ type ChargeItemProps = {
 
 function ChargeItem({ charge }: ChargeItemProps) {
   return (
-    <div className="flex items-center justify-between rounded bg-muted/50 p-3 text-sm">
+    <div className="flex flex-col gap-2 rounded bg-muted/50 p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
       <div className="flex-1">
         <p className="font-medium">{charge.description}</p>
         <p className="text-xs text-muted-foreground">
           {formatDate(charge.dateFrom)} - {formatDate(charge.dateTo)}
         </p>
       </div>
-      <div className="flex items-center gap-4 text-right">
+      <div className="flex shrink-0 items-center justify-end gap-4 text-right">
         <div>
           <p className="text-muted-foreground">
             {charge.quantity} {charge.unit}
@@ -33,7 +33,9 @@ function ChargeItem({ charge }: ChargeItemProps) {
             {formatCurrency(charge.unitPrice)} / {charge.unit}
           </p>
         </div>
-        <p className="w-24 font-bold">{formatCurrency(charge.totalAmount)}</p>
+        <p className="whitespace-nowrap font-bold">
+          {formatCurrency(charge.totalAmount)}
+        </p>
       </div>
     </div>
   );
@@ -52,12 +54,14 @@ function ApartmentSection({ apartmentData, action }: ApartmentSectionProps) {
 
   return (
     <div className="space-y-4 rounded-lg border p-4">
-      <div className="flex items-center justify-between border-b pb-3">
-        <div className="flex items-center gap-2">
-          <Building2 className="h-4 w-4 text-muted-foreground" />
-          <h3 className="font-semibold">{apartmentData.apartmentAddress}</h3>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <h3 className="truncate font-semibold">
+            {apartmentData.apartmentAddress}
+          </h3>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-3">
           {action}
           <p className="text-lg font-bold">{formatCurrency(apartmentTotal)}</p>
         </div>

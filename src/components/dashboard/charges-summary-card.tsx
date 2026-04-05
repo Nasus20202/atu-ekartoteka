@@ -39,8 +39,8 @@ export function ChargesSummaryCard({
             <div className="grid gap-3 sm:grid-cols-2">
               {currentMonthCharges.length > 0 && (
                 <div className="rounded-lg border p-3">
-                  <div className="flex items-center justify-between">
-                    <div>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
                       <p className="font-medium">
                         {formatPeriod(currentPeriod)}
                       </p>
@@ -53,7 +53,7 @@ export function ChargesSummaryCard({
                             : 'naliczeń'}
                       </p>
                     </div>
-                    <p className="text-xl font-bold">
+                    <p className="shrink-0 text-xl font-bold">
                       {formatCurrency(currentMonthTotal)}
                     </p>
                   </div>
@@ -61,8 +61,8 @@ export function ChargesSummaryCard({
               )}
               {previousMonthCharges.length > 0 && (
                 <div className="rounded-lg border p-3">
-                  <div className="flex items-center justify-between">
-                    <div>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
                       <p className="font-medium">
                         {formatPeriod(previousPeriod)}
                       </p>
@@ -75,7 +75,7 @@ export function ChargesSummaryCard({
                             : 'naliczeń'}
                       </p>
                     </div>
-                    <p className="text-xl font-bold">
+                    <p className="shrink-0 text-xl font-bold">
                       {formatCurrency(previousMonthTotal)}
                     </p>
                   </div>

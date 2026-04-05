@@ -117,28 +117,26 @@ export default function HOAApartmentsPage() {
 
   return (
     <Page maxWidth="7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex-1">
-          <PageHeader
-            title={hoa ? hoa.name : 'Wspólnota'}
-            description={hoa ? hoa.externalId : undefined}
-            showBackButton={true}
-          />
-        </div>
-        <div className="flex items-center gap-4">
-          <label
-            htmlFor="active-only"
-            className="flex items-center gap-2 text-sm cursor-pointer"
-          >
-            <Checkbox
-              id="active-only"
-              checked={activeOnly}
-              onCheckedChange={handleActiveOnlyChange}
-            />
-            Tylko aktywne
-          </label>
-        </div>
-      </div>
+      <PageHeader
+        title={hoa ? hoa.name : 'Wspólnota'}
+        description={hoa ? hoa.externalId : undefined}
+        showBackButton={true}
+        action={
+          <div className="shrink-0">
+            <label
+              htmlFor="active-only"
+              className="flex cursor-pointer items-center gap-2 text-sm"
+            >
+              <Checkbox
+                id="active-only"
+                checked={activeOnly}
+                onCheckedChange={handleActiveOnlyChange}
+              />
+              Tylko aktywne
+            </label>
+          </div>
+        }
+      />
 
       <Card className="mb-6">
         <CardHeader>

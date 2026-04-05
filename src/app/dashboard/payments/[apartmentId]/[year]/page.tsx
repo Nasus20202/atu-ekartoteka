@@ -109,7 +109,7 @@ export default async function PaymentDetailsPage({
         {/* Summary Card */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <CardTitle>Podsumowanie roku {payment.year}</CardTitle>
                 <CardDescription>
@@ -117,15 +117,17 @@ export default async function PaymentDetailsPage({
                   {payment.dateTo.toLocaleDateString('pl-PL')}
                 </CardDescription>
               </div>
-              <DownloadPaymentPdfButton
-                apartmentLabel={apartmentLabel}
-                hoaName={apartment.homeownersAssociation.name}
-                payment={serializablePayment}
-              />
+              <div className="shrink-0">
+                <DownloadPaymentPdfButton
+                  apartmentLabel={apartmentLabel}
+                  hoaName={apartment.homeownersAssociation.name}
+                  payment={serializablePayment}
+                />
+              </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="rounded-lg bg-muted p-4">
                 <div className="text-sm text-muted-foreground">
                   Saldo początkowe
@@ -183,7 +185,7 @@ export default async function PaymentDetailsPage({
             <CardTitle>Dane lokalu</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
               <div>
                 <div className="font-medium text-muted-foreground">Adres</div>
                 <div>

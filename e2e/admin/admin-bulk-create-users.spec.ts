@@ -19,8 +19,11 @@ test.describe.serial('Admin Bulk User Creation', () => {
       adminPage.getByRole('heading', { name: /Użytkownicy/i })
     ).toBeVisible();
 
+    // Open the "Akcje" dropdown to reveal the bulk-create link
+    await adminPage.getByRole('button', { name: /Akcje/i }).click();
+
     await expect(
-      adminPage.getByRole('link', { name: /Utwórz wiele kont/i })
+      adminPage.getByRole('menuitem', { name: /Utwórz wiele kont/i })
     ).toBeVisible();
   });
 

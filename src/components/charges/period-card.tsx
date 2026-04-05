@@ -10,14 +10,14 @@ type ChargeItemProps = {
 
 function ChargeItem({ charge }: ChargeItemProps) {
   return (
-    <div className="flex items-center justify-between rounded bg-muted/50 p-3 text-sm">
+    <div className="flex flex-col gap-2 rounded bg-muted/50 p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
       <div className="flex-1">
         <p className="font-medium">{charge.description}</p>
         <p className="text-xs text-muted-foreground">
           {formatDate(charge.dateFrom)} - {formatDate(charge.dateTo)}
         </p>
       </div>
-      <div className="flex items-center gap-4 text-right">
+      <div className="flex shrink-0 items-center justify-end gap-4 text-right">
         <div>
           <p className="text-muted-foreground">
             {charge.quantity} {charge.unit}
@@ -26,7 +26,9 @@ function ChargeItem({ charge }: ChargeItemProps) {
             {formatCurrency(charge.unitPrice)} / {charge.unit}
           </p>
         </div>
-        <p className="w-24 font-bold">{formatCurrency(charge.totalAmount)}</p>
+        <p className="whitespace-nowrap font-bold">
+          {formatCurrency(charge.totalAmount)}
+        </p>
       </div>
     </div>
   );
@@ -58,7 +60,7 @@ export function PeriodCard({
               Okres rozliczeniowy
             </p>
           </div>
-          <div className="flex flex-col items-end gap-2">
+          <div className="flex shrink-0 flex-col items-end gap-2">
             <div className="text-right">
               <p className="text-sm text-muted-foreground">Razem</p>
               <p className="text-xl font-bold">{formatCurrency(totalAmount)}</p>

@@ -85,82 +85,84 @@ export function PaymentTable({ payment }: PaymentTableProps) {
   let runningBalance = payment.openingBalance;
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Miesiąc</TableHead>
-          <TableHead className="text-right">Wpłaty</TableHead>
-          <TableHead className="text-right">Naliczenia</TableHead>
-          <TableHead className="text-right">Saldo</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        <TableRow>
-          <TableCell className="font-medium">Bilans otwarcia</TableCell>
-          <TableCell className="text-right">-</TableCell>
-          <TableCell className="text-right">-</TableCell>
-          <TableCell
-            className={`text-right ${
-              runningBalance < 0
-                ? 'text-red-600'
-                : runningBalance > 0
-                  ? 'text-green-600'
-                  : ''
-            }`}
-          >
-            {runningBalance.toFixed(2)} zł
-          </TableCell>
-        </TableRow>
-        {monthlyData.map((month) => {
-          const paymentsForMonth = month.payment;
-          const chargesForMonth = month.charge;
-          runningBalance += paymentsForMonth - chargesForMonth;
-          return (
-            <TableRow key={month.name}>
-              <TableCell>{month.name}</TableCell>
-              <TableCell className="text-right">
-                {paymentsForMonth.toFixed(2)} zł
-              </TableCell>
-              <TableCell className="text-right">
-                {chargesForMonth.toFixed(2)} zł
-              </TableCell>
-              <TableCell
-                className={`text-right ${
-                  runningBalance < 0
-                    ? 'text-red-600'
-                    : runningBalance > 0
-                      ? 'text-green-600'
-                      : ''
-                }`}
-              >
-                {runningBalance.toFixed(2)} zł
-              </TableCell>
-            </TableRow>
-          );
-        })}
-      </TableBody>
-      <TableFooter>
-        <TableRow>
-          <TableCell className="font-medium">Razem</TableCell>
-          <TableCell className="text-right font-medium">
-            {totalPayments.toFixed(2)} zł
-          </TableCell>
-          <TableCell className="text-right font-medium">
-            {totalCharges.toFixed(2)} zł
-          </TableCell>
-          <TableCell
-            className={`text-right font-medium ${
-              payment.closingBalance < 0
-                ? 'text-red-600'
-                : payment.closingBalance > 0
-                  ? 'text-green-600'
-                  : ''
-            }`}
-          >
-            {payment.closingBalance.toFixed(2)} zł
-          </TableCell>
-        </TableRow>
-      </TableFooter>
-    </Table>
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Miesiąc</TableHead>
+            <TableHead className="text-right">Wpłaty</TableHead>
+            <TableHead className="text-right">Naliczenia</TableHead>
+            <TableHead className="text-right">Saldo</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow>
+            <TableCell className="font-medium">Bilans otwarcia</TableCell>
+            <TableCell className="text-right">-</TableCell>
+            <TableCell className="text-right">-</TableCell>
+            <TableCell
+              className={`text-right ${
+                runningBalance < 0
+                  ? 'text-red-600'
+                  : runningBalance > 0
+                    ? 'text-green-600'
+                    : ''
+              }`}
+            >
+              {runningBalance.toFixed(2)} zł
+            </TableCell>
+          </TableRow>
+          {monthlyData.map((month) => {
+            const paymentsForMonth = month.payment;
+            const chargesForMonth = month.charge;
+            runningBalance += paymentsForMonth - chargesForMonth;
+            return (
+              <TableRow key={month.name}>
+                <TableCell>{month.name}</TableCell>
+                <TableCell className="text-right">
+                  {paymentsForMonth.toFixed(2)} zł
+                </TableCell>
+                <TableCell className="text-right">
+                  {chargesForMonth.toFixed(2)} zł
+                </TableCell>
+                <TableCell
+                  className={`text-right ${
+                    runningBalance < 0
+                      ? 'text-red-600'
+                      : runningBalance > 0
+                        ? 'text-green-600'
+                        : ''
+                  }`}
+                >
+                  {runningBalance.toFixed(2)} zł
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+        <TableFooter>
+          <TableRow>
+            <TableCell className="font-medium">Razem</TableCell>
+            <TableCell className="text-right font-medium">
+              {totalPayments.toFixed(2)} zł
+            </TableCell>
+            <TableCell className="text-right font-medium">
+              {totalCharges.toFixed(2)} zł
+            </TableCell>
+            <TableCell
+              className={`text-right font-medium ${
+                payment.closingBalance < 0
+                  ? 'text-red-600'
+                  : payment.closingBalance > 0
+                    ? 'text-green-600'
+                    : ''
+              }`}
+            >
+              {payment.closingBalance.toFixed(2)} zł
+            </TableCell>
+          </TableRow>
+        </TableFooter>
+      </Table>
+    </div>
   );
 }

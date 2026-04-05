@@ -203,36 +203,40 @@ export default function AdminImportPage() {
           {statsLoading ? (
             <p className="text-sm text-muted-foreground">Ładowanie...</p>
           ) : dbStats ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Wspólnoty</TableHead>
-                  <TableHead>Mieszkania</TableHead>
-                  <TableHead>Naliczenia</TableHead>
-                  <TableHead>Powiadomienia</TableHead>
-                  <TableHead>Wpłaty</TableHead>
-                  <TableHead>Użytkownicy</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow>
-                  <TableCell className="font-medium">{dbStats.hoa}</TableCell>
-                  <TableCell className="font-medium">
-                    {dbStats.apartments}
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {dbStats.charges}
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {dbStats.notifications}
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {dbStats.payments}
-                  </TableCell>
-                  <TableCell className="font-medium">{dbStats.users}</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Wspólnoty</TableHead>
+                    <TableHead>Mieszkania</TableHead>
+                    <TableHead>Naliczenia</TableHead>
+                    <TableHead>Powiadomienia</TableHead>
+                    <TableHead>Wpłaty</TableHead>
+                    <TableHead>Użytkownicy</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell className="font-medium">{dbStats.hoa}</TableCell>
+                    <TableCell className="font-medium">
+                      {dbStats.apartments}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {dbStats.charges}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {dbStats.notifications}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {dbStats.payments}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {dbStats.users}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
           ) : (
             <p className="text-sm text-muted-foreground">
               Nie udało się pobrać statystyk
@@ -448,7 +452,7 @@ export default function AdminImportPage() {
                         <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
                           Powiadomienia o opłatach
                         </h3>
-                        <div className="grid gap-4 sm:grid-cols-4">
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                           <div className="rounded-lg border p-4">
                             <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                               {result.notifications.created}
@@ -493,7 +497,7 @@ export default function AdminImportPage() {
                         <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
                           Wpłaty
                         </h3>
-                        <div className="grid gap-4 sm:grid-cols-4">
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                           <div className="rounded-lg border p-4">
                             <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                               {result.payments.created}

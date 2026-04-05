@@ -50,11 +50,11 @@ export const NotificationsSidebar = ({
                 key={notification.id}
                 className="rounded-lg border p-3 text-sm"
               >
-                <div className="mb-1 flex items-center justify-between">
-                  <span className="font-medium">
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <span className="min-w-0 truncate font-medium">
                     {notification.apartmentAddress}
                   </span>
-                  <span className="font-semibold">
+                  <span className="shrink-0 font-semibold">
                     {notification.totalAmount.toFixed(2)} zł
                   </span>
                 </div>

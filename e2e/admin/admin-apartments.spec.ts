@@ -125,8 +125,11 @@ test.describe('Admin Apartment Browser', () => {
       });
       await hoaCard.getByRole('button', { name: /Zobacz mieszkania/i }).click();
 
-      // Click "Zobacz szczegóły" button on apartment card
-      await adminPage
+      // Click "Zobacz szczegóły" button on the seeded apartment card
+      const apartmentCard = adminPage
+        .locator('.text-card-foreground')
+        .filter({ hasText: 'ul. Testowa 1/1A' });
+      await apartmentCard
         .getByRole('button', { name: /Zobacz szczegóły/i })
         .click();
 

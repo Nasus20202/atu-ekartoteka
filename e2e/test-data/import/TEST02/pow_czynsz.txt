@@ -1,12 +1,12 @@
-Powiadomienie o opÅ‚atach
-WspÃ³lnota TEST02
+Powiadomienie o op³atach
+Wspólnota TEST02
 #
-W10001#TEST02-TEST02-00000-00001M#1#ZarzÄ…dzanie NieruchomoÅ›ciÄ… WspÃ³lnÄ…#1#szt#73#73,00
-W10001#TEST02-TEST02-00000-00001M#2#Koszta zarzÄ…du - eksploatacja#1#szt.#245#245,00
+W10001#TEST02-TEST02-00000-00001M#1#Zarz±dzanie Nieruchomo¶ci± Wspóln±#1#szt#73#73,00
+W10001#TEST02-TEST02-00000-00001M#2#Koszta zarz±du - eksploatacja#1#szt.#245#245,00
 W10001#TEST02-TEST02-00000-00001M#3#Fundusz remontowy#50.5#m2#2,50#126,25
-W10002#TEST02-TEST02-00000-00002M#1#ZarzÄ…dzanie NieruchomoÅ›ciÄ… WspÃ³lnÄ…#1#szt#73#73,00
-W10002#TEST02-TEST02-00000-00002M#2#Koszta zarzÄ…du - eksploatacja#1#szt.#245#245,00
+W10002#TEST02-TEST02-00000-00002M#1#Zarz±dzanie Nieruchomo¶ci± Wspóln±#1#szt#73#73,00
+W10002#TEST02-TEST02-00000-00002M#2#Koszta zarz±du - eksploatacja#1#szt.#245#245,00
 W10002#TEST02-TEST02-00000-00002M#3#Fundusz remontowy#75.0#m2#2,50#187,50
-W10003#TEST02-TEST02-00000-00003M#1#ZarzÄ…dzanie NieruchomoÅ›ciÄ… WspÃ³lnÄ…#1#szt#73#73,00
-W10003#TEST02-TEST02-00000-00003M#2#Koszta zarzÄ…du - eksploatacja#1#szt.#245#245,00
+W10003#TEST02-TEST02-00000-00003M#1#Zarz±dzanie Nieruchomo¶ci± Wspóln±#1#szt#73#73,00
+W10003#TEST02-TEST02-00000-00003M#2#Koszta zarz±du - eksploatacja#1#szt.#245#245,00
 W10003#TEST02-TEST02-00000-00003M#3#Fundusz remontowy#100.0#m2#2,50#250,00
