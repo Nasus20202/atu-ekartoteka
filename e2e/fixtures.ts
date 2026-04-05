@@ -8,6 +8,8 @@ import { Page, test as base } from '@playwright/test';
 import {
   ADMIN_EMAIL,
   ADMIN_PASSWORD,
+  MUST_CHANGE_PASSWORD_EMAIL,
+  MUST_CHANGE_PASSWORD_PASSWORD,
   USER_EMAIL,
   USER_PASSWORD,
 } from './utils/test-credentials';
@@ -32,6 +34,7 @@ async function login(page: Page, email: string, password: string) {
 export const test = base.extend<{
   adminPage: Page;
   userPage: Page;
+  mustChangePasswordPage: Page;
 }>({
   /**
    * Page already logged in as admin
@@ -51,6 +54,22 @@ export const test = base.extend<{
     const context = await browser.newContext();
     const page = await context.newPage();
     await login(page, USER_EMAIL, USER_PASSWORD);
+    await use(page);
+    await context.close();
+  },
+
+  /**
+   * Page logged in as user with mustChangePassword=true,
+   * landed on /change-password after login.
+   */
+  mustChangePasswordPage: async ({ browser }, use) => {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    await login(
+      page,
+      MUST_CHANGE_PASSWORD_EMAIL,
+      MUST_CHANGE_PASSWORD_PASSWORD
+    );
     await use(page);
     await context.close();
   },

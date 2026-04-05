@@ -1,0 +1,14 @@
+Twoje konto zostało utworzone
+
+Witaj{{NAME}},
+
+Administrator utworzył dla Ciebie konto w systemie. Możesz zalogować się używając poniższych danych:
+
+Tymczasowe hasło: {{TEMP_PASSWORD}}
+
+Po zalogowaniu zostaniesz poproszony o ustawienie nowego hasła.
+
+Zaloguj się tutaj:
+{{LOGIN_URL}}
+
+Jeśli nie spodziewałeś się tego maila, możesz go zignorować.

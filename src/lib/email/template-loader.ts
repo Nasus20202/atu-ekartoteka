@@ -5,6 +5,7 @@ const TEMPLATE_NAMES = [
   'verification-email',
   'password-reset',
   'account-approved',
+  'account-activation',
   'new-user-registration-admin',
 ] as const;
 

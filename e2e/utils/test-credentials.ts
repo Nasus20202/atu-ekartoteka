@@ -10,6 +10,11 @@ export const USER_EMAIL = 'user@e2e-test.com';
 export const USER_PASSWORD = 'UserPassword123!';
 export const USER_NAME = 'E2E Test User';
 
+export const MUST_CHANGE_PASSWORD_EMAIL = 'must-change-password@e2e-test.com';
+export const MUST_CHANGE_PASSWORD_PASSWORD = 'TempPassword123!';
+export const MUST_CHANGE_PASSWORD_NEW_PASSWORD = 'NewPassword456!';
+export const MUST_CHANGE_PASSWORD_NAME = 'E2E MustChange User';
+
 // Password reset token for testing
 export const RESET_TOKEN = 'e2e-test-reset-token-12345';
 

@@ -1,19 +1,69 @@
 schema: spec-driven
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+context: |
+  ## Project
+  ATU Ekartoteka — a web application for managing homeowners associations (HOAs).
+  Admins manage HOAs, apartments, charges, payments, and tenant accounts.
+  Tenants log in to view their assigned apartments, charges, and payment history.
+
+  ## Tech stack
+  - Language: TypeScript (strict)
+  - Framework: Next.js 16, App Router, React 19
+  - Database: PostgreSQL via Prisma ORM
+  - Auth: NextAuth v5 (JWT strategy) — session includes role, status, emailVerified, mustChangePassword
+  - Email: nodemailer (SMTP); templates are HTML+TXT files in src/lib/email/templates/ rendered with {{VARIABLE}} substitution
+  - Styling: Tailwind CSS v4, shadcn/ui component library
+  - Package manager: pnpm
+  - Build: Next.js (standalone output), Vite via Vitest for unit tests
+  - Unit tests: Vitest + React Testing Library — co-located in __tests__/ folders, jsdom environment
+  - E2E tests: Playwright (Chromium) — tests in e2e/, global seed/teardown in e2e/global-setup.ts and e2e/global-teardown.ts
+  - Linting: ESLint (flat config) with simple-import-sort, unused-imports, prettier, playwright plugins
+  - Formatting: Prettier — single quotes, semicolons, trailing commas (es5), 80-char width, 2-space indent, LF
+
+  ## Conventions
+  - All code and commit messages in English; UI/user-facing content in Polish
+  - Conventional commits (feat, fix, refactor, test, chore, etc.)
+  - No relative imports — use @ alias (e.g., @/components/...)
+  - Files must not exceed 200 lines
+  - No magic numbers or strings — use constants or enums
+  - No unused code — delete it
+  - No toast library — use Alert component or inline state for user feedback
+  - Admin pages use 'use client' with useState/useEffect/fetch directly (no SWR/React Query)
+  - Pre-commit hook runs lint-staged then vitest --run; commits are blocked on test or lint failures
+
+  ## Domain
+  - HomeownersAssociation (HOA): top-level entity grouping apartments
+  - Apartment: belongs to one HOA, optionally assigned to one User
+  - User roles: ADMIN, TENANT
+  - Account statuses: PENDING, APPROVED, REJECTED
+  - Charges and payments are per-apartment and per-period
+  - Bulk user creation: admin creates accounts for unassigned apartments; users receive a temp password and must change it on first login (mustChangePassword flag enforced by middleware)
+
+  ## Specs index
+  - openspec/specs/apartment-management/spec.md — apartment CRUD, assignment, unassigned listing
+  - openspec/specs/authentication/spec.md — login, OAuth, registration, email verification, password reset, session, forced password change
+  - openspec/specs/charges-and-payments/spec.md — charges, charge notifications, payment history
+  - openspec/specs/code-style/spec.md — TypeScript conventions, naming, imports, file size, commits, no magic values
+  - openspec/specs/data-import/spec.md — legacy file import (LOK, NAL-CZYNSZ, WPLATY formats)
+  - openspec/specs/email-notifications/spec.md — SMTP transport, templates, all email types, metrics
+  - openspec/specs/hoa-management/spec.md — HOA listing and management
+  - openspec/specs/observability/spec.md — structured logging, OTLP tracing, auth/email/DB metrics, resource attribution
+  - openspec/specs/system-health/spec.md — health check endpoints
+  - openspec/specs/testing/spec.md — test strategy, placement, infrastructure, coverage
+  - openspec/specs/tooling/spec.md — pnpm, Next.js, Prettier, ESLint, Vite, Vitest, Playwright
+  - openspec/specs/user-management/spec.md — user listing, approval, bulk creation, forced password change, notifications
+  - openspec/specs/visual-design/spec.md — shadcn/ui system, colour tokens, typography, spacing, accessibility baseline
+
+rules:
+  proposal:
+    - State the problem clearly before proposing a solution
+    - Include a "Non-goals" section for anything explicitly out of scope
+    - Keep proposals concise — avoid restating the spec
+  design:
+    - Reference existing patterns from the codebase (auth pattern, email template pattern, admin page pattern)
+    - Specify exact API request/response shapes
+    - Call out any new DB fields or migrations required
+  tasks:
+    - Each task must be independently implementable and testable
+    - Include the test requirement in the same task as the implementation
+    - Prefix completed tasks with [x] (e.g., ## [x] Task 1)

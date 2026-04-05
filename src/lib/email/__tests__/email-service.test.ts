@@ -6,9 +6,20 @@ import {
   getEmailService,
 } from '@/lib/email/email-service';
 
-// Create mock transport
-const mockSendMail = vi.fn().mockResolvedValue({ messageId: 'test-123' });
-const mockVerify = vi.fn().mockResolvedValue(true);
+const {
+  mockSendMail,
+  mockVerify,
+  mockLoggerInfo,
+  mockLoggerError,
+  mockLoggerWarn,
+} = vi.hoisted(() => ({
+  mockSendMail: vi.fn().mockResolvedValue({ messageId: 'test-123' }),
+  mockVerify: vi.fn().mockResolvedValue(true),
+  mockLoggerInfo: vi.fn(),
+  mockLoggerError: vi.fn(),
+  mockLoggerWarn: vi.fn(),
+}));
+
 const mockTransport = {
   sendMail: mockSendMail,
   verify: mockVerify,
@@ -23,9 +34,9 @@ vi.mock('nodemailer', () => ({
 
 vi.mock('@/lib/logger', () => ({
   createLogger: vi.fn(() => ({
-    info: vi.fn(),
-    error: vi.fn(),
-    warn: vi.fn(),
+    info: mockLoggerInfo,
+    error: mockLoggerError,
+    warn: mockLoggerWarn,
   })),
 }));
 
@@ -47,6 +58,9 @@ describe('EmailService', () => {
   beforeEach(() => {
     mockSendMail.mockClear();
     mockVerify.mockClear();
+    mockLoggerInfo.mockClear();
+    mockLoggerError.mockClear();
+    mockLoggerWarn.mockClear();
     mockSendMail.mockResolvedValue({ messageId: 'test-123' });
 
     mockConfig = {
@@ -180,11 +194,55 @@ describe('EmailService', () => {
       expect(mockSendMail).not.toHaveBeenCalled();
     });
 
+    it('should not log text body when not in development', async () => {
+      await emailService.sendEmail({
+        to: 'test@example.com',
+        subject: 'Test Subject',
+        html: '<p>Test</p>',
+        text: 'Plain text body',
+      });
+
+      expect(mockLoggerInfo).not.toHaveBeenCalledWith(
+        expect.objectContaining({ text: expect.anything() }),
+        expect.any(String)
+      );
+    });
+
     it('should skip connection verification when SMTP_HOST is not configured', async () => {
       const result = await emailService.verifyConnection();
 
       expect(result).toBe(true);
       expect(mockVerify).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('SMTP not configured (development)', () => {
+    beforeEach(async () => {
+      vi.resetModules();
+      vi.stubEnv('NODE_ENV', 'development');
+      delete process.env.SMTP_HOST;
+    });
+
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
+    it('should log text body when SMTP is not configured', async () => {
+      const { EmailService: FreshEmailService } =
+        await import('@/lib/email/email-service');
+      const freshService = new FreshEmailService(mockConfig);
+
+      await freshService.sendEmail({
+        to: 'dev@example.com',
+        subject: 'Dev Subject',
+        html: '<p>Dev</p>',
+        text: 'Plain text body',
+      });
+
+      expect(mockLoggerInfo).toHaveBeenCalledWith(
+        expect.objectContaining({ text: 'Plain text body' }),
+        expect.any(String)
+      );
     });
   });
 
@@ -316,6 +374,50 @@ describe('EmailService', () => {
 
       expect(result).toBe(true);
       expect(mockSendMail).toHaveBeenCalled();
+    });
+  });
+
+  describe('sendAccountActivationEmail', () => {
+    beforeEach(() => {
+      process.env.SMTP_HOST = 'smtp.example.com';
+      emailService = new EmailService(mockConfig);
+    });
+
+    it('should send account activation email with temp password', async () => {
+      const result = await emailService.sendAccountActivationEmail(
+        'user@example.com',
+        'TempPass123!'
+      );
+
+      expect(result).toBe(true);
+      expect(mockSendMail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'user@example.com',
+          subject: 'Twoje konto zostało utworzone – ustaw nowe hasło',
+        })
+      );
+    });
+
+    it('should send account activation email with name', async () => {
+      const result = await emailService.sendAccountActivationEmail(
+        'user@example.com',
+        'TempPass123!',
+        'Anna'
+      );
+
+      expect(result).toBe(true);
+      expect(mockSendMail).toHaveBeenCalled();
+    });
+
+    it('should return false when sending fails', async () => {
+      mockSendMail.mockRejectedValueOnce(new Error('Send failed'));
+
+      const result = await emailService.sendAccountActivationEmail(
+        'user@example.com',
+        'TempPass123!'
+      );
+
+      expect(result).toBe(false);
     });
   });
 
