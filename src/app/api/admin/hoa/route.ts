@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
-import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
+import { updateHoaName } from '@/lib/mutations/hoa/update-hoa-name';
+import { findHoas } from '@/lib/queries/hoa/find-hoas';
 import { UserRole } from '@/lib/types';
 
 const logger = createLogger('api:admin:hoa');
@@ -18,26 +19,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const search = searchParams.get('search') || '';
 
-    const where = search
-      ? {
-          OR: [
-            { name: { contains: search, mode: 'insensitive' as const } },
-            { externalId: { contains: search, mode: 'insensitive' as const } },
-          ],
-        }
-      : {};
-
-    const homeownersAssociations = await prisma.homeownersAssociation.findMany({
-      where,
-      include: {
-        _count: {
-          select: {
-            apartments: { where: { isActive: true } },
-          },
-        },
-      },
-      orderBy: { name: 'asc' },
-    });
+    const homeownersAssociations = await findHoas(search);
 
     return NextResponse.json({
       homeownersAssociations: homeownersAssociations.map(
@@ -81,10 +63,7 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const updatedHOA = await prisma.homeownersAssociation.update({
-      where: { id },
-      data: { name },
-    });
+    const updatedHOA = await updateHoaName(id, name);
 
     return NextResponse.json({
       homeownersAssociation: updatedHOA,

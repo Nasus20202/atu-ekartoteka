@@ -1,5 +1,5 @@
-import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
+import { deleteExpiredPasswordResets } from '@/lib/mutations/password-reset/delete-expired-password-resets';
 
 const logger = createLogger('cron:cleanup-password-resets');
 
@@ -8,26 +8,10 @@ const logger = createLogger('cron:cleanup-password-resets');
  */
 export async function cleanupExpiredPasswordResets(): Promise<void> {
   try {
-    const now = new Date();
-
-    // Delete expired or used tokens
-    const result = await prisma.passwordReset.deleteMany({
-      where: {
-        OR: [
-          {
-            expiresAt: {
-              lt: now,
-            },
-          },
-          {
-            used: true,
-          },
-        ],
-      },
-    });
+    const result = await deleteExpiredPasswordResets();
 
     logger.info(
-      { deletedCount: result.count, timestamp: now.toISOString() },
+      { deletedCount: result.count, timestamp: new Date().toISOString() },
       'Cleaned up expired or used password reset tokens'
     );
   } catch (error) {

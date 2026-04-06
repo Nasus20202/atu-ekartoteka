@@ -1,22 +1,18 @@
 'use client';
 
 import { Mail, X } from 'lucide-react';
-import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 
-export function EmailVerificationBanner() {
-  const { data: session, update } = useSession();
+interface Props {
+  emailVerified: boolean;
+}
+
+export function EmailVerificationBanner({ emailVerified }: Props) {
   const [dismissed, setDismissed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  // Don't show if dismissed, verified, or not logged in
-  if (
-    dismissed ||
-    !session?.user ||
-    (session.user as { emailVerified?: boolean }).emailVerified ||
-    (session.user as { role?: string }).role === 'ADMIN'
-  ) {
+  if (dismissed || emailVerified) {
     return null;
   }
 
@@ -29,15 +25,9 @@ export function EmailVerificationBanner() {
       });
       const data = await response.json();
       if (!response.ok) {
-        if (response.status === 429) {
-          // Rate limited - show time remaining
-          throw new Error(data.error);
-        }
         throw new Error(data.error);
       }
       setMessage('Email weryfikacyjny został wysłany');
-      // Update session to refresh emailVerified status after verification
-      setTimeout(() => update(), 1000);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Wystąpił błąd');
     } finally {
@@ -50,7 +40,7 @@ export function EmailVerificationBanner() {
       <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-3 flex-1">
-            <Mail className="h-5 w-5 text-yellow-600 dark:text-yellow-500 flex-shrink-0" />
+            <Mail className="h-5 w-5 text-yellow-600 dark:text-yellow-500 shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
                 Twój adres email wymaga weryfikacji

@@ -1,7 +1,6 @@
-import { prisma } from '@/lib/database/prisma';
 import { getEmailService } from '@/lib/email/email-service';
 import { createLogger } from '@/lib/logger';
-import { UserRole } from '@/lib/types';
+import { findAdminEmails } from '@/lib/queries/users/find-admin-emails';
 
 const logger = createLogger('notifications:new-user-registration');
 
@@ -15,15 +14,7 @@ export async function notifyAdminsOfNewUser(
 ): Promise<void> {
   try {
     // Get all admin users
-    const admins = await prisma.user.findMany({
-      where: {
-        role: UserRole.ADMIN,
-      },
-      select: {
-        email: true,
-        name: true,
-      },
-    });
+    const admins = await findAdminEmails();
 
     if (admins.length === 0) {
       logger.warn('No admin users found to notify about new registration');

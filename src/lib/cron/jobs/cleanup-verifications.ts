@@ -1,5 +1,5 @@
-import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
+import { deleteExpiredVerifications } from '@/lib/mutations/email-verification/delete-expired-verifications';
 
 const logger = createLogger('cron:cleanup-verifications');
 
@@ -9,21 +9,7 @@ const logger = createLogger('cron:cleanup-verifications');
  */
 export async function cleanupExpiredVerifications(): Promise<void> {
   try {
-    // Delete expired or verified codes
-    const result = await prisma.emailVerification.deleteMany({
-      where: {
-        OR: [
-          {
-            expiresAt: {
-              lt: new Date(),
-            },
-          },
-          {
-            verified: true,
-          },
-        ],
-      },
-    });
+    const result = await deleteExpiredVerifications();
 
     logger.info(
       { deletedCount: result.count },

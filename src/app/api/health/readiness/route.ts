@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { prisma } from '@/lib/database/prisma';
+import { checkDatabaseConnection } from '@/lib/database/health-check';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('api:health:readiness');
@@ -13,20 +13,16 @@ const logger = createLogger('api:health:readiness');
 export async function GET() {
   const timestamp = new Date().toISOString();
   const checks: Record<string, boolean> = {};
-  let isReady = true;
 
   // Check database connection
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-    checks.database = true;
-  } catch (error) {
-    checks.database = false;
-    isReady = false;
-    logger.error({ error }, 'Database readiness check failed');
+  const dbOk = await checkDatabaseConnection();
+  checks.database = dbOk;
+  if (!dbOk) {
+    logger.error('Database readiness check failed');
   }
 
-  const status = isReady ? 'ready' : 'not_ready';
-  const statusCode = isReady ? 200 : 503;
+  const status = dbOk ? 'ready' : 'not_ready';
+  const statusCode = dbOk ? 200 : 503;
 
   return NextResponse.json(
     {

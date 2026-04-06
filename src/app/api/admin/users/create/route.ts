@@ -2,8 +2,9 @@ import bcrypt from 'bcrypt';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
-import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
+import { createAdminUser } from '@/lib/mutations/users/create-admin-user';
+import { findUserByEmail } from '@/lib/queries/users/find-user-by-email';
 import { AccountStatus, UserRole } from '@/lib/types';
 
 const logger = createLogger('api:admin:users:create');
@@ -47,9 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
+    const existingUser = await findUserByEmail(email);
 
     if (existingUser) {
       logger.warn(
@@ -66,22 +65,12 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name: name || null,
-        role: role || UserRole.TENANT,
-        status: status || AccountStatus.PENDING,
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        status: true,
-        createdAt: true,
-      },
+    const user = await createAdminUser({
+      email,
+      hashedPassword,
+      name: name || null,
+      role: role || UserRole.TENANT,
+      status: status || AccountStatus.PENDING,
     });
 
     return NextResponse.json(user, { status: 201 });

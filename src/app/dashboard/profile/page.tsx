@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { prisma } from '@/lib/database/prisma';
+import { findUserProfileCached } from '@/lib/queries/users/find-user-profile';
 import { AuthMethod } from '@/lib/types';
 
 export default async function ProfilePage() {
@@ -21,14 +21,7 @@ export default async function ProfilePage() {
     redirect('/login');
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      name: true,
-      email: true,
-      authMethod: true,
-    },
-  });
+  const user = await findUserProfileCached(session.user.id);
 
   if (!user) {
     redirect('/login');

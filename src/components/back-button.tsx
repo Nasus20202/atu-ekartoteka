@@ -13,7 +13,7 @@ export function BackButton() {
       variant="ghost"
       size="icon"
       onClick={() => router.back()}
-      className="h-12 w-12 [&_svg]:!size-6"
+      className="h-12 w-12 [&_svg]:size-6!"
     >
       <ArrowLeft />
     </Button>

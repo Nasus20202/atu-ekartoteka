@@ -4,6 +4,7 @@ import packageJson from '@/../package.json';
 import { auth } from '@/auth';
 import { DashboardNavbar } from '@/components/dashboard-navbar';
 import { EmailVerificationBanner } from '@/components/email-verification-banner';
+import { findUserByIdCached } from '@/lib/queries/users/find-user-by-id';
 import { UserRole } from '@/lib/types';
 
 export default async function DashboardLayout({
@@ -18,11 +19,12 @@ export default async function DashboardLayout({
   }
 
   const isAdmin = session.user.role === UserRole.ADMIN;
+  const user = await findUserByIdCached(session.user.id);
 
   return (
     <>
       <DashboardNavbar mode="dashboard" isAdmin={isAdmin} />
-      <EmailVerificationBanner />
+      <EmailVerificationBanner emailVerified={user?.emailVerified ?? true} />
       {children}
       <div className="fixed bottom-4 left-4 z-10">
         <p className="text-xs text-muted-foreground/60">

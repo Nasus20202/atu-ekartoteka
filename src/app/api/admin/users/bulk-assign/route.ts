@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
-import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
+import { assignApartmentsToUser } from '@/lib/mutations/apartments/assign-apartments-to-user';
+import { findUnassignedApartmentsForAssign } from '@/lib/queries/apartments/find-unassigned-apartments-for-assign';
+import { findUserByEmail } from '@/lib/queries/users/find-user-by-email';
 import { UserRole } from '@/lib/types';
 
 const logger = createLogger('api:admin:users:bulk-assign');
@@ -25,15 +27,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch requested apartments that are still unassigned and have an email
-    const apartments = await prisma.apartment.findMany({
-      where: {
-        id: { in: apartmentIds },
-        userId: null,
-        email: { not: null },
-      },
-      select: { id: true, email: true },
-    });
+    const apartments = await findUnassignedApartmentsForAssign(apartmentIds);
 
     // Deduplicate by email: one existing user may cover multiple apartments
     const emailMap = new Map<string, string[]>();
@@ -51,10 +45,7 @@ export async function POST(request: NextRequest) {
 
     for (const [email, aptIds] of emailMap.entries()) {
       try {
-        const existingUser = await prisma.user.findUnique({
-          where: { email },
-          select: { id: true },
-        });
+        const existingUser = await findUserByEmail(email);
 
         if (!existingUser) {
           skipped += aptIds.length;
@@ -62,14 +53,9 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
-        await prisma.$transaction(async (tx) => {
-          const result = await tx.apartment.updateMany({
-            where: { id: { in: aptIds }, userId: null },
-            data: { userId: existingUser.id },
-          });
-          assigned += result.count;
-          skipped += aptIds.length - result.count;
-        });
+        const count = await assignApartmentsToUser(existingUser.id, aptIds);
+        assigned += count;
+        skipped += aptIds.length - count;
 
         logger.info(
           { email, aptCount: aptIds.length },

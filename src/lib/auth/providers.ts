@@ -5,9 +5,9 @@ import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
 
 import { verifyRegistrationAutoLoginToken } from '@/lib/auth/registration-auto-login-token';
-import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
 import { authMetrics } from '@/lib/opentelemetry/auth-metrics';
+import { findUserByEmail } from '@/lib/queries/users/find-user-by-email';
 import { isTurnstileEnabled, verifyTurnstileToken } from '@/lib/turnstile';
 import { UserRole } from '@/lib/types';
 
@@ -67,9 +67,7 @@ export async function credentialsAuthorize(
     }
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email: credentials.email as string },
-  });
+  const user = await findUserByEmail(credentials.email as string);
 
   if (!user) {
     logger.warn(
@@ -121,7 +119,6 @@ export async function credentialsAuthorize(
     email: user.email,
     name: user.name,
     role: user.role as UserRole,
-    emailVerified: user.emailVerified,
     mustChangePassword: user.mustChangePassword,
   };
 }

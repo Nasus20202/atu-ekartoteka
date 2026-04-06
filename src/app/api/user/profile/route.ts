@@ -2,8 +2,9 @@ import bcrypt from 'bcryptjs';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
-import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
+import { updateUserProfile } from '@/lib/mutations/users/update-user-profile';
+import { findUserById } from '@/lib/queries/users/find-user-by-id';
 
 const logger = createLogger('api:user:profile');
 
@@ -28,9 +29,7 @@ export async function PATCH(request: NextRequest) {
     );
 
     // Get user from database
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-    });
+    const user = await findUserById(session.user.id);
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -103,16 +102,9 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Update user
-    const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
-      data: updateData,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        status: true,
-      },
+    const updatedUser = await updateUserProfile({
+      id: session.user.id,
+      ...updateData,
     });
 
     logger.info(

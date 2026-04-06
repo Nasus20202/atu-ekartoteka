@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { prisma } from '@/lib/database/prisma';
 import {
   hashToken,
   isVerificationExpired,
 } from '@/lib/email/verification-utils';
 import { createLogger } from '@/lib/logger';
+import { verifyEmailTransaction } from '@/lib/mutations/email-verification/verify-email-transaction';
 import { authMetrics } from '@/lib/opentelemetry/auth-metrics';
+import {
+  findVerificationByCode,
+  findVerificationByCodeMinimal,
+} from '@/lib/queries/email-verification/find-verification-by-code';
 
 const logger = createLogger('api:verify-email');
 
@@ -24,10 +28,7 @@ export async function POST(req: NextRequest) {
 
     // Hash the incoming token and find matching verification record
     const hashedToken = hashToken(token);
-    const verification = await prisma.emailVerification.findUnique({
-      where: { code: hashedToken },
-      include: { user: true },
-    });
+    const verification = await findVerificationByCode(hashedToken);
 
     if (!verification) {
       logger.warn({ token }, 'Invalid verification token');
@@ -59,16 +60,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Update user and verification record
-    await prisma.$transaction([
-      prisma.user.update({
-        where: { id: verification.userId },
-        data: { emailVerified: true },
-      }),
-      prisma.emailVerification.update({
-        where: { id: verification.id },
-        data: { verified: true },
-      }),
-    ]);
+    await verifyEmailTransaction(verification.userId, verification.id);
 
     logger.info(
       { userId: verification.userId, email: verification.user.email },
@@ -105,20 +97,7 @@ export async function GET(req: NextRequest) {
 
     // Hash the incoming token and find matching verification record
     const hashedToken = hashToken(token);
-    const verification = await prisma.emailVerification.findUnique({
-      where: { code: hashedToken },
-      select: {
-        id: true,
-        verified: true,
-        expiresAt: true,
-        user: {
-          select: {
-            email: true,
-            emailVerified: true,
-          },
-        },
-      },
-    });
+    const verification = await findVerificationByCodeMinimal(hashedToken);
 
     if (!verification) {
       return NextResponse.json(

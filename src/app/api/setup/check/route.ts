@@ -1,18 +1,13 @@
 import { NextResponse } from 'next/server';
 
-import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
-import { UserRole } from '@/lib/types';
+import { findFirstAdmin } from '@/lib/queries/users/find-first-admin';
 
 const logger = createLogger('api:setup:check');
 
 export async function GET() {
   try {
-    const adminExists = await prisma.user.findFirst({
-      where: {
-        role: UserRole.ADMIN,
-      },
-    });
+    const adminExists = await findFirstAdmin();
 
     logger.info({ adminExists: !!adminExists }, 'Checked if admin user exists');
 

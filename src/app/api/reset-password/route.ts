@@ -1,10 +1,11 @@
 import bcrypt from 'bcryptjs';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { prisma } from '@/lib/database/prisma';
 import { hashToken } from '@/lib/email/verification-utils';
 import { createLogger } from '@/lib/logger';
+import { resetPasswordTransaction } from '@/lib/mutations/password-reset/reset-password-transaction';
 import { authMetrics } from '@/lib/opentelemetry/auth-metrics';
+import { findPasswordResetByToken } from '@/lib/queries/password-reset/find-password-reset-by-token';
 import { verifyTurnstileToken } from '@/lib/turnstile';
 import { AuthMethod } from '@/lib/types';
 
@@ -35,10 +36,7 @@ export async function POST(req: NextRequest) {
 
     // Hash the incoming token and find matching reset record
     const hashedToken = hashToken(token);
-    const resetToken = await prisma.passwordReset.findUnique({
-      where: { token: hashedToken },
-      include: { user: true },
-    });
+    const resetToken = await findPasswordResetByToken(hashedToken);
 
     if (!resetToken) {
       return NextResponse.json(
@@ -88,16 +86,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Update password and mark token as used
-    await prisma.$transaction([
-      prisma.user.update({
-        where: { id: resetToken.userId },
-        data: { password: hashedPassword },
-      }),
-      prisma.passwordReset.update({
-        where: { id: resetToken.id },
-        data: { used: true },
-      }),
-    ]);
+    await resetPasswordTransaction(
+      resetToken.userId,
+      hashedPassword,
+      resetToken.id
+    );
 
     logger.info(
       { email: resetToken.user.email, userId: resetToken.userId },

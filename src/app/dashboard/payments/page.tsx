@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { prisma } from '@/lib/database/prisma';
+import { findUserWithApartmentPaymentsCached } from '@/lib/queries/users/find-user-with-apartment-payments';
 import { AccountStatus } from '@/lib/types';
 
 export default async function PaymentsPage() {
@@ -21,20 +21,7 @@ export default async function PaymentsPage() {
     redirect('/login');
   }
 
-  const userData = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    include: {
-      apartments: {
-        orderBy: { number: 'asc' },
-        include: {
-          homeownersAssociation: true,
-          payments: {
-            orderBy: { year: 'desc' },
-          },
-        },
-      },
-    },
-  });
+  const userData = await findUserWithApartmentPaymentsCached(session.user.id);
 
   if (!userData || userData.status !== AccountStatus.APPROVED) {
     redirect('/dashboard');

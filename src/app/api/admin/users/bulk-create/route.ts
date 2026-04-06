@@ -3,10 +3,12 @@ import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
-import { prisma } from '@/lib/database/prisma';
 import { getEmailService } from '@/lib/email/email-service';
 import { createLogger } from '@/lib/logger';
-import { AccountStatus, AuthMethod, UserRole } from '@/lib/types';
+import { createUserWithApartments } from '@/lib/mutations/users/create-user-with-apartments';
+import { findUnassignedApartmentsByIds } from '@/lib/queries/apartments/find-unassigned-apartments-by-ids';
+import { findUserByEmail } from '@/lib/queries/users/find-user-by-email';
+import { UserRole } from '@/lib/types';
 
 const logger = createLogger('api:admin:users:bulk-create');
 
@@ -39,19 +41,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch requested apartments that are still unassigned and have an email
-    const apartments = await prisma.apartment.findMany({
-      where: {
-        id: { in: apartmentIds },
-        userId: null,
-        email: { not: null },
-      },
-      select: {
-        id: true,
-        email: true,
-        owner: true,
-      },
-    });
+    const apartments = await findUnassignedApartmentsByIds(apartmentIds);
 
     // Group by email (deduplication)
     const emailMap = new Map<
@@ -75,8 +65,7 @@ export async function POST(request: NextRequest) {
 
     for (const { email, owner, aptIds } of emailMap.values()) {
       try {
-        // Skip if user already exists
-        const existing = await prisma.user.findUnique({ where: { email } });
+        const existing = await findUserByEmail(email);
         if (existing) {
           skipped++;
           logger.info({ email }, 'Skipping existing user');
@@ -86,24 +75,11 @@ export async function POST(request: NextRequest) {
         const tempPassword = generateTempPassword();
         const hashedPassword = await bcrypt.hash(tempPassword, BCRYPT_COST);
 
-        await prisma.$transaction(async (tx) => {
-          const user = await tx.user.create({
-            data: {
-              email,
-              password: hashedPassword,
-              name: owner ?? null,
-              role: UserRole.TENANT,
-              status: AccountStatus.APPROVED,
-              emailVerified: true,
-              mustChangePassword: true,
-              authMethod: AuthMethod.CREDENTIALS,
-            },
-          });
-
-          await tx.apartment.updateMany({
-            where: { id: { in: aptIds } },
-            data: { userId: user.id },
-          });
+        await createUserWithApartments({
+          email,
+          hashedPassword,
+          owner,
+          apartmentIds: aptIds,
         });
 
         // Fire-and-forget — email failure does not block the response
