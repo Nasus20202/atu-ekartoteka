@@ -6,6 +6,7 @@ import { UserRole } from '@/lib/types';
 const mockAuth = vi.fn();
 const mockApartmentFindMany = vi.fn();
 const mockUserFindMany = vi.fn();
+const mockFindAssignedKeys = vi.fn();
 
 vi.mock('@/auth', () => ({
   auth: mockAuth,
@@ -21,6 +22,13 @@ vi.mock('@/lib/database/prisma', () => ({
     },
   },
 }));
+
+vi.mock(
+  '@/lib/queries/apartments/find-assigned-apartment-address-keys',
+  () => ({
+    findAssignedApartmentAddressKeys: mockFindAssignedKeys,
+  })
+);
 
 vi.mock('@/lib/logger', () => ({
   createLogger: () => ({
@@ -72,8 +80,9 @@ const mockApartments = [
 describe('GET /api/admin/unassigned-apartments', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Default: no existing users
     mockUserFindMany.mockResolvedValue([]);
+    // Default: no occupied address keys
+    mockFindAssignedKeys.mockResolvedValue([]);
   });
 
   it('should return 401 when not authenticated', async () => {
@@ -151,6 +160,59 @@ describe('GET /api/admin/unassigned-apartments', () => {
 
     expect(response.status).toBe(200);
     expect(data.hoas).toEqual([]);
+  });
+
+  describe('hasTwinWithTenant tagging', () => {
+    it('tags apartment as hasTwinWithTenant when its address key matches an assigned apartment', async () => {
+      mockAuth.mockResolvedValueOnce(adminSession);
+      mockApartmentFindMany.mockResolvedValueOnce([mockApartments[0]]); // hoa-1, A, 101
+      mockFindAssignedKeys.mockResolvedValueOnce([
+        { hoaId: 'hoa-1', building: 'A', number: '101' },
+      ]);
+
+      const { GET } = await import('../route');
+      const response = await GET(makeRequest());
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      const apt = data.hoas[0].apartments[0];
+      expect(apt.hasTwinWithTenant).toBe(true);
+    });
+
+    it('does not tag apartment when its address key does not match', async () => {
+      mockAuth.mockResolvedValueOnce(adminSession);
+      mockApartmentFindMany.mockResolvedValueOnce([mockApartments[0]]); // hoa-1, A, 101
+      mockFindAssignedKeys.mockResolvedValueOnce([
+        { hoaId: 'hoa-1', building: 'A', number: '999' }, // different number
+      ]);
+
+      const { GET } = await import('../route');
+      const response = await GET(makeRequest());
+      const data = await response.json();
+
+      const apt = data.hoas[0].apartments[0];
+      expect(apt.hasTwinWithTenant).toBe(false);
+    });
+
+    it('handles null building in assigned keys (uses empty string in key)', async () => {
+      const aptNullBuilding = {
+        ...mockApartments[0],
+        building: null,
+        homeownersAssociation: { id: 'hoa-1', name: 'Wspólnota Alfa' },
+      };
+      mockAuth.mockResolvedValueOnce(adminSession);
+      mockApartmentFindMany.mockResolvedValueOnce([aptNullBuilding]);
+      mockFindAssignedKeys.mockResolvedValueOnce([
+        { hoaId: 'hoa-1', building: null, number: '101' },
+      ]);
+
+      const { GET } = await import('../route');
+      const response = await GET(makeRequest());
+      const data = await response.json();
+
+      const apt = data.hoas[0].apartments[0];
+      expect(apt.hasTwinWithTenant).toBe(true);
+    });
   });
 
   describe('mode=assignable', () => {

@@ -4,15 +4,12 @@ import { Power, PowerOff } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { AdminChargesList } from '@/components/charges/admin-charges-list';
 import { useConfirm } from '@/components/confirm-dialog';
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
-import { PaymentTable } from '@/components/payment-table';
-import {
-  DownloadChargesPdfButton,
-  type SerializableCharge,
-} from '@/components/pdf/download-charges-pdf-button';
-import { DownloadPaymentPdfButton } from '@/components/pdf/download-payment-pdf-button';
+import { AdminPaymentsList } from '@/components/payments/admin-payments-list';
+import type { SerializableCharge } from '@/components/pdf/download-charges-pdf-button';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -316,111 +313,12 @@ export default function ApartmentDetailsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                {apartment.payments.map((payment) => {
-                  const totalPayments =
-                    payment.januaryPayments +
-                    payment.februaryPayments +
-                    payment.marchPayments +
-                    payment.aprilPayments +
-                    payment.mayPayments +
-                    payment.junePayments +
-                    payment.julyPayments +
-                    payment.augustPayments +
-                    payment.septemberPayments +
-                    payment.octoberPayments +
-                    payment.novemberPayments +
-                    payment.decemberPayments;
-
-                  const totalCharges =
-                    payment.januaryCharges +
-                    payment.februaryCharges +
-                    payment.marchCharges +
-                    payment.aprilCharges +
-                    payment.mayCharges +
-                    payment.juneCharges +
-                    payment.julyCharges +
-                    payment.augustCharges +
-                    payment.septemberCharges +
-                    payment.octoberCharges +
-                    payment.novemberCharges +
-                    payment.decemberCharges;
-
-                  const apartmentLabel = `${apartment.address} ${apartment.building}/${apartment.number}`;
-                  const serializablePayment = {
-                    ...payment,
-                    dateFrom:
-                      payment.dateFrom instanceof Date
-                        ? payment.dateFrom.toISOString()
-                        : String(payment.dateFrom),
-                    dateTo:
-                      payment.dateTo instanceof Date
-                        ? payment.dateTo.toISOString()
-                        : String(payment.dateTo),
-                    createdAt:
-                      payment.createdAt instanceof Date
-                        ? payment.createdAt.toISOString()
-                        : String(payment.createdAt),
-                    updatedAt:
-                      payment.updatedAt instanceof Date
-                        ? payment.updatedAt.toISOString()
-                        : String(payment.updatedAt),
-                  };
-
-                  return (
-                    <div key={payment.id} className="space-y-4">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <h3 className="font-semibold">Rok {payment.year}</h3>
-                        <div className="shrink-0">
-                          <DownloadPaymentPdfButton
-                            apartmentLabel={apartmentLabel}
-                            hoaName={apartment.homeownersAssociation.name}
-                            payment={serializablePayment}
-                          />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
-                        <div className="font-medium">Saldo początkowe:</div>
-                        <div className="text-right">
-                          {payment.openingBalance.toFixed(2)} zł
-                        </div>
-
-                        <div className="font-medium">Naliczenie:</div>
-                        <div className="text-right">
-                          {totalCharges.toFixed(2)} zł
-                        </div>
-
-                        <div className="font-medium">Suma wpłat:</div>
-                        <div className="text-right">
-                          {totalPayments.toFixed(2)} zł
-                        </div>
-
-                        <div className="border-t pt-2 font-bold">
-                          Saldo końcowe:
-                        </div>
-                        <div
-                          className={`border-t pt-2 text-right font-bold ${
-                            payment.closingBalance < 0
-                              ? 'text-red-600'
-                              : payment.closingBalance > 0
-                                ? 'text-green-600'
-                                : ''
-                          }`}
-                        >
-                          {payment.closingBalance.toFixed(2)} zł
-                        </div>
-                      </div>
-
-                      <div className="border-t pt-4">
-                        <h4 className="mb-2 text-sm font-semibold">
-                          Wpłaty / Naliczenia miesięczne:
-                        </h4>
-                        <PaymentTable payment={payment} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <AdminPaymentsList
+                payments={apartment.payments}
+                apartmentId={apartmentId}
+                apartmentLabel={`${apartment.address} ${apartment.building}/${apartment.number}`}
+                hoaName={apartment.homeownersAssociation.name}
+              />
             </CardContent>
           </Card>
         )}
@@ -435,73 +333,11 @@ export default function ApartmentDetailsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {Object.entries(
-                  apartment.charges.reduce(
-                    (acc, charge) => {
-                      if (!acc[charge.period]) {
-                        acc[charge.period] = [];
-                      }
-                      acc[charge.period].push(charge);
-                      return acc;
-                    },
-                    {} as Record<string, typeof apartment.charges>
-                  )
-                )
-                  .sort(([a], [b]) => b.localeCompare(a))
-                  .map(([period, charges]) => {
-                    const apartmentLabel = `${apartment.address} ${apartment.building}/${apartment.number}`;
-                    return (
-                      <div key={period} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <h3 className="font-semibold">
-                            Okres: {period.slice(0, 4)}/{period.slice(4)}
-                          </h3>
-                          <DownloadChargesPdfButton
-                            apartmentLabel={apartmentLabel}
-                            hoaName={apartment.homeownersAssociation.name}
-                            period={period}
-                            charges={charges}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          {charges.map((charge) => (
-                            <div
-                              key={charge.id}
-                              className="flex items-center justify-between border-b pb-2 last:border-0"
-                            >
-                              <div className="flex-1">
-                                <p className="text-sm font-medium">
-                                  {charge.description}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  {charge.quantity} {charge.unit} ×{' '}
-                                  {charge.unitPrice.toFixed(2)} zł
-                                </p>
-                              </div>
-                              <div className="text-right">
-                                <p className="text-sm font-semibold">
-                                  {charge.totalAmount.toFixed(2)} zł
-                                </p>
-                              </div>
-                            </div>
-                          ))}
-                          <div className="border-t pt-2 font-bold">
-                            <div className="flex justify-between">
-                              <span>Razem:</span>
-                              <span>
-                                {charges
-                                  .reduce((sum, c) => sum + c.totalAmount, 0)
-                                  .toFixed(2)}{' '}
-                                zł
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
+              <AdminChargesList
+                charges={apartment.charges}
+                apartmentLabel={`${apartment.address} ${apartment.building}/${apartment.number}`}
+                hoaName={apartment.homeownersAssociation.name}
+              />
             </CardContent>
           </Card>
         )}

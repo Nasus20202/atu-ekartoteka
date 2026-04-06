@@ -129,7 +129,12 @@ export function PaymentPdfDocument({
         <View style={styles.summaryGrid}>
           <View style={styles.summaryCell}>
             <Text style={styles.summaryCellLabel}>Saldo początkowe</Text>
-            <Text style={styles.summaryCellValue}>
+            <Text
+              style={[
+                styles.summaryCellValue,
+                payment.openingBalance < 0 ? styles.red : styles.green,
+              ]}
+            >
               {payment.openingBalance.toFixed(2)} zł
             </Text>
           </View>
@@ -171,8 +176,12 @@ export function PaymentPdfDocument({
         {/* Opening balance row */}
         <View style={styles.tableRow}>
           <Text style={[styles.cellLeft, styles.muted]}>Bilans otwarcia</Text>
-          <Text style={styles.cellRight}>-</Text>
-          <Text style={styles.cellRight}>-</Text>
+          <Text style={styles.cellRight}>
+            {payment.openingSurplus.toFixed(2)} zł
+          </Text>
+          <Text style={styles.cellRight}>
+            {payment.openingDebt.toFixed(2)} zł
+          </Text>
           <Text
             style={[
               styles.cellRight,

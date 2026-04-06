@@ -2,13 +2,10 @@ import { Building2 } from 'lucide-react';
 import { notFound, redirect } from 'next/navigation';
 
 import { auth } from '@/auth';
-import { PeriodCard } from '@/components/charges/period-card';
+import { ChargesDisplay } from '@/components/charges/charges-display';
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
-import {
-  DownloadChargesPdfButton,
-  type SerializableCharge,
-} from '@/components/pdf/download-charges-pdf-button';
+import type { SerializableCharge } from '@/components/pdf/download-charges-pdf-button';
 import { Card, CardContent } from '@/components/ui/card';
 import { findApartmentWithChargesCached } from '@/lib/queries/apartments/find-apartment-with-charges';
 import { findUserByIdCached } from '@/lib/queries/users/find-user-by-id';
@@ -16,10 +13,13 @@ import { AccountStatus, type ChargeDisplay } from '@/lib/types';
 
 export default async function ApartmentChargesPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ apartmentId: string }>;
+  searchParams: Promise<{ month?: string }>;
 }) {
   const { apartmentId } = await params;
+  const { month } = await searchParams;
   const session = await auth();
 
   if (!session) {
@@ -32,7 +32,6 @@ export default async function ApartmentChargesPage({
     redirect('/dashboard');
   }
 
-  // Fetch apartment with charges
   const apartment = await findApartmentWithChargesCached(
     apartmentId,
     session.user.id
@@ -42,17 +41,16 @@ export default async function ApartmentChargesPage({
     notFound();
   }
 
-  // Group charges by period
-  const chargesByPeriod = new Map<string, ChargeDisplay[]>();
+  const chargesByPeriod: Record<string, ChargeDisplay[]> = {};
   const serializableByPeriod: Record<string, SerializableCharge[]> = {};
 
   apartment.charges.forEach((charge: (typeof apartment.charges)[number]) => {
-    if (!chargesByPeriod.has(charge.period)) {
-      chargesByPeriod.set(charge.period, []);
+    if (!chargesByPeriod[charge.period]) {
+      chargesByPeriod[charge.period] = [];
       serializableByPeriod[charge.period] = [];
     }
 
-    chargesByPeriod.get(charge.period)!.push({
+    chargesByPeriod[charge.period].push({
       id: charge.id,
       description: charge.description,
       quantity: charge.quantity,
@@ -73,8 +71,10 @@ export default async function ApartmentChargesPage({
     });
   });
 
-  const periods = Array.from(chargesByPeriod.keys()).sort().reverse();
+  const periods = Object.keys(chargesByPeriod).sort().reverse();
   const apartmentLabel = `${apartment.address} ${apartment.building || ''}/${apartment.number}`;
+  // URL param is YYYY-MM, DB periods are YYYYMM — normalise by stripping the dash
+  const activeMonth = month ? month.replace('-', '') : null;
 
   return (
     <Page maxWidth="4xl">
@@ -96,32 +96,14 @@ export default async function ApartmentChargesPage({
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-6">
-          {periods.map((period) => {
-            const charges = chargesByPeriod.get(period)!;
-            const totalAmount = charges.reduce(
-              (sum, charge) => sum + charge.totalAmount,
-              0
-            );
-
-            return (
-              <PeriodCard
-                key={period}
-                period={period}
-                charges={charges}
-                totalAmount={totalAmount}
-                action={
-                  <DownloadChargesPdfButton
-                    apartmentLabel={apartmentLabel}
-                    hoaName={apartment.homeownersAssociation.name}
-                    period={period}
-                    charges={serializableByPeriod[period]}
-                  />
-                }
-              />
-            );
-          })}
-        </div>
+        <ChargesDisplay
+          periods={periods}
+          chargesByPeriod={chargesByPeriod}
+          serializableByPeriod={serializableByPeriod}
+          activeMonth={activeMonth}
+          apartmentLabel={apartmentLabel}
+          hoaName={apartment.homeownersAssociation.name}
+        />
       )}
     </Page>
   );

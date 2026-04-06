@@ -21,11 +21,11 @@ const maxWidthClasses = {
 
 export function Page({ children, maxWidth = '6xl', className }: PageProps) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen w-full bg-background">
       <main className="p-4 md:p-8">
         <div
           className={cn(
-            'mx-auto animate-fade-in',
+            'mx-auto w-full animate-fade-in',
             maxWidthClasses[maxWidth],
             className
           )}

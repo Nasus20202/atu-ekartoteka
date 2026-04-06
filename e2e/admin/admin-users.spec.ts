@@ -129,6 +129,58 @@ test.describe.serial('Admin User Management', () => {
     });
   });
 
+  test('admin can search for a user by email', async ({ adminPage }) => {
+    await adminPage.goto('/admin/users');
+
+    await expect(
+      adminPage.getByRole('heading', { name: /Użytkownicy/i })
+    ).toBeVisible();
+
+    // Switch to all users so seeded user is visible
+    await Promise.all([
+      adminPage.waitForResponse(
+        (resp) =>
+          resp.url().includes('/api/admin/users') && resp.status() === 200
+      ),
+      adminPage.getByRole('button', { name: /Wszyscy/i }).click(),
+    ]);
+
+    // Type in the search box
+    const searchInput = adminPage.getByPlaceholder(
+      /Szukaj po imieniu, emailu lub mieszkaniu/i
+    );
+    await searchInput.fill(USER_EMAIL);
+
+    // Wait for the debounced API call
+    await adminPage.waitForResponse(
+      (resp) =>
+        resp.url().includes('/api/admin/users') &&
+        resp.url().includes('search=') &&
+        resp.status() === 200
+    );
+
+    // Seeded user should still be visible
+    await expect(adminPage.getByText(USER_EMAIL)).toBeVisible({
+      timeout: 5000,
+    });
+
+    // Searching for something that matches nothing should show empty state
+    await searchInput.fill('nikt-taki-nie-istnieje@example.com');
+
+    await adminPage.waitForResponse(
+      (resp) =>
+        resp.url().includes('/api/admin/users') &&
+        resp.url().includes('search=') &&
+        resp.status() === 200
+    );
+
+    await expect(
+      adminPage.getByText(
+        /Nie znaleziono użytkowników pasujących do wyszukiwania/i
+      )
+    ).toBeVisible({ timeout: 5000 });
+  });
+
   test('admin can view apartments for a specific user', async ({
     adminPage,
   }) => {

@@ -30,6 +30,45 @@ vi.mock('next/link', () => ({
   }) => <a href={href}>{children}</a>,
 }));
 
+vi.mock('@/components/ui/alert-dialog', () => ({
+  AlertDialog: ({
+    children,
+    open,
+  }: {
+    children: React.ReactNode;
+    open: boolean;
+  }) => (open ? <div role="dialog">{children}</div> : null),
+  AlertDialogContent: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  AlertDialogHeader: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  AlertDialogTitle: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  AlertDialogDescription: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  AlertDialogFooter: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  AlertDialogAction: ({
+    children,
+    onClick,
+  }: {
+    children: React.ReactNode;
+    onClick?: () => void;
+  }) => (
+    <button data-testid="dialog-confirm" onClick={onClick}>
+      {children}
+    </button>
+  ),
+  AlertDialogCancel: ({ children }: { children: React.ReactNode }) => (
+    <button data-testid="dialog-cancel">{children}</button>
+  ),
+}));
+
 global.fetch = vi.fn();
 
 const mockHoas = [
@@ -43,6 +82,8 @@ const mockHoas = [
         building: 'A',
         owner: 'Jan Kowalski',
         email: 'jan@example.com',
+        isActive: true,
+        hasTwinWithTenant: false,
       },
       {
         id: 'apt-2',
@@ -50,6 +91,8 @@ const mockHoas = [
         building: 'B',
         owner: 'Anna Nowak',
         email: 'anna@example.com',
+        isActive: true,
+        hasTwinWithTenant: false,
       },
     ],
   },
@@ -63,10 +106,16 @@ const mockHoas = [
         building: null,
         owner: null,
         email: 'mieszkaniec@example.com',
+        isActive: true,
+        hasTwinWithTenant: false,
       },
     ],
   },
 ];
+
+function expandHoa(hoaName: string) {
+  fireEvent.click(screen.getByText(hoaName));
+}
 
 describe('BulkCreateUsersPage', () => {
   beforeEach(() => {
@@ -77,13 +126,26 @@ describe('BulkCreateUsersPage', () => {
     } as Response);
   });
 
-  it('renders the list grouped by HOA', async () => {
+  it('renders HOA names collapsed by default', async () => {
     render(<BulkCreateUsersPage />);
 
     await waitFor(() => {
       expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
       expect(screen.getByText('Wspólnota Beta')).toBeInTheDocument();
     });
+
+    expect(screen.queryByText(/jan@example\.com/i)).not.toBeInTheDocument();
+  });
+
+  it('shows apartment content after expanding HOA', async () => {
+    render(<BulkCreateUsersPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
+    });
+
+    expandHoa('Wspólnota Alfa');
+    expandHoa('Wspólnota Beta');
 
     expect(screen.getByText(/jan@example\.com/i)).toBeInTheDocument();
     expect(screen.getByText(/anna@example\.com/i)).toBeInTheDocument();
@@ -121,6 +183,8 @@ describe('BulkCreateUsersPage', () => {
       expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
     });
 
+    expandHoa('Wspólnota Alfa');
+
     const checkbox = screen.getByLabelText(/mieszkanie 10/i);
     fireEvent.click(checkbox);
 
@@ -132,12 +196,14 @@ describe('BulkCreateUsersPage', () => {
     expect(button).not.toBeDisabled();
   });
 
-  it('select-all HOA checkbox selects all apartments in that HOA', async () => {
+  it('select-all checkbox appears after expanding and selects all apartments in that HOA', async () => {
     render(<BulkCreateUsersPage />);
 
     await waitFor(() => {
       expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
     });
+
+    expandHoa('Wspólnota Alfa');
 
     const hoaCheckbox = screen.getByLabelText(
       /Zaznacz wszystkie w Wspólnota Alfa/i
@@ -149,7 +215,28 @@ describe('BulkCreateUsersPage', () => {
     });
   });
 
-  it('calls POST API and shows result summary on success', async () => {
+  it('shows confirmation dialog with account list before creating', async () => {
+    render(<BulkCreateUsersPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
+    });
+
+    expandHoa('Wspólnota Alfa');
+
+    const checkbox = screen.getByLabelText(/mieszkanie 10/i);
+    fireEvent.click(checkbox);
+
+    const button = screen.getByRole('button', { name: /utwórz konta/i });
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Potwierdź tworzenie kont/i)).toBeInTheDocument();
+      expect(screen.getByText('jan@example.com')).toBeInTheDocument();
+    });
+  });
+
+  it('calls POST API and shows result summary on success after confirmation', async () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce({
         ok: true,
@@ -159,7 +246,6 @@ describe('BulkCreateUsersPage', () => {
         ok: true,
         json: async () => ({ created: 2, skipped: 0, errors: 0 }),
       } as Response)
-      // After refresh
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({ hoas: [] }),
@@ -171,6 +257,8 @@ describe('BulkCreateUsersPage', () => {
       expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
     });
 
+    expandHoa('Wspólnota Alfa');
+
     const hoaCheckbox = screen.getByLabelText(
       /Zaznacz wszystkie w Wspólnota Alfa/i
     );
@@ -178,6 +266,13 @@ describe('BulkCreateUsersPage', () => {
 
     const button = screen.getByRole('button', { name: /utwórz konta/i });
     fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Potwierdź tworzenie kont/i)).toBeInTheDocument();
+    });
+    fireEvent.click(
+      screen.getByRole('button', { name: /Potwierdź i utwórz/i })
+    );
 
     await waitFor(() => {
       expect(screen.getByText(/Utworzono 2 kont/i)).toBeInTheDocument();
@@ -190,7 +285,7 @@ describe('BulkCreateUsersPage', () => {
     });
   });
 
-  it('shows error alert on API failure', async () => {
+  it('shows error alert on API failure after confirmation', async () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce({
         ok: true,
@@ -207,6 +302,8 @@ describe('BulkCreateUsersPage', () => {
       expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
     });
 
+    expandHoa('Wspólnota Alfa');
+
     const checkbox = screen.getByLabelText(/mieszkanie 10/i);
     fireEvent.click(checkbox);
 
@@ -214,8 +311,247 @@ describe('BulkCreateUsersPage', () => {
     fireEvent.click(button);
 
     await waitFor(() => {
+      expect(screen.getByText(/Potwierdź tworzenie kont/i)).toBeInTheDocument();
+    });
+    fireEvent.click(
+      screen.getByRole('button', { name: /Potwierdź i utwórz/i })
+    );
+
+    await waitFor(() => {
       expect(screen.getByText(/Błąd serwera/i)).toBeInTheDocument();
     });
+  });
+
+  it('shows duplicate-address warning when two apartments share the same building and number', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        hoas: [
+          {
+            hoaId: 'hoa-1',
+            hoaName: 'Wspólnota Alfa',
+            apartments: [
+              {
+                id: 'apt-1',
+                number: '4',
+                building: '52',
+                owner: 'Wujczak Katarzyna',
+                email: 'i-r-q@o2.pl',
+                isActive: true,
+                hasTwinWithTenant: false,
+              },
+              {
+                id: 'apt-2',
+                number: '4',
+                building: '52',
+                owner: 'Ossowska-Zając Grażyna',
+                email: 'grazynaossowska@o2.pl',
+                isActive: true,
+                hasTwinWithTenant: false,
+              },
+            ],
+          },
+        ],
+      }),
+    } as Response);
+
+    render(<BulkCreateUsersPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
+    });
+
+    expandHoa('Wspólnota Alfa');
+
+    expect(screen.getByText(/Duplikat/i)).toBeInTheDocument();
+  });
+
+  it('shows occupied-twin warning when an apartment shares address with an already-assigned one', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        hoas: [
+          {
+            hoaId: 'hoa-1',
+            hoaName: 'Wspólnota Alfa',
+            apartments: [
+              {
+                id: 'apt-1',
+                number: '4',
+                building: '52',
+                owner: 'Nowy Właściciel',
+                email: 'nowy@example.com',
+                isActive: true,
+                hasTwinWithTenant: true,
+              },
+            ],
+          },
+        ],
+      }),
+    } as Response);
+
+    render(<BulkCreateUsersPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
+    });
+
+    expandHoa('Wspólnota Alfa');
+
+    expect(
+      screen.getByText(/Mieszkanie o tym adresie zostało już przypisane/i)
+    ).toBeInTheDocument();
+  });
+
+  it('groups apartments in a blue box when one email has 3 or more apartments', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        hoas: [
+          {
+            hoaId: 'hoa-1',
+            hoaName: 'Wspólnota Alfa',
+            apartments: [
+              {
+                id: 'apt-1',
+                number: '1',
+                building: 'A',
+                owner: 'Jan Kowalski',
+                email: 'jan@example.com',
+                isActive: true,
+                hasTwinWithTenant: false,
+              },
+              {
+                id: 'apt-2',
+                number: '2',
+                building: 'A',
+                owner: 'Jan Kowalski',
+                email: 'jan@example.com',
+                isActive: true,
+                hasTwinWithTenant: false,
+              },
+              {
+                id: 'apt-3',
+                number: '3',
+                building: 'A',
+                owner: 'Jan Kowalski',
+                email: 'jan@example.com',
+                isActive: true,
+                hasTwinWithTenant: false,
+              },
+            ],
+          },
+        ],
+      }),
+    } as Response);
+
+    render(<BulkCreateUsersPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
+    });
+
+    expandHoa('Wspólnota Alfa');
+
+    expect(screen.getByText('jan@example.com')).toBeInTheDocument();
+    expect(screen.getAllByText(/3 mieszkania/i).length).toBeGreaterThan(0);
+  });
+
+  it('allows individual apartments in a duplicate group to be selected independently', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        hoas: [
+          {
+            hoaId: 'hoa-1',
+            hoaName: 'Wspólnota Alfa',
+            apartments: [
+              {
+                id: 'apt-1',
+                number: '4',
+                building: '52',
+                owner: 'Wujczak Katarzyna',
+                email: 'i-r-q@o2.pl',
+                isActive: true,
+                hasTwinWithTenant: false,
+              },
+              {
+                id: 'apt-2',
+                number: '4',
+                building: '52',
+                owner: 'Ossowska-Zając Grażyna',
+                email: 'grazynaossowska@o2.pl',
+                isActive: true,
+                hasTwinWithTenant: false,
+              },
+            ],
+          },
+        ],
+      }),
+    } as Response);
+
+    render(<BulkCreateUsersPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
+    });
+
+    expandHoa('Wspólnota Alfa');
+
+    const firstCheckbox = screen.getByLabelText(/i-r-q@o2\.pl/i);
+    fireEvent.click(firstCheckbox);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Wybrano 1 z 2/i)).toBeInTheDocument();
+    });
+  });
+
+  it('does not show warning when same email but different addresses', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        hoas: [
+          {
+            hoaId: 'hoa-1',
+            hoaName: 'Wspólnota Alfa',
+            apartments: [
+              {
+                id: 'apt-1',
+                number: '10',
+                building: 'A',
+                owner: 'Jan Kowalski',
+                email: 'shared@example.com',
+                isActive: true,
+                hasTwinWithTenant: false,
+              },
+              {
+                id: 'apt-2',
+                number: '20',
+                building: 'A',
+                owner: 'Jan Kowalski',
+                email: 'shared@example.com',
+                isActive: true,
+                hasTwinWithTenant: false,
+              },
+            ],
+          },
+        ],
+      }),
+    } as Response);
+
+    render(<BulkCreateUsersPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
+    });
+
+    expandHoa('Wspólnota Alfa');
+
+    expect(screen.queryByText(/Duplikat/i)).not.toBeInTheDocument();
+    const infoBadges = screen
+      .queryAllByText(/2 mieszkania/i)
+      .filter((el) => el.closest('[class*="blue"]') !== null);
+    expect(infoBadges).toHaveLength(0);
   });
 
   describe('Assign existing tab', () => {
@@ -306,7 +642,6 @@ describe('BulkCreateUsersPage', () => {
         screen.getByRole('tab', { name: /przypisz istniejące/i })
       );
 
-      // Wait for assign fetch to complete
       await waitFor(() => {
         const calls = vi.mocked(fetch).mock.calls;
         expect(
@@ -316,10 +651,12 @@ describe('BulkCreateUsersPage', () => {
         ).toBe(true);
       });
 
-      const hoaCheckboxes = screen.getAllByLabelText(
+      expandHoa('Wspólnota Alfa');
+
+      const hoaCheckbox = screen.getByLabelText(
         /Zaznacz wszystkie w Wspólnota Alfa/i
       );
-      await user.click(hoaCheckboxes[hoaCheckboxes.length - 1]);
+      await user.click(hoaCheckbox);
 
       const assignButtons = screen.getAllByRole('button', {
         name: /przypisz konta/i,

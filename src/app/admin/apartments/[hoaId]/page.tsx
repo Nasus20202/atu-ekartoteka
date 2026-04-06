@@ -1,9 +1,9 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
@@ -33,6 +33,24 @@ interface HOA {
   name: string;
 }
 
+function buildAddressKey(apt: Apartment): string {
+  return `${apt.address ?? ''}__${apt.building ?? ''}__${apt.number}`;
+}
+
+function computeDuplicateActiveAddresses(apartments: Apartment[]): Set<string> {
+  const counts = new Map<string, number>();
+  for (const apt of apartments) {
+    if (!apt.isActive) continue;
+    const key = buildAddressKey(apt);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  const duplicates = new Set<string>();
+  for (const [key, count] of counts) {
+    if (count > 1) duplicates.add(key);
+  }
+  return duplicates;
+}
+
 export default function HOAApartmentsPage() {
   const params = useParams();
   const router = useRouter();
@@ -54,10 +72,15 @@ export default function HOAApartmentsPage() {
   const [searchInput, setSearchInput] = useState(search);
   const [loading, setLoading] = useState(true);
 
+  const duplicateActiveAddresses = useMemo(
+    () => computeDuplicateActiveAddresses(apartments),
+    [apartments]
+  );
+
   const fetchApartments = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({
+      const urlParams = new URLSearchParams({
         page: page.toString(),
         limit: pagination.limit.toString(),
         search,
@@ -65,7 +88,7 @@ export default function HOAApartmentsPage() {
         hoaId,
       });
 
-      const response = await fetch(`/api/admin/apartments?${params}`);
+      const response = await fetch(`/api/admin/apartments?${urlParams}`);
       const data = await response.json();
 
       if (response.ok) {
@@ -111,8 +134,8 @@ export default function HOAApartmentsPage() {
     updateURL({ activeOnly: checked.toString(), page: '1' });
   };
 
-  const goToPage = (page: number) => {
-    updateURL({ page: page.toString() });
+  const goToPage = (p: number) => {
+    updateURL({ page: p.toString() });
   };
 
   return (
@@ -176,80 +199,95 @@ export default function HOAApartmentsPage() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            {apartments.map((apartment) => (
-              <Card
-                key={apartment.id}
-                className={`transition-all duration-300 hover:shadow-lg ${!apartment.isActive ? 'opacity-60 grayscale' : ''}`}
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-lg">
-                        {apartment.address} {apartment.building}/
-                        {apartment.number}
-                      </CardTitle>
-                      <CardDescription>
-                        {apartment.postalCode} {apartment.city}
-                      </CardDescription>
+            {apartments.map((apartment) => {
+              const isDuplicate =
+                apartment.isActive &&
+                duplicateActiveAddresses.has(buildAddressKey(apartment));
+              return (
+                <Card
+                  key={apartment.id}
+                  className={`transition-all duration-300 hover:shadow-lg ${!apartment.isActive ? 'opacity-60 grayscale' : ''} ${isDuplicate ? 'border-amber-400 dark:border-amber-600' : ''}`}
+                >
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="text-lg">
+                          {apartment.address} {apartment.building}/
+                          {apartment.number}
+                        </CardTitle>
+                        <CardDescription>
+                          {apartment.postalCode} {apartment.city}
+                        </CardDescription>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        {apartment.isActive ? (
+                          <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-200">
+                            Aktywne
+                          </span>
+                        ) : (
+                          <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+                            Nieaktywne
+                          </span>
+                        )}
+                        {isDuplicate && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800 dark:bg-amber-900/60 dark:text-amber-200">
+                            <AlertTriangle className="h-3 w-3" />
+                            Duplikat adresu
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    {apartment.isActive ? (
-                      <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-200">
-                        Aktywne
-                      </span>
-                    ) : (
-                      <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800 dark:bg-gray-800 dark:text-gray-200">
-                        Nieaktywne
-                      </span>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <dl className="space-y-1 text-sm">
-                    <div className="flex justify-between">
-                      <dt className="text-muted-foreground">Właściciel:</dt>
-                      <dd className="font-medium">{apartment.owner}</dd>
-                    </div>
-                    {(apartment.shareNumerator ||
-                      apartment.shareDenominator) && (
+                  </CardHeader>
+                  <CardContent>
+                    <dl className="space-y-1 text-sm">
                       <div className="flex justify-between">
-                        <dt className="text-muted-foreground">Udział:</dt>
-                        <dd className="font-medium">
-                          {apartment.shareNumerator &&
-                          apartment.shareDenominator &&
-                          apartment.shareDenominator > 0
-                            ? `${Number(
-                                (
-                                  (apartment.shareNumerator /
-                                    apartment.shareDenominator) *
-                                  100
-                                ).toFixed(1)
-                              )}%`
-                            : '-'}
+                        <dt className="text-muted-foreground">Właściciel:</dt>
+                        <dd className="font-medium">{apartment.owner}</dd>
+                      </div>
+                      {(apartment.shareNumerator ||
+                        apartment.shareDenominator) && (
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">Udział:</dt>
+                          <dd className="font-medium">
+                            {apartment.shareNumerator &&
+                            apartment.shareDenominator &&
+                            apartment.shareDenominator > 0
+                              ? `${Number(
+                                  (
+                                    (apartment.shareNumerator /
+                                      apartment.shareDenominator) *
+                                    100
+                                  ).toFixed(1)
+                                )}%`
+                              : '-'}
+                          </dd>
+                        </div>
+                      )}
+                      <div className="flex justify-between">
+                        <dt className="text-muted-foreground">
+                          ID zewnętrzne:
+                        </dt>
+                        <dd className="font-mono text-xs">
+                          {apartment.externalApartmentId} /{' '}
+                          {apartment.externalOwnerId}
                         </dd>
                       </div>
-                    )}
-                    <div className="flex justify-between">
-                      <dt className="text-muted-foreground">ID zewnętrzne:</dt>
-                      <dd className="font-mono text-xs">
-                        {apartment.externalApartmentId} /{' '}
-                        {apartment.externalOwnerId}
-                      </dd>
+                    </dl>
+                    <div className="mt-4">
+                      <Link href={`/admin/apartments/${hoaId}/${apartment.id}`}>
+                        <Button variant="outline" size="sm" className="w-full">
+                          Zobacz szczegóły
+                        </Button>
+                      </Link>
                     </div>
-                  </dl>
-                  <div className="mt-4">
-                    <Link href={`/admin/apartments/${hoaId}/${apartment.id}`}>
-                      <Button variant="outline" size="sm" className="w-full">
-                        Zobacz szczegóły
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
 
           {apartments.length === 0 && (
-            <div className="text-center py-12">
+            <div className="py-12 text-center">
               <p className="text-muted-foreground">Nie znaleziono mieszkań</p>
             </div>
           )}
@@ -268,19 +306,19 @@ export default function HOAApartmentsPage() {
 
               <div className="flex items-center gap-1">
                 {Array.from({ length: pagination.totalPages }, (_, i) => {
-                  const page = i + 1;
+                  const p = i + 1;
                   const isNearCurrent =
-                    Math.abs(page - pagination.page) <= 2 ||
-                    page === 1 ||
-                    page === pagination.totalPages;
+                    Math.abs(p - pagination.page) <= 2 ||
+                    p === 1 ||
+                    p === pagination.totalPages;
 
                   if (!isNearCurrent) {
                     if (
-                      page === pagination.page - 3 ||
-                      page === pagination.page + 3
+                      p === pagination.page - 3 ||
+                      p === pagination.page + 3
                     ) {
                       return (
-                        <span key={page} className="px-2 text-muted-foreground">
+                        <span key={p} className="px-2 text-muted-foreground">
                           ...
                         </span>
                       );
@@ -290,12 +328,12 @@ export default function HOAApartmentsPage() {
 
                   return (
                     <Button
-                      key={page}
-                      variant={page === pagination.page ? 'default' : 'outline'}
+                      key={p}
+                      variant={p === pagination.page ? 'default' : 'outline'}
                       size="sm"
-                      onClick={() => goToPage(page)}
+                      onClick={() => goToPage(p)}
                     >
-                      {page}
+                      {p}
                     </Button>
                   );
                 })}

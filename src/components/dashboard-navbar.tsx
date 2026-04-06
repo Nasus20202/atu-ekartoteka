@@ -64,7 +64,10 @@ export function DashboardNavbar({
         <div className="flex h-16 items-center justify-between">
           {/* Logo and Desktop Navigation */}
           <div className="flex items-center gap-8">
-            <Link href="/dashboard" className="text-xl font-bold">
+            <Link
+              href={mode === 'admin' ? '/admin' : '/dashboard'}
+              className="text-xl font-bold"
+            >
               ATU Ekartoteka
             </Link>
             {navigationItems.length > 0 && (

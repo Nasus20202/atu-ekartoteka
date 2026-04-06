@@ -1,7 +1,14 @@
-import { Building2, Calendar } from 'lucide-react';
-import type { ReactNode } from 'react';
+'use client';
+
+import { Building2, Calendar, ChevronDown } from 'lucide-react';
+import { type ReactNode, useState } from 'react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import type { ChargeDisplay } from '@/lib/types';
 import { formatCurrency, formatDate, formatPeriod } from '@/lib/utils';
 
@@ -47,32 +54,43 @@ type ApartmentSectionProps = {
 };
 
 function ApartmentSection({ apartmentData, action }: ApartmentSectionProps) {
+  const [open, setOpen] = useState(true);
   const apartmentTotal = apartmentData.charges.reduce(
     (sum, charge) => sum + charge.totalAmount,
     0
   );
 
   return (
-    <div className="space-y-4 rounded-lg border p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
-          <h3 className="truncate font-semibold">
-            {apartmentData.apartmentAddress}
-          </h3>
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <div className="rounded-lg border">
+        <div className="flex flex-wrap items-center gap-2 p-4">
+          <CollapsibleTrigger className="flex flex-1 min-w-0 items-center justify-between gap-2 hover:opacity-80 transition-opacity text-left">
+            <div className="flex min-w-0 items-center gap-2">
+              <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <h3 className="truncate font-semibold">
+                {apartmentData.apartmentAddress}
+              </h3>
+            </div>
+            <div className="flex shrink-0 items-center gap-3">
+              <p className="text-lg font-bold">
+                {formatCurrency(apartmentTotal)}
+              </p>
+              <ChevronDown
+                className={`h-4 w-4 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`}
+              />
+            </div>
+          </CollapsibleTrigger>
+          {action && <div className="shrink-0">{action}</div>}
         </div>
-        <div className="flex shrink-0 items-center gap-3">
-          {action}
-          <p className="text-lg font-bold">{formatCurrency(apartmentTotal)}</p>
-        </div>
+        <CollapsibleContent>
+          <div className="space-y-2 border-t p-4">
+            {apartmentData.charges.map((charge) => (
+              <ChargeItem key={charge.id} charge={charge} />
+            ))}
+          </div>
+        </CollapsibleContent>
       </div>
-
-      <div className="space-y-2">
-        {apartmentData.charges.map((charge) => (
-          <ChargeItem key={charge.id} charge={charge} />
-        ))}
-      </div>
-    </div>
+    </Collapsible>
   );
 }
 
@@ -84,36 +102,40 @@ type MultiApartmentPeriodCardProps = {
   period: string;
   apartmentsData: ApartmentChargesDataWithAction[];
   totalAmount: number;
+  hideHeader?: boolean;
 };
 
 export function MultiApartmentPeriodCard({
   period,
   apartmentsData,
   totalAmount,
+  hideHeader = false,
 }: MultiApartmentPeriodCardProps) {
   return (
     <Card>
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              {formatPeriod(period)}
-            </CardTitle>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Okres rozliczeniowy
-            </p>
+      {!hideHeader && (
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                {formatPeriod(period)}
+              </CardTitle>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Okres rozliczeniowy
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-muted-foreground">Razem</p>
+              <p className="text-xl font-bold">{formatCurrency(totalAmount)}</p>
+            </div>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-muted-foreground">Razem</p>
-            <p className="text-xl font-bold">{formatCurrency(totalAmount)}</p>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </CardHeader>
+      )}
+      <CardContent className={hideHeader ? 'pt-6 space-y-4' : 'space-y-4'}>
         {apartmentsData.map((apartmentData) => (
           <ApartmentSection
-            key={apartmentData.apartmentNumber}
+            key={`${apartmentData.apartmentAddress}-${apartmentData.apartmentNumber}`}
             apartmentData={apartmentData}
             action={apartmentData.action}
           />

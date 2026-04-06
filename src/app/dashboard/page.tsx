@@ -55,7 +55,7 @@ export default async function DashboardPage() {
     0
   );
 
-  // Prepare notifications with apartment details for sidebar
+  // Prepare notifications grouped by HOA for sidebar
   const allNotifications = userData.apartments.flatMap(
     (apt: (typeof userData.apartments)[number]) =>
       apt.chargeNotifications.map(
@@ -65,40 +65,54 @@ export default async function DashboardPage() {
           apartmentAddress: `${apt.address} ${apt.building || ''}/${apt.number}`
             .replace(/\s+\//g, ' /')
             .trim(),
+          hoaId: apt.homeownersAssociation?.id ?? null,
+          hoaName: apt.homeownersAssociation?.name ?? null,
+          hoaHeader: apt.homeownersAssociation?.header ?? null,
         })
       )
   );
 
-  // Prepare payments with apartment details
-  const latestPayments = userData.apartments
-    .filter(
-      (apt: (typeof userData.apartments)[number]) => apt.payments.length > 0
-    )
-    .flatMap((apt: (typeof userData.apartments)[number]) =>
-      apt.payments.map((payment: (typeof apt.payments)[number]) => ({
-        ...payment,
-        apartmentNumber: apt.number,
-        apartmentAddress: `${apt.address} ${apt.building || ''}/${apt.number}`
-          .replace(/\s+\//g, ' /')
-          .trim(),
-      }))
-    );
+  // Prepare per-HOA payment groups for summary card
+  type HoaPaymentGroup = {
+    hoaId: string;
+    hoaName: string;
+    totalClosingBalance: number;
+  };
+  const hoaPaymentMap = new Map<string, HoaPaymentGroup>();
+
+  for (const apt of userData.apartments) {
+    if (apt.payments.length === 0) continue;
+    const hoa = apt.homeownersAssociation;
+    if (!hoa?.id) continue;
+    const existing = hoaPaymentMap.get(hoa.id);
+    const balance = apt.payments[0].closingBalance;
+    if (existing) {
+      existing.totalClosingBalance += balance;
+    } else {
+      hoaPaymentMap.set(hoa.id, {
+        hoaId: hoa.id,
+        hoaName: hoa.name,
+        totalClosingBalance: balance,
+      });
+    }
+  }
+  const hoaPaymentGroups = Array.from(hoaPaymentMap.values());
 
   return (
-    <div className="bg-background animate-fade-in">
+    <div className="w-full bg-background">
       <main className="p-4 md:p-8">
-        <div className="mx-auto max-w-7xl">
-          <h1 className="mb-6 text-3xl font-bold">
+        <div className="mx-auto w-full max-w-7xl">
+          <h1 className="mb-6 text-3xl font-bold animate-fade-in">
             Witaj{userData.name ? `, ${userData.name}` : ''}!
           </h1>
 
           <div
-            className={`grid gap-6 ${allNotifications.length > 0 && userData.status === AccountStatus.APPROVED ? 'lg:grid-cols-[1fr_350px]' : ''}`}
+            className={`grid gap-6 ${allNotifications.length > 0 && userData.status === AccountStatus.APPROVED ? 'lg:grid-cols-[1fr_350px] lg:items-start' : ''}`}
           >
             {/* Sidebar - shows first on mobile, second on desktop */}
             {userData.status === AccountStatus.APPROVED &&
               allNotifications.length > 0 && (
-                <aside className="lg:order-2">
+                <aside className="lg:order-2 lg:self-start lg:sticky lg:top-20">
                   <NotificationsSidebar notifications={allNotifications} />
                 </aside>
               )}
@@ -114,8 +128,8 @@ export default async function DashboardPage() {
 
               {/* Payments Summary */}
               {userData.status === AccountStatus.APPROVED &&
-                latestPayments.length > 0 && (
-                  <PaymentsSummaryCard payments={latestPayments} />
+                hoaPaymentGroups.length > 0 && (
+                  <PaymentsSummaryCard hoaGroups={hoaPaymentGroups} />
                 )}
 
               {/* Charges Card */}

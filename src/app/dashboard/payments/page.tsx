@@ -38,6 +38,22 @@ export default async function PaymentsPage() {
         {userData.apartments.map(
           (apartment: (typeof userData.apartments)[number]) => {
             const apartmentLabel = `${apartment.address} ${apartment.building || ''}/${apartment.number}`;
+            const entries = apartment.payments.map(
+              (payment: (typeof apartment.payments)[number]) => ({
+                payment: {
+                  ...payment,
+                  dateFrom: payment.dateFrom.toISOString(),
+                  dateTo: payment.dateTo.toISOString(),
+                  createdAt: payment.createdAt.toISOString(),
+                  updatedAt: payment.updatedAt.toISOString(),
+                },
+                apartmentId: apartment.id,
+                apartmentLabel,
+                hoaName: apartment.homeownersAssociation.name,
+                dateFromLabel: payment.dateFrom.toLocaleDateString('pl-PL'),
+                dateToLabel: payment.dateTo.toLocaleDateString('pl-PL'),
+              })
+            );
             return (
               <Card key={apartment.id}>
                 <CardHeader>
@@ -55,30 +71,18 @@ export default async function PaymentsPage() {
                       Brak danych o wpłatach
                     </p>
                   ) : (
-                    <div className="space-y-3">
-                      {apartment.payments.map(
-                        (payment: (typeof apartment.payments)[number]) => (
-                          <PaymentYearRow
-                            key={payment.id}
-                            apartmentId={apartment.id}
-                            apartmentLabel={apartmentLabel}
-                            hoaName={apartment.homeownersAssociation.name}
-                            payment={{
-                              ...payment,
-                              dateFrom: payment.dateFrom.toISOString(),
-                              dateTo: payment.dateTo.toISOString(),
-                              createdAt: payment.createdAt.toISOString(),
-                              updatedAt: payment.updatedAt.toISOString(),
-                            }}
-                            dateFromLabel={payment.dateFrom.toLocaleDateString(
-                              'pl-PL'
-                            )}
-                            dateToLabel={payment.dateTo.toLocaleDateString(
-                              'pl-PL'
-                            )}
-                          />
-                        )
-                      )}
+                    <div className="space-y-2">
+                      {entries.map((entry) => (
+                        <PaymentYearRow
+                          key={entry.payment.id}
+                          apartmentId={entry.apartmentId}
+                          apartmentLabel={entry.apartmentLabel}
+                          hoaName={entry.hoaName}
+                          payment={entry.payment}
+                          dateFromLabel={entry.dateFromLabel}
+                          dateToLabel={entry.dateToLabel}
+                        />
+                      ))}
                     </div>
                   )}
                 </CardContent>

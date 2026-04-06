@@ -146,6 +146,55 @@ Source files SHALL not contain comments that merely restate what the code does.
 
 ---
 
+### Requirement: Data access via queries and mutations
+
+All Prisma database operations SHALL be encapsulated in dedicated files under `src/lib/queries/` (reads) and `src/lib/mutations/` (writes), organized by domain. No file outside these directories is permitted to import `prisma` directly, with the sole exception of `src/lib/import/import-handler.ts`, which orchestrates a complex multi-step transaction and receives a transaction client (`tx`) passed down from callers.
+
+#### Directory structure
+
+```
+src/lib/queries/
+  admin/
+  apartments/
+  email-verification/
+  hoa/
+  password-reset/
+  users/
+
+src/lib/mutations/
+  apartments/
+  email-verification/
+  hoa/
+  password-reset/
+  users/
+```
+
+#### Scenario: New read operation
+
+- **GIVEN** a feature needs to read data from the database
+- **WHEN** a developer writes the query
+- **THEN** it is placed in `src/lib/queries/<domain>/<verb>-<subject>.ts`; the function is exported as a plain function; if the caller is a server component, a `Cached` variant is also exported using React `cache()` (e.g., `export const findUserByIdCached = cache(findUserById)`)
+
+#### Scenario: New write operation
+
+- **GIVEN** a feature needs to create, update, or delete data
+- **WHEN** a developer writes the mutation
+- **THEN** it is placed in `src/lib/mutations/<domain>/<verb>-<subject>.ts`; the function is exported as a plain function with no caching
+
+#### Scenario: Server component vs. API route usage
+
+- **GIVEN** a query function that is called from both a server component and an API route
+- **WHEN** the call sites import the function
+- **THEN** the server component imports the `Cached` variant (e.g., `findUserByIdCached`) and the API route imports the plain variant (e.g., `findUserById`)
+
+#### Scenario: Accidental direct prisma import
+
+- **GIVEN** a developer adds a database call directly in an API route, page, or utility that is not a query/mutation file
+- **WHEN** the code is reviewed
+- **THEN** the call is extracted to the appropriate `queries/` or `mutations/` file and imported from there
+
+---
+
 ### Requirement: Conventional commits
 
 All git commit messages SHALL follow the Conventional Commits specification.

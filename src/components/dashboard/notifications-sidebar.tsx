@@ -1,3 +1,8 @@
+'use client';
+
+import { ChevronDown } from 'lucide-react';
+import { useState } from 'react';
+
 import {
   Card,
   CardContent,
@@ -5,15 +10,113 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { ChargeNotification } from '@/lib/types';
 
+type NotificationItem = ChargeNotification & {
+  apartmentNumber: string;
+  apartmentAddress: string;
+  hoaId?: string | null;
+  hoaName?: string | null;
+  hoaHeader?: string | null;
+};
+
+interface HoaNotificationGroup {
+  hoaId: string | null;
+  hoaName: string | null;
+  hoaHeader: string | null;
+  notifications: NotificationItem[];
+  subtotal: number;
+}
+
 interface NotificationsSidebarProps {
-  notifications: Array<
-    ChargeNotification & {
-      apartmentNumber: string;
-      apartmentAddress: string;
+  notifications: NotificationItem[];
+}
+
+function groupByHoa(notifications: NotificationItem[]): HoaNotificationGroup[] {
+  const groupMap = new Map<string, HoaNotificationGroup>();
+  const noHoaKey = '__no_hoa__';
+
+  for (const n of notifications) {
+    const key = n.hoaId ?? noHoaKey;
+    if (!groupMap.has(key)) {
+      groupMap.set(key, {
+        hoaId: n.hoaId ?? null,
+        hoaName: n.hoaName ?? null,
+        hoaHeader: n.hoaHeader ?? null,
+        notifications: [],
+        subtotal: 0,
+      });
     }
-  >;
+    const group = groupMap.get(key)!;
+    group.notifications.push(n);
+    group.subtotal += n.totalAmount;
+  }
+
+  return Array.from(groupMap.values());
+}
+
+function NotificationRow({ notification }: { notification: NotificationItem }) {
+  return (
+    <div className="rounded-lg border p-3 text-sm">
+      <div className="mb-1 flex items-center justify-between gap-2">
+        <span className="min-w-0 truncate font-medium">
+          {notification.apartmentAddress}
+        </span>
+        <span className="shrink-0 font-semibold">
+          {notification.totalAmount.toFixed(2)} zł
+        </span>
+      </div>
+      <div className="text-xs text-muted-foreground">
+        {notification.description}
+      </div>
+      {notification.quantity > 0 && (
+        <div className="mt-1 text-xs text-muted-foreground">
+          {notification.quantity} {notification.unit} ×{' '}
+          {notification.unitPrice.toFixed(2)} zł
+        </div>
+      )}
+    </div>
+  );
+}
+
+function HoaGroup({ group }: { group: HoaNotificationGroup }) {
+  const [open, setOpen] = useState(true);
+
+  return (
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border p-3 text-sm transition-colors hover:bg-muted">
+        <span className="font-medium">{group.hoaName ?? 'Wspólnota'}</span>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="font-semibold">{group.subtotal.toFixed(2)} zł</span>
+          <ChevronDown
+            className={`h-4 w-4 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`}
+          />
+        </div>
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <div className="mt-2 space-y-2">
+          {group.hoaHeader && (
+            <div className="rounded-lg bg-muted px-3 py-2">
+              <p className="whitespace-pre-line text-xs text-muted-foreground">
+                {group.hoaHeader}
+              </p>
+            </div>
+          )}
+          {group.notifications.map((notification) => (
+            <NotificationRow
+              key={notification.id}
+              notification={notification}
+            />
+          ))}
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  );
 }
 
 export const NotificationsSidebar = ({
@@ -24,52 +127,60 @@ export const NotificationsSidebar = ({
   }
 
   const totalAmount = notifications.reduce((sum, n) => sum + n.totalAmount, 0);
+  const hoaGroups = groupByHoa(notifications);
+  const isSingle = hoaGroups.length === 1;
 
   return (
-    <Card className="sticky top-20">
+    <Card>
       <CardHeader>
         <CardTitle>Powiadomienia</CardTitle>
         <CardDescription>Bieżące naliczenia czynszowe</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {/* Total */}
-          <div className="rounded-lg bg-muted p-3">
-            <div className="text-sm text-muted-foreground">
-              Łączna kwota do zapłaty
-            </div>
-            <div className="text-2xl font-bold">
-              {totalAmount.toFixed(2)} zł
-            </div>
-          </div>
-
-          {/* Notifications List */}
-          <div className="space-y-3">
-            {notifications.map((notification) => (
-              <div
-                key={notification.id}
-                className="rounded-lg border p-3 text-sm"
-              >
-                <div className="mb-1 flex items-center justify-between gap-2">
-                  <span className="min-w-0 truncate font-medium">
-                    {notification.apartmentAddress}
-                  </span>
-                  <span className="shrink-0 font-semibold">
-                    {notification.totalAmount.toFixed(2)} zł
-                  </span>
+        <div className="space-y-3">
+          {isSingle ? (
+            <>
+              {/* Single HOA: show total + optional header + flat list */}
+              <div className="rounded-lg bg-muted p-3">
+                <div className="text-sm text-muted-foreground">
+                  Łączna kwota do zapłaty
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  {notification.description}
+                <div className="text-2xl font-bold">
+                  {totalAmount.toFixed(2)} zł
                 </div>
-                {notification.quantity > 0 && (
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    {notification.quantity} {notification.unit} ×{' '}
-                    {notification.unitPrice.toFixed(2)} zł
-                  </div>
-                )}
               </div>
-            ))}
-          </div>
+              {hoaGroups[0].hoaHeader && (
+                <div className="rounded-lg bg-muted px-3 py-2">
+                  <p className="whitespace-pre-line text-xs text-muted-foreground">
+                    {hoaGroups[0].hoaHeader}
+                  </p>
+                </div>
+              )}
+              <div className="space-y-2">
+                {hoaGroups[0].notifications.map((notification) => (
+                  <NotificationRow
+                    key={notification.id}
+                    notification={notification}
+                  />
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Multiple HOAs: grand total + collapsible per HOA */}
+              <div className="rounded-lg bg-muted p-3">
+                <div className="text-sm text-muted-foreground">
+                  Łączna kwota do zapłaty
+                </div>
+                <div className="text-2xl font-bold">
+                  {totalAmount.toFixed(2)} zł
+                </div>
+              </div>
+              {hoaGroups.map((group, gi) => (
+                <HoaGroup key={group.hoaId ?? gi} group={group} />
+              ))}
+            </>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -12,7 +12,15 @@ export function findHoas(search: string) {
 
   return prisma.homeownersAssociation.findMany({
     where,
-    include: {
+    select: {
+      id: true,
+      externalId: true,
+      name: true,
+      apartmentsDataDate: true,
+      chargesDataDate: true,
+      notificationsDataDate: true,
+      createdAt: true,
+      updatedAt: true,
       _count: {
         select: {
           apartments: { where: { isActive: true } },

@@ -36,7 +36,12 @@ test.describe.serial('Admin Bulk User Creation', () => {
       adminPage.getByRole('heading', { name: /Zarządzanie kontami/i })
     ).toBeVisible();
 
-    await expect(adminPage.getByRole('checkbox').first()).toBeVisible();
+    // HOA cards start collapsed — click the CollapsibleTrigger (HOA name) to expand
+    await adminPage.getByText('Test HOA').first().click();
+
+    await expect(adminPage.getByRole('checkbox').first()).toBeVisible({
+      timeout: 5000,
+    });
   });
 
   test('confirm button is disabled when nothing is selected', async ({
@@ -47,8 +52,6 @@ test.describe.serial('Admin Bulk User Creation', () => {
     await expect(
       adminPage.getByRole('heading', { name: /Zarządzanie kontami/i })
     ).toBeVisible();
-
-    await expect(adminPage.getByRole('checkbox').first()).toBeVisible();
 
     await expect(
       adminPage.getByRole('button', { name: /Utwórz konta/i })
@@ -64,10 +67,13 @@ test.describe.serial('Admin Bulk User Creation', () => {
       adminPage.getByRole('heading', { name: /Zarządzanie kontami/i })
     ).toBeVisible();
 
+    // Expand the first HOA card by clicking its name
+    await adminPage.getByText('Test HOA').first().click();
+
     const hoaCheckbox = adminPage
-      .getByRole('checkbox', { name: /Zaznacz wszystkie w/i })
+      .getByRole('checkbox', { name: /Zaznacz wszystkie/i })
       .first();
-    await expect(hoaCheckbox).toBeVisible();
+    await expect(hoaCheckbox).toBeVisible({ timeout: 5000 });
     await hoaCheckbox.click();
 
     await expect(
@@ -86,11 +92,13 @@ test.describe.serial('Admin Bulk User Creation', () => {
       adminPage.getByRole('heading', { name: /Zarządzanie kontami/i })
     ).toBeVisible();
 
-    // Select the unassigned apartment checkbox by data attribute or first individual checkbox
+    // Expand the first HOA card then select the first individual apartment
+    await adminPage.getByText('Test HOA').first().click();
+
     const apartmentCheckboxes = adminPage.getByRole('checkbox').filter({
       hasNot: adminPage.locator('[aria-label*="Zaznacz wszystkie"]'),
     });
-    await expect(apartmentCheckboxes.first()).toBeVisible();
+    await expect(apartmentCheckboxes.first()).toBeVisible({ timeout: 5000 });
     await apartmentCheckboxes.first().click();
 
     const confirmButton = adminPage.getByRole('button', {
@@ -98,13 +106,20 @@ test.describe.serial('Admin Bulk User Creation', () => {
     });
     await expect(confirmButton).toBeEnabled();
 
+    await confirmButton.click();
+
+    // Confirmation dialog appears — click confirm
+    await expect(
+      adminPage.getByRole('button', { name: /Potwierdź i utwórz/i })
+    ).toBeVisible({ timeout: 5000 });
+
     await Promise.all([
       adminPage.waitForResponse(
         (resp) =>
           resp.url().includes('/api/admin/users/bulk-create') &&
           resp.status() === 200
       ),
-      confirmButton.click(),
+      adminPage.getByRole('button', { name: /Potwierdź i utwórz/i }).click(),
     ]);
 
     await expect(adminPage.getByText(/Utworzono \d+ kont/i)).toBeVisible({

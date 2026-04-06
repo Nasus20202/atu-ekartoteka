@@ -11,6 +11,8 @@ export interface PaymentEntry {
   year: number;
   dateFrom: Date;
   dateTo: Date;
+  openingDebt: number;
+  openingSurplus: number;
   openingBalance: number;
   totalCharges: number;
   monthlyCharges: number[];
@@ -72,6 +74,8 @@ export async function parseWplatyFile(
           year,
           dateFrom,
           dateTo,
+          openingDebt,
+          openingSurplus,
           openingBalance,
           totalCharges,
           monthlyCharges,

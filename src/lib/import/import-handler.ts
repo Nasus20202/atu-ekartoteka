@@ -17,7 +17,13 @@ import {
   createEmptyStats,
   groupFilesByHOA,
   parseFileToBuffer,
+  parseWmbDate,
 } from '@/lib/import/utils';
+import {
+  validateChargesCrossFile,
+  validateNalCzynsz,
+  validateWplaty,
+} from '@/lib/import/validators';
 import { createLogger } from '@/lib/logger';
 import {
   getUniqueApartments,
@@ -33,6 +39,7 @@ export type { BatchImportResult, HOAImportResult, ImportError };
 
 export interface ImportOptions {
   cleanImport?: boolean;
+  skipValidation?: boolean;
 }
 
 async function importSingleHOA(
@@ -46,9 +53,16 @@ async function importSingleHOA(
     errors: [],
   };
 
-  const { lokFile, chargesFile, notificationsFile, paymentsFile } = fileGroup;
+  const {
+    lokFile,
+    chargesFile,
+    notificationsFile,
+    paymentsFile,
+    apartmentsWmbFile,
+    chargesWmbFile,
+    notificationsWmbFile,
+  } = fileGroup;
 
-  // Check if at least one file is present
   if (!lokFile && !chargesFile && !notificationsFile && !paymentsFile) {
     result.errors.push(`Brak plików do importu dla wspólnoty ${hoaId}.`);
     return result;
@@ -89,22 +103,68 @@ async function importSingleHOA(
       result.payments.total = paymentData.entries.length;
     }
 
+    // Parse WMB dates
+    result.apartmentsDataDate = apartmentsWmbFile
+      ? await parseWmbDate(await parseFileToBuffer(apartmentsWmbFile))
+      : undefined;
+    result.chargesDataDate = chargesWmbFile
+      ? await parseWmbDate(await parseFileToBuffer(chargesWmbFile))
+      : undefined;
+    result.notificationsDataDate = notificationsWmbFile
+      ? await parseWmbDate(await parseFileToBuffer(notificationsWmbFile))
+      : undefined;
+
+    // Validate before entering transaction
+    if (chargeEntries && !options.skipValidation) {
+      const nalErrors = validateNalCzynsz(chargeEntries);
+      if (nalErrors.length > 0) {
+        result.errors.push(...nalErrors);
+        return result;
+      }
+    }
+
+    if (paymentData && !options.skipValidation) {
+      const wplatyErrors = validateWplaty(paymentData.entries);
+      if (wplatyErrors.length > 0) {
+        result.errors.push(...wplatyErrors);
+        return result;
+      }
+    }
+
+    if (chargeEntries && paymentData && !options.skipValidation) {
+      const crossErrors = validateChargesCrossFile(
+        chargeEntries,
+        paymentData.entries
+      );
+      if (crossErrors.length > 0) {
+        result.errors.push(...crossErrors);
+        return result;
+      }
+    }
+
     // Execute all database operations in a single transaction
-    // Increase timeout to 30s for large imports
     await (prisma as PrismaClient).$transaction(
       async (tx: TransactionClient) => {
-        // Upsert HOA
+        // Upsert HOA and update WMB dates
         const hoa = await tx.homeownersAssociation.upsert({
           where: { externalId: hoaId },
           create: { externalId: hoaId, name: hoaId },
-          update: {},
+          update: {
+            ...(result.apartmentsDataDate !== undefined && {
+              apartmentsDataDate: result.apartmentsDataDate,
+            }),
+            ...(result.chargesDataDate !== undefined && {
+              chargesDataDate: result.chargesDataDate,
+            }),
+            ...(result.notificationsDataDate !== undefined && {
+              notificationsDataDate: result.notificationsDataDate,
+            }),
+          },
         });
 
-        // If clean import, delete all existing charges, notifications, and payments for this HOA
         if (options.cleanImport) {
           logger.info({ hoaId }, 'Clean import: deleting existing data');
 
-          // Get all apartment IDs for this HOA
           const apartmentIds = await tx.apartment.findMany({
             where: { homeownersAssociationId: hoa.id },
             select: { id: true },
@@ -112,19 +172,14 @@ async function importSingleHOA(
           const ids = apartmentIds.map((a: { id: string }) => a.id);
 
           if (ids.length > 0) {
-            // Delete charges
             const deletedCharges = await tx.charge.deleteMany({
               where: { apartmentId: { in: ids } },
             });
-
-            // Delete notifications
             const deletedNotifications = await tx.chargeNotification.deleteMany(
               {
                 where: { apartmentId: { in: ids } },
               }
             );
-
-            // Delete payments
             const deletedPayments = await tx.payment.deleteMany({
               where: { apartmentId: { in: ids } },
             });
@@ -141,7 +196,6 @@ async function importSingleHOA(
           }
         }
 
-        // Process apartments
         const { map: apartmentMap } = await importApartments(
           tx,
           hoa,
@@ -150,7 +204,6 @@ async function importSingleHOA(
           result.errors
         );
 
-        // Process charges
         if (chargeEntries && result.charges) {
           await importCharges(
             tx,
@@ -161,19 +214,17 @@ async function importSingleHOA(
           );
         }
 
-        // Process notifications
         if (notificationData && result.notifications) {
           await importNotifications(
             tx,
             hoa,
             apartmentMap,
-            notificationData.entries,
+            notificationData,
             result.notifications,
             result.errors
           );
         }
 
-        // Process payments
         if (paymentData && result.payments) {
           await importPayments(
             tx,
@@ -236,7 +287,6 @@ export async function processBatchImport(
 
   const results = await Promise.all(hoaImportPromises);
 
-  // Collect HOA-level errors into batch errors
   for (const result of results) {
     if (result.errors.length > 0 && result.apartments.total === 0) {
       errors.push({ hoaId: result.hoaId, error: result.errors.join('; ') });

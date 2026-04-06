@@ -2,7 +2,7 @@ import { FileText } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
 import { auth } from '@/auth';
-import { MultiApartmentPeriodCard } from '@/components/charges/multi-apartment-period-card';
+import { MultiChargesDisplay } from '@/components/charges/multi-charges-display';
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
 import { DownloadChargesPdfButton } from '@/components/pdf/download-charges-pdf-button';
@@ -31,7 +31,7 @@ export default async function ChargesPage() {
     redirect('/dashboard');
   }
 
-  const chargesByPeriod = new Map<string, ApartmentPeriodData[]>();
+  const chargesByPeriod: Record<string, ApartmentPeriodData[]> = {};
 
   userData.apartments.forEach(
     (apartment: (typeof userData.apartments)[number]) => {
@@ -42,11 +42,11 @@ export default async function ChargesPage() {
 
       apartment.charges.forEach(
         (charge: (typeof apartment.charges)[number]) => {
-          if (!chargesByPeriod.has(charge.period)) {
-            chargesByPeriod.set(charge.period, []);
+          if (!chargesByPeriod[charge.period]) {
+            chargesByPeriod[charge.period] = [];
           }
 
-          const periodData = chargesByPeriod.get(charge.period)!;
+          const periodData = chargesByPeriod[charge.period];
           let apartmentData = periodData.find(
             (a) => a.apartmentNumber === apartment.number
           );
@@ -77,7 +77,7 @@ export default async function ChargesPage() {
   );
 
   // Attach PDF download buttons per apartment per period
-  for (const [period, periodData] of chargesByPeriod.entries()) {
+  for (const [period, periodData] of Object.entries(chargesByPeriod)) {
     for (const apartmentData of periodData) {
       apartmentData.action = (
         <DownloadChargesPdfButton
@@ -97,7 +97,7 @@ export default async function ChargesPage() {
     }
   }
 
-  const periods = Array.from(chargesByPeriod.keys()).sort().reverse();
+  const periods = Object.keys(chargesByPeriod).sort().reverse();
 
   return (
     <Page>
@@ -116,29 +116,10 @@ export default async function ChargesPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-6">
-          {periods.map((period) => {
-            const periodData = chargesByPeriod.get(period)!;
-            const totalPeriodAmount = periodData.reduce(
-              (sum, apt) =>
-                sum +
-                apt.charges.reduce(
-                  (aptSum, charge) => aptSum + charge.totalAmount,
-                  0
-                ),
-              0
-            );
-
-            return (
-              <MultiApartmentPeriodCard
-                key={period}
-                period={period}
-                apartmentsData={periodData}
-                totalAmount={totalPeriodAmount}
-              />
-            );
-          })}
-        </div>
+        <MultiChargesDisplay
+          periods={periods}
+          chargesByPeriod={chargesByPeriod}
+        />
       )}
     </Page>
   );

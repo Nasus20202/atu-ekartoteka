@@ -12,6 +12,8 @@ describe('PaymentsCard', () => {
     dateTo: new Date('2024-12-31'),
     openingBalance: 100.0,
     closingBalance: -500.0,
+    openingDebt: 0,
+    openingSurplus: 0,
     januaryPayments: 500.0,
     februaryPayments: 500.0,
     marchPayments: 500.0,

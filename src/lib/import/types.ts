@@ -7,6 +7,10 @@ export interface ImportFileGroup {
   chargesFile?: File;
   notificationsFile?: File;
   paymentsFile?: File;
+  // Per-data-type WMB snapshot date files
+  apartmentsWmbFile?: File;
+  chargesWmbFile?: File;
+  notificationsWmbFile?: File;
 }
 
 export interface EntityStats {
@@ -24,6 +28,10 @@ export interface HOAImportResult {
   notifications?: EntityStats;
   payments?: EntityStats;
   errors: string[];
+  // Data-as-of dates from WMB files
+  apartmentsDataDate?: Date;
+  chargesDataDate?: Date;
+  notificationsDataDate?: Date;
 }
 
 export interface ImportError {

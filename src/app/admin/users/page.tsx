@@ -49,7 +49,10 @@ export default function AdminUsersPage() {
   const [filter, setFilter] = useState<'ALL' | AccountStatus>(
     AccountStatus.PENDING
   );
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [userSearch, setUserSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedApartments, setSelectedApartments] = useState<string[]>([]);
   const [apartmentSearch, setApartmentSearch] = useState('');
@@ -72,19 +75,24 @@ export default function AdminUsersPage() {
       if (filter !== 'ALL') {
         params.append('status', filter);
       }
+      params.append('page', String(page));
+      if (debouncedSearch) {
+        params.append('search', debouncedSearch);
+      }
 
       const response = await fetch(`/api/admin/users?${params}`);
       const data = await response.json();
 
       if (response.ok) {
         setUsers(data.users);
+        setTotalPages(data.pagination?.totalPages ?? 1);
       }
     } catch (error) {
       console.error('Failed to fetch users:', error);
     } finally {
       setLoading(false);
     }
-  }, [filter]);
+  }, [filter, page, debouncedSearch]);
 
   const fetchApartments = useCallback(async () => {
     try {
@@ -137,6 +145,14 @@ export default function AdminUsersPage() {
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(userSearch);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [userSearch]);
 
   useEffect(() => {
     if (selectedUser) {
@@ -275,10 +291,15 @@ export default function AdminUsersPage() {
 
       // Then sort by building and number
       const buildingCompare = (a.building || '').localeCompare(
-        b.building || ''
+        b.building || '',
+        undefined,
+        { numeric: true, sensitivity: 'base' }
       );
       if (buildingCompare !== 0) return buildingCompare;
-      return (a.number || '').localeCompare(b.number || '');
+      return (a.number || '').localeCompare(b.number || '', undefined, {
+        numeric: true,
+        sensitivity: 'base',
+      });
     });
 
   const getStatusBadge = (status: AccountStatus) => {
@@ -308,22 +329,6 @@ export default function AdminUsersPage() {
         return null;
     }
   };
-
-  const filteredUsers = users.filter((user) => {
-    if (userSearch === '') return true;
-
-    const searchLower = userSearch.toLowerCase();
-    const nameMatch = user.name?.toLowerCase().includes(searchLower);
-    const emailMatch = user.email?.toLowerCase().includes(searchLower);
-    const apartmentMatch = user.apartments?.some(
-      (apt) =>
-        apt.number.toLowerCase().includes(searchLower) ||
-        apt.address?.toLowerCase().includes(searchLower) ||
-        apt.owner?.toLowerCase().includes(searchLower)
-    );
-
-    return nameMatch || emailMatch || apartmentMatch;
-  });
 
   const pendingCount = users.filter(
     (u) => u.status === AccountStatus.PENDING
@@ -394,14 +399,20 @@ export default function AdminUsersPage() {
       <div className="mb-6 flex flex-wrap gap-2">
         <Button
           variant={filter === 'ALL' ? 'default' : 'outline'}
-          onClick={() => setFilter('ALL')}
+          onClick={() => {
+            setFilter('ALL');
+            setPage(1);
+          }}
           size="sm"
         >
           Wszyscy
         </Button>
         <Button
           variant={filter === AccountStatus.PENDING ? 'default' : 'outline'}
-          onClick={() => setFilter(AccountStatus.PENDING)}
+          onClick={() => {
+            setFilter(AccountStatus.PENDING);
+            setPage(1);
+          }}
           size="sm"
         >
           <Clock className="mr-1 h-4 w-4" />
@@ -409,7 +420,10 @@ export default function AdminUsersPage() {
         </Button>
         <Button
           variant={filter === AccountStatus.APPROVED ? 'default' : 'outline'}
-          onClick={() => setFilter(AccountStatus.APPROVED)}
+          onClick={() => {
+            setFilter(AccountStatus.APPROVED);
+            setPage(1);
+          }}
           size="sm"
         >
           <Check className="mr-1 h-4 w-4" />
@@ -417,7 +431,10 @@ export default function AdminUsersPage() {
         </Button>
         <Button
           variant={filter === AccountStatus.REJECTED ? 'default' : 'outline'}
-          onClick={() => setFilter(AccountStatus.REJECTED)}
+          onClick={() => {
+            setFilter(AccountStatus.REJECTED);
+            setPage(1);
+          }}
           size="sm"
         >
           <X className="mr-1 h-4 w-4" />
@@ -427,7 +444,7 @@ export default function AdminUsersPage() {
 
       {loading ? (
         <LoadingCard />
-      ) : filteredUsers.length === 0 ? (
+      ) : users.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <AlertCircle className="mb-4 h-12 w-12 text-muted-foreground" />
@@ -443,7 +460,7 @@ export default function AdminUsersPage() {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {filteredUsers.map((user) => (
+          {users.map((user) => (
             <Card key={user.id}>
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -469,25 +486,42 @@ export default function AdminUsersPage() {
               <CardContent>
                 {user.apartments && user.apartments.length > 0 && (
                   <div className="mb-4 rounded-lg bg-muted p-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="mb-1 text-sm font-medium">
-                          Przypisane mieszkania: {user.apartments.length}
-                        </p>
-                        <div className="space-y-2">
-                          {user.apartments.map((apartment) => (
-                            <p
-                              key={apartment.id}
-                              className="text-sm text-muted-foreground"
-                            >
+                    <p className="mb-2 text-sm font-medium">
+                      Przypisane mieszkania: {user.apartments.length}
+                    </p>
+                    <div className="space-y-1">
+                      {user.apartments.map((apartment) => {
+                        const sharePercent =
+                          apartment.shareNumerator != null &&
+                          apartment.shareDenominator != null &&
+                          apartment.shareDenominator > 0
+                            ? (
+                                (apartment.shareNumerator /
+                                  apartment.shareDenominator) *
+                                100
+                              ).toFixed(1) + '%'
+                            : null;
+                        return (
+                          <div
+                            key={apartment.id}
+                            className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-muted-foreground"
+                          >
+                            <span className="font-medium text-foreground">
                               {apartment.address} {apartment.building}/
                               {apartment.number}
-                              <br />
+                            </span>
+                            <span>
                               {apartment.postalCode} {apartment.city}
-                            </p>
-                          ))}
-                        </div>
-                      </div>
+                            </span>
+                            {sharePercent && <span>{sharePercent}</span>}
+                            {!apartment.isActive && (
+                              <span className="inline-flex items-center rounded-full bg-background px-2 py-0.5 text-xs font-medium">
+                                Nieaktywny
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -642,9 +676,34 @@ export default function AdminUsersPage() {
         </div>
       )}
 
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-4 flex items-center justify-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page <= 1 || loading}
+          >
+            Poprzednia
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Strona {page} z {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page >= totalPages || loading}
+          >
+            Następna
+          </Button>
+        </div>
+      )}
+
       {selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <Card className="max-h-[80vh] w-full max-w-2xl overflow-auto">
+        <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <Card className="animate-scale-in max-h-[80vh] w-full max-w-2xl overflow-auto">
             <CardHeader>
               <CardTitle>
                 {editMode === 'approve' && 'Zatwierdź konto'}
@@ -888,8 +947,8 @@ export default function AdminUsersPage() {
 
       {/* Create User Dialog */}
       {editMode === 'create-user' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <Card className="w-full max-w-md">
+        <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <Card className="animate-scale-in w-full max-w-md">
             <CardHeader>
               <CardTitle>Dodaj nowego użytkownika</CardTitle>
               <CardDescription>

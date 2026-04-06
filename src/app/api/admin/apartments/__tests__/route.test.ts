@@ -492,5 +492,73 @@ describe('Admin Apartments API', () => {
       expect(data.apartments).toHaveLength(2);
       expect(data.apartments[0].building).toBe('A');
     });
+
+    it('should filter by slash-search (building/number)', async () => {
+      mockAuth.mockResolvedValueOnce({
+        user: {
+          id: 'admin-id',
+          email: 'admin@example.com',
+          role: UserRole.ADMIN,
+        },
+        expires: new Date().toISOString(),
+      });
+      mockApartmentFindMany.mockResolvedValueOnce([mockApartments[0]]);
+      mockApartmentCount.mockResolvedValueOnce(1);
+      mockHoaFindUnique.mockResolvedValueOnce(null);
+
+      const { GET } = await import('../route');
+      const request = createMockRequest({ search: 'A/101' });
+
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(mockApartmentFindMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            AND: expect.arrayContaining([
+              expect.objectContaining({
+                AND: [
+                  { building: { contains: 'A', mode: 'insensitive' } },
+                  { number: { contains: '101', mode: 'insensitive' } },
+                ],
+              }),
+            ]),
+          }),
+        })
+      );
+      expect(data.apartments).toHaveLength(1);
+    });
+
+    it('should handle slash-search with only building part', async () => {
+      mockAuth.mockResolvedValueOnce({
+        user: {
+          id: 'admin-id',
+          email: 'admin@example.com',
+          role: UserRole.ADMIN,
+        },
+        expires: new Date().toISOString(),
+      });
+      mockApartmentFindMany.mockResolvedValueOnce(mockApartments);
+      mockApartmentCount.mockResolvedValueOnce(2);
+      mockHoaFindUnique.mockResolvedValueOnce(null);
+
+      const { GET } = await import('../route');
+      const request = createMockRequest({ search: 'A/' });
+
+      await GET(request);
+
+      expect(mockApartmentFindMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            AND: expect.arrayContaining([
+              expect.objectContaining({
+                AND: [{ building: { contains: 'A', mode: 'insensitive' } }, {}],
+              }),
+            ]),
+          }),
+        })
+      );
+    });
   });
 });

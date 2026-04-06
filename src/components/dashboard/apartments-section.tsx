@@ -18,6 +18,7 @@ type ApartmentCardData = Pick<
 > & {
   payments?: Pick<Payment, 'closingBalance' | 'year'>[];
   charges?: Array<{ id: string }>;
+  homeownersAssociation?: { id: string; header: string | null } | null;
 };
 
 interface ApartmentsSectionProps {
@@ -27,11 +28,7 @@ interface ApartmentsSectionProps {
 export function ApartmentsSection({ apartments }: ApartmentsSectionProps) {
   const apartmentCount = apartments.length;
   const title =
-    apartmentCount === 0
-      ? 'Mieszkanie'
-      : apartmentCount === 1
-        ? 'Mieszkanie'
-        : `Mieszkania (${apartmentCount})`;
+    apartmentCount <= 1 ? 'Mieszkanie' : `Mieszkania (${apartmentCount})`;
 
   return (
     <Card>

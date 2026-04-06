@@ -10,10 +10,12 @@ import { MONTH_NAMES_PL } from '@/lib/utils';
 
 interface ChargeNotificationsCardProps {
   notifications: ChargeNotification[];
+  hoaHeader?: string | null;
 }
 
 export const ChargeNotificationsCard = ({
   notifications,
+  hoaHeader,
 }: ChargeNotificationsCardProps) => {
   if (notifications.length === 0) {
     return null;
@@ -31,6 +33,12 @@ export const ChargeNotificationsCard = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
+          {hoaHeader && (
+            <p className="text-sm text-muted-foreground whitespace-pre-line">
+              {hoaHeader}
+            </p>
+          )}
+
           <div className="space-y-2">
             {notifications.map((notification) => (
               <div

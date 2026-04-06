@@ -16,6 +16,9 @@ export function findUserWithApartments(id: string) {
           chargeNotifications: {
             orderBy: { lineNo: 'asc' },
           },
+          homeownersAssociation: {
+            select: { id: true, name: true, header: true },
+          },
           payments: {
             orderBy: { year: 'desc' },
             take: 1,
