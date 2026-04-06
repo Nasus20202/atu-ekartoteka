@@ -4,6 +4,7 @@ import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
 import { CheckCircle, Loader2, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import { useEffect, useRef, useState } from 'react';
 
 import { AuthLayout } from '@/components/auth-layout';
@@ -103,13 +104,23 @@ export default function RegisterPage() {
       }
 
       setSuccess(true);
+      const loginResult = await signIn('credentials', {
+        email: formData.email,
+        password: formData.password,
+        turnstileToken,
+        redirect: false,
+      });
 
-      // Don't auto-login - redirect to login page for manual login
-      // This is more secure and avoids turnstile token reuse issues
-      setTimeout(() => {
-        router.push('/login?registered=true');
-      }, 2000);
+      if (loginResult?.error) {
+        throw new Error(
+          'Konto utworzone, ale nie udało się zalogować automatycznie. Zaloguj się ręcznie.'
+        );
+      }
+
+      router.push('/dashboard');
+      router.refresh();
     } catch (err) {
+      setSuccess(false);
       setError(err instanceof Error ? err.message : 'Wystąpił błąd');
     } finally {
       setLoading(false);
@@ -146,7 +157,7 @@ export default function RegisterPage() {
         }
       >
         <p className="text-center text-sm text-muted-foreground">
-          Przekierowanie do strony logowania...
+          Trwa automatyczne logowanie...
         </p>
       </AuthLayout>
     );

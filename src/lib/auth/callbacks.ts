@@ -87,8 +87,6 @@ export const callbacks: NextAuthConfig['callbacks'] = {
 
           user.id = newUser.id;
           (user as ExtendedUser).role = newUser.role;
-          (user as ExtendedUser).status = newUser.status;
-          (user as ExtendedUser).emailVerified = newUser.emailVerified;
           (user as ExtendedUser).mustChangePassword =
             newUser.mustChangePassword;
 
@@ -99,8 +97,6 @@ export const callbacks: NextAuthConfig['callbacks'] = {
 
         user.id = existingUser.id;
         (user as ExtendedUser).role = existingUser.role;
-        (user as ExtendedUser).status = existingUser.status;
-        (user as ExtendedUser).emailVerified = existingUser.emailVerified;
         (user as ExtendedUser).mustChangePassword =
           existingUser.mustChangePassword;
 

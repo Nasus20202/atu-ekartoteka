@@ -8,7 +8,7 @@ import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
 import { authMetrics } from '@/lib/opentelemetry/auth-metrics';
 import { isTurnstileEnabled, verifyTurnstileToken } from '@/lib/turnstile';
-import { AccountStatus, UserRole } from '@/lib/types';
+import { UserRole } from '@/lib/types';
 
 const logger = createLogger('auth:providers');
 
@@ -107,8 +107,6 @@ export async function credentialsAuthorize(
     email: user.email,
     name: user.name,
     role: user.role as UserRole,
-    status: user.status as AccountStatus,
-    emailVerified: user.emailVerified,
     mustChangePassword: user.mustChangePassword,
   };
 }

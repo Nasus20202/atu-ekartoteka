@@ -56,13 +56,13 @@ The system SHALL allow new users to self-register with email and password.
 
 - **GIVEN** no user exists with the provided email
 - **WHEN** a user submits a valid email, password (min 8 chars), and optional name
-- **THEN** an account is created with status `PENDING`, role `TENANT`, a verification email is sent, and admins are notified
+- **THEN** an account is created with status `PENDING`, role `TENANT`, a verification email is sent, admins are notified, and the user is automatically signed in
 
 #### Scenario: First admin registration
 
 - **GIVEN** no admin user exists in the system
 - **WHEN** the setup check passes and a registration is submitted with `isFirstAdmin: true`
-- **THEN** an account is created with role `ADMIN`, status `APPROVED`, `emailVerified: true`, and no notification is sent
+- **THEN** an account is created with role `ADMIN`, status `APPROVED`, `emailVerified: true`, no notification is sent, and the user is automatically signed in
 
 #### Scenario: Duplicate email
 

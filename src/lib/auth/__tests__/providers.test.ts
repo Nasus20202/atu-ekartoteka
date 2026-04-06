@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockUser, mockUsers } from '@/__tests__/fixtures';
 import { buildProviders, credentialsAuthorize } from '@/lib/auth/providers';
 import { prisma } from '@/lib/database/prisma';
-import { AccountStatus, UserRole } from '@/lib/types';
+import { UserRole } from '@/lib/types';
 
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
@@ -137,7 +137,6 @@ describe('credentialsAuthorize', () => {
         email: 'test@example.com',
         name: 'Test User',
         role: UserRole.TENANT,
-        status: AccountStatus.APPROVED,
         mustChangePassword: false,
       });
     });
