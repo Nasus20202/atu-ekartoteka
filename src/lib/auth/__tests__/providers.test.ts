@@ -26,6 +26,10 @@ vi.mock('@/lib/turnstile', () => ({
   verifyTurnstileToken: vi.fn(),
 }));
 
+vi.mock('@/lib/auth/registration-auto-login-token', () => ({
+  verifyRegistrationAutoLoginToken: vi.fn(() => false),
+}));
+
 vi.mock('@/lib/opentelemetry/auth-metrics', () => ({
   authMetrics: {
     recordLogin: vi.fn(),
@@ -64,6 +68,33 @@ describe('credentialsAuthorize', () => {
     it('returns null when credentials are undefined', async () => {
       const result = await credentialsAuthorize(undefined);
       expect(result).toBeNull();
+    });
+  });
+
+  describe('turnstile bypass for registration auto-login', () => {
+    it('allows login with valid auto-login bypass token when turnstile is enabled', async () => {
+      const { isTurnstileEnabled, verifyTurnstileToken } =
+        await import('@/lib/turnstile');
+      const { verifyRegistrationAutoLoginToken } =
+        await import('@/lib/auth/registration-auto-login-token');
+      vi.mocked(isTurnstileEnabled).mockReturnValue(true);
+      vi.mocked(verifyRegistrationAutoLoginToken).mockReturnValue(true);
+
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUsers.tenant);
+      vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
+
+      const result = await credentialsAuthorize({
+        email: 'test@example.com',
+        password: 'correct',
+        autoLoginBypassToken: 'valid-bypass',
+      });
+
+      expect(result).not.toBeNull();
+      expect(verifyTurnstileToken).not.toHaveBeenCalled();
+      expect(verifyRegistrationAutoLoginToken).toHaveBeenCalledWith(
+        'valid-bypass',
+        'test@example.com'
+      );
     });
   });
 

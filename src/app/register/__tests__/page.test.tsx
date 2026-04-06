@@ -50,7 +50,7 @@ describe('RegisterPage', () => {
       if (String(url).includes('/api/register')) {
         return Promise.resolve({
           ok: true,
-          json: async () => ({ message: 'ok' }),
+          json: async () => ({ message: 'ok', autoLoginToken: 'token-123' }),
         } as Response);
       }
 
@@ -79,7 +79,7 @@ describe('RegisterPage', () => {
       expect(signIn).toHaveBeenCalledWith('credentials', {
         email: 'new@example.com',
         password: 'password123',
-        turnstileToken: null,
+        autoLoginBypassToken: 'token-123',
         redirect: false,
       });
     });

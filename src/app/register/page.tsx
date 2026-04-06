@@ -107,7 +107,7 @@ export default function RegisterPage() {
       const loginResult = await signIn('credentials', {
         email: formData.email,
         password: formData.password,
-        turnstileToken,
+        autoLoginBypassToken: data.autoLoginToken ?? undefined,
         redirect: false,
       });
 

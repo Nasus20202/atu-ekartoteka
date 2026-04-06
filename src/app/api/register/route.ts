@@ -1,6 +1,7 @@
 import { hash } from 'bcryptjs';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { createRegistrationAutoLoginToken } from '@/lib/auth/registration-auto-login-token';
 import { prisma } from '@/lib/database/prisma';
 import { getEmailService } from '@/lib/email/email-service';
 import {
@@ -182,6 +183,7 @@ export async function POST(req: NextRequest) {
     );
 
     authMetrics.recordRegistration('credentials', 'success');
+    const autoLoginToken = createRegistrationAutoLoginToken(user.email);
 
     return NextResponse.json(
       {
@@ -190,6 +192,7 @@ export async function POST(req: NextRequest) {
           : 'Konto utworzone pomyślnie. Sprawdź swoją skrzynkę email, aby potwierdzić adres.',
         user,
         requiresVerification: !isFirstAdmin,
+        autoLoginToken,
       },
       { status: 201 }
     );
