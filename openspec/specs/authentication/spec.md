@@ -56,13 +56,13 @@ The system SHALL allow new users to self-register with email and password.
 
 - **GIVEN** no user exists with the provided email
 - **WHEN** a user submits a valid email, password (min 8 chars), and optional name
-- **THEN** an account is created with status `PENDING`, role `TENANT`, a verification email is sent, and admins are notified
+- **THEN** an account is created with status `PENDING`, role `TENANT`, a verification email is sent, admins are notified, and the user is automatically signed in
 
 #### Scenario: First admin registration
 
 - **GIVEN** no admin user exists in the system
 - **WHEN** the setup check passes and a registration is submitted with `isFirstAdmin: true`
-- **THEN** an account is created with role `ADMIN`, status `APPROVED`, `emailVerified: true`, and no notification is sent
+- **THEN** an account is created with role `ADMIN`, status `APPROVED`, `emailVerified: true`, no notification is sent, and the user is automatically signed in
 
 #### Scenario: Duplicate email
 
@@ -122,13 +122,13 @@ The system SHALL allow users to reset a forgotten password via email.
 
 ### Requirement: Session Management
 
-The system SHALL use JWT-based sessions that include user role, status, email verification state, and forced password change flag.
+The system SHALL use JWT-based sessions where the JWT stores only authorization-critical claims (`id`, `role`, `mustChangePassword`) and those claims are exposed on `session.user`.
 
 #### Scenario: Session token refresh
 
 - **GIVEN** an active session
 - **WHEN** the session `update` trigger fires
-- **THEN** the JWT is refreshed with the latest `role`, `status`, `emailVerified`, and `mustChangePassword` values from the database
+- **THEN** the JWT is refreshed with the latest `role` and `mustChangePassword` values from the database
 
 #### Scenario: Unauthenticated access
 

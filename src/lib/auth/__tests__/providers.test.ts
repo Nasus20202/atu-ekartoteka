@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockUser, mockUsers } from '@/__tests__/fixtures';
 import { buildProviders, credentialsAuthorize } from '@/lib/auth/providers';
 import { prisma } from '@/lib/database/prisma';
-import { AccountStatus, UserRole } from '@/lib/types';
+import { UserRole } from '@/lib/types';
 
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
@@ -26,6 +26,10 @@ vi.mock('@/lib/turnstile', () => ({
   verifyTurnstileToken: vi.fn(),
 }));
 
+vi.mock('@/lib/auth/registration-auto-login-token', () => ({
+  verifyRegistrationAutoLoginToken: vi.fn(() => false),
+}));
+
 vi.mock('@/lib/opentelemetry/auth-metrics', () => ({
   authMetrics: {
     recordLogin: vi.fn(),
@@ -43,8 +47,13 @@ vi.mock('@/lib/logger', () => ({
 }));
 
 describe('credentialsAuthorize', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    const { isTurnstileEnabled } = await import('@/lib/turnstile');
+    const { verifyRegistrationAutoLoginToken } =
+      await import('@/lib/auth/registration-auto-login-token');
+    vi.mocked(isTurnstileEnabled).mockReturnValue(false);
+    vi.mocked(verifyRegistrationAutoLoginToken).mockReturnValue(false);
   });
 
   describe('input validation', () => {
@@ -64,6 +73,60 @@ describe('credentialsAuthorize', () => {
     it('returns null when credentials are undefined', async () => {
       const result = await credentialsAuthorize(undefined);
       expect(result).toBeNull();
+    });
+  });
+
+  describe('turnstile bypass for registration auto-login', () => {
+    it('allows login with valid auto-login bypass token when turnstile is enabled', async () => {
+      const { isTurnstileEnabled, verifyTurnstileToken } =
+        await import('@/lib/turnstile');
+      const { verifyRegistrationAutoLoginToken } =
+        await import('@/lib/auth/registration-auto-login-token');
+      vi.mocked(isTurnstileEnabled).mockReturnValue(true);
+      vi.mocked(verifyRegistrationAutoLoginToken).mockReturnValue(true);
+
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUsers.tenant);
+      vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
+
+      const result = await credentialsAuthorize({
+        email: 'test@example.com',
+        password: 'correct',
+        autoLoginBypassToken: 'valid-bypass',
+      });
+
+      expect(result).not.toBeNull();
+      expect(verifyTurnstileToken).not.toHaveBeenCalled();
+      expect(verifyRegistrationAutoLoginToken).toHaveBeenCalledWith(
+        'valid-bypass',
+        'test@example.com'
+      );
+    });
+
+    it('uses Turnstile validation when bypass token is invalid', async () => {
+      const { isTurnstileEnabled, verifyTurnstileToken } =
+        await import('@/lib/turnstile');
+      const { verifyRegistrationAutoLoginToken } =
+        await import('@/lib/auth/registration-auto-login-token');
+
+      vi.mocked(isTurnstileEnabled).mockReturnValue(true);
+      vi.mocked(verifyRegistrationAutoLoginToken).mockReturnValue(false);
+      vi.mocked(verifyTurnstileToken).mockResolvedValue(true as never);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUsers.tenant);
+      vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
+
+      const result = await credentialsAuthorize({
+        email: 'test@example.com',
+        password: 'correct',
+        autoLoginBypassToken: 'invalid-bypass',
+        turnstileToken: 'turnstile-token',
+      });
+
+      expect(result).not.toBeNull();
+      expect(verifyRegistrationAutoLoginToken).toHaveBeenCalledWith(
+        'invalid-bypass',
+        'test@example.com'
+      );
+      expect(verifyTurnstileToken).toHaveBeenCalledWith('turnstile-token');
     });
   });
 
@@ -137,7 +200,6 @@ describe('credentialsAuthorize', () => {
         email: 'test@example.com',
         name: 'Test User',
         role: UserRole.TENANT,
-        status: AccountStatus.APPROVED,
         mustChangePassword: false,
       });
     });

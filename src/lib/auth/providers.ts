@@ -4,11 +4,12 @@ import type { Provider } from 'next-auth/providers';
 import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
 
+import { verifyRegistrationAutoLoginToken } from '@/lib/auth/registration-auto-login-token';
 import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
 import { authMetrics } from '@/lib/opentelemetry/auth-metrics';
 import { isTurnstileEnabled, verifyTurnstileToken } from '@/lib/turnstile';
-import { AccountStatus, UserRole } from '@/lib/types';
+import { UserRole } from '@/lib/types';
 
 const logger = createLogger('auth:providers');
 
@@ -31,25 +32,38 @@ export async function credentialsAuthorize(
   }
 
   if (isTurnstileEnabled()) {
-    if (!credentials.turnstileToken) {
+    const autoLoginBypassToken = credentials.autoLoginBypassToken as
+      | string
+      | undefined;
+    const isAutoLoginBypassValid = verifyRegistrationAutoLoginToken(
+      autoLoginBypassToken,
+      credentials.email as string
+    );
+
+    if (isAutoLoginBypassValid) {
+      logger.info(
+        { email: credentials.email },
+        'Login Turnstile bypass accepted for post-registration auto-login'
+      );
+    } else if (!credentials.turnstileToken) {
       logger.warn(
         { email: credentials.email },
         'Login attempt failed: missing Turnstile token'
       );
       authMetrics.recordLogin('credentials', 'failure', 'missing_turnstile');
       return null;
-    }
-
-    const valid = await verifyTurnstileToken(
-      credentials.turnstileToken as string
-    );
-    if (!valid) {
-      logger.warn(
-        { email: credentials.email },
-        'Login attempt failed: invalid Turnstile token'
+    } else {
+      const valid = await verifyTurnstileToken(
+        credentials.turnstileToken as string
       );
-      authMetrics.recordLogin('credentials', 'failure', 'invalid_turnstile');
-      return null;
+      if (!valid) {
+        logger.warn(
+          { email: credentials.email },
+          'Login attempt failed: invalid Turnstile token'
+        );
+        authMetrics.recordLogin('credentials', 'failure', 'invalid_turnstile');
+        return null;
+      }
     }
   }
 
@@ -107,8 +121,6 @@ export async function credentialsAuthorize(
     email: user.email,
     name: user.name,
     role: user.role as UserRole,
-    status: user.status as AccountStatus,
-    emailVerified: user.emailVerified,
     mustChangePassword: user.mustChangePassword,
   };
 }
@@ -120,6 +132,7 @@ const credentialsProvider = Credentials({
     email: { label: 'Email', type: 'email' },
     password: { label: 'Hasło', type: 'password' },
     turnstileToken: { label: 'Turnstile Token', type: 'text' },
+    autoLoginBypassToken: { label: 'Auto Login Bypass Token', type: 'text' },
   },
   authorize: credentialsAuthorize,
 });

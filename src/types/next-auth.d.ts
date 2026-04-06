@@ -7,16 +7,13 @@ declare module 'next-auth' {
     user: {
       id: string;
       role: string;
-      status: string;
       mustChangePassword: boolean;
     } & DefaultSession['user'];
   }
 
   interface User {
     role: UserRole;
-    status: string;
     mustChangePassword: boolean;
-    emailVerified: boolean;
   }
 }
 
