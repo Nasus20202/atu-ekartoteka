@@ -6,25 +6,11 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { ChargeNotification } from '@/lib/types';
+import { MONTH_NAMES_PL } from '@/lib/utils';
 
 interface ChargeNotificationsCardProps {
   notifications: ChargeNotification[];
 }
-
-const MONTH_NAMES_PL = [
-  'Styczeń',
-  'Luty',
-  'Marzec',
-  'Kwiecień',
-  'Maj',
-  'Czerwiec',
-  'Lipiec',
-  'Sierpień',
-  'Wrzesień',
-  'Październik',
-  'Listopad',
-  'Grudzień',
-];
 
 export const ChargeNotificationsCard = ({
   notifications,

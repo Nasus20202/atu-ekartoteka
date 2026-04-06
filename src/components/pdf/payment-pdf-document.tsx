@@ -8,23 +8,9 @@ import {
 } from '@/components/pdf/primitives';
 import { registerPdfFonts } from '@/lib/pdf/register-fonts';
 import type { Payment } from '@/lib/types';
+import { MONTH_NAMES_PL } from '@/lib/utils';
 
 registerPdfFonts();
-
-const MONTH_NAMES: string[] = [
-  'Styczeń',
-  'Luty',
-  'Marzec',
-  'Kwiecień',
-  'Maj',
-  'Czerwiec',
-  'Lipiec',
-  'Sierpień',
-  'Wrzesień',
-  'Październik',
-  'Listopad',
-  'Grudzień',
-];
 
 interface MonthRow {
   name: string;
@@ -35,62 +21,62 @@ interface MonthRow {
 function buildMonthlyRows(payment: Payment): MonthRow[] {
   return [
     {
-      name: MONTH_NAMES[0],
+      name: MONTH_NAMES_PL[0],
       payments: payment.januaryPayments,
       charges: payment.januaryCharges,
     },
     {
-      name: MONTH_NAMES[1],
+      name: MONTH_NAMES_PL[1],
       payments: payment.februaryPayments,
       charges: payment.februaryCharges,
     },
     {
-      name: MONTH_NAMES[2],
+      name: MONTH_NAMES_PL[2],
       payments: payment.marchPayments,
       charges: payment.marchCharges,
     },
     {
-      name: MONTH_NAMES[3],
+      name: MONTH_NAMES_PL[3],
       payments: payment.aprilPayments,
       charges: payment.aprilCharges,
     },
     {
-      name: MONTH_NAMES[4],
+      name: MONTH_NAMES_PL[4],
       payments: payment.mayPayments,
       charges: payment.mayCharges,
     },
     {
-      name: MONTH_NAMES[5],
+      name: MONTH_NAMES_PL[5],
       payments: payment.junePayments,
       charges: payment.juneCharges,
     },
     {
-      name: MONTH_NAMES[6],
+      name: MONTH_NAMES_PL[6],
       payments: payment.julyPayments,
       charges: payment.julyCharges,
     },
     {
-      name: MONTH_NAMES[7],
+      name: MONTH_NAMES_PL[7],
       payments: payment.augustPayments,
       charges: payment.augustCharges,
     },
     {
-      name: MONTH_NAMES[8],
+      name: MONTH_NAMES_PL[8],
       payments: payment.septemberPayments,
       charges: payment.septemberCharges,
     },
     {
-      name: MONTH_NAMES[9],
+      name: MONTH_NAMES_PL[9],
       payments: payment.octoberPayments,
       charges: payment.octoberCharges,
     },
     {
-      name: MONTH_NAMES[10],
+      name: MONTH_NAMES_PL[10],
       payments: payment.novemberPayments,
       charges: payment.novemberCharges,
     },
     {
-      name: MONTH_NAMES[11],
+      name: MONTH_NAMES_PL[11],
       payments: payment.decemberPayments,
       charges: payment.decemberCharges,
     },

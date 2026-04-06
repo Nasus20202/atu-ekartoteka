@@ -5,7 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const MONTH_NAMES_PL = [
+export const MONTH_NAMES_PL = [
   'Styczeń',
   'Luty',
   'Marzec',
