@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
-import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
+import { updateApartmentStatus } from '@/lib/mutations/apartments/update-apartment-status';
+import { findApartmentDetail } from '@/lib/queries/apartments/find-apartment-detail';
 
 const logger = createLogger('api:admin:apartments:detail');
 
@@ -19,34 +20,7 @@ export async function GET(
 
     const { apartmentId } = await params;
 
-    const apartment = await prisma.apartment.findUnique({
-      where: { id: apartmentId },
-      include: {
-        homeownersAssociation: {
-          select: {
-            id: true,
-            externalId: true,
-            name: true,
-          },
-        },
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        charges: {
-          orderBy: { period: 'desc' },
-        },
-        chargeNotifications: {
-          orderBy: { lineNo: 'asc' },
-        },
-        payments: {
-          orderBy: { year: 'desc' },
-        },
-      },
-    });
+    const apartment = await findApartmentDetail(apartmentId);
 
     if (!apartment) {
       return NextResponse.json(
@@ -87,10 +61,7 @@ export async function PATCH(
       );
     }
 
-    const apartment = await prisma.apartment.update({
-      where: { id: apartmentId },
-      data: { isActive: body.isActive },
-    });
+    const apartment = await updateApartmentStatus(apartmentId, body.isActive);
 
     logger.info(
       { apartmentId, isActive: body.isActive, adminEmail: session.user.email },

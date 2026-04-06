@@ -2,7 +2,6 @@ import { hash } from 'bcryptjs';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { createRegistrationAutoLoginToken } from '@/lib/auth/registration-auto-login-token';
-import { prisma } from '@/lib/database/prisma';
 import { getEmailService } from '@/lib/email/email-service';
 import {
   generateSecureToken,
@@ -10,8 +9,12 @@ import {
   hashToken,
 } from '@/lib/email/verification-utils';
 import { createLogger } from '@/lib/logger';
+import { createEmailVerification } from '@/lib/mutations/email-verification/create-verification';
+import { createUser } from '@/lib/mutations/users/create-user';
 import { notifyAdminsOfNewUser } from '@/lib/notifications/new-user-registration';
 import { authMetrics } from '@/lib/opentelemetry/auth-metrics';
+import { findFirstAdmin } from '@/lib/queries/users/find-first-admin';
+import { findUserByEmail } from '@/lib/queries/users/find-user-by-email';
 import { isTurnstileEnabled, verifyTurnstileToken } from '@/lib/turnstile';
 import { AccountStatus, UserRole } from '@/lib/types';
 
@@ -61,9 +64,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
+    const existingUser = await findUserByEmail(email);
 
     if (existingUser) {
       logger.warn({ email }, 'Registration failed: user already exists');
@@ -79,9 +80,7 @@ export async function POST(req: NextRequest) {
 
     if (isFirstAdmin) {
       // Verify no admin exists
-      const adminExists = await prisma.user.findFirst({
-        where: { role: UserRole.ADMIN },
-      });
+      const adminExists = await findFirstAdmin();
 
       if (adminExists) {
         logger.warn(
@@ -103,24 +102,13 @@ export async function POST(req: NextRequest) {
     const hashedPassword = await hash(password, 10);
 
     // Create user
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name: name || null,
-        role,
-        status,
-        emailVerified: isFirstAdmin ? true : false, // First admin is auto-verified
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        status: true,
-        emailVerified: true,
-        createdAt: true,
-      },
+    const user = await createUser({
+      email,
+      hashedPassword,
+      name: name || null,
+      role,
+      status,
+      emailVerified: isFirstAdmin ? true : false,
     });
 
     // Send verification email for non-admin users
@@ -131,12 +119,10 @@ export async function POST(req: NextRequest) {
 
         // Store hashed verification token in database (plain token is sent via email)
         const hashedToken = hashToken(verificationToken);
-        await prisma.emailVerification.create({
-          data: {
-            userId: user.id,
-            code: hashedToken,
-            expiresAt,
-          },
+        await createEmailVerification({
+          userId: user.id,
+          hashedCode: hashedToken,
+          expiresAt,
         });
 
         // Send verification email with plain token

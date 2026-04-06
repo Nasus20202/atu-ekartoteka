@@ -10,7 +10,8 @@ import {
   type SerializableCharge,
 } from '@/components/pdf/download-charges-pdf-button';
 import { Card, CardContent } from '@/components/ui/card';
-import { prisma } from '@/lib/database/prisma';
+import { findApartmentWithChargesCached } from '@/lib/queries/apartments/find-apartment-with-charges';
+import { findUserByIdCached } from '@/lib/queries/users/find-user-by-id';
 import { AccountStatus, type ChargeDisplay } from '@/lib/types';
 
 export default async function ApartmentChargesPage({
@@ -25,27 +26,17 @@ export default async function ApartmentChargesPage({
     redirect('/login');
   }
 
-  const userData = await prisma.user.findUnique({
-    where: { id: session.user.id },
-  });
+  const userData = await findUserByIdCached(session.user.id);
 
   if (!userData || userData.status !== AccountStatus.APPROVED) {
     redirect('/dashboard');
   }
 
   // Fetch apartment with charges
-  const apartment = await prisma.apartment.findFirst({
-    where: {
-      id: apartmentId,
-      userId: session.user.id,
-    },
-    include: {
-      charges: {
-        orderBy: [{ period: 'desc' }, { externalLineNo: 'asc' }],
-      },
-      homeownersAssociation: true,
-    },
-  });
+  const apartment = await findApartmentWithChargesCached(
+    apartmentId,
+    session.user.id
+  );
 
   if (!apartment) {
     notFound();

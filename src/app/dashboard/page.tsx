@@ -6,7 +6,7 @@ import { ChargesSummaryCard } from '@/components/dashboard/charges-summary-card'
 import { NotificationsSidebar } from '@/components/dashboard/notifications-sidebar';
 import { PaymentsSummaryCard } from '@/components/dashboard/payments-summary-card';
 import { UserStatusSection } from '@/components/user-status-section';
-import { prisma } from '@/lib/database/prisma';
+import { findUserWithApartmentsCached } from '@/lib/queries/users/find-user-with-apartments';
 import { AccountStatus } from '@/lib/types';
 
 export default async function DashboardPage() {
@@ -16,28 +16,7 @@ export default async function DashboardPage() {
     redirect('/login');
   }
 
-  // Fetch user with apartments, charges, notifications, and payments
-  const userData = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    include: {
-      apartments: {
-        orderBy: { number: 'asc' },
-        include: {
-          charges: {
-            orderBy: { period: 'desc' },
-            select: { id: true, period: true, totalAmount: true },
-          },
-          chargeNotifications: {
-            orderBy: { lineNo: 'asc' },
-          },
-          payments: {
-            orderBy: { year: 'desc' },
-            take: 1,
-          },
-        },
-      },
-    },
-  });
+  const userData = await findUserWithApartmentsCached(session.user.id);
 
   if (!userData) {
     redirect('/login');

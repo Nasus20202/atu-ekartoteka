@@ -15,7 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { prisma } from '@/lib/database/prisma';
+import { findApartmentWithPaymentsByYearCached } from '@/lib/queries/apartments/find-apartment-with-payments-by-year';
 
 interface PaymentDetailsPageProps {
   params: Promise<{
@@ -40,19 +40,11 @@ export default async function PaymentDetailsPage({
     notFound();
   }
 
-  const apartment = await prisma.apartment.findFirst({
-    where: {
-      id: apartmentId,
-      userId: session.user.id,
-    },
-    include: {
-      payments: {
-        where: { year: yearNumber },
-      },
-      charges: true,
-      homeownersAssociation: true,
-    },
-  });
+  const apartment = await findApartmentWithPaymentsByYearCached(
+    apartmentId,
+    session.user.id,
+    yearNumber
+  );
 
   if (!apartment || apartment.payments.length === 0) {
     notFound();

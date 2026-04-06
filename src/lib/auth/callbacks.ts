@@ -1,17 +1,18 @@
 import type { NextAuthConfig } from 'next-auth';
 
-import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
+import { createGoogleUser } from '@/lib/mutations/users/create-google-user';
 import { notifyAdminsOfNewUser } from '@/lib/notifications/new-user-registration';
 import { authMetrics } from '@/lib/opentelemetry/auth-metrics';
-import { AuthMethod, UserRole } from '@/lib/types';
+import { findUserByEmail } from '@/lib/queries/users/find-user-by-email';
+import { findUserTokenFields } from '@/lib/queries/users/find-user-token-fields';
+import { UserRole } from '@/lib/types';
 
 interface ExtendedUser {
   id: string;
   email: string;
   name: string | null;
   role: UserRole;
-  emailVerified: boolean;
   mustChangePassword: boolean;
 }
 
@@ -23,23 +24,14 @@ export const callbacks: NextAuthConfig['callbacks'] = {
       const extendedUser = user as ExtendedUser;
       token.id = extendedUser.id;
       token.role = extendedUser.role;
-      token.emailVerified = extendedUser.emailVerified;
       token.mustChangePassword = extendedUser.mustChangePassword;
     }
 
     if (trigger === 'update' && token.id) {
-      const freshUser = await prisma.user.findUnique({
-        where: { id: token.id as string },
-        select: {
-          role: true,
-          emailVerified: true,
-          mustChangePassword: true,
-        },
-      });
+      const freshUser = await findUserTokenFields(token.id as string);
 
       if (freshUser) {
         token.role = freshUser.role;
-        token.emailVerified = freshUser.emailVerified;
         token.mustChangePassword = freshUser.mustChangePassword;
       }
     }
@@ -52,7 +44,6 @@ export const callbacks: NextAuthConfig['callbacks'] = {
       Object.assign(session.user, {
         id: token.id as string,
         role: token.role as string,
-        emailVerified: token.emailVerified as boolean,
         mustChangePassword: token.mustChangePassword as boolean,
       });
     }
@@ -62,19 +53,12 @@ export const callbacks: NextAuthConfig['callbacks'] = {
   async signIn({ user, account }) {
     if (account?.provider === 'google') {
       try {
-        const existingUser = await prisma.user.findUnique({
-          where: { email: user.email! },
-        });
+        const existingUser = await findUserByEmail(user.email!);
 
         if (!existingUser) {
-          const newUser = await prisma.user.create({
-            data: {
-              email: user.email!,
-              name: user.name,
-              emailVerified: true,
-              password: null,
-              authMethod: AuthMethod.GOOGLE,
-            },
+          const newUser = await createGoogleUser({
+            email: user.email!,
+            name: user.name,
           });
 
           try {

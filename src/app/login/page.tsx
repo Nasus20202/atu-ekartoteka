@@ -30,8 +30,6 @@ function LoginForm() {
   const { status } = useSession();
 
   const resetSuccess = searchParams.get('reset') === 'success';
-  const registered = searchParams.get('registered') === 'true';
-  const verified = searchParams.get('verified') === 'true';
 
   // Fetch turnstile configuration on mount
   useEffect(() => {
@@ -147,22 +145,6 @@ function LoginForm() {
           <Alert className="bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-900">
             <AlertDescription className="text-green-800 dark:text-green-400">
               Hasło zostało zmienione. Możesz się teraz zalogować.
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {registered && (
-          <Alert className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900">
-            <AlertDescription className="text-blue-800 dark:text-blue-400">
-              Konto utworzone. Sprawdź email i zaloguj się.
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {verified && (
-          <Alert className="bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-900">
-            <AlertDescription className="text-green-800 dark:text-green-400">
-              Email zweryfikowany pomyślnie!
             </AlertDescription>
           </Alert>
         )}

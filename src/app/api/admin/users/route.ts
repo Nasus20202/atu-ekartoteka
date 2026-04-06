@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
-import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
+import { updateUserStatus } from '@/lib/mutations/users/update-user-status';
 import { notifyAccountApproved } from '@/lib/notifications/account-status';
+import { findApartmentsByIds } from '@/lib/queries/apartments/find-apartments-by-ids';
+import { findTenantUsers } from '@/lib/queries/users/find-tenant-users';
+import { findUserById } from '@/lib/queries/users/find-user-by-id';
 import { AccountStatus, UserRole } from '@/lib/types';
 
 const logger = createLogger('api:admin:users');
@@ -23,26 +26,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status') as AccountStatus | null;
 
-    const where = status
-      ? { status, role: UserRole.TENANT }
-      : { role: UserRole.TENANT };
-
-    const users = await prisma.user.findMany({
-      where,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        status: true,
-        emailVerified: true,
-        mustChangePassword: true,
-        createdAt: true,
-        updatedAt: true,
-        apartments: true,
-      },
-      orderBy: [{ createdAt: 'desc' }],
-    });
+    const users = await findTenantUsers(status);
 
     return NextResponse.json({ users });
   } catch (error) {
@@ -93,9 +77,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     // Check if user exists
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
+    const user = await findUserById(userId);
 
     if (!user) {
       return NextResponse.json(
@@ -110,10 +92,7 @@ export async function PATCH(req: NextRequest) {
       apartmentIds &&
       apartmentIds.length > 0
     ) {
-      const apartments = await prisma.apartment.findMany({
-        where: { id: { in: apartmentIds } },
-        include: { user: true },
-      });
+      const apartments = await findApartmentsByIds(apartmentIds);
 
       if (apartments.length !== apartmentIds.length) {
         return NextResponse.json(
@@ -137,20 +116,10 @@ export async function PATCH(req: NextRequest) {
     }
 
     // Update user and apartment assignments
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: {
-        status,
-        apartments:
-          status === AccountStatus.APPROVED && apartmentIds?.length
-            ? {
-                set: apartmentIds.map((id: string) => ({ id })),
-              }
-            : { set: [] },
-      },
-      include: {
-        apartments: true,
-      },
+    const updatedUser = await updateUserStatus({
+      userId,
+      status,
+      apartmentIds,
     });
 
     logger.info(

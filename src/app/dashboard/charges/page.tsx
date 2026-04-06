@@ -7,7 +7,7 @@ import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
 import { DownloadChargesPdfButton } from '@/components/pdf/download-charges-pdf-button';
 import { Card, CardContent } from '@/components/ui/card';
-import { prisma } from '@/lib/database/prisma';
+import { findUserWithApartmentChargesCached } from '@/lib/queries/users/find-user-with-apartment-charges';
 import { AccountStatus, type ChargeDisplay } from '@/lib/types';
 
 type ApartmentPeriodData = {
@@ -25,19 +25,7 @@ export default async function ChargesPage() {
     redirect('/login');
   }
 
-  const userData = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    include: {
-      apartments: {
-        include: {
-          homeownersAssociation: true,
-          charges: {
-            orderBy: [{ period: 'desc' }, { externalLineNo: 'asc' }],
-          },
-        },
-      },
-    },
-  });
+  const userData = await findUserWithApartmentChargesCached(session.user.id);
 
   if (!userData || userData.status !== AccountStatus.APPROVED) {
     redirect('/dashboard');

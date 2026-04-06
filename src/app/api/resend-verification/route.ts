@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
-import { prisma } from '@/lib/database/prisma';
 import { getEmailService } from '@/lib/email/email-service';
 import {
   generateSecureToken,
@@ -9,8 +8,14 @@ import {
   hashToken,
 } from '@/lib/email/verification-utils';
 import { createLogger } from '@/lib/logger';
+import { createEmailVerification } from '@/lib/mutations/email-verification/create-verification';
+import { deleteVerificationsForUser } from '@/lib/mutations/email-verification/delete-verifications-for-user';
+import { findRecentVerification } from '@/lib/queries/email-verification/find-recent-verification';
+import { findUserById } from '@/lib/queries/users/find-user-by-id';
 
 const logger = createLogger('api:resend-verification');
+
+const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000;
 
 /**
  * Resend email verification code
@@ -29,9 +34,7 @@ export async function POST() {
     }
 
     // Find user
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-    });
+    const user = await findUserById(session.user.id);
 
     if (!user) {
       return NextResponse.json(
@@ -49,19 +52,13 @@ export async function POST() {
     }
 
     // Check for recent verification code (rate limiting)
-    const recentVerification = await prisma.emailVerification.findFirst({
-      where: {
-        userId: user.id,
-        createdAt: {
-          gte: new Date(Date.now() - 5 * 60 * 1000), // Last 5 minutes
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    const recentVerification = await findRecentVerification(user.id);
 
     if (recentVerification) {
       const timeLeft = Math.ceil(
-        (recentVerification.createdAt.getTime() + 5 * 60 * 1000 - Date.now()) /
+        (recentVerification.createdAt.getTime() +
+          RATE_LIMIT_WINDOW_MS -
+          Date.now()) /
           1000
       );
       const minutesLeft = Math.ceil(timeLeft / 60);
@@ -73,9 +70,7 @@ export async function POST() {
     }
 
     // Delete old verification codes
-    await prisma.emailVerification.deleteMany({
-      where: { userId: user.id },
-    });
+    await deleteVerificationsForUser(user.id);
 
     // Generate new verification token
     const token = generateSecureToken();
@@ -83,12 +78,10 @@ export async function POST() {
 
     // Store hashed verification token (plain token is sent via email)
     const hashedToken = hashToken(token);
-    await prisma.emailVerification.create({
-      data: {
-        userId: user.id,
-        code: hashedToken,
-        expiresAt,
-      },
+    await createEmailVerification({
+      userId: user.id,
+      hashedCode: hashedToken,
+      expiresAt,
     });
 
     // Send verification email with plain token

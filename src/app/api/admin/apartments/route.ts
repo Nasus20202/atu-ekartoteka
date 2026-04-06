@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
-import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
+import { findApartmentsPaginated } from '@/lib/queries/apartments/find-apartments-paginated';
 import { Apartment, UserRole } from '@/lib/types';
 
 const logger = createLogger('api:admin:apartments');
@@ -85,18 +85,10 @@ export async function GET(req: NextRequest) {
       ],
     };
 
-    const [apartmentsData, total, hoa] = await Promise.all([
-      prisma.apartment.findMany({
-        where,
-      }),
-      prisma.apartment.count({ where }),
-      hoaId
-        ? prisma.homeownersAssociation.findUnique({
-            where: { id: hoaId },
-            select: { id: true, externalId: true, name: true },
-          })
-        : Promise.resolve(null),
-    ]);
+    const [apartmentsData, total, hoa] = await findApartmentsPaginated({
+      where,
+      hoaId,
+    });
 
     // Sort apartments: by building asc, then by number (numerically if both are numbers, otherwise lexically)
     const sortedApartments = apartmentsData.sort(

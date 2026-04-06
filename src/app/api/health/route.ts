@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { prisma } from '@/lib/database/prisma';
+import { checkDatabaseConnection } from '@/lib/database/health-check';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('api:health');
@@ -15,13 +15,11 @@ export async function GET() {
   let isHealthy = true;
 
   // Check database connection (readiness)
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-    checks.database = true;
-  } catch (error) {
-    checks.database = false;
+  const dbOk = await checkDatabaseConnection();
+  checks.database = dbOk;
+  if (!dbOk) {
     isHealthy = false;
-    logger.error({ error }, 'Database health check failed');
+    logger.error('Database health check failed');
   }
 
   // Application is alive (liveness)

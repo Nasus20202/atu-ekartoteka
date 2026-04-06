@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
-import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
+import { getDashboardStats } from '@/lib/queries/admin/get-dashboard-stats';
 import { UserRole } from '@/lib/types';
 
 const logger = createLogger('api:admin:stats');
@@ -15,30 +15,9 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const [
-      hoaCount,
-      apartmentCount,
-      chargeCount,
-      notificationCount,
-      paymentCount,
-      userCount,
-    ] = await Promise.all([
-      prisma.homeownersAssociation.count(),
-      prisma.apartment.count(),
-      prisma.charge.count(),
-      prisma.chargeNotification.count(),
-      prisma.payment.count(),
-      prisma.user.count(),
-    ]);
+    const stats = await getDashboardStats();
 
-    return NextResponse.json({
-      hoa: hoaCount,
-      apartments: apartmentCount,
-      charges: chargeCount,
-      notifications: notificationCount,
-      payments: paymentCount,
-      users: userCount,
-    });
+    return NextResponse.json(stats);
   } catch (error) {
     logger.error({ error }, 'Failed to fetch stats');
     return NextResponse.json(

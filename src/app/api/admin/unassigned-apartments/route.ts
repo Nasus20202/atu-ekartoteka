@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
-import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
+import { findUnassignedApartments } from '@/lib/queries/apartments/find-unassigned-apartments';
+import { findAllUserEmails } from '@/lib/queries/users/find-all-user-emails';
 import { UserRole } from '@/lib/types';
 
 const logger = createLogger('api:admin:unassigned-apartments');
@@ -21,10 +22,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
     const mode = searchParams.get('mode') ?? UNASSIGNED_MODE_CREATABLE;
 
-    const existingUsers = await prisma.user.findMany({
-      select: { email: true },
-      where: { email: { not: undefined } },
-    });
+    const existingUsers = await findAllUserEmails();
     const existingEmails = existingUsers
       .map((u) => u.email)
       .filter((e): e is string => e !== null);
@@ -36,30 +34,7 @@ export async function GET(request: NextRequest) {
         ? { in: existingEmails }
         : { notIn: existingEmails };
 
-    const apartments = await prisma.apartment.findMany({
-      where: {
-        userId: null,
-        email: { not: null, ...emailWhere },
-      },
-      select: {
-        id: true,
-        number: true,
-        building: true,
-        owner: true,
-        email: true,
-        homeownersAssociation: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
-      orderBy: [
-        { homeownersAssociation: { name: 'asc' } },
-        { building: 'asc' },
-        { number: 'asc' },
-      ],
-    });
+    const apartments = await findUnassignedApartments(emailWhere);
 
     // Group by HOA
     const hoaMap = new Map<

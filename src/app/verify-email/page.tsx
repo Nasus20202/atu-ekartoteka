@@ -2,8 +2,7 @@
 
 import { CheckCircle, Loader2, XCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useState } from 'react';
 
 import { AuthLayout } from '@/components/auth-layout';
@@ -11,38 +10,34 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 
 function VerifyEmailContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const { update } = useSession();
   const [verifying, setVerifying] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const verifyToken = useCallback(
-    async (verificationToken: string) => {
-      setVerifying(true);
-      setError(null);
-      try {
-        const response = await fetch('/api/verify-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: verificationToken }),
-        });
-        const data = await response.json();
-        if (!response.ok)
-          throw new Error(data.error || 'Weryfikacja nie powiodła się');
-        setSuccess(true);
-        // Update session to refresh emailVerified status
-        await update();
-        setTimeout(() => router.push('/login?verified=true'), 2000);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Wystąpił błąd');
-      } finally {
-        setVerifying(false);
-      }
-    },
-    [router, update]
-  );
+  const verifyToken = useCallback(async (verificationToken: string) => {
+    setVerifying(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/verify-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: verificationToken }),
+      });
+      const data = await response.json();
+      if (!response.ok)
+        throw new Error(data.error || 'Weryfikacja nie powiodła się');
+      setSuccess(true);
+      // Full page navigation so the server re-reads emailVerified from DB
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Wystąpił błąd');
+    } finally {
+      setVerifying(false);
+    }
+  }, []);
 
   useEffect(() => {
     const tokenParam = searchParams.get('token');
@@ -84,7 +79,7 @@ function VerifyEmailContent() {
         }
       >
         <p className="text-center text-sm text-muted-foreground">
-          Przekierowywanie do strony logowania...
+          Przekierowywanie do pulpitu...
         </p>
       </AuthLayout>
     );

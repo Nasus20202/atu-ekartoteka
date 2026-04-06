@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { prisma } from '@/lib/database/prisma';
 import { getEmailService } from '@/lib/email/email-service';
 import { generateSecureToken, hashToken } from '@/lib/email/verification-utils';
 import { createLogger } from '@/lib/logger';
+import { createPasswordReset } from '@/lib/mutations/password-reset/create-password-reset';
+import { deletePasswordResetsForUser } from '@/lib/mutations/password-reset/delete-password-resets-for-user';
+import { findUserByEmail } from '@/lib/queries/users/find-user-by-email';
 import { verifyTurnstileToken } from '@/lib/turnstile';
 import { AuthMethod } from '@/lib/types';
 
@@ -35,9 +37,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Find user
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
-    });
+    const user = await findUserByEmail(email.toLowerCase());
 
     // Don't reveal if user exists or not (security)
     if (!user) {
@@ -57,9 +57,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Delete old password reset tokens
-    await prisma.passwordReset.deleteMany({
-      where: { userId: user.id },
-    });
+    await deletePasswordResetsForUser(user.id);
 
     // Generate reset token (valid for 1 hour)
     const token = generateSecureToken();
@@ -67,12 +65,10 @@ export async function POST(req: NextRequest) {
 
     // Store hashed reset token (plain token is sent via email)
     const hashedToken = hashToken(token);
-    await prisma.passwordReset.create({
-      data: {
-        userId: user.id,
-        token: hashedToken,
-        expiresAt,
-      },
+    await createPasswordReset({
+      userId: user.id,
+      hashedToken,
+      expiresAt,
     });
 
     // Send password reset email
