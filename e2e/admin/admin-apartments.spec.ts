@@ -3,6 +3,9 @@
  */
 
 import { expect, test } from '../fixtures';
+import { createTwinUnassignedApartment } from '../utils/create-twin-unassigned-apartment';
+import { deleteApartment } from '../utils/delete-apartment';
+import { setHoaImportDates } from '../utils/set-hoa-import-dates';
 
 test.describe('Admin Apartment Browser', () => {
   test.describe('HOA List', () => {
@@ -56,6 +59,28 @@ test.describe('Admin Apartment Browser', () => {
 
       // Should navigate to apartments list for this HOA
       await expect(adminPage).toHaveURL(/\/admin\/apartments\/[a-f0-9-]+/);
+    });
+
+    test('HOA card shows import dates when set', async ({ adminPage }) => {
+      await setHoaImportDates('2025-03-15T00:00:00.000Z');
+
+      try {
+        await adminPage.goto('/admin/apartments');
+        await expect(adminPage.getByText('TEST01')).toBeVisible();
+
+        const hoaCard = adminPage.locator('.text-card-foreground').filter({
+          hasText: 'TEST01',
+        });
+
+        // Dates should appear in Polish locale format (15.03.2025)
+        await expect(hoaCard.getByText(/Mieszkania:/i)).toBeVisible({
+          timeout: 5000,
+        });
+        await expect(hoaCard.getByText(/Naliczenia:/i)).toBeVisible();
+        await expect(hoaCard.getByText(/Powiadomienia:/i)).toBeVisible();
+      } finally {
+        await setHoaImportDates(null);
+      }
     });
   });
 
@@ -206,6 +231,105 @@ test.describe('Admin Apartment Browser', () => {
 
       // Should see external ID
       await expect(adminPage.getByText(/W00001/i)).toBeVisible();
+    });
+  });
+
+  test.describe('Slash Search', () => {
+    test('searching "1/1A" filters apartments by building and number', async ({
+      adminPage,
+    }) => {
+      await adminPage.goto('/admin/apartments');
+      await expect(adminPage.getByText('TEST01')).toBeVisible();
+
+      // Navigate to TEST01 HOA apartments
+      const hoaCard = adminPage.locator('.text-card-foreground').filter({
+        hasText: 'TEST01',
+      });
+      await hoaCard.getByRole('button', { name: /Zobacz mieszkania/i }).click();
+      await adminPage.waitForURL(/\/admin\/apartments\/[a-f0-9-]+$/, {
+        timeout: 10000,
+      });
+
+      // Enter "1/1A" in the search field — splits on "/" into building=1, number=1A
+      const searchInput = adminPage.getByPlaceholder('Wyszukaj...');
+      await searchInput.fill('1/1A');
+      await adminPage.waitForResponse(
+        (resp) =>
+          resp.url().includes('/api/admin/apartments') &&
+          resp.url().includes('search=') &&
+          resp.status() === 200
+      );
+      await adminPage.getByRole('button', { name: /Szukaj/i }).click();
+
+      // Wait for results to update
+      await adminPage.waitForResponse(
+        (resp) =>
+          resp.url().includes('/api/admin/apartments') && resp.status() === 200
+      );
+
+      // Seeded apartment (building=1, number=1A) should be visible
+      await expect(adminPage.getByText('ul. Testowa 1/1A').first()).toBeVisible(
+        { timeout: 5000 }
+      );
+    });
+
+    test('searching a non-matching term shows empty state', async ({
+      adminPage,
+    }) => {
+      await adminPage.goto('/admin/apartments');
+      await expect(adminPage.getByText('TEST01')).toBeVisible();
+
+      const hoaCard = adminPage.locator('.text-card-foreground').filter({
+        hasText: 'TEST01',
+      });
+      await hoaCard.getByRole('button', { name: /Zobacz mieszkania/i }).click();
+      await adminPage.waitForURL(/\/admin\/apartments\/[a-f0-9-]+$/, {
+        timeout: 10000,
+      });
+
+      const searchInput = adminPage.getByPlaceholder('Wyszukaj...');
+      await searchInput.fill('ZZZNOMATCH999');
+      await adminPage.getByRole('button', { name: /Szukaj/i }).click();
+
+      await adminPage.waitForResponse(
+        (resp) =>
+          resp.url().includes('/api/admin/apartments') && resp.status() === 200
+      );
+
+      await expect(adminPage.getByText(/Nie znaleziono mieszkań/i)).toBeVisible(
+        { timeout: 5000 }
+      );
+    });
+  });
+
+  test.describe('Duplicate Address Badge', () => {
+    test('shows "Duplikat adresu" badge when two active apartments share the same address', async ({
+      adminPage,
+    }) => {
+      // Create a second apartment with the same building/number as the seeded one
+      const { id: twinId } = await createTwinUnassignedApartment();
+
+      try {
+        await adminPage.goto('/admin/apartments');
+        await expect(adminPage.getByText('TEST01')).toBeVisible();
+
+        const hoaCard = adminPage.locator('.text-card-foreground').filter({
+          hasText: 'TEST01',
+        });
+        await hoaCard
+          .getByRole('button', { name: /Zobacz mieszkania/i })
+          .click();
+        await adminPage.waitForURL(/\/admin\/apartments\/[a-f0-9-]+$/, {
+          timeout: 10000,
+        });
+
+        // Both apartments with address ul. Testowa 1/1A should show the badge
+        await expect(
+          adminPage.getByText('Duplikat adresu').first()
+        ).toBeVisible({ timeout: 5000 });
+      } finally {
+        await deleteApartment(twinId);
+      }
     });
   });
 });

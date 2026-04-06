@@ -30,6 +30,15 @@ model HomeownersAssociation {
   id          String   @id @default(cuid())
   externalId  String   @unique  // ID from folder structure
   name        String              // defaults to externalId, can be changed by admin
+
+  // Parsed from pow_czynsz.txt on notification import
+  header      String?
+  footer      String?
+
+  // Data-as-of dates from .wmb files, updated on each import
+  apartmentsDataDate     DateTime?
+  chargesDataDate        DateTime?
+  notificationsDataDate  DateTime?
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -171,6 +180,10 @@ model Payment {
   // Balances
   openingBalance  Float
   closingBalance  Float
+
+  // Opening period breakdown (from wplaty.txt fields 6 and 7)
+  openingDebt    Float    @default(0)
+  openingSurplus Float    @default(0)
   
   // Monthly payments (12 months)
   januaryPayments         Float    @default(0)

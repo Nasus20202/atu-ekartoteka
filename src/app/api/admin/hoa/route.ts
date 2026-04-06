@@ -28,6 +28,9 @@ export async function GET(req: NextRequest) {
           externalId: hoa.externalId,
           name: hoa.name,
           apartmentCount: hoa._count.apartments,
+          apartmentsDataDate: hoa.apartmentsDataDate,
+          chargesDataDate: hoa.chargesDataDate,
+          notificationsDataDate: hoa.notificationsDataDate,
           createdAt: hoa.createdAt,
           updatedAt: hoa.updatedAt,
         })

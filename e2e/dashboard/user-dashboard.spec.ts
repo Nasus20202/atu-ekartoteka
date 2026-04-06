@@ -49,6 +49,15 @@ test.describe('Dashboard Home', () => {
       await expect(balanceElement).toBeVisible();
       await expect(balanceElement).toHaveClass(/text-red/);
     });
+
+    test('balance widget shows HOA name for single HOA user', async ({
+      userPage,
+    }) => {
+      await userPage.goto('/dashboard');
+
+      // Single-HOA mode: HOA name appears as the label next to the balance
+      await expect(userPage.getByText('Test HOA').first()).toBeVisible();
+    });
   });
 
   test.describe('Charges Widget', () => {
@@ -128,6 +137,26 @@ test.describe('Dashboard Home', () => {
         userPage.getByText(/Łączna kwota do zapłaty/i)
       ).toBeVisible();
       await expect(userPage.getByText('444.25 zł').first()).toBeVisible();
+    });
+
+    test('single-HOA mode renders flat notification list without collapsible HOA sections', async ({
+      userPage,
+    }) => {
+      await userPage.goto('/dashboard');
+
+      // Single-HOA mode: individual charge rows are rendered directly (no per-HOA collapsible trigger)
+      // The notification card shows "Powiadomienia" heading and individual charge amounts
+      await expect(userPage.getByText(/Powiadomienia/i)).toBeVisible();
+
+      // The total is shown as a single block (not per-HOA subtotals)
+      await expect(
+        userPage.getByText(/Łączna kwota do zapłaty/i)
+      ).toBeVisible();
+
+      // Individual charge descriptions should appear in flat list
+      await expect(
+        userPage.getByText(/Zarządzanie Nieruchomością/i).first()
+      ).toBeVisible();
     });
   });
 

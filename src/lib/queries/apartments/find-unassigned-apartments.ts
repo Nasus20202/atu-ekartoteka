@@ -14,6 +14,7 @@ export function findUnassignedApartments(emailWhere: EmailWhere) {
       building: true,
       owner: true,
       email: true,
+      isActive: true,
       homeownersAssociation: {
         select: {
           id: true,

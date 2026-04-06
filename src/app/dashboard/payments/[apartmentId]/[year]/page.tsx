@@ -124,7 +124,15 @@ export default async function PaymentDetailsPage({
                 <div className="text-sm text-muted-foreground">
                   Saldo początkowe
                 </div>
-                <div className="text-2xl font-bold">
+                <div
+                  className={`text-2xl font-bold ${
+                    payment.openingBalance < 0
+                      ? 'text-red-600'
+                      : payment.openingBalance > 0
+                        ? 'text-green-600'
+                        : ''
+                  }`}
+                >
                   {payment.openingBalance.toFixed(2)} zł
                 </div>
               </div>
@@ -167,7 +175,7 @@ export default async function PaymentDetailsPage({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <PaymentTable payment={payment} />
+            <PaymentTable payment={payment} apartmentId={apartment.id} />
           </CardContent>
         </Card>
 

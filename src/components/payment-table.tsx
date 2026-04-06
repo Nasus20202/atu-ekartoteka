@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import {
   Table,
   TableBody,
@@ -12,9 +14,15 @@ import { MONTH_NAMES_PL } from '@/lib/utils';
 
 interface PaymentTableProps {
   payment: Payment;
+  apartmentId: string;
+  disableLinks?: boolean;
 }
 
-export function PaymentTable({ payment }: PaymentTableProps) {
+export function PaymentTable({
+  payment,
+  apartmentId,
+  disableLinks = false,
+}: PaymentTableProps) {
   const monthlyData = [
     {
       name: MONTH_NAMES_PL[0],
@@ -103,8 +111,12 @@ export function PaymentTable({ payment }: PaymentTableProps) {
         <TableBody>
           <TableRow>
             <TableCell className="font-medium">Bilans otwarcia</TableCell>
-            <TableCell className="text-right">-</TableCell>
-            <TableCell className="text-right">-</TableCell>
+            <TableCell className="text-right">
+              {payment.openingSurplus.toFixed(2)} zł
+            </TableCell>
+            <TableCell className="text-right">
+              {payment.openingDebt.toFixed(2)} zł
+            </TableCell>
             <TableCell
               className={`text-right ${
                 runningBalance < 0
@@ -117,29 +129,60 @@ export function PaymentTable({ payment }: PaymentTableProps) {
               {runningBalance.toFixed(2)} zł
             </TableCell>
           </TableRow>
-          {monthlyData.map((month) => {
+          {monthlyData.map((month, idx) => {
             const paymentsForMonth = month.payment;
             const chargesForMonth = month.charge;
             runningBalance += paymentsForMonth - chargesForMonth;
+            const monthParam = `${payment.year}-${String(idx + 1).padStart(2, '0')}`;
+            const href = `/dashboard/charges/${apartmentId}?month=${monthParam}`;
+            const balanceColor =
+              runningBalance < 0
+                ? 'text-red-600'
+                : runningBalance > 0
+                  ? 'text-green-600'
+                  : '';
             return (
-              <TableRow key={month.name}>
-                <TableCell>{month.name}</TableCell>
-                <TableCell className="text-right">
-                  {paymentsForMonth.toFixed(2)} zł
+              <TableRow
+                key={month.name}
+                className={
+                  disableLinks ? undefined : 'hover:bg-muted/50 cursor-pointer'
+                }
+              >
+                <TableCell>
+                  {disableLinks ? (
+                    month.name
+                  ) : (
+                    <Link href={href} className="block">
+                      {month.name}
+                    </Link>
+                  )}
                 </TableCell>
                 <TableCell className="text-right">
-                  {chargesForMonth.toFixed(2)} zł
+                  {disableLinks ? (
+                    `${paymentsForMonth.toFixed(2)} zł`
+                  ) : (
+                    <Link href={href} className="block">
+                      {paymentsForMonth.toFixed(2)} zł
+                    </Link>
+                  )}
                 </TableCell>
-                <TableCell
-                  className={`text-right ${
-                    runningBalance < 0
-                      ? 'text-red-600'
-                      : runningBalance > 0
-                        ? 'text-green-600'
-                        : ''
-                  }`}
-                >
-                  {runningBalance.toFixed(2)} zł
+                <TableCell className="text-right">
+                  {disableLinks ? (
+                    `${chargesForMonth.toFixed(2)} zł`
+                  ) : (
+                    <Link href={href} className="block">
+                      {chargesForMonth.toFixed(2)} zł
+                    </Link>
+                  )}
+                </TableCell>
+                <TableCell className={`text-right ${balanceColor}`}>
+                  {disableLinks ? (
+                    `${runningBalance.toFixed(2)} zł`
+                  ) : (
+                    <Link href={href} className={`block ${balanceColor}`}>
+                      {runningBalance.toFixed(2)} zł
+                    </Link>
+                  )}
                 </TableCell>
               </TableRow>
             );

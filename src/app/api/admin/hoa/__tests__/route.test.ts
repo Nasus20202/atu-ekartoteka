@@ -125,13 +125,13 @@ describe('Admin HOA API', () => {
       expect(data.homeownersAssociations[1].apartmentCount).toBe(5);
       expect(mockHoaFindMany).toHaveBeenCalledWith({
         where: {},
-        include: {
+        select: expect.objectContaining({
           _count: {
             select: {
               apartments: { where: { isActive: true } },
             },
           },
-        },
+        }),
         orderBy: { name: 'asc' },
       });
     });
@@ -162,13 +162,13 @@ describe('Admin HOA API', () => {
             { externalId: { contains: 'wspólnota a', mode: 'insensitive' } },
           ],
         },
-        include: {
+        select: expect.objectContaining({
           _count: {
             select: {
               apartments: { where: { isActive: true } },
             },
           },
-        },
+        }),
         orderBy: { name: 'asc' },
       });
     });

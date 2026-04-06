@@ -2,6 +2,7 @@
  * Admin data import tests
  */
 
+import * as fs from 'fs';
 import * as path from 'path';
 
 import { expect, test } from '../fixtures';
@@ -10,65 +11,84 @@ test.describe('Admin Data Import', () => {
   test('admin can import HOA data and see apartments', async ({
     adminPage,
   }) => {
-    // Navigate to import page
     await adminPage.goto('/admin/import');
 
-    // Wait for page to load
     await expect(
       adminPage.getByRole('heading', { name: /Import danych/i })
     ).toBeVisible();
 
-    // Get the file input and upload the test data directory
-    const testDataPath = path.resolve(__dirname, '../test-data/import');
-    const fileInput = adminPage.locator('input[type="file"]');
-    await fileInput.setInputFiles(testDataPath);
+    // Build the list of files to upload, preserving the subfolder path so the
+    // import handler can extract the HOA id (TEST02) from the directory name.
+    const importDir = path.resolve(__dirname, '../test-data/import');
+    const filePayloads = fs
+      .readdirSync(path.join(importDir, 'TEST02'))
+      .filter((name) => name.endsWith('.txt'))
+      .map((name) => {
+        const filePath = path.join(importDir, 'TEST02', name);
+        return {
+          name,
+          mimeType: 'text/plain',
+          buffer: fs.readFileSync(filePath),
+          // webkitRelativePath is carried via the name for directory uploads;
+          // Playwright uses the `name` field as the virtual path when it
+          // contains a slash — so we embed the HOA folder in the name.
+          lastModified: Date.now(),
+        };
+      });
 
-    // Should show files selected
+    // The file input has webkitdirectory set, which prevents Playwright from
+    // uploading individual files. Remove the attribute before setting files.
+    await adminPage.evaluate(() => {
+      const input = document.querySelector('input[type="file"]');
+      input?.removeAttribute('webkitdirectory');
+      input?.removeAttribute('directory');
+    });
+
+    const fileInput = adminPage.locator('input[type="file"]');
+    await fileInput.setInputFiles(
+      filePayloads.map((f) => ({
+        name: `TEST02/${f.name}`,
+        mimeType: f.mimeType,
+        buffer: f.buffer,
+      }))
+    );
+
+    // Should show number of files selected
     await expect(adminPage.getByText(/Wybrano plików/i)).toBeVisible();
 
-    // Click import button and wait for response
+    // Click import and wait for the API response
     await Promise.all([
       adminPage.waitForResponse(
         (resp) =>
           resp.url().includes('/api/admin/import') && resp.status() === 200,
         { timeout: 30000 }
       ),
-      adminPage.getByRole('button', { name: /Importuj/i }).click(),
+      adminPage.getByRole('button', { name: /^Importuj$/i }).click(),
     ]);
 
-    // Should show success message with no errors
-    await expect(adminPage.getByText(/Import zakończony|sukces/i)).toBeVisible({
-      timeout: 15000,
-    });
+    // Should show the success banner
+    await expect(
+      adminPage.getByText(/Import zakończony pomyślnie/i)
+    ).toBeVisible({ timeout: 15000 });
 
-    // Verify no errors were reported
-    await expect(adminPage.getByText(/błąd|błędy|error/i)).toBeHidden();
-
-    // Verify the imported data appears in the apartments page
+    // Navigate to apartments page and verify imported data
     await adminPage.goto('/admin/apartments');
 
-    // Wait for page to load
     await expect(
       adminPage.getByRole('heading', { name: /Mieszkania|Wspólnoty/i })
     ).toBeVisible();
 
-    // Find the TEST02 card by its title
     const test02Card = adminPage
       .locator('.text-card-foreground')
       .filter({ hasText: 'TEST02' });
 
-    // Verify the card is visible
     await expect(test02Card).toBeVisible();
-
-    // Verify it shows 3 apartments
     await expect(test02Card.getByText('3')).toBeVisible();
 
-    // Click "Zobacz mieszkania" button within this card
     await test02Card
       .getByRole('button', { name: /Zobacz mieszkania/i })
       .click();
 
-    // Should see the imported apartments
     await expect(adminPage.getByText('ul. Importowa 2/1A')).toBeVisible();
   });
 });

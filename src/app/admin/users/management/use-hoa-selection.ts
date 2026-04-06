@@ -5,7 +5,8 @@ import { HoaGroup } from '@/app/admin/users/management/HoaCard';
 export function useHoaSelection(hoas: HoaGroup[]) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const allIds = hoas.flatMap((h) => h.apartments.map((a) => a.id));
+  const safeHoas = hoas ?? [];
+  const allIds = safeHoas.flatMap((h) => h.apartments.map((a) => a.id));
 
   const isHoaSelected = (hoa: HoaGroup) =>
     hoa.apartments.every((a) => selectedIds.has(a.id));
@@ -30,6 +31,16 @@ export function useHoaSelection(hoas: HoaGroup[]) {
     setSelectedIds(next);
   };
 
+  const selectIds = (ids: string[], checked: boolean) => {
+    const next = new Set(selectedIds);
+    if (checked) {
+      ids.forEach((id) => next.add(id));
+    } else {
+      ids.forEach((id) => next.delete(id));
+    }
+    setSelectedIds(next);
+  };
+
   return {
     selectedIds,
     setSelectedIds,
@@ -38,5 +49,6 @@ export function useHoaSelection(hoas: HoaGroup[]) {
     isHoaIndeterminate,
     toggleHoa,
     toggleApartment,
+    selectIds,
   };
 }

@@ -165,6 +165,7 @@ describe('Admin Import API', () => {
       expect(data.results).toHaveLength(1);
       expect(processBatchImport).toHaveBeenCalledWith([file], {
         cleanImport: false,
+        skipValidation: false,
       });
     });
 
@@ -213,6 +214,7 @@ describe('Admin Import API', () => {
       expect(data.results).toHaveLength(2);
       expect(processBatchImport).toHaveBeenCalledWith([file1, file2], {
         cleanImport: false,
+        skipValidation: false,
       });
     });
 

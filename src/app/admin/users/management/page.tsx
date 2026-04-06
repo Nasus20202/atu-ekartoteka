@@ -5,11 +5,24 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { ApartmentList } from '@/app/admin/users/management/ApartmentList';
-import { HoaGroup } from '@/app/admin/users/management/HoaCard';
+import {
+  HoaGroup,
+  type UnassignedApartment,
+} from '@/app/admin/users/management/HoaCard';
 import { useHoaSelection } from '@/app/admin/users/management/use-hoa-selection';
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -20,6 +33,32 @@ interface BulkOperationResult {
   assigned?: number;
   skipped: number;
   errors: number;
+}
+
+interface AccountPreview {
+  email: string;
+  owner: string | null;
+  apartments: UnassignedApartment[];
+}
+
+function buildAccountPreviews(
+  hoas: HoaGroup[],
+  selectedIds: Set<string>
+): AccountPreview[] {
+  const allApartments = hoas.flatMap((h) => h.apartments);
+  const selected = allApartments.filter((a) => selectedIds.has(a.id));
+  const emailMap = new Map<string, AccountPreview>();
+  for (const apt of selected) {
+    if (!emailMap.has(apt.email)) {
+      emailMap.set(apt.email, {
+        email: apt.email,
+        owner: apt.owner,
+        apartments: [],
+      });
+    }
+    emailMap.get(apt.email)!.apartments.push(apt);
+  }
+  return Array.from(emailMap.values());
 }
 
 export default function BulkCreateUsersPage() {
@@ -34,6 +73,9 @@ export default function BulkCreateUsersPage() {
     null
   );
   const [error, setError] = useState<string | null>(null);
+  const [confirmPreviews, setConfirmPreviews] = useState<
+    AccountPreview[] | null
+  >(null);
 
   const {
     selectedIds,
@@ -43,6 +85,7 @@ export default function BulkCreateUsersPage() {
     isHoaIndeterminate,
     toggleHoa,
     toggleApartment,
+    selectIds,
   } = useHoaSelection(hoas);
 
   const fetchApartments = async (currentMode: BulkMode) => {
@@ -75,7 +118,7 @@ export default function BulkCreateUsersPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
 
-  const handleCreate = async () => {
+  const doCreate = async () => {
     setSubmitting(true);
     setCreateResult(null);
     setError(null);
@@ -98,6 +141,16 @@ export default function BulkCreateUsersPage() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleCreate = () => {
+    const previews = buildAccountPreviews(hoas, selectedIds);
+    setConfirmPreviews(previews);
+  };
+
+  const handleConfirmCreate = async () => {
+    setConfirmPreviews(null);
+    await doCreate();
   };
 
   const handleAssign = async () => {
@@ -135,6 +188,20 @@ export default function BulkCreateUsersPage() {
           text: 'Brak mieszkań bez kont',
           sub: 'Wszystkie mieszkania mają już przypisane konta użytkowników.',
         };
+
+  const sharedProps = {
+    loading,
+    hoas,
+    allIds,
+    selectedIds,
+    submitting,
+    isHoaSelected,
+    isHoaIndeterminate,
+    onToggleHoa: toggleHoa,
+    onToggleApartment: toggleApartment,
+    onSelectIds: selectIds,
+    emptyMessage: emptyMsg,
+  };
 
   return (
     <Page maxWidth="4xl">
@@ -184,16 +251,7 @@ export default function BulkCreateUsersPage() {
 
         <TabsContent value="create">
           <ApartmentList
-            loading={loading}
-            hoas={hoas}
-            allIds={allIds}
-            selectedIds={selectedIds}
-            submitting={submitting}
-            isHoaSelected={isHoaSelected}
-            isHoaIndeterminate={isHoaIndeterminate}
-            onToggleHoa={toggleHoa}
-            onToggleApartment={toggleApartment}
-            emptyMessage={emptyMsg}
+            {...sharedProps}
             submitLabel={submitting ? 'Tworzenie...' : 'Utwórz konta'}
             onSubmit={handleCreate}
             submitIcon={<UserPlus className="mr-2 h-4 w-4" />}
@@ -202,22 +260,60 @@ export default function BulkCreateUsersPage() {
 
         <TabsContent value="assign">
           <ApartmentList
-            loading={loading}
-            hoas={hoas}
-            allIds={allIds}
-            selectedIds={selectedIds}
-            submitting={submitting}
-            isHoaSelected={isHoaSelected}
-            isHoaIndeterminate={isHoaIndeterminate}
-            onToggleHoa={toggleHoa}
-            onToggleApartment={toggleApartment}
-            emptyMessage={emptyMsg}
+            {...sharedProps}
             submitLabel={submitting ? 'Przypisywanie...' : 'Przypisz konta'}
             onSubmit={handleAssign}
             submitIcon={<UserCheck className="mr-2 h-4 w-4" />}
           />
         </TabsContent>
       </Tabs>
+
+      <AlertDialog
+        open={confirmPreviews !== null}
+        onOpenChange={(open) => {
+          if (!open) setConfirmPreviews(null);
+        }}
+      >
+        <AlertDialogContent className="max-w-lg">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Potwierdź tworzenie kont</AlertDialogTitle>
+            <AlertDialogDescription>
+              Zostanie utworzonych{' '}
+              <strong>{confirmPreviews?.length ?? 0}</strong> nowych kont. Każde
+              konto otrzyma e-mail z tymczasowym hasłem.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="max-h-64 overflow-y-auto rounded-md border text-sm">
+            {confirmPreviews?.map((preview) => (
+              <div key={preview.email} className="border-b p-3 last:border-0">
+                <p className="font-medium">{preview.email}</p>
+                {preview.owner && (
+                  <p className="text-muted-foreground">{preview.owner}</p>
+                )}
+                <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground">
+                  {preview.apartments.map((apt) => (
+                    <li key={apt.id}>
+                      {apt.building ? `Bud. ${apt.building}, ` : ''}Mieszkanie{' '}
+                      {apt.number}
+                      {!apt.isActive && (
+                        <span className="ml-1 text-amber-600 dark:text-amber-400">
+                          (nieaktywne)
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Anuluj</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmCreate}>
+              Potwierdź i utwórz
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Page>
   );
 }

@@ -24,6 +24,8 @@ function makePayment(overrides: Partial<Payment> = {}): Payment {
     dateTo: new Date('2024-12-31'),
     openingBalance: 0,
     closingBalance: -100,
+    openingDebt: 0,
+    openingSurplus: 0,
     januaryPayments: 500,
     februaryPayments: 500,
     marchPayments: 500,

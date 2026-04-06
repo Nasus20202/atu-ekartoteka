@@ -22,8 +22,16 @@ interface HOA {
   externalId: string;
   name: string;
   apartmentCount: number;
+  apartmentsDataDate: string | null;
+  chargesDataDate: string | null;
+  notificationsDataDate: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+function formatDate(dateStr: string | null): string | null {
+  if (!dateStr) return null;
+  return new Date(dateStr).toLocaleDateString('pl-PL');
 }
 
 export default function ApartmentsPage() {
@@ -36,13 +44,9 @@ export default function ApartmentsPage() {
   const fetchHOAs = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({
-        search,
-      });
-
+      const params = new URLSearchParams({ search });
       const response = await fetch(`/api/admin/hoa?${params}`);
       const data = await response.json();
-
       if (response.ok) {
         setHoas(data.homeownersAssociations);
       }
@@ -76,15 +80,9 @@ export default function ApartmentsPage() {
     try {
       const response = await fetch('/api/admin/hoa', {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id,
-          name: editingName,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, name: editingName }),
       });
-
       if (response.ok) {
         setEditingId(null);
         setEditingName('');
@@ -138,87 +136,100 @@ export default function ApartmentsPage() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {hoas.map((hoa) => (
-              <Card
-                key={hoa.id}
-                className="hover:shadow-lg transition-all duration-300"
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      {editingId === hoa.id ? (
-                        <Input
-                          value={editingName}
-                          onChange={(e) => setEditingName(e.target.value)}
-                          className="h-8 mb-2"
-                          autoFocus
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              saveEdit(hoa.id);
-                            } else if (e.key === 'Escape') {
-                              cancelEditing();
-                            }
-                          }}
-                        />
-                      ) : (
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <Building2 className="h-5 w-5 text-muted-foreground shrink-0" />
-                          <span className="truncate">{hoa.name}</span>
-                        </CardTitle>
-                      )}
-                      <CardDescription className="font-mono text-xs">
-                        {hoa.externalId}
-                      </CardDescription>
-                    </div>
-                    {editingId === hoa.id ? (
-                      <div className="flex gap-1 shrink-0">
-                        <Button
-                          size="sm"
-                          onClick={() => saveEdit(hoa.id)}
-                          className="h-8"
-                        >
-                          Zapisz
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={cancelEditing}
-                          className="h-8"
-                        >
-                          Anuluj
-                        </Button>
+            {hoas.map((hoa) => {
+              const aptDate = formatDate(hoa.apartmentsDataDate);
+              const chgDate = formatDate(hoa.chargesDataDate);
+              const notDate = formatDate(hoa.notificationsDataDate);
+              const hasImportDates = aptDate || chgDate || notDate;
+
+              return (
+                <Card
+                  key={hoa.id}
+                  className="hover:shadow-lg transition-all duration-300"
+                >
+                  <CardHeader>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        {editingId === hoa.id ? (
+                          <Input
+                            value={editingName}
+                            onChange={(e) => setEditingName(e.target.value)}
+                            className="h-8 mb-2"
+                            autoFocus
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') saveEdit(hoa.id);
+                              else if (e.key === 'Escape') cancelEditing();
+                            }}
+                          />
+                        ) : (
+                          <CardTitle className="text-lg flex items-center gap-2">
+                            <Building2 className="h-5 w-5 text-muted-foreground shrink-0" />
+                            <span className="truncate">{hoa.name}</span>
+                          </CardTitle>
+                        )}
+                        <CardDescription className="font-mono text-xs">
+                          {hoa.externalId}
+                        </CardDescription>
                       </div>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => startEditing(hoa)}
-                        className="h-8 shrink-0"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-4">
-                    <div className="text-3xl font-bold text-primary">
-                      {hoa.apartmentCount}
+                      {editingId === hoa.id ? (
+                        <div className="flex gap-1 shrink-0">
+                          <Button
+                            size="sm"
+                            onClick={() => saveEdit(hoa.id)}
+                            className="h-8"
+                          >
+                            Zapisz
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={cancelEditing}
+                            className="h-8"
+                          >
+                            Anuluj
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => startEditing(hoa)}
+                          className="h-8 shrink-0"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {hoa.apartmentCount === 1
-                        ? 'mieszkanie'
-                        : hoa.apartmentCount < 5
-                          ? 'mieszkania'
-                          : 'mieszkań'}
-                    </p>
-                  </div>
-                  <Link href={`/admin/apartments/${hoa.id}`}>
-                    <Button className="w-full">Zobacz mieszkania</Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardHeader>
+                  <CardContent>
+                    <div className="mb-4 flex items-start justify-between gap-4">
+                      <div>
+                        <div className="text-3xl font-bold text-primary">
+                          {hoa.apartmentCount}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {hoa.apartmentCount === 1
+                            ? 'mieszkanie'
+                            : hoa.apartmentCount < 5
+                              ? 'mieszkania'
+                              : 'mieszkań'}
+                        </p>
+                      </div>
+                      {hasImportDates && (
+                        <div className="text-right space-y-0.5 text-xs text-muted-foreground">
+                          {aptDate && <p>Mieszkania: {aptDate}</p>}
+                          {chgDate && <p>Naliczenia: {chgDate}</p>}
+                          {notDate && <p>Powiadomienia: {notDate}</p>}
+                        </div>
+                      )}
+                    </div>
+                    <Link href={`/admin/apartments/${hoa.id}`}>
+                      <Button className="w-full">Zobacz mieszkania</Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
 
           {hoas.length === 0 && (

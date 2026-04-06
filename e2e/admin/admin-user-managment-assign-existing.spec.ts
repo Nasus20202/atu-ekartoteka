@@ -3,26 +3,9 @@
  * assigning existing tenant accounts to unassigned apartments.
  */
 
-import * as pg from 'pg';
-
 import { expect, test } from '../fixtures';
 import { createUserWithUnassignedApartment } from '../utils/create-user-with-unassigned-apartment';
-
-async function cleanupByEmail(email: string) {
-  const dbUrl = process.env.DATABASE_URL;
-  if (!dbUrl) return;
-  const client = new pg.Client({ connectionString: dbUrl });
-  try {
-    await client.connect();
-    await client.query(`DELETE FROM "User" WHERE email = $1`, [email]);
-    await client.query(
-      `DELETE FROM "Apartment" WHERE email = $1 AND "userId" IS NULL`,
-      [email]
-    );
-  } finally {
-    await client.end();
-  }
-}
+import { deleteUserAndApartmentsByEmail } from '../utils/delete-user-and-apartments-by-email';
 
 test.describe.serial('Admin Bulk Assign Existing Users', () => {
   let email: string;
@@ -35,7 +18,7 @@ test.describe.serial('Admin Bulk Assign Existing Users', () => {
   });
 
   test.afterEach(async () => {
-    await cleanupByEmail(email);
+    await deleteUserAndApartmentsByEmail(email);
   });
 
   test('assign-existing tab is visible on management page', async ({
@@ -63,6 +46,9 @@ test.describe.serial('Admin Bulk Assign Existing Users', () => {
       adminPage.getByRole('tab', { name: /Przypisz istniejące/i }).click(),
     ]);
 
+    // HOA cards start collapsed — click the HOA name (CollapsibleTrigger) to expand
+    await adminPage.getByText('Test HOA').first().click();
+
     // The seeded apartment email should be visible in the list
     await expect(adminPage.getByText(email)).toBeVisible({ timeout: 10000 });
   });
@@ -81,6 +67,9 @@ test.describe.serial('Admin Bulk Assign Existing Users', () => {
       ),
       adminPage.getByRole('tab', { name: /Przypisz istniejące/i }).click(),
     ]);
+
+    // Expand the first HOA card
+    await adminPage.getByText('Test HOA').first().click();
 
     // Wait for apartment list to appear
     await expect(adminPage.getByText(email)).toBeVisible({ timeout: 10000 });
@@ -129,7 +118,7 @@ test.describe.serial('Admin Bulk Assign Existing Users', () => {
       adminPage.getByRole('tab', { name: /Przypisz istniejące/i }).click(),
     ]);
 
-    // After assignment, the email should NOT appear in the list
+    // After assignment, the email should NOT appear anywhere on the page
     await expect(adminPage.getByText(email)).not.toBeVisible({ timeout: 8000 });
   });
 });

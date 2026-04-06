@@ -1,4 +1,5 @@
 import { EntityStats, HOAContext, TransactionClient } from '@/lib/import/types';
+import { ParseResult } from '@/lib/parsers/parser-utils';
 import { ChargeNotificationEntry } from '@/lib/parsers/pow-czynsz-parser';
 
 type NotificationKey = {
@@ -36,10 +37,21 @@ export async function importNotifications(
   tx: TransactionClient,
   hoa: HOAContext,
   apartmentMap: Map<string, string>,
-  entries: ChargeNotificationEntry[],
+  notificationData: ParseResult<ChargeNotificationEntry>,
   stats: EntityStats,
   errors: string[]
 ): Promise<void> {
+  const { entries, header, footer } = notificationData;
+
+  // Persist header/footer to HOA record
+  await tx.homeownersAssociation.update({
+    where: { id: hoa.id },
+    data: {
+      header: header && header.length > 0 ? header.join('\n') : null,
+      footer: footer && footer.length > 0 ? footer.join('\n') : null,
+    },
+  });
+
   // Filter entries with valid apartment IDs (using combined key: externalOwnerId#externalApartmentId)
   const validEntries = entries
     .map((entry) => ({

@@ -15,6 +15,7 @@ interface ApartmentListProps {
   isHoaIndeterminate: (hoa: HoaGroup) => boolean;
   onToggleHoa: (hoa: HoaGroup) => void;
   onToggleApartment: (id: string) => void;
+  onSelectIds: (ids: string[], checked: boolean) => void;
   emptyMessage: { text: string; sub: string };
   submitLabel: string;
   onSubmit: () => void;
@@ -31,6 +32,7 @@ export function ApartmentList({
   isHoaIndeterminate,
   onToggleHoa,
   onToggleApartment,
+  onSelectIds,
   emptyMessage,
   submitLabel,
   onSubmit,
@@ -76,6 +78,7 @@ export function ApartmentList({
             isHoaIndeterminate={isHoaIndeterminate(hoa)}
             onToggleHoa={() => onToggleHoa(hoa)}
             onToggleApartment={onToggleApartment}
+            onSelectIds={onSelectIds}
           />
         ))}
       </div>

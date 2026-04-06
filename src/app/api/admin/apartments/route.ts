@@ -90,23 +90,19 @@ export async function GET(req: NextRequest) {
       hoaId,
     });
 
-    // Sort apartments: by building asc, then by number (numerically if both are numbers, otherwise lexically)
+    // Sort apartments: natural sort by building, then by number
     const sortedApartments = apartmentsData.sort(
       (a: Apartment, b: Apartment) => {
-        const buildingA = a.building || '';
-        const buildingB = b.building || '';
-        if (buildingA !== buildingB) {
-          return buildingA.localeCompare(buildingB);
-        }
-        const numA = parseInt(a.number);
-        const numB = parseInt(b.number);
-        const isNumA = !isNaN(numA);
-        const isNumB = !isNaN(numB);
-        if (isNumA && isNumB) {
-          return numA - numB;
-        } else {
-          return a.number.localeCompare(b.number);
-        }
+        const buildingCmp = (a.building || '').localeCompare(
+          b.building || '',
+          undefined,
+          { numeric: true, sensitivity: 'base' }
+        );
+        if (buildingCmp !== 0) return buildingCmp;
+        return a.number.localeCompare(b.number, undefined, {
+          numeric: true,
+          sensitivity: 'base',
+        });
       }
     );
 

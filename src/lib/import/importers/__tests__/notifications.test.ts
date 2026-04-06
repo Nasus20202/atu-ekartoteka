@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { importNotifications } from '@/lib/import/importers/notifications';
 import { EntityStats, HOAContext, TransactionClient } from '@/lib/import/types';
+import { ParseResult } from '@/lib/parsers/parser-utils';
 import { ChargeNotificationEntry } from '@/lib/parsers/pow-czynsz-parser';
 
 function createMockTx() {
@@ -11,6 +12,9 @@ function createMockTx() {
       createMany: vi.fn(),
       update: vi.fn(),
       deleteMany: vi.fn(),
+    },
+    homeownersAssociation: {
+      update: vi.fn().mockResolvedValue({}),
     },
   } as unknown as TransactionClient;
 }
@@ -37,6 +41,14 @@ function createNotificationEntry(
     totalAmount: 100,
     ...overrides,
   };
+}
+
+function makeParseResult(
+  entries: ChargeNotificationEntry[],
+  header: string[] = [],
+  footer: string[] = []
+): ParseResult<ChargeNotificationEntry> {
+  return { entries, header, footer };
 }
 
 describe('importNotifications', () => {
@@ -66,7 +78,7 @@ describe('importNotifications', () => {
       mockTx,
       hoa,
       apartmentMap,
-      entries,
+      makeParseResult(entries),
       stats,
       errors
     );
@@ -92,7 +104,7 @@ describe('importNotifications', () => {
       mockTx,
       hoa,
       apartmentMap,
-      entries,
+      makeParseResult(entries),
       stats,
       errors
     );
@@ -142,7 +154,7 @@ describe('importNotifications', () => {
       mockTx,
       hoa,
       apartmentMap,
-      entries,
+      makeParseResult(entries),
       stats,
       errors
     );
@@ -182,7 +194,7 @@ describe('importNotifications', () => {
       mockTx,
       hoa,
       apartmentMap,
-      entries,
+      makeParseResult(entries),
       stats,
       errors
     );
@@ -213,7 +225,7 @@ describe('importNotifications', () => {
       mockTx,
       hoa,
       apartmentMap,
-      entries,
+      makeParseResult(entries),
       stats,
       errors
     );
@@ -239,7 +251,7 @@ describe('importNotifications', () => {
       mockTx,
       hoa,
       apartmentMap,
-      entries,
+      makeParseResult(entries),
       stats,
       errors
     );
@@ -275,7 +287,7 @@ describe('importNotifications', () => {
       mockTx,
       hoa,
       apartmentMap,
-      entries,
+      makeParseResult(entries),
       stats,
       errors
     );
@@ -311,7 +323,7 @@ describe('importNotifications', () => {
       mockTx,
       hoa,
       apartmentMap,
-      entries,
+      makeParseResult(entries),
       stats,
       errors
     );
@@ -345,7 +357,7 @@ describe('importNotifications', () => {
       mockTx,
       hoa,
       apartmentMap,
-      entries,
+      makeParseResult(entries),
       stats,
       errors
     );
@@ -379,7 +391,7 @@ describe('importNotifications', () => {
       mockTx,
       hoa,
       apartmentMap,
-      entries,
+      makeParseResult(entries),
       stats,
       errors
     );
@@ -413,7 +425,7 @@ describe('importNotifications', () => {
       mockTx,
       hoa,
       apartmentMap,
-      entries,
+      makeParseResult(entries),
       stats,
       errors
     );
@@ -451,11 +463,63 @@ describe('importNotifications', () => {
       mockTx,
       hoa,
       apartmentMap,
-      entries,
+      makeParseResult(entries),
       stats,
       errors
     );
 
     expect(stats.created).toBe(2);
+  });
+
+  it('should persist header and footer to HOA', async () => {
+    const entries: ChargeNotificationEntry[] = [];
+    const header = ['HOA Header Line 1', 'HOA Header Line 2'];
+    const footer = ['HOA Footer Line'];
+
+    (
+      mockTx.chargeNotification.findMany as ReturnType<typeof vi.fn>
+    ).mockResolvedValue([]);
+
+    await importNotifications(
+      mockTx,
+      hoa,
+      apartmentMap,
+      makeParseResult(entries, header, footer),
+      stats,
+      errors
+    );
+
+    expect(mockTx.homeownersAssociation.update).toHaveBeenCalledWith({
+      where: { id: 'hoa-1' },
+      data: {
+        header: 'HOA Header Line 1\nHOA Header Line 2',
+        footer: 'HOA Footer Line',
+      },
+    });
+  });
+
+  it('should persist null header and footer when empty', async () => {
+    const entries: ChargeNotificationEntry[] = [];
+
+    (
+      mockTx.chargeNotification.findMany as ReturnType<typeof vi.fn>
+    ).mockResolvedValue([]);
+
+    await importNotifications(
+      mockTx,
+      hoa,
+      apartmentMap,
+      makeParseResult(entries, [], []),
+      stats,
+      errors
+    );
+
+    expect(mockTx.homeownersAssociation.update).toHaveBeenCalledWith({
+      where: { id: 'hoa-1' },
+      data: {
+        header: null,
+        footer: null,
+      },
+    });
   });
 });

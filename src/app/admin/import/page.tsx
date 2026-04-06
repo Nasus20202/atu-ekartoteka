@@ -4,6 +4,7 @@ import {
   AlertCircle,
   CheckCircle,
   Database,
+  ShieldOff,
   Trash2,
   Upload,
   XCircle,
@@ -13,6 +14,7 @@ import { useEffect, useState } from 'react';
 import { useConfirm } from '@/components/confirm-dialog';
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -57,6 +59,9 @@ interface ImportResult {
   charges?: EntityStats;
   notifications?: EntityStats;
   payments?: EntityStats;
+  apartmentsDataDate?: string;
+  chargesDataDate?: string;
+  notificationsDataDate?: string;
 }
 
 interface ImportResponse {
@@ -73,6 +78,7 @@ export default function AdminImportPage() {
   const [dbStats, setDbStats] = useState<DatabaseStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const [cleanImport, setCleanImport] = useState(false);
+  const [skipValidation, setSkipValidation] = useState(false);
   const confirm = useConfirm();
 
   const fetchStats = async () => {
@@ -171,7 +177,7 @@ export default function AdminImportPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ files: fileData, cleanImport }),
+        body: JSON.stringify({ files: fileData, cleanImport, skipValidation }),
       });
 
       const data = await res.json();
@@ -290,6 +296,44 @@ export default function AdminImportPage() {
             </Label>
           </div>
 
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="skipValidation"
+              checked={skipValidation}
+              onCheckedChange={async (checked) => {
+                if (checked === true) {
+                  const first = await confirm({
+                    title: 'Pominięcie walidacji',
+                    description:
+                      'Czy na pewno chcesz pominąć walidację danych? Import może zawierać błędne lub niespójne dane.',
+                    confirmText: 'Tak, pomiń walidację',
+                    cancelText: 'Anuluj',
+                    variant: 'destructive',
+                  });
+                  if (!first) return;
+                  const second = await confirm({
+                    title: 'Potwierdzenie – pominięcie walidacji',
+                    description:
+                      'To jest ostateczne potwierdzenie. Importowane dane nie zostaną sprawdzone pod kątem poprawności sum i sald. Czy kontynuować?',
+                    confirmText: 'Potwierdzam – pomiń walidację',
+                    cancelText: 'Anuluj',
+                    variant: 'destructive',
+                  });
+                  if (!second) return;
+                }
+                setSkipValidation(checked === true);
+              }}
+              disabled={loading}
+            />
+            <Label
+              htmlFor="skipValidation"
+              className="flex cursor-pointer items-center gap-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              <ShieldOff className="h-4 w-4 text-orange-500" />
+              Pomiń walidację
+            </Label>
+          </div>
+
           <Button
             onClick={handleImport}
             disabled={!files || loading}
@@ -315,17 +359,41 @@ export default function AdminImportPage() {
           </Button>
 
           {error && (
-            <div className="flex items-start gap-2 rounded-lg bg-destructive/10 p-4 text-destructive">
-              <XCircle className="mt-0.5 h-5 w-5 shrink-0" />
-              <div>
-                <p className="font-medium">Błąd importu</p>
-                <p className="text-sm">{error}</p>
-              </div>
-            </div>
+            <Alert variant="destructive">
+              <XCircle className="h-4 w-4" />
+              <AlertTitle>Błąd importu</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
 
           {response && (
             <div className="space-y-4">
+              {(() => {
+                const failedHoas = response.results.filter(
+                  (r) => r.errors.length > 0
+                );
+                return failedHoas.length > 0 ? (
+                  <Alert variant="destructive">
+                    <XCircle className="h-4 w-4" />
+                    <AlertTitle>
+                      Wspólnoty z błędami ({failedHoas.length})
+                    </AlertTitle>
+                    <AlertDescription>
+                      <ul className="mt-1 space-y-1">
+                        {failedHoas.map((r) => (
+                          <li key={r.hoaId}>
+                            • <span className="font-medium">{r.hoaId}</span>:{' '}
+                            {r.errors[0]}
+                            {r.errors.length > 1 &&
+                              ` (+${r.errors.length - 1} więcej)`}
+                          </li>
+                        ))}
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
+                ) : null;
+              })()}
+
               {response.success && (
                 <div className="flex items-start gap-2 rounded-lg bg-green-100 p-4 text-green-800 dark:bg-green-900 dark:text-green-200">
                   <CheckCircle className="mt-0.5 h-5 w-5 shrink-0" />
@@ -336,27 +404,69 @@ export default function AdminImportPage() {
               )}
 
               {response.errors.length > 0 && (
-                <div className="rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-950">
-                  <div className="mb-2 flex items-center gap-2 font-medium text-orange-800 dark:text-orange-200">
-                    <AlertCircle className="h-5 w-5" />
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>
                     Błędy plików ({response.errors.length})
-                  </div>
-                  <ul className="space-y-1 text-sm text-orange-700 dark:text-orange-300">
-                    {response.errors.map((err, idx) => (
-                      <li key={idx}>
-                        • {err.file || err.hoaId}: {err.error}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                  </AlertTitle>
+                  <AlertDescription>
+                    <ul className="mt-1 space-y-1">
+                      {response.errors.map((err, idx) => (
+                        <li key={idx}>
+                          • {err.file || err.hoaId}: {err.error}
+                        </li>
+                      ))}
+                    </ul>
+                  </AlertDescription>
+                </Alert>
               )}
 
               {response.results.map((result) => (
-                <Card key={result.hoaId}>
+                <Card
+                  key={result.hoaId}
+                  className={
+                    result.errors.length > 0
+                      ? 'border-destructive/50 dark:border-red-800'
+                      : ''
+                  }
+                >
                   <CardHeader>
-                    <CardTitle className="text-lg">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      {result.errors.length > 0 && (
+                        <XCircle className="h-5 w-5 text-destructive" />
+                      )}
                       Wspólnota: {result.hoaId}
                     </CardTitle>
+                    {(result.apartmentsDataDate ||
+                      result.chargesDataDate ||
+                      result.notificationsDataDate) && (
+                      <div className="mt-1 flex flex-wrap gap-3 text-xs text-muted-foreground">
+                        {result.apartmentsDataDate && (
+                          <span>
+                            Mieszkania:{' '}
+                            {new Date(
+                              result.apartmentsDataDate
+                            ).toLocaleDateString('pl-PL')}
+                          </span>
+                        )}
+                        {result.chargesDataDate && (
+                          <span>
+                            Naliczenia:{' '}
+                            {new Date(
+                              result.chargesDataDate
+                            ).toLocaleDateString('pl-PL')}
+                          </span>
+                        )}
+                        {result.notificationsDataDate && (
+                          <span>
+                            Powiadomienia:{' '}
+                            {new Date(
+                              result.notificationsDataDate
+                            ).toLocaleDateString('pl-PL')}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </CardHeader>
                   <CardContent>
                     <div className="mb-6">
@@ -538,12 +648,13 @@ export default function AdminImportPage() {
                     )}
 
                     {result.errors.length > 0 && (
-                      <div className="mt-4 rounded-lg border border-orange-200 bg-orange-50 p-3 dark:border-orange-800 dark:bg-orange-950">
-                        <div className="mb-2 flex items-center gap-2 text-sm font-medium text-orange-800 dark:text-orange-200">
-                          <AlertCircle className="h-4 w-4" />
-                          Ostrzeżenia ({result.errors.length})
+                      <div className="mt-4 rounded-lg border border-destructive/50 bg-destructive/10 p-3 dark:border-red-800 dark:bg-red-950">
+                        <div className="mb-2 flex items-center gap-2 text-sm font-medium text-destructive dark:text-red-300">
+                          <XCircle className="h-4 w-4" />
+                          Błędy walidacji ({result.errors.length}) — wspólnota
+                          nie została zaimportowana
                         </div>
-                        <ul className="space-y-1 text-sm text-orange-700 dark:text-orange-300">
+                        <ul className="space-y-1 text-sm text-destructive/80 dark:text-red-400">
                           {result.errors.map((err, idx) => (
                             <li key={idx}>• {err}</li>
                           ))}

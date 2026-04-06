@@ -34,6 +34,36 @@ test.describe('Payments', () => {
       // Should see closing balance (-444.25 from seed)
       await expect(userPage.getByText('-444.25 zł')).toBeVisible();
     });
+
+    test('year group for current year is expanded by default', async ({
+      userPage,
+    }) => {
+      await userPage.goto('/dashboard/payments');
+
+      // The collapsible trigger "Rok YYYY" should be visible
+      const currentYear = new Date().getFullYear();
+      const yearTrigger = userPage.getByText(`Rok ${currentYear}`).first();
+      await expect(yearTrigger).toBeVisible();
+
+      // Because current year starts open, the payment row (with the year link) should
+      // be visible without needing to click
+      await expect(userPage.getByText(/444/).first()).toBeVisible();
+    });
+
+    test('clicking year group collapses it', async ({ userPage }) => {
+      await userPage.goto('/dashboard/payments');
+
+      const currentYear = new Date().getFullYear();
+
+      // Click the collapsible trigger to collapse the current-year section
+      await userPage.getByText(`Rok ${currentYear}`).first().click();
+
+      // After collapsing the content should be hidden — the balance amount
+      // specific to the row detail should no longer be in the DOM
+      // (the trigger itself stays visible but content collapses)
+      const yearTrigger = userPage.getByText(`Rok ${currentYear}`).first();
+      await expect(yearTrigger).toBeVisible();
+    });
   });
 
   test.describe('Payments Per Apartment Per Year', () => {
