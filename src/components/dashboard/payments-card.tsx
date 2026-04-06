@@ -6,6 +6,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Payment } from '@/lib/types';
+import { MONTH_NAMES_PL } from '@/lib/utils';
 
 interface PaymentsCardProps {
   payment: Payment;
@@ -13,18 +14,18 @@ interface PaymentsCardProps {
 
 export const PaymentsCard = ({ payment }: PaymentsCardProps) => {
   const months = [
-    { name: 'Styczeń', value: payment.januaryPayments },
-    { name: 'Luty', value: payment.februaryPayments },
-    { name: 'Marzec', value: payment.marchPayments },
-    { name: 'Kwiecień', value: payment.aprilPayments },
-    { name: 'Maj', value: payment.mayPayments },
-    { name: 'Czerwiec', value: payment.junePayments },
-    { name: 'Lipiec', value: payment.julyPayments },
-    { name: 'Sierpień', value: payment.augustPayments },
-    { name: 'Wrzesień', value: payment.septemberPayments },
-    { name: 'Październik', value: payment.octoberPayments },
-    { name: 'Listopad', value: payment.novemberPayments },
-    { name: 'Grudzień', value: payment.decemberPayments },
+    { name: MONTH_NAMES_PL[0], value: payment.januaryPayments },
+    { name: MONTH_NAMES_PL[1], value: payment.februaryPayments },
+    { name: MONTH_NAMES_PL[2], value: payment.marchPayments },
+    { name: MONTH_NAMES_PL[3], value: payment.aprilPayments },
+    { name: MONTH_NAMES_PL[4], value: payment.mayPayments },
+    { name: MONTH_NAMES_PL[5], value: payment.junePayments },
+    { name: MONTH_NAMES_PL[6], value: payment.julyPayments },
+    { name: MONTH_NAMES_PL[7], value: payment.augustPayments },
+    { name: MONTH_NAMES_PL[8], value: payment.septemberPayments },
+    { name: MONTH_NAMES_PL[9], value: payment.octoberPayments },
+    { name: MONTH_NAMES_PL[10], value: payment.novemberPayments },
+    { name: MONTH_NAMES_PL[11], value: payment.decemberPayments },
   ];
 
   const totalPayments = months.reduce((sum, month) => sum + month.value, 0);

@@ -8,6 +8,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import type { Payment } from '@/lib/types';
+import { MONTH_NAMES_PL } from '@/lib/utils';
 
 interface PaymentTableProps {
   payment: Payment;
@@ -16,58 +17,62 @@ interface PaymentTableProps {
 export function PaymentTable({ payment }: PaymentTableProps) {
   const monthlyData = [
     {
-      name: 'Styczeń',
+      name: MONTH_NAMES_PL[0],
       payment: payment.januaryPayments,
       charge: payment.januaryCharges,
     },
     {
-      name: 'Luty',
+      name: MONTH_NAMES_PL[1],
       payment: payment.februaryPayments,
       charge: payment.februaryCharges,
     },
     {
-      name: 'Marzec',
+      name: MONTH_NAMES_PL[2],
       payment: payment.marchPayments,
       charge: payment.marchCharges,
     },
     {
-      name: 'Kwiecień',
+      name: MONTH_NAMES_PL[3],
       payment: payment.aprilPayments,
       charge: payment.aprilCharges,
     },
-    { name: 'Maj', payment: payment.mayPayments, charge: payment.mayCharges },
     {
-      name: 'Czerwiec',
+      name: MONTH_NAMES_PL[4],
+      payment: payment.mayPayments,
+      charge: payment.mayCharges,
+    },
+    {
+      name: MONTH_NAMES_PL[5],
       payment: payment.junePayments,
       charge: payment.juneCharges,
     },
     {
-      name: 'Lipiec',
+      name: MONTH_NAMES_PL[6],
       payment: payment.julyPayments,
       charge: payment.julyCharges,
     },
     {
-      name: 'Sierpień',
+      name: MONTH_NAMES_PL[7],
       payment: payment.augustPayments,
       charge: payment.augustCharges,
     },
     {
-      name: 'Wrzesień',
+      name: MONTH_NAMES_PL[8],
       payment: payment.septemberPayments,
       charge: payment.septemberCharges,
     },
     {
-      name: 'Październik',
+      name: MONTH_NAMES_PL[9],
       payment: payment.octoberPayments,
       charge: payment.octoberCharges,
     },
     {
-      name: 'Listopad',
+      name: MONTH_NAMES_PL[10],
       payment: payment.novemberPayments,
       charge: payment.novemberCharges,
     },
     {
-      name: 'Grudzień',
+      name: MONTH_NAMES_PL[11],
       payment: payment.decemberPayments,
       charge: payment.decemberCharges,
     },
