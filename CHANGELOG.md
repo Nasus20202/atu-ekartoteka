@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.2] - 2026-04-06
+
+- refactor: jwt token structure
+- refactor: use shared month names from utils
+- chore(deps): update dependency vite to v8.0.4 (#278)
+- chore(deps): update dependency dotenv to v17.4.1 (#277)
+
 ## [0.6.1] - 2026-04-05
 
 - feat: add assign existing apartments view
