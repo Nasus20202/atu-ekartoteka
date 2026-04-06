@@ -132,6 +132,7 @@ const credentialsProvider = Credentials({
     email: { label: 'Email', type: 'email' },
     password: { label: 'Hasło', type: 'password' },
     turnstileToken: { label: 'Turnstile Token', type: 'text' },
+    autoLoginBypassToken: { label: 'Auto Login Bypass Token', type: 'text' },
   },
   authorize: credentialsAuthorize,
 });
