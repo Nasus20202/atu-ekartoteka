@@ -122,13 +122,13 @@ The system SHALL allow users to reset a forgotten password via email.
 
 ### Requirement: Session Management
 
-The system SHALL use JWT-based sessions that include user role, status, email verification state, and forced password change flag.
+The system SHALL use JWT-based sessions where the JWT stores only authorization-critical claims (`id`, `role`, `mustChangePassword`) and those claims are exposed on `session.user`.
 
 #### Scenario: Session token refresh
 
 - **GIVEN** an active session
 - **WHEN** the session `update` trigger fires
-- **THEN** the JWT is refreshed with the latest `role`, `status`, `emailVerified`, and `mustChangePassword` values from the database
+- **THEN** the JWT is refreshed with the latest `role` and `mustChangePassword` values from the database
 
 #### Scenario: Unauthenticated access
 

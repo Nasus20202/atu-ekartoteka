@@ -4,15 +4,13 @@ import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
 import { notifyAdminsOfNewUser } from '@/lib/notifications/new-user-registration';
 import { authMetrics } from '@/lib/opentelemetry/auth-metrics';
-import { AccountStatus, AuthMethod, UserRole } from '@/lib/types';
+import { AuthMethod, UserRole } from '@/lib/types';
 
 interface ExtendedUser {
   id: string;
   email: string;
   name: string | null;
   role: UserRole;
-  status: AccountStatus;
-  emailVerified: boolean;
   mustChangePassword: boolean;
 }
 
@@ -24,8 +22,6 @@ export const callbacks: NextAuthConfig['callbacks'] = {
       const extendedUser = user as ExtendedUser;
       token.id = extendedUser.id;
       token.role = extendedUser.role;
-      token.status = extendedUser.status;
-      token.emailVerified = extendedUser.emailVerified;
       token.mustChangePassword = extendedUser.mustChangePassword;
     }
 
@@ -34,16 +30,12 @@ export const callbacks: NextAuthConfig['callbacks'] = {
         where: { id: token.id as string },
         select: {
           role: true,
-          status: true,
-          emailVerified: true,
           mustChangePassword: true,
         },
       });
 
       if (freshUser) {
         token.role = freshUser.role;
-        token.status = freshUser.status;
-        token.emailVerified = freshUser.emailVerified;
         token.mustChangePassword = freshUser.mustChangePassword;
       }
     }
@@ -56,8 +48,6 @@ export const callbacks: NextAuthConfig['callbacks'] = {
       Object.assign(session.user, {
         id: token.id as string,
         role: token.role as string,
-        status: token.status as string,
-        emailVerified: token.emailVerified as boolean,
         mustChangePassword: token.mustChangePassword as boolean,
       });
     }

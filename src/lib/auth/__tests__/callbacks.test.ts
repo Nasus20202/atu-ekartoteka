@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockUser, mockUsers } from '@/__tests__/fixtures';
 import { callbacks } from '@/lib/auth/callbacks';
 import { prisma } from '@/lib/database/prisma';
-import { AccountStatus, UserRole } from '@/lib/types';
+import { UserRole } from '@/lib/types';
 
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
@@ -58,7 +58,6 @@ describe('callbacks.jwt', () => {
 
     expect(result!.id).toBe('user-123');
     expect(result!.role).toBe(UserRole.TENANT);
-    expect(result!.status).toBe(AccountStatus.APPROVED);
     expect(result!.mustChangePassword).toBe(false);
   });
 
@@ -94,8 +93,6 @@ describe('callbacks.jwt', () => {
       where: { id: 'user-123' },
       select: {
         role: true,
-        status: true,
-        emailVerified: true,
         mustChangePassword: true,
       },
     });
@@ -130,8 +127,6 @@ describe('callbacks.session', () => {
     const token = makeToken({
       id: 'user-123',
       role: UserRole.TENANT,
-      status: AccountStatus.APPROVED,
-      emailVerified: true,
       mustChangePassword: false,
     });
 
@@ -146,7 +141,6 @@ describe('callbacks.session', () => {
     expect(result.user).toMatchObject({
       id: 'user-123',
       role: UserRole.TENANT,
-      status: AccountStatus.APPROVED,
       mustChangePassword: false,
     });
   });
