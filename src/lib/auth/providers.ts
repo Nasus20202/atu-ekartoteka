@@ -121,6 +121,7 @@ export async function credentialsAuthorize(
     email: user.email,
     name: user.name,
     role: user.role as UserRole,
+    emailVerified: user.emailVerified,
     mustChangePassword: user.mustChangePassword,
   };
 }

@@ -11,6 +11,7 @@ interface ExtendedUser {
   email: string;
   name: string | null;
   role: UserRole;
+  emailVerified: boolean;
   mustChangePassword: boolean;
 }
 
@@ -22,6 +23,7 @@ export const callbacks: NextAuthConfig['callbacks'] = {
       const extendedUser = user as ExtendedUser;
       token.id = extendedUser.id;
       token.role = extendedUser.role;
+      token.emailVerified = extendedUser.emailVerified;
       token.mustChangePassword = extendedUser.mustChangePassword;
     }
 
@@ -30,12 +32,14 @@ export const callbacks: NextAuthConfig['callbacks'] = {
         where: { id: token.id as string },
         select: {
           role: true,
+          emailVerified: true,
           mustChangePassword: true,
         },
       });
 
       if (freshUser) {
         token.role = freshUser.role;
+        token.emailVerified = freshUser.emailVerified;
         token.mustChangePassword = freshUser.mustChangePassword;
       }
     }
@@ -48,6 +52,7 @@ export const callbacks: NextAuthConfig['callbacks'] = {
       Object.assign(session.user, {
         id: token.id as string,
         role: token.role as string,
+        emailVerified: token.emailVerified as boolean,
         mustChangePassword: token.mustChangePassword as boolean,
       });
     }

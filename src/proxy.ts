@@ -9,11 +9,12 @@ function applySecurityHeaders(response: NextResponse): NextResponse {
 
   const csp = [
     `default-src 'self'`,
-    `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''}${trackingOrigins ? ` ${trackingOrigins}` : ''}`,
+    `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://challenges.cloudflare.com${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''}${trackingOrigins ? ` ${trackingOrigins}` : ''}`,
     `style-src 'self' 'unsafe-inline'`,
     `img-src 'self' data: blob: https:`,
     `font-src 'self'`,
-    `connect-src 'self' data:${trackingOrigins ? ` ${trackingOrigins}` : ''}`,
+    `connect-src 'self' data: https://challenges.cloudflare.com${trackingOrigins ? ` ${trackingOrigins}` : ''}`,
+    `frame-src 'self' https://challenges.cloudflare.com`,
     `frame-ancestors 'none'`,
     `base-uri 'self'`,
     `form-action 'self'`,

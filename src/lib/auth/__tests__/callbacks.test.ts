@@ -58,6 +58,7 @@ describe('callbacks.jwt', () => {
 
     expect(result!.id).toBe('user-123');
     expect(result!.role).toBe(UserRole.TENANT);
+    expect(result!.emailVerified).toBe(true);
     expect(result!.mustChangePassword).toBe(false);
   });
 
@@ -93,9 +94,11 @@ describe('callbacks.jwt', () => {
       where: { id: 'user-123' },
       select: {
         role: true,
+        emailVerified: true,
         mustChangePassword: true,
       },
     });
+    expect(result!.emailVerified).toBe(true);
     expect(result!.mustChangePassword).toBe(false);
   });
 
@@ -127,6 +130,7 @@ describe('callbacks.session', () => {
     const token = makeToken({
       id: 'user-123',
       role: UserRole.TENANT,
+      emailVerified: true,
       mustChangePassword: false,
     });
 
@@ -141,6 +145,7 @@ describe('callbacks.session', () => {
     expect(result.user).toMatchObject({
       id: 'user-123',
       role: UserRole.TENANT,
+      emailVerified: true,
       mustChangePassword: false,
     });
   });
