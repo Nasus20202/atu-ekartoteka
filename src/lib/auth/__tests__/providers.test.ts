@@ -200,6 +200,7 @@ describe('credentialsAuthorize', () => {
         email: 'test@example.com',
         name: 'Test User',
         role: UserRole.TENANT,
+        emailVerified: true,
         mustChangePassword: false,
       });
     });
