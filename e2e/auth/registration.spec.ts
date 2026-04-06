@@ -18,11 +18,8 @@ test.describe('Registration', () => {
     await page.getByLabel('Potwierdź hasło').fill(password);
     await page.getByRole('button', { name: /Zarejestruj się/i }).click();
 
-    // Should redirect to login page with success message
-    await expect(page).toHaveURL(/\/login/, { timeout: 15000 });
-    await expect(
-      page.getByText(/Konto utworzone|Account created/i)
-    ).toBeVisible();
+    // Should automatically sign in and redirect to dashboard
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
   });
 
   test.describe('Validation', () => {
