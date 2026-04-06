@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
-const TOKEN_TTL_MS = 5 * 60 * 1000;
+const TOKEN_TTL_SECONDS = 15;
+const TOKEN_TTL_MS = TOKEN_TTL_SECONDS * 1000;
 
 function getSecret(): string | null {
   return process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET ?? null;
