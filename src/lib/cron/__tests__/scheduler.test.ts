@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { CronScheduler } from '@/lib/cron/scheduler';
+import { CronScheduler, getCronScheduler } from '@/lib/cron/scheduler';
 
 // Mock node-cron
 vi.mock('node-cron', () => ({
@@ -75,6 +75,27 @@ describe('CronScheduler', () => {
       // Should not throw when task fails
       await expect(wrappedTask()).resolves.toBeUndefined();
     });
+
+    it('should execute the task successfully', async () => {
+      const task = vi.fn().mockResolvedValue(undefined);
+
+      scheduler.scheduleTask('success-task', '0 * * * *', task);
+
+      const wrappedTask = vi.mocked(cron.schedule).mock
+        .calls[0][1] as () => Promise<void>;
+
+      await wrappedTask();
+
+      expect(task).toHaveBeenCalled();
+    });
+
+    it('should throw when given an invalid cron expression', () => {
+      vi.mocked(cron.validate).mockReturnValueOnce(false);
+
+      expect(() => {
+        scheduler.scheduleTask('bad-task', 'not-a-cron', vi.fn());
+      }).toThrow('Invalid cron schedule: not-a-cron');
+    });
   });
 
   describe('stopTask', () => {
@@ -147,5 +168,17 @@ describe('CronScheduler', () => {
       const tasks = scheduler.getTasks();
       expect(tasks).toEqual([]);
     });
+  });
+});
+
+describe('getCronScheduler', () => {
+  it('returns the same instance on subsequent calls', () => {
+    const a = getCronScheduler();
+    const b = getCronScheduler();
+    expect(a).toBe(b);
+  });
+
+  it('returns a CronScheduler instance', () => {
+    expect(getCronScheduler()).toBeInstanceOf(CronScheduler);
   });
 });
