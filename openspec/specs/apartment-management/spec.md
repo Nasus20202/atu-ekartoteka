@@ -40,11 +40,11 @@ The system SHALL allow admins to list apartments with filtering, search, and pag
 - **WHEN** they provide a search query like `17/12`
 - **THEN** only apartments matching building `17` AND number `12` are returned
 
-#### Scenario: Sorted results
+#### Scenario: Sorted results use natural order
 
 - **GIVEN** any apartment listing request
 - **WHEN** apartments are returned
-- **THEN** they are sorted by building ascending, then by apartment number ascending (numerically if both are integers, otherwise lexically)
+- **THEN** they are sorted by building ascending using natural (numeric-aware) sort, then by apartment number ascending using natural sort — so `"10"` sorts after `"9"`, not before it
 
 ---
 
