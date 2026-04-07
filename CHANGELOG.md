@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-04-07
+
+- test: improve unit test coverage across key business logic files
+- docs: update openspec
+- feat: general improvements
+- chore(deps): update dependency @react-pdf/renderer to v4.4.0 (#286)
+- chore(deps): update dependency eslint-plugin-simple-import-sort to v13
+
 ## [0.6.4] - 2026-04-06
 
 - fix: stale email confirmation
