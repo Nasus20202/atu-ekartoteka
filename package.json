@@ -116,19 +116,5 @@
     "*.{json,css,md}": [
       "prettier --write"
     ]
-  },
-  "pnpm": {
-    "overrides": {
-      "@auth/core": "*"
-    },
-    "onlyBuiltDependencies": [
-      "@prisma/engines",
-      "bcrypt",
-      "esbuild",
-      "prisma",
-      "protobufjs",
-      "sharp",
-      "unrs-resolver"
-    ]
   }
 }
