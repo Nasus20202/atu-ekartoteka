@@ -1,6 +1,8 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+import { DecimalLike, toDecimal } from '@/lib/money/decimal';
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -29,11 +31,11 @@ export const formatPeriod = (period: string): string => {
   return period;
 };
 
-export const formatCurrency = (amount: number): string => {
+export const formatCurrency = (amount: DecimalLike): string => {
   return new Intl.NumberFormat('pl-PL', {
     style: 'currency',
     currency: 'PLN',
-  }).format(amount);
+  }).format(Number(toDecimal(amount).toFixed(2)));
 };
 
 export const formatDate = (date: Date): string => {

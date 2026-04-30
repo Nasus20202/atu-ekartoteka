@@ -1,510 +1,223 @@
+import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { AccountStatus, AuthMethod, UserRole } from '@/lib/types';
+import { AccountStatus, UserRole } from '@/lib/types';
 
-const mockUserFindMany = vi.fn();
-const mockUserFindUnique = vi.fn();
-const mockUserUpdate = vi.fn();
-const mockApartmentFindUnique = vi.fn();
+const mockAuth = vi.fn();
+const mockFindTenantUsers = vi.fn();
+const mockFindUserById = vi.fn();
+const mockFindApartmentsByIds = vi.fn();
+const mockUpdateUserStatus = vi.fn();
+const mockNotifyAccountApproved = vi.fn();
 
-vi.mock('@/lib/database/prisma', () => ({
-  prisma: {
-    user: {
-      findMany: mockUserFindMany,
-      findUnique: mockUserFindUnique,
-      update: mockUserUpdate,
-    },
-    apartment: {
-      findUnique: mockApartmentFindUnique,
-    },
-  },
+vi.mock('@/auth', () => ({ auth: mockAuth }));
+
+vi.mock('@/lib/logger', () => ({
+  createLogger: () => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  }),
 }));
 
-const { prisma } = await import('@/lib/database/prisma');
+vi.mock('@/lib/queries/users/find-tenant-users', () => ({
+  findTenantUsers: mockFindTenantUsers,
+}));
 
-describe('Admin Users API', () => {
+vi.mock('@/lib/queries/users/find-user-by-id', () => ({
+  findUserById: mockFindUserById,
+}));
+
+vi.mock('@/lib/queries/apartments/find-apartments-by-ids', () => ({
+  findApartmentsByIds: mockFindApartmentsByIds,
+}));
+
+vi.mock('@/lib/mutations/users/update-user-status', () => ({
+  updateUserStatus: mockUpdateUserStatus,
+}));
+
+vi.mock('@/lib/notifications/account-status', () => ({
+  notifyAccountApproved: mockNotifyAccountApproved,
+}));
+
+function adminSession() {
+  return {
+    user: { id: 'admin-id', email: 'admin@example.com', role: UserRole.ADMIN },
+    expires: new Date().toISOString(),
+  };
+}
+
+function makeGetRequest(searchParams?: Record<string, string>) {
+  const url = new URL('http://localhost/api/admin/users');
+  if (searchParams) {
+    for (const [key, value] of Object.entries(searchParams)) {
+      url.searchParams.set(key, value);
+    }
+  }
+  return { url: url.toString() } as NextRequest;
+}
+
+function makePatchRequest(body: unknown) {
+  return {
+    json: vi.fn().mockResolvedValue(body),
+  } as unknown as NextRequest;
+}
+
+describe('/api/admin/users route', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockAuth.mockResolvedValue(adminSession());
+    mockFindTenantUsers.mockResolvedValue({ users: [], total: 0 });
   });
 
-  describe('GET /api/admin/users', () => {
-    it('should return all tenant users when no filter is applied', async () => {
-      const mockUsers = [
-        {
-          id: '1',
-          email: 'tenant1@example.com',
-          password: 'hashedpassword',
-          name: 'Tenant One',
-          role: UserRole.TENANT,
-          status: AccountStatus.PENDING,
-          emailVerified: true,
+  describe('GET', () => {
+    it('returns tenant users by default', async () => {
+      const { GET } = await import('../route');
 
-          authMethod: AuthMethod.CREDENTIALS,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          apartments: [],
-        },
-        {
-          id: '2',
-          email: 'tenant2@example.com',
-          password: 'hashedpassword',
-          name: 'Tenant Two',
-          role: UserRole.TENANT,
-          status: AccountStatus.APPROVED,
-          emailVerified: true,
+      const response = await GET(makeGetRequest());
+      const data = await response.json();
 
-          authMethod: AuthMethod.CREDENTIALS,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          apartments: [
-            {
-              id: '1',
-              externalId: 'EXT1',
-              owner: 'Owner Name',
-              email: null,
-              address: 'Test Street',
-              building: 'B1',
-              number: '1',
-              postalCode: '00-001',
-              city: 'Warsaw',
-              area: 50,
-              height: 2.5,
-              isActive: true,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            },
-          ],
-        },
-      ];
-
-      mockUserFindMany.mockResolvedValue(mockUsers);
-
-      const result = await prisma.user.findMany({
-        where: { role: UserRole.TENANT },
-        include: { apartments: true },
-        orderBy: [{ createdAt: 'desc' }],
+      expect(response.status).toBe(200);
+      expect(mockFindTenantUsers).toHaveBeenCalledWith(
+        null,
+        1,
+        50,
+        null,
+        UserRole.TENANT
+      );
+      expect(data.pagination).toEqual({
+        page: 1,
+        limit: 50,
+        total: 0,
+        totalPages: 0,
       });
-
-      expect(result).toHaveLength(2);
-      expect(result[0].role).toBe(UserRole.TENANT);
-      expect(result[1].apartments).toBeDefined();
     });
 
-    it('should filter users by PENDING status', async () => {
-      const mockPendingUsers = [
-        {
-          id: '1',
-          email: 'pending@example.com',
-          password: 'hashedpassword',
-          name: 'Pending User',
-          role: UserRole.TENANT,
-          status: AccountStatus.PENDING,
-          emailVerified: true,
-
-          authMethod: AuthMethod.CREDENTIALS,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          apartments: [],
-        },
-      ];
-
-      mockUserFindMany.mockResolvedValue(mockPendingUsers);
-
-      const result = await prisma.user.findMany({
-        where: {
-          status: AccountStatus.PENDING,
-          emailVerified: true,
-
-          authMethod: AuthMethod.CREDENTIALS,
-          role: UserRole.TENANT,
-        },
-        include: { apartments: true },
-        orderBy: [{ createdAt: 'desc' }],
-      });
-
-      expect(result).toHaveLength(1);
-      expect(result[0].status).toBe(AccountStatus.PENDING);
-    });
-
-    it('should filter users by APPROVED status', async () => {
-      const mockApprovedUsers = [
-        {
-          id: '2',
-          email: 'approved@example.com',
-          password: 'hashedpassword',
-          name: 'Approved User',
-          role: UserRole.TENANT,
-          status: AccountStatus.APPROVED,
-          emailVerified: true,
-
-          authMethod: AuthMethod.CREDENTIALS,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          apartment: {
-            id: '1',
-            externalId: 'EXT1',
-            owner: 'Owner',
-            address: 'Street',
-            building: 'B1',
-            number: '1',
-            postalCode: '00-001',
-            city: 'City',
-            area: 50,
-            height: 2.5,
-            isActive: true,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+    it('returns admins of all statuses when role=ADMIN', async () => {
+      mockFindTenantUsers.mockResolvedValue({
+        users: [
+          {
+            id: 'admin-1',
+            email: 'admin1@example.com',
+            name: 'Admin One',
+            role: UserRole.ADMIN,
+            status: AccountStatus.APPROVED,
+            apartments: [],
           },
-        },
-      ];
-
-      mockUserFindMany.mockResolvedValue(mockApprovedUsers);
-
-      const result = await prisma.user.findMany({
-        where: {
-          status: AccountStatus.APPROVED,
-          emailVerified: true,
-
-          authMethod: AuthMethod.CREDENTIALS,
-          role: UserRole.TENANT,
-        },
-        include: { apartments: true },
-        orderBy: [{ createdAt: 'desc' }],
-      });
-
-      expect(result).toHaveLength(1);
-      expect(result[0].status).toBe(AccountStatus.APPROVED);
-    });
-  });
-
-  describe('PATCH /api/admin/users', () => {
-    it('should approve a user without apartment', async () => {
-      const mockUser = {
-        id: '1',
-        email: 'user@example.com',
-        password: 'hashedpassword',
-        name: 'Test User',
-        role: UserRole.TENANT,
-        status: AccountStatus.PENDING,
-        emailVerified: true,
-
-        authMethod: AuthMethod.CREDENTIALS,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        apartments: [],
-      };
-
-      const updatedUser = {
-        ...mockUser,
-        status: AccountStatus.APPROVED,
-        emailVerified: true,
-
-        authMethod: AuthMethod.CREDENTIALS,
-        apartments: [],
-      };
-
-      mockUserFindUnique.mockResolvedValue(mockUser);
-      mockUserUpdate.mockResolvedValue(updatedUser);
-
-      const result = await prisma.user.update({
-        where: { id: '1' },
-        data: {
-          status: AccountStatus.APPROVED,
-          emailVerified: true,
-
-          authMethod: AuthMethod.CREDENTIALS,
-          apartments: { set: [] },
-        },
-        include: { apartments: true },
-      });
-
-      expect(result.status).toBe(AccountStatus.APPROVED);
-      expect(result.apartments).toHaveLength(0);
-    });
-
-    it('should approve a user and assign apartment', async () => {
-      const mockUser = {
-        id: '1',
-        email: 'user@example.com',
-        password: 'hashedpassword',
-        name: 'Test User',
-        role: UserRole.TENANT,
-        status: AccountStatus.PENDING,
-        emailVerified: true,
-
-        authMethod: AuthMethod.CREDENTIALS,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        apartments: [],
-      };
-
-      const mockApartment = {
-        id: 'apt1',
-        homeownersAssociationId: 'hoa1',
-        externalId: 'EXT1',
-        owner: 'Owner',
-        email: null,
-        address: 'Street',
-        building: 'B1',
-        number: '1',
-        postalCode: '00-001',
-        city: 'City',
-        area: 50,
-        height: 2.5,
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        userId: null,
-        user: null,
-      };
-
-      const updatedUser = {
-        ...mockUser,
-        status: AccountStatus.APPROVED,
-        emailVerified: true,
-
-        authMethod: AuthMethod.CREDENTIALS,
-        apartments: [mockApartment],
-      };
-
-      mockUserFindUnique.mockResolvedValue(mockUser);
-      mockApartmentFindUnique.mockResolvedValue(mockApartment);
-      mockUserUpdate.mockResolvedValue(updatedUser);
-
-      // Check apartment is available
-      const apartment = await prisma.apartment.findUnique({
-        where: { id: 'apt1' },
-        include: { user: true },
-      });
-
-      expect(apartment?.user).toBeNull();
-
-      // Update user
-      const result = await prisma.user.update({
-        where: { id: '1' },
-        data: {
-          status: AccountStatus.APPROVED,
-          emailVerified: true,
-
-          authMethod: AuthMethod.CREDENTIALS,
-        },
-        include: { apartments: true },
-      });
-
-      expect(result.status).toBe(AccountStatus.APPROVED);
-      expect(result.apartments).toBeDefined();
-    });
-
-    it('should reject a user', async () => {
-      const mockUser = {
-        id: '1',
-        email: 'user@example.com',
-        password: 'hashedpassword',
-        name: 'Test User',
-        role: UserRole.TENANT,
-        status: AccountStatus.PENDING,
-        emailVerified: true,
-
-        authMethod: AuthMethod.CREDENTIALS,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        apartments: [],
-      };
-
-      const updatedUser = {
-        ...mockUser,
-        status: AccountStatus.REJECTED,
-        emailVerified: true,
-
-        authMethod: AuthMethod.CREDENTIALS,
-        apartments: [],
-      };
-
-      mockUserFindUnique.mockResolvedValue(mockUser);
-      mockUserUpdate.mockResolvedValue(updatedUser);
-
-      const result = await prisma.user.update({
-        where: { id: '1' },
-        data: {
-          status: AccountStatus.REJECTED,
-          emailVerified: true,
-
-          authMethod: AuthMethod.CREDENTIALS,
-          apartments: { set: [] },
-        },
-        include: { apartments: true },
-      });
-
-      expect(result.status).toBe(AccountStatus.REJECTED);
-      expect(result.apartments).toHaveLength(0);
-    });
-
-    it('should prevent assigning already occupied apartment', async () => {
-      const mockUser = {
-        id: '1',
-        email: 'user@example.com',
-        password: 'hashedpassword',
-        name: 'Test User',
-        role: UserRole.TENANT,
-        status: AccountStatus.PENDING,
-        emailVerified: true,
-
-        authMethod: AuthMethod.CREDENTIALS,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        apartments: [],
-      };
-
-      const occupiedApartment = {
-        id: 'apt1',
-        homeownersAssociationId: 'hoa1',
-        externalId: 'EXT1',
-        owner: 'Owner',
-        email: null,
-        address: 'Street',
-        building: 'B1',
-        number: '1',
-        postalCode: '00-001',
-        city: 'City',
-        area: 50,
-        height: 2.5,
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        userId: 'other-user',
-        user: {
-          id: 'other-user',
-          email: 'other@example.com',
-          password: 'hashedpassword',
-          name: 'Other User',
-          role: UserRole.TENANT,
-          status: AccountStatus.APPROVED,
-          emailVerified: true,
-
-          authMethod: AuthMethod.CREDENTIALS,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      };
-
-      mockUserFindUnique.mockResolvedValue(mockUser);
-      mockApartmentFindUnique.mockResolvedValue(occupiedApartment);
-
-      const apartment = await prisma.apartment.findUnique({
-        where: { id: 'apt1' },
-        include: { user: true },
-      });
-
-      expect(apartment?.user).not.toBeNull();
-      expect(apartment?.user?.id).not.toBe('1');
-    });
-
-    it('should validate status values', () => {
-      const validStatuses = [
-        AccountStatus.PENDING,
-        AccountStatus.APPROVED,
-        AccountStatus.REJECTED,
-      ];
-
-      const status = AccountStatus.APPROVED;
-      expect(validStatuses.includes(status)).toBe(true);
-
-      const invalidStatus = 'INVALID' as AccountStatus;
-      expect(validStatuses.includes(invalidStatus)).toBe(false);
-    });
-
-    it('should remove apartment when rejecting user', async () => {
-      const mockUser = {
-        id: '1',
-        email: 'user@example.com',
-        password: 'hashedpassword',
-        name: 'Test User',
-        role: UserRole.TENANT,
-        status: AccountStatus.APPROVED,
-        emailVerified: true,
-
-        authMethod: AuthMethod.CREDENTIALS,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        apartments: [{ id: 'apt1', externalId: 'EXT1', number: '1' }],
-      };
-
-      const updatedUser = {
-        ...mockUser,
-        status: AccountStatus.REJECTED,
-        emailVerified: true,
-
-        authMethod: AuthMethod.CREDENTIALS,
-        apartments: [],
-      };
-
-      mockUserFindUnique.mockResolvedValue(mockUser);
-      mockUserUpdate.mockResolvedValue(updatedUser);
-
-      const result = await prisma.user.update({
-        where: { id: '1' },
-        data: {
-          status: AccountStatus.REJECTED,
-          emailVerified: true,
-
-          authMethod: AuthMethod.CREDENTIALS,
-          apartments: { set: [] },
-        },
-        include: { apartments: true },
-      });
-
-      expect(result.status).toBe(AccountStatus.REJECTED);
-      expect(result.apartments).toHaveLength(0);
-    });
-
-    it('should update apartments for already approved user without sending email', async () => {
-      const mockUser = {
-        id: '1',
-        email: 'user@example.com',
-        password: 'hashedpassword',
-        name: 'Test User',
-        role: UserRole.TENANT,
-        status: AccountStatus.APPROVED,
-        emailVerified: true,
-
-        authMethod: AuthMethod.CREDENTIALS,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        apartments: [{ id: 'apt1', externalId: 'EXT1', number: '1' }],
-      };
-
-      const updatedUser = {
-        ...mockUser,
-        status: AccountStatus.APPROVED,
-        emailVerified: true,
-
-        authMethod: AuthMethod.CREDENTIALS,
-        apartments: [
-          { id: 'apt1', externalId: 'EXT1', number: '1' },
-          { id: 'apt2', externalId: 'EXT2', number: '2' },
+          {
+            id: 'admin-2',
+            email: 'admin2@example.com',
+            name: 'Admin Two',
+            role: UserRole.ADMIN,
+            status: AccountStatus.REJECTED,
+            apartments: [],
+          },
         ],
-      };
-
-      mockUserFindUnique.mockResolvedValue(mockUser);
-      mockUserUpdate.mockResolvedValue(updatedUser);
-
-      const result = await prisma.user.update({
-        where: { id: '1' },
-        data: {
-          status: AccountStatus.APPROVED,
-          emailVerified: true,
-
-          authMethod: AuthMethod.CREDENTIALS,
-          apartments: {
-            set: [{ id: 'apt1' }, { id: 'apt2' }],
-          },
-        },
-        include: { apartments: true },
+        total: 2,
       });
 
-      expect(result.status).toBe(AccountStatus.APPROVED);
-      expect(result.apartments).toHaveLength(2);
-      // Email notification should NOT be sent since user was already APPROVED
+      const { GET } = await import('../route');
+
+      const response = await GET(
+        makeGetRequest({ role: 'ADMIN', status: 'PENDING', limit: '20' })
+      );
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(mockFindTenantUsers).toHaveBeenCalledWith(
+        null,
+        1,
+        20,
+        null,
+        UserRole.ADMIN
+      );
+      expect(data.users).toHaveLength(2);
+      expect(
+        data.users.every(
+          (user: { role: UserRole }) => user.role === UserRole.ADMIN
+        )
+      ).toBe(true);
+    });
+
+    it('rejects invalid role values', async () => {
+      const { GET } = await import('../route');
+
+      const response = await GET(makeGetRequest({ role: 'SUPERADMIN' }));
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe('Nieprawidłowa rola');
+      expect(mockFindTenantUsers).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('PATCH', () => {
+    it('does not send approval email when approving an admin user', async () => {
+      mockFindUserById.mockResolvedValue({
+        id: 'admin-user',
+        email: 'target-admin@example.com',
+        name: 'Target Admin',
+        role: UserRole.ADMIN,
+        status: AccountStatus.PENDING,
+      });
+      mockFindApartmentsByIds.mockResolvedValue([{ id: 'apt-1', user: null }]);
+      mockUpdateUserStatus.mockResolvedValue({
+        id: 'admin-user',
+        email: 'target-admin@example.com',
+        name: 'Target Admin',
+        role: UserRole.ADMIN,
+        status: AccountStatus.APPROVED,
+        apartments: [{ id: 'apt-1' }],
+      });
+
+      const { PATCH } = await import('../route');
+
+      const response = await PATCH(
+        makePatchRequest({
+          userId: 'admin-user',
+          status: AccountStatus.APPROVED,
+          apartmentIds: ['apt-1'],
+        })
+      );
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(mockNotifyAccountApproved).not.toHaveBeenCalled();
+      expect(data.user.role).toBe(UserRole.ADMIN);
+    });
+
+    it('sends approval email when approving a tenant user for the first time', async () => {
+      mockFindUserById.mockResolvedValue({
+        id: 'tenant-user',
+        email: 'tenant@example.com',
+        name: 'Tenant User',
+        role: UserRole.TENANT,
+        status: AccountStatus.PENDING,
+      });
+      mockUpdateUserStatus.mockResolvedValue({
+        id: 'tenant-user',
+        email: 'tenant@example.com',
+        name: 'Tenant User',
+        role: UserRole.TENANT,
+        status: AccountStatus.APPROVED,
+        apartments: [],
+      });
+
+      const { PATCH } = await import('../route');
+
+      const response = await PATCH(
+        makePatchRequest({
+          userId: 'tenant-user',
+          status: AccountStatus.APPROVED,
+          apartmentIds: [],
+        })
+      );
+
+      expect(response.status).toBe(200);
+      expect(mockNotifyAccountApproved).toHaveBeenCalledWith(
+        'tenant@example.com',
+        'Tenant User'
+      );
     });
   });
 });

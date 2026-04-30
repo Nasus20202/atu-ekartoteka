@@ -1,26 +1,30 @@
 import { Calendar } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { ChargeDisplay } from '@/lib/types';
+import type { SerializableChargeDisplay } from '@/lib/charges/serialize-charge';
+import { type DecimalLike, toDecimal } from '@/lib/money/decimal';
 import { formatCurrency, formatDate, formatPeriod } from '@/lib/utils';
 
 type ChargeItemProps = {
-  charge: ChargeDisplay;
+  charge: SerializableChargeDisplay;
 };
 
 function ChargeItem({ charge }: ChargeItemProps) {
+  const quantityLabel = toDecimal(charge.quantity).toString();
+
   return (
     <div className="flex flex-col gap-2 rounded bg-muted/50 p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
       <div className="flex-1">
         <p className="font-medium">{charge.description}</p>
         <p className="text-xs text-muted-foreground">
-          {formatDate(charge.dateFrom)} - {formatDate(charge.dateTo)}
+          {formatDate(new Date(charge.dateFrom))} -{' '}
+          {formatDate(new Date(charge.dateTo))}
         </p>
       </div>
       <div className="flex shrink-0 items-center justify-end gap-4 text-right">
         <div>
           <p className="text-muted-foreground">
-            {charge.quantity} {charge.unit}
+            {quantityLabel} {charge.unit}
           </p>
           <p className="text-xs text-muted-foreground">
             {formatCurrency(charge.unitPrice)} / {charge.unit}
@@ -36,8 +40,8 @@ function ChargeItem({ charge }: ChargeItemProps) {
 
 type PeriodCardProps = {
   period: string;
-  charges: ChargeDisplay[];
-  totalAmount: number;
+  charges: SerializableChargeDisplay[];
+  totalAmount: DecimalLike;
   action?: React.ReactNode;
 };
 

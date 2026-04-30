@@ -4,23 +4,22 @@ import { FileDown } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { toDecimal } from '@/lib/money/decimal';
+import {
+  PAYMENT_AMOUNT_FIELD_KEYS,
+  type SerializablePayment,
+} from '@/lib/payments/serialize-payment';
 import type { Payment } from '@/lib/types';
-
-export type SerializablePayment = Omit<
-  Payment,
-  'dateFrom' | 'dateTo' | 'createdAt' | 'updatedAt'
-> & {
-  dateFrom: string;
-  dateTo: string;
-  createdAt: string;
-  updatedAt: string;
-};
 
 interface DownloadPaymentPdfButtonProps {
   apartmentLabel: string;
   hoaName: string;
   payment: SerializablePayment;
 }
+
+export type { SerializablePayment };
+
+type PaymentAmountFieldKey = (typeof PAYMENT_AMOUNT_FIELD_KEYS)[number];
 
 export function DownloadPaymentPdfButton({
   apartmentLabel,
@@ -36,8 +35,13 @@ export function DownloadPaymentPdfButton({
       const { PaymentPdfDocument } =
         await import('@/components/pdf/payment-pdf-document');
 
+      const hydratedAmounts = Object.fromEntries(
+        PAYMENT_AMOUNT_FIELD_KEYS.map((key) => [key, toDecimal(payment[key])])
+      ) as Pick<Payment, PaymentAmountFieldKey>;
+
       const hydratedPayment: Payment = {
         ...payment,
+        ...hydratedAmounts,
         dateFrom: new Date(payment.dateFrom),
         dateTo: new Date(payment.dateTo),
         createdAt: new Date(payment.createdAt),

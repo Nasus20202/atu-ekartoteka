@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
+import { Prisma } from '@/generated/prisma/client';
 import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
 import { UserRole } from '@/lib/types';
@@ -44,11 +45,11 @@ export async function GET(
 
     // Keep only the most recent year per apartment
     const seenApartments = new Set<string>();
-    let totalClosingBalance = 0;
+    let totalClosingBalance = new Prisma.Decimal(0);
     for (const payment of latestPayments) {
       if (!seenApartments.has(payment.apartmentId)) {
         seenApartments.add(payment.apartmentId);
-        totalClosingBalance += payment.closingBalance;
+        totalClosingBalance = totalClosingBalance.plus(payment.closingBalance);
       }
     }
 
@@ -57,9 +58,13 @@ export async function GET(
       where: { apartmentId: { in: apartmentIds } },
       _sum: { totalAmount: true },
     });
-    const totalChargesDue = chargesAggregate._sum.totalAmount ?? 0;
+    const totalChargesDue =
+      chargesAggregate._sum.totalAmount ?? new Prisma.Decimal(0);
 
-    return NextResponse.json({ totalClosingBalance, totalChargesDue });
+    return NextResponse.json({
+      totalClosingBalance: Number(totalClosingBalance),
+      totalChargesDue: Number(totalChargesDue),
+    });
   } catch (error) {
     logger.error({ error }, 'Financial summary fetch error');
     return NextResponse.json(

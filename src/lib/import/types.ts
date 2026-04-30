@@ -21,6 +21,14 @@ export interface EntityStats {
   total: number;
 }
 
+export interface ImportWarning {
+  apartmentExternalId: string;
+  period: string;
+  lineNo: number;
+  difference: string;
+  message: string;
+}
+
 export interface HOAImportResult {
   hoaId: string;
   apartments: EntityStats;
@@ -28,6 +36,7 @@ export interface HOAImportResult {
   notifications?: EntityStats;
   payments?: EntityStats;
   errors: string[];
+  warnings: ImportWarning[];
   // Data-as-of dates from WMB files
   apartmentsDataDate?: Date;
   chargesDataDate?: Date;

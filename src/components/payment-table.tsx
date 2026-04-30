@@ -9,8 +9,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { toDecimal } from '@/lib/money/decimal';
+import { sumDecimals } from '@/lib/money/sum';
+import {
+  CHARGE_MONTH_FIELD_KEYS,
+  getNonEmptyMonths,
+  PAYMENT_MONTH_FIELD_KEYS,
+} from '@/lib/payments/empty-months';
 import type { Payment } from '@/lib/types';
-import { MONTH_NAMES_PL } from '@/lib/utils';
+import { formatCurrency, MONTH_NAMES_PL } from '@/lib/utils';
 
 interface PaymentTableProps {
   payment: Payment;
@@ -23,79 +30,33 @@ export function PaymentTable({
   apartmentId,
   disableLinks = false,
 }: PaymentTableProps) {
-  const monthlyData = [
-    {
-      name: MONTH_NAMES_PL[0],
-      payment: payment.januaryPayments,
-      charge: payment.januaryCharges,
-    },
-    {
-      name: MONTH_NAMES_PL[1],
-      payment: payment.februaryPayments,
-      charge: payment.februaryCharges,
-    },
-    {
-      name: MONTH_NAMES_PL[2],
-      payment: payment.marchPayments,
-      charge: payment.marchCharges,
-    },
-    {
-      name: MONTH_NAMES_PL[3],
-      payment: payment.aprilPayments,
-      charge: payment.aprilCharges,
-    },
-    {
-      name: MONTH_NAMES_PL[4],
-      payment: payment.mayPayments,
-      charge: payment.mayCharges,
-    },
-    {
-      name: MONTH_NAMES_PL[5],
-      payment: payment.junePayments,
-      charge: payment.juneCharges,
-    },
-    {
-      name: MONTH_NAMES_PL[6],
-      payment: payment.julyPayments,
-      charge: payment.julyCharges,
-    },
-    {
-      name: MONTH_NAMES_PL[7],
-      payment: payment.augustPayments,
-      charge: payment.augustCharges,
-    },
-    {
-      name: MONTH_NAMES_PL[8],
-      payment: payment.septemberPayments,
-      charge: payment.septemberCharges,
-    },
-    {
-      name: MONTH_NAMES_PL[9],
-      payment: payment.octoberPayments,
-      charge: payment.octoberCharges,
-    },
-    {
-      name: MONTH_NAMES_PL[10],
-      payment: payment.novemberPayments,
-      charge: payment.novemberCharges,
-    },
-    {
-      name: MONTH_NAMES_PL[11],
-      payment: payment.decemberPayments,
-      charge: payment.decemberCharges,
-    },
-  ];
+  const openingBalance = toDecimal(payment.openingBalance);
+  const monthlyData = getNonEmptyMonths(payment).reduce<
+    Array<{
+      monthIndex: number;
+      name: string;
+      charges: typeof openingBalance;
+      payments: typeof openingBalance;
+      balance: typeof openingBalance;
+    }>
+  >((rows, month) => {
+    const previousBalance = rows.at(-1)?.balance ?? openingBalance;
 
-  const totalPayments = monthlyData.reduce(
-    (sum, month) => sum + month.payment,
-    0
-  );
-  const totalCharges = monthlyData.reduce(
-    (sum, month) => sum + month.charge,
-    0
-  );
+    rows.push({
+      ...month,
+      name: MONTH_NAMES_PL[month.monthIndex],
+      balance: previousBalance.plus(month.payments).minus(month.charges),
+    });
 
-  let runningBalance = payment.openingBalance;
+    return rows;
+  }, []);
+  const totalPayments = sumDecimals(
+    PAYMENT_MONTH_FIELD_KEYS.map((key) => payment[key])
+  );
+  const totalCharges = sumDecimals(
+    CHARGE_MONTH_FIELD_KEYS.map((key) => payment[key])
+  );
+  const closingBalance = toDecimal(payment.closingBalance);
 
   return (
     <div className="overflow-x-auto">
@@ -112,35 +73,33 @@ export function PaymentTable({
           <TableRow>
             <TableCell className="font-medium">Bilans otwarcia</TableCell>
             <TableCell className="text-right">
-              {payment.openingSurplus.toFixed(2)} zł
+              {formatCurrency(payment.openingSurplus)}
             </TableCell>
             <TableCell className="text-right">
-              {payment.openingDebt.toFixed(2)} zł
+              {formatCurrency(payment.openingDebt)}
             </TableCell>
             <TableCell
               className={`text-right ${
-                runningBalance < 0
+                openingBalance.isNegative()
                   ? 'text-red-600'
-                  : runningBalance > 0
+                  : openingBalance.greaterThan(0)
                     ? 'text-green-600'
                     : ''
               }`}
             >
-              {runningBalance.toFixed(2)} zł
+              {formatCurrency(openingBalance)}
             </TableCell>
           </TableRow>
-          {monthlyData.map((month, idx) => {
-            const paymentsForMonth = month.payment;
-            const chargesForMonth = month.charge;
-            runningBalance += paymentsForMonth - chargesForMonth;
-            const monthParam = `${payment.year}-${String(idx + 1).padStart(2, '0')}`;
+          {monthlyData.map((month) => {
+            const paymentsForMonth = month.payments;
+            const chargesForMonth = month.charges;
+            const monthParam = `${payment.year}-${String(month.monthIndex + 1).padStart(2, '0')}`;
             const href = `/dashboard/charges/${apartmentId}?month=${monthParam}`;
-            const balanceColor =
-              runningBalance < 0
-                ? 'text-red-600'
-                : runningBalance > 0
-                  ? 'text-green-600'
-                  : '';
+            const balanceColor = month.balance.isNegative()
+              ? 'text-red-600'
+              : month.balance.greaterThan(0)
+                ? 'text-green-600'
+                : '';
             return (
               <TableRow
                 key={month.name}
@@ -159,28 +118,28 @@ export function PaymentTable({
                 </TableCell>
                 <TableCell className="text-right">
                   {disableLinks ? (
-                    `${paymentsForMonth.toFixed(2)} zł`
+                    formatCurrency(paymentsForMonth)
                   ) : (
                     <Link href={href} className="block">
-                      {paymentsForMonth.toFixed(2)} zł
+                      {formatCurrency(paymentsForMonth)}
                     </Link>
                   )}
                 </TableCell>
                 <TableCell className="text-right">
                   {disableLinks ? (
-                    `${chargesForMonth.toFixed(2)} zł`
+                    formatCurrency(chargesForMonth)
                   ) : (
                     <Link href={href} className="block">
-                      {chargesForMonth.toFixed(2)} zł
+                      {formatCurrency(chargesForMonth)}
                     </Link>
                   )}
                 </TableCell>
                 <TableCell className={`text-right ${balanceColor}`}>
                   {disableLinks ? (
-                    `${runningBalance.toFixed(2)} zł`
+                    formatCurrency(month.balance)
                   ) : (
                     <Link href={href} className={`block ${balanceColor}`}>
-                      {runningBalance.toFixed(2)} zł
+                      {formatCurrency(month.balance)}
                     </Link>
                   )}
                 </TableCell>
@@ -192,21 +151,21 @@ export function PaymentTable({
           <TableRow>
             <TableCell className="font-medium">Razem</TableCell>
             <TableCell className="text-right font-medium">
-              {totalPayments.toFixed(2)} zł
+              {formatCurrency(totalPayments)}
             </TableCell>
             <TableCell className="text-right font-medium">
-              {totalCharges.toFixed(2)} zł
+              {formatCurrency(totalCharges)}
             </TableCell>
             <TableCell
               className={`text-right font-medium ${
-                payment.closingBalance < 0
+                closingBalance.isNegative()
                   ? 'text-red-600'
-                  : payment.closingBalance > 0
+                  : closingBalance.greaterThan(0)
                     ? 'text-green-600'
                     : ''
               }`}
             >
-              {payment.closingBalance.toFixed(2)} zł
+              {formatCurrency(closingBalance)}
             </TableCell>
           </TableRow>
         </TableFooter>

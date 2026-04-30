@@ -6,6 +6,7 @@ import { ChargesSummaryCard } from '@/components/dashboard/charges-summary-card'
 import { NotificationsSidebar } from '@/components/dashboard/notifications-sidebar';
 import { PaymentsSummaryCard } from '@/components/dashboard/payments-summary-card';
 import { UserStatusSection } from '@/components/user-status-section';
+import { sumDecimals } from '@/lib/money/sum';
 import { findUserWithApartmentsCached } from '@/lib/queries/users/find-user-with-apartments';
 import { AccountStatus } from '@/lib/types';
 
@@ -44,15 +45,11 @@ export default async function DashboardPage() {
       )
   );
 
-  const currentMonthTotal = currentMonthCharges.reduce(
-    (sum: number, charge: (typeof currentMonthCharges)[number]) =>
-      sum + charge.totalAmount,
-    0
+  const currentMonthTotal = sumDecimals(
+    currentMonthCharges.map((charge) => charge.totalAmount)
   );
-  const previousMonthTotal = previousMonthCharges.reduce(
-    (sum: number, charge: (typeof previousMonthCharges)[number]) =>
-      sum + charge.totalAmount,
-    0
+  const previousMonthTotal = sumDecimals(
+    previousMonthCharges.map((charge) => charge.totalAmount)
   );
 
   // Prepare notifications grouped by HOA for sidebar
@@ -76,7 +73,7 @@ export default async function DashboardPage() {
   type HoaPaymentGroup = {
     hoaId: string;
     hoaName: string;
-    totalClosingBalance: number;
+    totalClosingBalance: ReturnType<typeof sumDecimals>;
   };
   const hoaPaymentMap = new Map<string, HoaPaymentGroup>();
 
@@ -87,7 +84,7 @@ export default async function DashboardPage() {
     const existing = hoaPaymentMap.get(hoa.id);
     const balance = apt.payments[0].closingBalance;
     if (existing) {
-      existing.totalClosingBalance += balance;
+      existing.totalClosingBalance = existing.totalClosingBalance.plus(balance);
     } else {
       hoaPaymentMap.set(hoa.id, {
         hoaId: hoa.id,

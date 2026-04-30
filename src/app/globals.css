@@ -257,6 +257,79 @@
     --tw-exit-translate-y: -48%;
   }
 
+  @keyframes select-reveal-down {
+    from {
+      opacity: 0;
+      transform: translateY(-6px) scale(0.98);
+      clip-path: inset(0 0 100% 0 round 0.75rem);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      clip-path: inset(0 0 0 0 round 0.75rem);
+    }
+  }
+
+  @keyframes select-item-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .ui-select-content > .ui-select-viewport {
+    transform-origin: top;
+    will-change: transform, clip-path, opacity;
+  }
+
+  .ui-select-content[data-state='open'] > .ui-select-viewport {
+    animation: select-reveal-down 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .ui-select-content[data-state='open'] .ui-select-option {
+    animation: select-item-in 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .ui-select-content[data-state='open'] .ui-select-option:nth-child(1) {
+    animation-delay: 60ms;
+  }
+
+  .ui-select-content[data-state='open'] .ui-select-option:nth-child(2) {
+    animation-delay: 90ms;
+  }
+
+  .ui-select-content[data-state='open'] .ui-select-option:nth-child(3) {
+    animation-delay: 120ms;
+  }
+
+  .ui-select-content[data-state='open'] .ui-select-option:nth-child(4) {
+    animation-delay: 150ms;
+  }
+
+  .ui-select-content[data-state='open'] .ui-select-option:nth-child(5) {
+    animation-delay: 180ms;
+  }
+
+  .ui-select-content[data-state='open'] .ui-select-option:nth-child(6) {
+    animation-delay: 210ms;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ui-select-content[data-state='open'] > .ui-select-viewport {
+      animation: none;
+    }
+
+    .ui-select-content[data-state='open'] .ui-select-option {
+      animation: none;
+    }
+  }
+
   .scrollbar-hidden {
     scrollbar-width: none;
     -ms-overflow-style: none;

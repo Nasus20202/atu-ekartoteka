@@ -32,7 +32,7 @@ test.describe('Payments', () => {
       await userPage.goto('/dashboard/payments');
 
       // Should see closing balance (-444.25 from seed)
-      await expect(userPage.getByText('-444.25 zł')).toBeVisible();
+      await expect(userPage.getByText('-444,25 zł').first()).toBeVisible();
     });
 
     test('year group for current year is expanded by default', async ({
@@ -74,7 +74,7 @@ test.describe('Payments', () => {
 
       // Click on year row to see detailed payments
       const currentYear = new Date().getFullYear();
-      await userPage.getByText(`Rok ${currentYear}`).click();
+      await userPage.getByText(`Rok ${currentYear}`).first().click();
 
       // Should navigate to apartment payments page for that year
       await expect(userPage).toHaveURL(
@@ -89,7 +89,7 @@ test.describe('Payments', () => {
 
       // Navigate to specific apartment/year
       const currentYear = new Date().getFullYear();
-      await userPage.getByText(`Rok ${currentYear}`).click();
+      await userPage.getByText(`Rok ${currentYear}`).first().click();
 
       // Should see monthly data - use first() to avoid strict mode
       await expect(userPage.getByText(/Styczeń/i).first()).toBeVisible();
@@ -102,7 +102,7 @@ test.describe('Payments', () => {
 
       // Navigate to specific apartment/year
       const currentYear = new Date().getFullYear();
-      await userPage.getByText(`Rok ${currentYear}`).click();
+      await userPage.getByText(`Rok ${currentYear}`).first().click();
 
       // Should see column headers for charges and payments
       await expect(
@@ -118,7 +118,7 @@ test.describe('Payments', () => {
 
       // Navigate to specific apartment/year
       const currentYear = new Date().getFullYear();
-      await userPage.getByText(`Rok ${currentYear}`).click();
+      await userPage.getByText(`Rok ${currentYear}`).first().click();
 
       // Should see balance information
       await expect(
@@ -133,7 +133,7 @@ test.describe('Payments', () => {
 
       // Navigate to specific apartment/year
       const currentYear = new Date().getFullYear();
-      await userPage.getByText(`Rok ${currentYear}`).click();
+      await userPage.getByText(`Rok ${currentYear}`).first().click();
 
       // Should see seeded monthly amounts (444.25 for each month)
       await expect(userPage.getByText(/444/)).toBeVisible();

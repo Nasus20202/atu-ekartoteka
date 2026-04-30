@@ -5,17 +5,19 @@ import { auth } from '@/auth';
 import { MultiChargesDisplay } from '@/components/charges/multi-charges-display';
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
-import { DownloadChargesPdfButton } from '@/components/pdf/download-charges-pdf-button';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  type SerializableChargeDisplay,
+  serializeCharge,
+} from '@/lib/charges/serialize-charge';
 import { findUserWithApartmentChargesCached } from '@/lib/queries/users/find-user-with-apartment-charges';
-import { AccountStatus, type ChargeDisplay } from '@/lib/types';
+import { AccountStatus } from '@/lib/types';
 
 type ApartmentPeriodData = {
   apartmentNumber: string;
   apartmentAddress: string;
   hoaName: string;
-  charges: ChargeDisplay[];
-  action?: React.ReactNode;
+  charges: SerializableChargeDisplay[];
 };
 
 export default async function ChargesPage() {
@@ -62,40 +64,21 @@ export default async function ChargesPage() {
           }
 
           apartmentData.charges.push({
-            id: charge.id,
-            description: charge.description,
-            quantity: charge.quantity,
-            unit: charge.unit,
-            unitPrice: charge.unitPrice,
-            totalAmount: charge.totalAmount,
-            dateFrom: charge.dateFrom,
-            dateTo: charge.dateTo,
+            ...serializeCharge({
+              id: charge.id,
+              description: charge.description,
+              quantity: charge.quantity,
+              unit: charge.unit,
+              unitPrice: charge.unitPrice,
+              totalAmount: charge.totalAmount,
+              dateFrom: charge.dateFrom,
+              dateTo: charge.dateTo,
+            }),
           });
         }
       );
     }
   );
-
-  // Attach PDF download buttons per apartment per period
-  for (const [period, periodData] of Object.entries(chargesByPeriod)) {
-    for (const apartmentData of periodData) {
-      apartmentData.action = (
-        <DownloadChargesPdfButton
-          apartmentLabel={apartmentData.apartmentAddress}
-          hoaName={apartmentData.hoaName}
-          period={period}
-          charges={apartmentData.charges.map((c) => ({
-            id: c.id,
-            description: c.description,
-            quantity: c.quantity,
-            unit: c.unit,
-            unitPrice: c.unitPrice,
-            totalAmount: c.totalAmount,
-          }))}
-        />
-      );
-    }
-  }
 
   const periods = Object.keys(chargesByPeriod).sort().reverse();
 

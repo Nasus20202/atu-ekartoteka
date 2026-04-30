@@ -2,6 +2,7 @@ import { FileText, Wallet } from 'lucide-react';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
+import { type DecimalLike, toDecimal } from '@/lib/money/decimal';
 import { formatCurrency } from '@/lib/utils';
 
 interface ApartmentCardProps {
@@ -19,7 +20,7 @@ interface ApartmentCardProps {
       year: number;
     }>;
   };
-  latestPaymentBalance?: number | null;
+  latestPaymentBalance?: DecimalLike | null;
   hasCharges?: boolean;
   hasPayments?: boolean;
   index: number;
@@ -102,7 +103,7 @@ export function ApartmentCard({
               className={`text-xl font-bold ${
                 latestPaymentBalance == null
                   ? 'text-muted-foreground'
-                  : latestPaymentBalance >= 0
+                  : toDecimal(latestPaymentBalance).greaterThanOrEqualTo(0)
                     ? 'text-green-600'
                     : 'text-red-600'
               }`}

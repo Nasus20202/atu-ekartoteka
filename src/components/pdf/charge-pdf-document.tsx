@@ -6,8 +6,10 @@ import {
   SectionTitle,
   styles,
 } from '@/components/pdf/primitives';
+import { type DecimalLike, toDecimal } from '@/lib/money/decimal';
 import { registerPdfFonts } from '@/lib/pdf/register-fonts';
 import type { ChargeDisplay } from '@/lib/types';
+import { formatCurrency } from '@/lib/utils';
 
 registerPdfFonts();
 
@@ -15,7 +17,7 @@ export interface ChargePeriodGroup {
   period: string;
   periodLabel: string;
   charges: ChargeDisplay[];
-  total: number;
+  total: DecimalLike;
 }
 
 export interface ChargePdfDocumentProps {
@@ -56,13 +58,13 @@ export function ChargePdfDocument({
               <View key={charge.id} style={styles.tableRow}>
                 <Text style={styles.cellLeft}>{charge.description}</Text>
                 <Text style={styles.cellRight}>
-                  {charge.quantity} {charge.unit}
+                  {toDecimal(charge.quantity).toString()} {charge.unit}
                 </Text>
                 <Text style={styles.cellRight}>
-                  {charge.unitPrice.toFixed(2)} zł
+                  {formatCurrency(charge.unitPrice)}
                 </Text>
                 <Text style={styles.cellRight}>
-                  {charge.totalAmount.toFixed(2)} zł
+                  {formatCurrency(charge.totalAmount)}
                 </Text>
               </View>
             ))}
@@ -73,7 +75,7 @@ export function ChargePdfDocument({
               <Text style={styles.cellRight} />
               <Text style={styles.cellRight} />
               <Text style={[styles.cellRight, styles.bold]}>
-                {group.total.toFixed(2)} zł
+                {formatCurrency(group.total)}
               </Text>
             </View>
           </View>

@@ -24,7 +24,24 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const status = searchParams.get('status') as AccountStatus | null;
+    const roleParam = searchParams.get('role');
+    if (
+      roleParam &&
+      roleParam !== UserRole.ADMIN &&
+      roleParam !== UserRole.TENANT
+    ) {
+      return NextResponse.json(
+        { error: 'Nieprawidłowa rola' },
+        { status: 400 }
+      );
+    }
+
+    const role =
+      roleParam === UserRole.ADMIN ? UserRole.ADMIN : UserRole.TENANT;
+    const status =
+      role === UserRole.ADMIN
+        ? null
+        : (searchParams.get('status') as AccountStatus | null);
     const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10));
     const limit = Math.min(
       200,
@@ -32,7 +49,13 @@ export async function GET(req: NextRequest) {
     );
     const search = searchParams.get('search');
 
-    const { users, total } = await findTenantUsers(status, page, limit, search);
+    const { users, total } = await findTenantUsers(
+      status,
+      page,
+      limit,
+      search,
+      role
+    );
     const totalPages = Math.ceil(total / limit);
 
     return NextResponse.json({
@@ -145,7 +168,8 @@ export async function PATCH(req: NextRequest) {
     // Send notification only if account was just approved (status changed from non-APPROVED to APPROVED)
     if (
       status === AccountStatus.APPROVED &&
-      user.status !== AccountStatus.APPROVED
+      user.status !== AccountStatus.APPROVED &&
+      updatedUser.role !== UserRole.ADMIN
     ) {
       await notifyAccountApproved(updatedUser.email, updatedUser.name);
     }

@@ -10,17 +10,18 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import { toDecimal } from '@/lib/money/decimal';
+import { sumDecimals } from '@/lib/money/sum';
+import {
+  CHARGE_MONTH_FIELD_KEYS,
+  PAYMENT_MONTH_FIELD_KEYS,
+} from '@/lib/payments/empty-months';
+import { serializePayment } from '@/lib/payments/serialize-payment';
 import type { Payment } from '@/lib/types';
+import { formatCurrency } from '@/lib/utils';
 
-type SerializablePayment = Omit<
-  Payment,
-  'dateFrom' | 'dateTo' | 'createdAt' | 'updatedAt'
-> & {
-  dateFrom: string;
-  dateTo: string;
-  createdAt: string;
-  updatedAt: string;
-};
+type PaymentMonthKey = (typeof PAYMENT_MONTH_FIELD_KEYS)[number];
+type ChargeMonthKey = (typeof CHARGE_MONTH_FIELD_KEYS)[number];
 
 interface AdminPaymentsListProps {
   payments: Payment[];
@@ -29,47 +30,19 @@ interface AdminPaymentsListProps {
   hoaName: string;
 }
 
-function toSerializable(payment: Payment): SerializablePayment {
-  return {
-    ...payment,
-    dateFrom:
-      payment.dateFrom instanceof Date
-        ? payment.dateFrom.toISOString()
-        : String(payment.dateFrom),
-    dateTo:
-      payment.dateTo instanceof Date
-        ? payment.dateTo.toISOString()
-        : String(payment.dateTo),
-    createdAt:
-      payment.createdAt instanceof Date
-        ? payment.createdAt.toISOString()
-        : String(payment.createdAt),
-    updatedAt:
-      payment.updatedAt instanceof Date
-        ? payment.updatedAt.toISOString()
-        : String(payment.updatedAt),
-  };
-}
-
-function sumMonths(payment: Payment, field: 'Payments' | 'Charges'): number {
-  const months = [
-    'january',
-    'february',
-    'march',
-    'april',
-    'may',
-    'june',
-    'july',
-    'august',
-    'september',
-    'october',
-    'november',
-    'december',
-  ] as const;
-  return months.reduce((sum, month) => {
-    const key = `${month}${field}` as keyof Payment;
-    return sum + (Number(payment[key]) || 0);
-  }, 0);
+function sumMonths(
+  payment: Payment,
+  keys: readonly PaymentMonthKey[]
+): Payment['openingBalance'];
+function sumMonths(
+  payment: Payment,
+  keys: readonly ChargeMonthKey[]
+): Payment['openingBalance'];
+function sumMonths(
+  payment: Payment,
+  keys: readonly (PaymentMonthKey | ChargeMonthKey)[]
+) {
+  return sumDecimals(keys.map((key) => payment[key]));
 }
 
 function PaymentYearSection({
@@ -86,9 +59,11 @@ function PaymentYearSection({
   defaultOpen: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
-  const totalPayments = sumMonths(payment, 'Payments');
-  const totalCharges = sumMonths(payment, 'Charges');
-  const serializable = toSerializable(payment);
+  const openingBalance = toDecimal(payment.openingBalance);
+  const closingBalance = toDecimal(payment.closingBalance);
+  const totalPayments = sumMonths(payment, PAYMENT_MONTH_FIELD_KEYS);
+  const totalCharges = sumMonths(payment, CHARGE_MONTH_FIELD_KEYS);
+  const serializable = serializePayment(payment);
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
@@ -97,9 +72,9 @@ function PaymentYearSection({
           <div className="flex items-center gap-4">
             <span>Rok {payment.year}</span>
             <span
-              className={`text-base font-bold ${payment.closingBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}
+              className={`text-base font-bold ${closingBalance.greaterThanOrEqualTo(0) ? 'text-green-600' : 'text-red-600'}`}
             >
-              {payment.closingBalance.toFixed(2)} zł
+              {formatCurrency(closingBalance)}
             </span>
           </div>
           <ChevronDown
@@ -117,19 +92,19 @@ function PaymentYearSection({
           <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
             <div className="font-medium">Saldo początkowe:</div>
             <div
-              className={`text-right ${payment.openingBalance < 0 ? 'text-red-600' : payment.openingBalance > 0 ? 'text-green-600' : ''}`}
+              className={`text-right ${openingBalance.isNegative() ? 'text-red-600' : openingBalance.greaterThan(0) ? 'text-green-600' : ''}`}
             >
-              {payment.openingBalance.toFixed(2)} zł
+              {formatCurrency(openingBalance)}
             </div>
             <div className="font-medium">Naliczenie:</div>
-            <div className="text-right">{totalCharges.toFixed(2)} zł</div>
+            <div className="text-right">{formatCurrency(totalCharges)}</div>
             <div className="font-medium">Suma wpłat:</div>
-            <div className="text-right">{totalPayments.toFixed(2)} zł</div>
+            <div className="text-right">{formatCurrency(totalPayments)}</div>
             <div className="border-t pt-2 font-bold">Saldo końcowe:</div>
             <div
-              className={`border-t pt-2 text-right font-bold ${payment.closingBalance < 0 ? 'text-red-600' : payment.closingBalance > 0 ? 'text-green-600' : ''}`}
+              className={`border-t pt-2 text-right font-bold ${closingBalance.isNegative() ? 'text-red-600' : closingBalance.greaterThan(0) ? 'text-green-600' : ''}`}
             >
-              {payment.closingBalance.toFixed(2)} zł
+              {formatCurrency(closingBalance)}
             </div>
           </div>
           <div className="border-t pt-3">

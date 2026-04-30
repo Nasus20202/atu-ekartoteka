@@ -33,7 +33,6 @@ vi.mock('@/components/ui/collapsible', () => ({
 
 const baseProps = {
   chargesByPeriod: {},
-  serializableByPeriod: {},
   activeMonth: null,
   apartmentLabel: 'A/101',
   hoaName: 'Wspólnota Testowa',
@@ -126,12 +125,12 @@ describe('ChargesDisplay — activeMonth', () => {
         {
           id: 'c1',
           description: 'Czynsz',
-          totalAmount: 500,
-          quantity: 1,
+          totalAmount: '500',
+          quantity: '1',
           unit: 'szt',
-          unitPrice: 500,
-          dateFrom: new Date(),
-          dateTo: new Date(),
+          unitPrice: '500',
+          dateFrom: new Date().toISOString(),
+          dateTo: new Date().toISOString(),
         },
       ],
     };

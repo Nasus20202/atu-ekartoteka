@@ -124,4 +124,14 @@ describe('findTenantUsers', () => {
 
     expect(result).toEqual({ users: mockUsers, total: 1 });
   });
+
+  it('allows listing admin users when role is provided', async () => {
+    await findTenantUsers(null, 1, 50, null, UserRole.ADMIN);
+
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { role: UserRole.ADMIN },
+      })
+    );
+  });
 });

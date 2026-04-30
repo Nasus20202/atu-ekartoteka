@@ -2,7 +2,22 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { AdminPaymentsList } from '@/components/payments/admin-payments-list';
+import { Prisma } from '@/generated/prisma/browser';
+import type { PaymentLike } from '@/lib/payments/serialize-payment';
 import type { Payment } from '@/lib/types';
+import { formatCurrency } from '@/lib/utils';
+
+const withExactText =
+  (value: string) => (_: string, element: Element | null) => {
+    if (!element) {
+      return false;
+    }
+
+    return (
+      element.textContent === value &&
+      Array.from(element.children).every((child) => child.textContent !== value)
+    );
+  };
 
 vi.mock('@/components/payment-table', () => ({
   PaymentTable: ({ payment }: { payment: Payment }) => (
@@ -26,45 +41,45 @@ vi.mock('@/components/ui/collapsible', () => ({
   ),
 }));
 
-function makePayment(overrides: Partial<Payment> = {}): Payment {
+function makePayment(overrides: Partial<PaymentLike> = {}): Payment {
   return {
     id: 'pay-1',
     apartmentId: 'apt-1',
     year: 2024,
     dateFrom: new Date('2024-01-01'),
     dateTo: new Date('2024-12-31'),
-    openingBalance: 0,
-    closingBalance: 0,
-    openingDebt: 0,
-    openingSurplus: 0,
-    januaryPayments: 0,
-    februaryPayments: 0,
-    marchPayments: 0,
-    aprilPayments: 0,
-    mayPayments: 0,
-    junePayments: 0,
-    julyPayments: 0,
-    augustPayments: 0,
-    septemberPayments: 0,
-    octoberPayments: 0,
-    novemberPayments: 0,
-    decemberPayments: 0,
-    januaryCharges: 0,
-    februaryCharges: 0,
-    marchCharges: 0,
-    aprilCharges: 0,
-    mayCharges: 0,
-    juneCharges: 0,
-    julyCharges: 0,
-    augustCharges: 0,
-    septemberCharges: 0,
-    octoberCharges: 0,
-    novemberCharges: 0,
-    decemberCharges: 0,
+    openingBalance: new Prisma.Decimal(0),
+    closingBalance: new Prisma.Decimal(0),
+    openingDebt: new Prisma.Decimal(0),
+    openingSurplus: new Prisma.Decimal(0),
+    januaryPayments: new Prisma.Decimal(0),
+    februaryPayments: new Prisma.Decimal(0),
+    marchPayments: new Prisma.Decimal(0),
+    aprilPayments: new Prisma.Decimal(0),
+    mayPayments: new Prisma.Decimal(0),
+    junePayments: new Prisma.Decimal(0),
+    julyPayments: new Prisma.Decimal(0),
+    augustPayments: new Prisma.Decimal(0),
+    septemberPayments: new Prisma.Decimal(0),
+    octoberPayments: new Prisma.Decimal(0),
+    novemberPayments: new Prisma.Decimal(0),
+    decemberPayments: new Prisma.Decimal(0),
+    januaryCharges: new Prisma.Decimal(0),
+    februaryCharges: new Prisma.Decimal(0),
+    marchCharges: new Prisma.Decimal(0),
+    aprilCharges: new Prisma.Decimal(0),
+    mayCharges: new Prisma.Decimal(0),
+    juneCharges: new Prisma.Decimal(0),
+    julyCharges: new Prisma.Decimal(0),
+    augustCharges: new Prisma.Decimal(0),
+    septemberCharges: new Prisma.Decimal(0),
+    octoberCharges: new Prisma.Decimal(0),
+    novemberCharges: new Prisma.Decimal(0),
+    decemberCharges: new Prisma.Decimal(0),
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
     ...overrides,
-  };
+  } as Payment;
 }
 
 const baseProps = {
@@ -87,7 +102,9 @@ describe('AdminPaymentsList', () => {
       render(<AdminPaymentsList {...baseProps} payments={[payment]} />);
 
       // "Suma wpłat:" row shows 450.00 zł
-      expect(screen.getByText('450.00 zł')).toBeInTheDocument();
+      expect(
+        screen.getByText(withExactText(formatCurrency(450)))
+      ).toBeInTheDocument();
     });
 
     it('displays correct total charges sum across all months', () => {
@@ -102,7 +119,9 @@ describe('AdminPaymentsList', () => {
       render(<AdminPaymentsList {...baseProps} payments={[payment]} />);
 
       // "Naliczenie:" row shows 600.00 zł
-      expect(screen.getByText('600.00 zł')).toBeInTheDocument();
+      expect(
+        screen.getByText(withExactText(formatCurrency(600)))
+      ).toBeInTheDocument();
     });
   });
 
@@ -161,7 +180,7 @@ describe('AdminPaymentsList', () => {
   });
 
   it('renders closing balance with correct color class for negative balance', () => {
-    const payment = makePayment({ closingBalance: -150 });
+    const payment = makePayment({ closingBalance: new Prisma.Decimal(-150) });
 
     const { container } = render(
       <AdminPaymentsList {...baseProps} payments={[payment]} />
@@ -171,7 +190,7 @@ describe('AdminPaymentsList', () => {
     const redSpans = container.querySelectorAll('.text-red-600');
     expect(redSpans.length).toBeGreaterThan(0);
     const hasNegative = Array.from(redSpans).some((el) =>
-      el.textContent?.includes('-150.00')
+      el.textContent?.includes(formatCurrency(-150))
     );
     expect(hasNegative).toBe(true);
   });

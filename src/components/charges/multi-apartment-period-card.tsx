@@ -1,40 +1,50 @@
 'use client';
 
 import { Building2, Calendar, ChevronDown } from 'lucide-react';
-import { type ReactNode, useState } from 'react';
+import { useState } from 'react';
 
+import { DownloadChargesPdfButton } from '@/components/pdf/download-charges-pdf-button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import type { ChargeDisplay } from '@/lib/types';
+import {
+  type SerializableChargeDisplay,
+  toSerializableCharge,
+} from '@/lib/charges/serialize-charge';
+import { type DecimalLike, toDecimal } from '@/lib/money/decimal';
+import { sumDecimals } from '@/lib/money/sum';
 import { formatCurrency, formatDate, formatPeriod } from '@/lib/utils';
 
 type ApartmentChargesData = {
   apartmentNumber: string;
   apartmentAddress: string;
-  charges: ChargeDisplay[];
+  hoaName: string;
+  charges: SerializableChargeDisplay[];
 };
 
 type ChargeItemProps = {
-  charge: ChargeDisplay;
+  charge: SerializableChargeDisplay;
 };
 
 function ChargeItem({ charge }: ChargeItemProps) {
+  const quantityLabel = toDecimal(charge.quantity).toString();
+
   return (
     <div className="flex flex-col gap-2 rounded bg-muted/50 p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
       <div className="flex-1">
         <p className="font-medium">{charge.description}</p>
         <p className="text-xs text-muted-foreground">
-          {formatDate(charge.dateFrom)} - {formatDate(charge.dateTo)}
+          {formatDate(new Date(charge.dateFrom))} -{' '}
+          {formatDate(new Date(charge.dateTo))}
         </p>
       </div>
       <div className="flex shrink-0 items-center justify-end gap-4 text-right">
         <div>
           <p className="text-muted-foreground">
-            {charge.quantity} {charge.unit}
+            {quantityLabel} {charge.unit}
           </p>
           <p className="text-xs text-muted-foreground">
             {formatCurrency(charge.unitPrice)} / {charge.unit}
@@ -50,14 +60,13 @@ function ChargeItem({ charge }: ChargeItemProps) {
 
 type ApartmentSectionProps = {
   apartmentData: ApartmentChargesData;
-  action?: ReactNode;
+  period: string;
 };
 
-function ApartmentSection({ apartmentData, action }: ApartmentSectionProps) {
+function ApartmentSection({ apartmentData, period }: ApartmentSectionProps) {
   const [open, setOpen] = useState(true);
-  const apartmentTotal = apartmentData.charges.reduce(
-    (sum, charge) => sum + charge.totalAmount,
-    0
+  const apartmentTotal = sumDecimals(
+    apartmentData.charges.map((charge) => charge.totalAmount)
   );
 
   return (
@@ -80,7 +89,14 @@ function ApartmentSection({ apartmentData, action }: ApartmentSectionProps) {
               />
             </div>
           </CollapsibleTrigger>
-          {action && <div className="shrink-0">{action}</div>}
+          <div className="shrink-0">
+            <DownloadChargesPdfButton
+              apartmentLabel={apartmentData.apartmentAddress}
+              hoaName={apartmentData.hoaName}
+              period={period}
+              charges={apartmentData.charges.map(toSerializableCharge)}
+            />
+          </div>
         </div>
         <CollapsibleContent>
           <div className="space-y-2 border-t p-4">
@@ -94,14 +110,10 @@ function ApartmentSection({ apartmentData, action }: ApartmentSectionProps) {
   );
 }
 
-type ApartmentChargesDataWithAction = ApartmentChargesData & {
-  action?: ReactNode;
-};
-
 type MultiApartmentPeriodCardProps = {
   period: string;
-  apartmentsData: ApartmentChargesDataWithAction[];
-  totalAmount: number;
+  apartmentsData: ApartmentChargesData[];
+  totalAmount: DecimalLike;
   hideHeader?: boolean;
 };
 
@@ -137,7 +149,7 @@ export function MultiApartmentPeriodCard({
           <ApartmentSection
             key={`${apartmentData.apartmentAddress}-${apartmentData.apartmentNumber}`}
             apartmentData={apartmentData}
-            action={apartmentData.action}
+            period={period}
           />
         ))}
       </CardContent>

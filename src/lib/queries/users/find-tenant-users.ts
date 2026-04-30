@@ -8,7 +8,8 @@ export async function findTenantUsers(
   status?: AccountStatus | null,
   page = 1,
   limit = DEFAULT_LIMIT,
-  search?: string | null
+  search?: string | null,
+  role: UserRole = UserRole.TENANT
 ) {
   const searchFilter: Prisma.UserWhereInput | undefined =
     search && search.trim()
@@ -32,7 +33,7 @@ export async function findTenantUsers(
       : undefined;
 
   const where: Prisma.UserWhereInput = {
-    role: UserRole.TENANT,
+    role,
     ...(status ? { status } : {}),
     ...searchFilter,
   };

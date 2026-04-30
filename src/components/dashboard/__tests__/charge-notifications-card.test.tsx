@@ -2,6 +2,19 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { ChargeNotificationsCard } from '@/components/dashboard/charge-notifications-card';
+import { formatCurrency } from '@/lib/utils';
+
+const withExactText =
+  (value: string) => (_: string, element: Element | null) => {
+    if (!element) {
+      return false;
+    }
+
+    return (
+      element.textContent === value &&
+      Array.from(element.children).every((child) => child.textContent !== value)
+    );
+  };
 
 describe('ChargeNotificationsCard', () => {
   const mockNotifications = [
@@ -57,29 +70,41 @@ describe('ChargeNotificationsCard', () => {
   it('should display notification details correctly', () => {
     render(<ChargeNotificationsCard notifications={mockNotifications} />);
 
-    expect(screen.getByText(/50\.5 m² × 10\.00 zł/)).toBeInTheDocument();
-    expect(screen.getByText(/15 m³ × 5\.00 zł/)).toBeInTheDocument();
+    expect(
+      screen.getByText(withExactText(`50.5 m² × ${formatCurrency(10)}`))
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(withExactText(`15 m³ × ${formatCurrency(5)}`))
+    ).toBeInTheDocument();
   });
 
   it('should display notification amounts', () => {
     render(<ChargeNotificationsCard notifications={mockNotifications} />);
 
-    expect(screen.getByText('505.00 zł')).toBeInTheDocument();
-    expect(screen.getByText('75.00 zł')).toBeInTheDocument();
+    expect(
+      screen.getByText(withExactText(formatCurrency(505)))
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(withExactText(formatCurrency(75)))
+    ).toBeInTheDocument();
   });
 
   it('should calculate and display total amount', () => {
     render(<ChargeNotificationsCard notifications={mockNotifications} />);
 
     expect(screen.getByText('Razem do zapłaty:')).toBeInTheDocument();
-    expect(screen.getByText('580.00 zł')).toBeInTheDocument();
+    expect(
+      screen.getByText(withExactText(formatCurrency(580)))
+    ).toBeInTheDocument();
   });
 
   it('should handle single notification', () => {
     render(<ChargeNotificationsCard notifications={[mockNotifications[0]]} />);
 
     expect(screen.getByText('Czynsz')).toBeInTheDocument();
-    const amountElements = screen.getAllByText('505.00 zł');
+    const amountElements = screen.getAllByText(
+      withExactText(formatCurrency(505))
+    );
     expect(amountElements.length).toBeGreaterThan(0);
   });
 
@@ -92,8 +117,12 @@ describe('ChargeNotificationsCard', () => {
 
     render(<ChargeNotificationsCard notifications={[notification]} />);
 
-    expect(screen.getByText(/10\.00 zł/)).toBeInTheDocument();
-    const amountElements = screen.getAllByText('123.46 zł');
+    expect(
+      screen.getByText(withExactText(`50.5 m² × ${formatCurrency(9.999)}`))
+    ).toBeInTheDocument();
+    const amountElements = screen.getAllByText(
+      withExactText(formatCurrency(123.456))
+    );
     expect(amountElements.length).toBeGreaterThan(0);
   });
 });

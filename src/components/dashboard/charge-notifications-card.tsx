@@ -5,8 +5,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { sumDecimals } from '@/lib/money/sum';
 import { ChargeNotification } from '@/lib/types';
-import { MONTH_NAMES_PL } from '@/lib/utils';
+import { formatCurrency, MONTH_NAMES_PL } from '@/lib/utils';
 
 interface ChargeNotificationsCardProps {
   notifications: ChargeNotification[];
@@ -21,7 +22,9 @@ export const ChargeNotificationsCard = ({
     return null;
   }
 
-  const totalAmount = notifications.reduce((sum, n) => sum + n.totalAmount, 0);
+  const totalAmount = sumDecimals(
+    notifications.map((notification) => notification.totalAmount)
+  );
 
   return (
     <Card>
@@ -51,12 +54,12 @@ export const ChargeNotificationsCard = ({
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {notification.quantity} {notification.unit} ×{' '}
-                    {notification.unitPrice.toFixed(2)} zł
+                    {formatCurrency(notification.unitPrice)}
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-semibold">
-                    {notification.totalAmount.toFixed(2)} zł
+                    {formatCurrency(notification.totalAmount)}
                   </p>
                 </div>
               </div>
@@ -65,7 +68,7 @@ export const ChargeNotificationsCard = ({
 
           <div className="flex items-center justify-between border-t pt-4 font-bold">
             <span>Razem do zapłaty:</span>
-            <span className="text-lg">{totalAmount.toFixed(2)} zł</span>
+            <span className="text-lg">{formatCurrency(totalAmount)}</span>
           </div>
         </div>
       </CardContent>

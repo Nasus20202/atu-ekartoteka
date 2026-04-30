@@ -2,6 +2,19 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { NotificationsSidebar } from '@/components/dashboard/notifications-sidebar';
+import { formatCurrency } from '@/lib/utils';
+
+const withExactText =
+  (value: string) => (_: string, element: Element | null) => {
+    if (!element) {
+      return false;
+    }
+
+    return (
+      element.textContent === value &&
+      Array.from(element.children).every((child) => child.textContent !== value)
+    );
+  };
 
 vi.mock('@/components/ui/collapsible', () => ({
   Collapsible: ({ children }: { children: React.ReactNode }) => (
@@ -57,7 +70,9 @@ describe('NotificationsSidebar', () => {
       render(<NotificationsSidebar notifications={notifications} />);
 
       // Total displayed
-      expect(screen.getByText('300.00 zł')).toBeInTheDocument();
+      expect(
+        screen.getByText(withExactText(formatCurrency(300)))
+      ).toBeInTheDocument();
       // Both notification descriptions visible
       expect(screen.getByText('Naliczenie n1')).toBeInTheDocument();
       expect(screen.getByText('Naliczenie n2')).toBeInTheDocument();
@@ -101,9 +116,13 @@ describe('NotificationsSidebar', () => {
       render(<NotificationsSidebar notifications={notifications} />);
 
       // hoa-1 subtotal: 250.00 zł
-      expect(screen.getByText('250.00 zł')).toBeInTheDocument();
+      expect(
+        screen.getByText(withExactText(formatCurrency(250)))
+      ).toBeInTheDocument();
       // hoa-2 subtotal 200.00 zł appears at least once (may appear also as individual amount)
-      expect(screen.getAllByText('200.00 zł').length).toBeGreaterThanOrEqual(1);
+      expect(
+        screen.getAllByText(withExactText(formatCurrency(200))).length
+      ).toBeGreaterThanOrEqual(1);
     });
 
     it('shows grand total across all HOAs', () => {
@@ -116,7 +135,9 @@ describe('NotificationsSidebar', () => {
 
       // Grand total: 300.00 zł (in the top summary box)
       expect(screen.getByText('Łączna kwota do zapłaty')).toBeInTheDocument();
-      expect(screen.getByText('300.00 zł')).toBeInTheDocument();
+      expect(
+        screen.getByText(withExactText(formatCurrency(300)))
+      ).toBeInTheDocument();
     });
 
     it('groups notifications with null hoaId under a single group', () => {
@@ -128,7 +149,9 @@ describe('NotificationsSidebar', () => {
       render(<NotificationsSidebar notifications={notifications} />);
 
       // Single group, rendered as flat list (isSingle = true)
-      expect(screen.getByText('150.00 zł')).toBeInTheDocument();
+      expect(
+        screen.getByText(withExactText(formatCurrency(150)))
+      ).toBeInTheDocument();
     });
   });
 });

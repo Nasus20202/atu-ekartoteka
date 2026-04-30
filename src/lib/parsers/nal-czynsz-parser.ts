@@ -1,8 +1,9 @@
+import { Prisma } from '@/generated/prisma/client';
 import { createLogger } from '@/lib/logger';
 import {
   decodeBuffer,
   parseDate,
-  parseDecimal,
+  parseDecimalValue,
 } from '@/lib/parsers/parser-utils';
 
 const logger = createLogger('parser:nal-czynsz');
@@ -15,22 +16,22 @@ export interface NalCzynszEntry {
   period: string;
   lineNo: number;
   description: string;
-  quantity: number;
+  quantity: Prisma.Decimal;
   unit: string;
-  unitPrice: number;
-  totalAmount: number;
+  unitPrice: Prisma.Decimal;
+  totalAmount: Prisma.Decimal;
 }
 
 export async function parseNalCzynszBuffer(
   buffer: Buffer
 ): Promise<NalCzynszEntry[]> {
   const content = await decodeBuffer(buffer);
-  const lines = content.split('\n').filter((line: string) => line.trim());
+  const lines = content.split(/\r?\n/).filter((line: string) => line.trim());
 
   const entries: NalCzynszEntry[] = [];
 
   for (const line of lines) {
-    const fields = line.split('#');
+    const fields = line.split('#').map((field) => field.trim());
 
     if (fields.length < 11) {
       continue;
@@ -54,9 +55,9 @@ export async function parseNalCzynszBuffer(
       const dateFrom = parseDate(dateFromStr);
       const dateTo = parseDate(dateToStr);
       const lineNo = parseInt(lineNoStr);
-      const quantity = parseDecimal(quantityStr);
-      const unitPrice = parseDecimal(unitPriceStr);
-      const totalAmount = parseDecimal(totalAmountStr);
+      const quantity = parseDecimalValue(quantityStr);
+      const unitPrice = parseDecimalValue(unitPriceStr);
+      const totalAmount = parseDecimalValue(totalAmountStr);
 
       entries.push({
         id: id.trim(),

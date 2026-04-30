@@ -1,5 +1,7 @@
 import iconv from 'iconv-lite';
 
+import { Prisma } from '@/generated/prisma/client';
+
 export interface ParseResult<T> {
   entries: T[];
   header?: string[];
@@ -13,6 +15,10 @@ export function parseDate(dateStr: string): Date {
 
 export function parseDecimal(value: string): number {
   return parseFloat(value.replace(',', '.'));
+}
+
+export function parseDecimalValue(value: string): Prisma.Decimal {
+  return new Prisma.Decimal(value.replace(',', '.'));
 }
 
 export async function decodeBuffer(buffer: Buffer): Promise<string> {

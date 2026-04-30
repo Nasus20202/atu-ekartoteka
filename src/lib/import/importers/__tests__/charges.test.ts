@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { Prisma } from '@/generated/prisma/browser';
 import { importCharges } from '@/lib/import/importers/charges';
 import { EntityStats, TransactionClient } from '@/lib/import/types';
+import type { DecimalLike } from '@/lib/money/decimal';
 import { NalCzynszEntry } from '@/lib/parsers/nal-czynsz-parser';
 
 function createMockTx() {
@@ -18,8 +20,16 @@ function createStats(): EntityStats {
   return { total: 0, created: 0, updated: 0, skipped: 0, deleted: 0 };
 }
 
+type ChargeEntryOverrides = Partial<
+  Omit<NalCzynszEntry, 'quantity' | 'unitPrice' | 'totalAmount'>
+> & {
+  quantity?: DecimalLike;
+  unitPrice?: DecimalLike;
+  totalAmount?: DecimalLike;
+};
+
 function createChargeEntry(
-  overrides: Partial<NalCzynszEntry> = {}
+  overrides: ChargeEntryOverrides = {}
 ): NalCzynszEntry {
   return {
     id: 'W001',
@@ -34,7 +44,7 @@ function createChargeEntry(
     unitPrice: 100,
     totalAmount: 100,
     ...overrides,
-  };
+  } as NalCzynszEntry;
 }
 
 describe('importCharges', () => {
@@ -145,6 +155,39 @@ describe('importCharges', () => {
       unit: 'szt',
       unitPrice: 100,
       totalAmount: 100,
+    };
+
+    (mockTx.charge.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      existingCharge,
+    ]);
+
+    await importCharges(mockTx, apartmentMap, entries, stats, errors);
+
+    expect(stats.updated).toBe(0);
+    expect(mockTx.charge.update).not.toHaveBeenCalled();
+  });
+
+  it('should not update unchanged charges with sub-grosz values', async () => {
+    const entries = [
+      createChargeEntry({
+        quantity: new Prisma.Decimal('1.4200'),
+        unitPrice: new Prisma.Decimal('100.0725'),
+        totalAmount: new Prisma.Decimal('142.1000'),
+      }),
+    ];
+
+    const existingCharge = {
+      id: 'charge-1',
+      apartmentId: 'apt-1',
+      period: '2024-01',
+      externalLineNo: 1,
+      dateFrom: new Date('2024-01-01'),
+      dateTo: new Date('2024-01-31'),
+      description: 'Test charge',
+      quantity: 1.42,
+      unit: 'szt',
+      unitPrice: 100.0725,
+      totalAmount: 142.1,
     };
 
     (mockTx.charge.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([

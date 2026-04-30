@@ -2,7 +2,22 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { PaymentTable } from '@/components/payment-table';
+import { Prisma } from '@/generated/prisma/browser';
+import type { PaymentLike } from '@/lib/payments/serialize-payment';
 import type { Payment } from '@/lib/types';
+import { formatCurrency } from '@/lib/utils';
+
+const withExactText =
+  (value: string) => (_: string, element: Element | null) => {
+    if (!element) {
+      return false;
+    }
+
+    return (
+      element.textContent === value &&
+      Array.from(element.children).every((child) => child.textContent !== value)
+    );
+  };
 
 vi.mock('next/link', () => ({
   default: ({
@@ -20,45 +35,45 @@ vi.mock('next/link', () => ({
   ),
 }));
 
-function makePayment(overrides: Partial<Payment> = {}): Payment {
+function makePayment(overrides: Partial<PaymentLike> = {}): Payment {
   return {
     id: 'pay-1',
     apartmentId: 'apt-1',
     year: 2024,
     dateFrom: new Date('2024-01-01'),
     dateTo: new Date('2024-12-31'),
-    openingBalance: 0,
-    closingBalance: 0,
-    openingDebt: 0,
-    openingSurplus: 0,
-    januaryPayments: 0,
-    februaryPayments: 0,
-    marchPayments: 0,
-    aprilPayments: 0,
-    mayPayments: 0,
-    junePayments: 0,
-    julyPayments: 0,
-    augustPayments: 0,
-    septemberPayments: 0,
-    octoberPayments: 0,
-    novemberPayments: 0,
-    decemberPayments: 0,
-    januaryCharges: 0,
-    februaryCharges: 0,
-    marchCharges: 0,
-    aprilCharges: 0,
-    mayCharges: 0,
-    juneCharges: 0,
-    julyCharges: 0,
-    augustCharges: 0,
-    septemberCharges: 0,
-    octoberCharges: 0,
-    novemberCharges: 0,
-    decemberCharges: 0,
+    openingBalance: new Prisma.Decimal(0),
+    closingBalance: new Prisma.Decimal(0),
+    openingDebt: new Prisma.Decimal(0),
+    openingSurplus: new Prisma.Decimal(0),
+    januaryPayments: new Prisma.Decimal(0),
+    februaryPayments: new Prisma.Decimal(0),
+    marchPayments: new Prisma.Decimal(0),
+    aprilPayments: new Prisma.Decimal(0),
+    mayPayments: new Prisma.Decimal(0),
+    junePayments: new Prisma.Decimal(0),
+    julyPayments: new Prisma.Decimal(0),
+    augustPayments: new Prisma.Decimal(0),
+    septemberPayments: new Prisma.Decimal(0),
+    octoberPayments: new Prisma.Decimal(0),
+    novemberPayments: new Prisma.Decimal(0),
+    decemberPayments: new Prisma.Decimal(0),
+    januaryCharges: new Prisma.Decimal(0),
+    februaryCharges: new Prisma.Decimal(0),
+    marchCharges: new Prisma.Decimal(0),
+    aprilCharges: new Prisma.Decimal(0),
+    mayCharges: new Prisma.Decimal(0),
+    juneCharges: new Prisma.Decimal(0),
+    julyCharges: new Prisma.Decimal(0),
+    augustCharges: new Prisma.Decimal(0),
+    septemberCharges: new Prisma.Decimal(0),
+    octoberCharges: new Prisma.Decimal(0),
+    novemberCharges: new Prisma.Decimal(0),
+    decemberCharges: new Prisma.Decimal(0),
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
     ...overrides,
-  };
+  } as Payment;
 }
 
 describe('PaymentTable', () => {
@@ -75,10 +90,12 @@ describe('PaymentTable', () => {
         <PaymentTable payment={payment} apartmentId="apt-1" disableLinks />
       );
 
-      // Opening balance 100.00 zł appears in the balance cell
-      expect(screen.getAllByText('100.00 zł').length).toBeGreaterThanOrEqual(1);
-      // After January: -50.00 zł
-      expect(screen.getAllByText('-50.00 zł').length).toBeGreaterThanOrEqual(1);
+      expect(
+        screen.getAllByText(withExactText(formatCurrency(100))).length
+      ).toBeGreaterThanOrEqual(1);
+      expect(
+        screen.getAllByText(withExactText(formatCurrency(-50))).length
+      ).toBeGreaterThanOrEqual(1);
     });
 
     it('accumulates balance across multiple months', () => {
@@ -96,12 +113,12 @@ describe('PaymentTable', () => {
         <PaymentTable payment={payment} apartmentId="apt-1" disableLinks />
       );
 
-      // Feb balance is -100.00 zł
-      expect(screen.getAllByText('-100.00 zł').length).toBeGreaterThanOrEqual(
-        1
-      );
-      // March balance is 200.00 zł
-      expect(screen.getAllByText('200.00 zł').length).toBeGreaterThanOrEqual(1);
+      expect(
+        screen.getAllByText(withExactText(formatCurrency(-100))).length
+      ).toBeGreaterThanOrEqual(1);
+      expect(
+        screen.getAllByText(withExactText(formatCurrency(200))).length
+      ).toBeGreaterThanOrEqual(1);
     });
 
     it('applies text-red-600 class for negative running balance', () => {
@@ -117,7 +134,7 @@ describe('PaymentTable', () => {
 
       const redCells = container.querySelectorAll('.text-red-600');
       const hasNegative = Array.from(redCells).some((el) =>
-        el.textContent?.includes('-100.00')
+        el.textContent?.includes(formatCurrency(-100))
       );
       expect(hasNegative).toBe(true);
     });
@@ -135,7 +152,7 @@ describe('PaymentTable', () => {
 
       const greenCells = container.querySelectorAll('.text-green-600');
       const hasPositive = Array.from(greenCells).some((el) =>
-        el.textContent?.includes('100.00')
+        el.textContent?.includes(formatCurrency(100))
       );
       expect(hasPositive).toBe(true);
     });
@@ -143,7 +160,10 @@ describe('PaymentTable', () => {
 
   describe('month link generation', () => {
     it('renders links with correct href pattern when disableLinks is false', () => {
-      const payment = makePayment({ year: 2024 });
+      const payment = makePayment({
+        year: 2024,
+        januaryPayments: new Prisma.Decimal(1),
+      });
 
       render(<PaymentTable payment={payment} apartmentId="apt-42" />);
 
@@ -160,7 +180,10 @@ describe('PaymentTable', () => {
     });
 
     it('renders December link with month=2024-12', () => {
-      const payment = makePayment({ year: 2024 });
+      const payment = makePayment({
+        year: 2024,
+        decemberPayments: new Prisma.Decimal(1),
+      });
 
       render(<PaymentTable payment={payment} apartmentId="apt-42" />);
 
@@ -171,7 +194,10 @@ describe('PaymentTable', () => {
     });
 
     it('does not render links when disableLinks is true', () => {
-      const payment = makePayment({ year: 2024 });
+      const payment = makePayment({
+        year: 2024,
+        januaryPayments: new Prisma.Decimal(1),
+      });
 
       render(
         <PaymentTable payment={payment} apartmentId="apt-42" disableLinks />
@@ -194,8 +220,9 @@ describe('PaymentTable', () => {
         <PaymentTable payment={payment} apartmentId="apt-1" disableLinks />
       );
 
-      // The footer total payments cell: "350.00 zł"
-      expect(screen.getAllByText('350.00 zł').length).toBeGreaterThanOrEqual(1);
+      expect(
+        screen.getAllByText(withExactText(formatCurrency(350))).length
+      ).toBeGreaterThanOrEqual(1);
     });
 
     it('renders correct total charges in the footer', () => {
@@ -209,7 +236,22 @@ describe('PaymentTable', () => {
         <PaymentTable payment={payment} apartmentId="apt-1" disableLinks />
       );
 
-      expect(screen.getAllByText('400.00 zł').length).toBeGreaterThanOrEqual(1);
+      expect(
+        screen.getAllByText(withExactText(formatCurrency(400))).length
+      ).toBeGreaterThanOrEqual(1);
+    });
+
+    it('hides months where both payments and charges are zero', () => {
+      const payment = makePayment({
+        februaryPayments: new Prisma.Decimal(100),
+      });
+
+      render(
+        <PaymentTable payment={payment} apartmentId="apt-1" disableLinks />
+      );
+
+      expect(screen.queryByText('Styczeń')).not.toBeInTheDocument();
+      expect(screen.getByText('Luty')).toBeInTheDocument();
     });
   });
 });

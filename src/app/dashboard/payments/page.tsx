@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { serializePayment } from '@/lib/payments/serialize-payment';
 import { findUserWithApartmentPaymentsCached } from '@/lib/queries/users/find-user-with-apartment-payments';
 import { AccountStatus } from '@/lib/types';
 
@@ -40,13 +41,7 @@ export default async function PaymentsPage() {
             const apartmentLabel = `${apartment.address} ${apartment.building || ''}/${apartment.number}`;
             const entries = apartment.payments.map(
               (payment: (typeof apartment.payments)[number]) => ({
-                payment: {
-                  ...payment,
-                  dateFrom: payment.dateFrom.toISOString(),
-                  dateTo: payment.dateTo.toISOString(),
-                  createdAt: payment.createdAt.toISOString(),
-                  updatedAt: payment.updatedAt.toISOString(),
-                },
+                payment: serializePayment(payment),
                 apartmentId: apartment.id,
                 apartmentLabel,
                 hoaName: apartment.homeownersAssociation.name,

@@ -5,10 +5,40 @@ import {
   validateNalCzynsz,
   validateWplaty,
 } from '@/lib/import/validators';
+import type { DecimalLike } from '@/lib/money/decimal';
 import { NalCzynszEntry } from '@/lib/parsers/nal-czynsz-parser';
 import { PaymentEntry } from '@/lib/parsers/wplaty-parser';
 
-function makeNalEntry(overrides: Partial<NalCzynszEntry> = {}): NalCzynszEntry {
+type NalCzynszEntryOverrides = Partial<
+  Omit<NalCzynszEntry, 'quantity' | 'unitPrice' | 'totalAmount'>
+> & {
+  quantity?: DecimalLike;
+  unitPrice?: DecimalLike;
+  totalAmount?: DecimalLike;
+};
+
+type PaymentEntryOverrides = Partial<
+  Omit<
+    PaymentEntry,
+    | 'openingDebt'
+    | 'openingSurplus'
+    | 'openingBalance'
+    | 'totalCharges'
+    | 'monthlyCharges'
+    | 'monthlyPayments'
+    | 'closingBalance'
+  >
+> & {
+  openingDebt?: DecimalLike;
+  openingSurplus?: DecimalLike;
+  openingBalance?: DecimalLike;
+  totalCharges?: DecimalLike;
+  monthlyCharges?: DecimalLike[];
+  monthlyPayments?: DecimalLike[];
+  closingBalance?: DecimalLike;
+};
+
+function makeNalEntry(overrides: NalCzynszEntryOverrides = {}): NalCzynszEntry {
   return {
     id: 'NAL001',
     apartmentExternalId: 'APT001',
@@ -22,10 +52,10 @@ function makeNalEntry(overrides: Partial<NalCzynszEntry> = {}): NalCzynszEntry {
     unitPrice: 5.5,
     totalAmount: 55.0,
     ...overrides,
-  };
+  } as NalCzynszEntry;
 }
 
-function makePaymentEntry(overrides: Partial<PaymentEntry> = {}): PaymentEntry {
+function makePaymentEntry(overrides: PaymentEntryOverrides = {}): PaymentEntry {
   const monthlyCharges = Array(12).fill(0);
   const monthlyPayments = Array(12).fill(0);
   monthlyCharges[0] = 100;
@@ -45,7 +75,7 @@ function makePaymentEntry(overrides: Partial<PaymentEntry> = {}): PaymentEntry {
     monthlyPayments,
     closingBalance: 0,
     ...overrides,
-  };
+  } as PaymentEntry;
 }
 
 describe('validateNalCzynsz', () => {
@@ -66,8 +96,14 @@ describe('validateNalCzynsz', () => {
     });
     const errors = validateNalCzynsz([entry]);
     expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain('NAL001');
-    expect(errors[0]).toContain('60');
+    expect(errors[0].message).toContain('NAL001');
+    expect(errors[0].message).toContain('60');
+    expect(errors[0]).toMatchObject({
+      apartmentExternalId: 'APT001',
+      period: '2024-01',
+      lineNo: 1,
+      difference: '5.0000',
+    });
   });
 
   it('should pass when difference is within tolerance (0.01)', () => {
@@ -231,7 +267,7 @@ describe('validateChargesCrossFile', () => {
       unit: 'szt',
       unitPrice: totalAmount,
       totalAmount,
-    };
+    } as unknown as NalCzynszEntry;
   }
 
   function makePayment(
@@ -252,7 +288,7 @@ describe('validateChargesCrossFile', () => {
       monthlyCharges,
       monthlyPayments: Array(12).fill(0),
       closingBalance: 0,
-    };
+    } as unknown as PaymentEntry;
   }
 
   it('returns no errors when nal_czynsz sums match wplaty monthly charges', () => {

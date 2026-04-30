@@ -2,7 +2,29 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { importPayments } from '@/lib/import/importers/payments';
 import { EntityStats, TransactionClient } from '@/lib/import/types';
+import type { DecimalLike } from '@/lib/money/decimal';
 import { PaymentEntry } from '@/lib/parsers/wplaty-parser';
+
+type PaymentEntryOverrides = Partial<
+  Omit<
+    PaymentEntry,
+    | 'openingDebt'
+    | 'openingSurplus'
+    | 'openingBalance'
+    | 'totalCharges'
+    | 'monthlyCharges'
+    | 'monthlyPayments'
+    | 'closingBalance'
+  >
+> & {
+  openingDebt?: DecimalLike;
+  openingSurplus?: DecimalLike;
+  openingBalance?: DecimalLike;
+  totalCharges?: DecimalLike;
+  monthlyCharges?: DecimalLike[];
+  monthlyPayments?: DecimalLike[];
+  closingBalance?: DecimalLike;
+};
 
 function createMockTx() {
   return {
@@ -19,7 +41,7 @@ function createStats(): EntityStats {
 }
 
 function createPaymentEntry(
-  overrides: Partial<PaymentEntry> = {}
+  overrides: PaymentEntryOverrides = {}
 ): PaymentEntry {
   return {
     externalId: 'W001',
@@ -39,7 +61,7 @@ function createPaymentEntry(
       200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200,
     ],
     ...overrides,
-  };
+  } as PaymentEntry;
 }
 
 describe('importPayments', () => {

@@ -4,16 +4,18 @@ import { ChevronDown } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { PeriodCard } from '@/components/charges/period-card';
-import {
-  DownloadChargesPdfButton,
-  type SerializableCharge,
-} from '@/components/pdf/download-charges-pdf-button';
+import { DownloadChargesPdfButton } from '@/components/pdf/download-charges-pdf-button';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import type { ChargeDisplay } from '@/lib/types';
+import {
+  type SerializableChargeDisplay,
+  toSerializableCharge,
+} from '@/lib/charges/serialize-charge';
+import type { DecimalLike } from '@/lib/money/decimal';
+import { sumDecimals } from '@/lib/money/sum';
 import { formatCurrency, formatPeriod } from '@/lib/utils';
 
 interface YearGroup {
@@ -23,8 +25,7 @@ interface YearGroup {
 
 interface ChargesDisplayProps {
   periods: string[];
-  chargesByPeriod: Record<string, ChargeDisplay[]>;
-  serializableByPeriod: Record<string, SerializableCharge[]>;
+  chargesByPeriod: Record<string, SerializableChargeDisplay[]>;
   activeMonth: string | null;
   apartmentLabel: string;
   hoaName: string;
@@ -45,7 +46,6 @@ function groupByYear(periods: string[]): YearGroup[] {
 export function ChargesDisplay({
   periods,
   chargesByPeriod,
-  serializableByPeriod,
   activeMonth,
   apartmentLabel,
   hoaName,
@@ -116,9 +116,8 @@ export function ChargesDisplay({
           <CollapsibleContent className="mt-2 space-y-2">
             {yearPeriods.map((period) => {
               const charges = chargesByPeriod[period] ?? [];
-              const totalAmount = charges.reduce(
-                (sum, c) => sum + c.totalAmount,
-                0
+              const totalAmount = sumDecimals(
+                charges.map((charge) => charge.totalAmount)
               );
               const isActive = period === activeMonth;
               const isPeriodOpen = openPeriods.has(period);
@@ -163,7 +162,7 @@ export function ChargesDisplay({
                             apartmentLabel={apartmentLabel}
                             hoaName={hoaName}
                             period={period}
-                            charges={serializableByPeriod[period] ?? []}
+                            charges={charges.map(toSerializableCharge)}
                           />
                         }
                       />
@@ -185,7 +184,7 @@ function PeriodTriggerLabel({
   isActive,
 }: {
   period: string;
-  totalAmount: number;
+  totalAmount: DecimalLike;
   isActive: boolean;
 }) {
   return (

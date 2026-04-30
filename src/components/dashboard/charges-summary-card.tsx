@@ -3,15 +3,16 @@ import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { DecimalLike } from '@/lib/money/decimal';
 import { formatCurrency, formatPeriod } from '@/lib/utils';
 
 interface ChargesSummaryCardProps {
   currentPeriod: string;
   previousPeriod: string;
-  currentMonthCharges: Array<{ totalAmount: number }>;
-  previousMonthCharges: Array<{ totalAmount: number }>;
-  currentMonthTotal: number;
-  previousMonthTotal: number;
+  currentMonthCharges: Array<{ totalAmount: DecimalLike }>;
+  previousMonthCharges: Array<{ totalAmount: DecimalLike }>;
+  currentMonthTotal: DecimalLike;
+  previousMonthTotal: DecimalLike;
 }
 
 export function ChargesSummaryCard({
