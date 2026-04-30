@@ -52,7 +52,7 @@ jobs:
         run: pnpm test:coverage
 
       - name: Coverage report for changed files
-        if: github.event_name == 'pull_request'
+        if: always() && github.event_name == 'pull_request'
         uses: davelosert/vitest-coverage-report-action@v2
         with:
           json-summary-path: './coverage/coverage-summary.json'
@@ -111,4 +111,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          platforms: ${{ (github.event_name == 'pull_request') && 'linux/amd64' || 'linux/amd64,linux/arm64' }}
+          platforms:
+            ${{ (github.event_name == 'pull_request') && 'linux/amd64' ||
+            'linux/amd64,linux/arm64' }}

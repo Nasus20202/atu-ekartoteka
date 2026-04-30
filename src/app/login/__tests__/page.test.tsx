@@ -31,6 +31,30 @@ vi.mock('@/components/layout/auth-layout', () => ({
   }) => <div>{children}</div>,
 }));
 
+vi.mock('@marsidev/react-turnstile', () => ({
+  Turnstile: ({
+    onSuccess,
+    onExpire,
+    onError,
+  }: {
+    onSuccess: (token: string) => void;
+    onExpire: () => void;
+    onError: () => void;
+  }) => (
+    <div>
+      <button type="button" onClick={() => onSuccess('turnstile-token')}>
+        turnstile-success
+      </button>
+      <button type="button" onClick={onExpire}>
+        turnstile-expire
+      </button>
+      <button type="button" onClick={onError}>
+        turnstile-error
+      </button>
+    </div>
+  ),
+}));
+
 global.fetch = vi.fn();
 
 function mockFetch({
@@ -168,6 +192,75 @@ describe('LoginPage — form submission', () => {
       expect(
         screen.getByText('Hasło zostało zmienione. Możesz się teraz zalogować.')
       ).toBeInTheDocument();
+    });
+  });
+
+  it('redirects home when session is already authenticated', async () => {
+    vi.mocked(useSession).mockReturnValue({
+      status: 'authenticated',
+      data: {
+        user: { id: 'user-1' },
+        expires: '2099-01-01T00:00:00.000Z',
+      },
+      update: vi.fn(),
+    } as unknown as ReturnType<typeof useSession>);
+
+    render(<LoginPage />);
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith('/');
+    });
+  });
+
+  it('requires turnstile token when enabled and submits it after success', async () => {
+    mockFetch({ turnstileEnabled: true });
+    vi.mocked(signIn).mockResolvedValue({ error: null } as never);
+
+    render(<LoginPage />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: 'Zaloguj się' })
+      ).toBeDisabled();
+    });
+
+    await userEvent.type(screen.getByLabelText('Email'), 'user@example.com');
+    await userEvent.type(screen.getByLabelText('Hasło'), 'password123');
+    await userEvent.click(
+      screen.getByRole('button', { name: 'turnstile-success' })
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: 'Zaloguj się' })
+      ).not.toBeDisabled();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Zaloguj się' }));
+
+    await waitFor(() => {
+      expect(signIn).toHaveBeenCalledWith('credentials', {
+        email: 'user@example.com',
+        password: 'password123',
+        turnstileToken: 'turnstile-token',
+        redirect: false,
+      });
+    });
+  });
+
+  it('starts Google sign-in flow when button is clicked', async () => {
+    mockFetch({ googleEnabled: true });
+
+    render(<LoginPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Zaloguj się przez Google')).toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByText('Zaloguj się przez Google'));
+
+    expect(signIn).toHaveBeenCalledWith('google', {
+      callbackUrl: '/dashboard',
     });
   });
 });

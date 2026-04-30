@@ -71,6 +71,21 @@ describe('findTenantUsers', () => {
     );
   });
 
+  it('trims search text before building the search filter', async () => {
+    await findTenantUsers(null, 1, 50, '  kowalski  ');
+
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          OR: expect.arrayContaining([
+            { name: { contains: 'kowalski', mode: 'insensitive' } },
+            { email: { contains: 'kowalski', mode: 'insensitive' } },
+          ]),
+        }),
+      })
+    );
+  });
+
   it('combines status and search filters', async () => {
     await findTenantUsers(AccountStatus.APPROVED, 1, 50, 'jan');
 

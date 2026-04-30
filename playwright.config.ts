@@ -1,9 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
-import * as path from 'path';
+import { fileURLToPath } from 'url';
 
 // Load environment variables from .env file
-dotenv.config({ path: path.resolve(__dirname, '.env') });
+dotenv.config({ path: fileURLToPath(new URL('./.env', import.meta.url)) });
 
 // Timeout constants
 const WEB_SERVER_TIMEOUT_MS = 120 * 1000;

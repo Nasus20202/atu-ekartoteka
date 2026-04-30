@@ -4,6 +4,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 
 import { expect, test } from '../fixtures';
 
@@ -19,7 +20,9 @@ test.describe('Admin Data Import', () => {
 
     // Build the list of files to upload, preserving the subfolder path so the
     // import handler can extract the HOA id (TEST02) from the directory name.
-    const importDir = path.resolve(__dirname, '../test-data/import');
+    const importDir = fileURLToPath(
+      new URL('../test-data/import', import.meta.url)
+    );
     const filePayloads = fs
       .readdirSync(path.join(importDir, 'TEST02'))
       .filter((name) => name.endsWith('.txt'))

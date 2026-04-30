@@ -12,6 +12,12 @@ import { toUserDto } from '@/lib/types/dto/user-dto';
 
 const logger = createLogger('api:admin:users');
 
+function parsePositiveInteger(value: string | null, fallback: number): number {
+  const parsed = Number.parseInt(value ?? '', 10);
+
+  return Number.isNaN(parsed) || parsed < 1 ? fallback : parsed;
+}
+
 export async function GET(req: NextRequest) {
   try {
     const session = await auth();
@@ -39,16 +45,27 @@ export async function GET(req: NextRequest) {
 
     const role =
       roleParam === UserRole.ADMIN ? UserRole.ADMIN : UserRole.TENANT;
+    const statusParam = searchParams.get('status');
+
+    if (
+      role !== UserRole.ADMIN &&
+      statusParam &&
+      !Object.values(AccountStatus).includes(statusParam as AccountStatus)
+    ) {
+      return NextResponse.json(
+        { error: 'Nieprawidłowy status' },
+        { status: 400 }
+      );
+    }
+
     const status =
-      role === UserRole.ADMIN
-        ? null
-        : (searchParams.get('status') as AccountStatus | null);
-    const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10));
+      role === UserRole.ADMIN ? null : (statusParam as AccountStatus | null);
+    const page = parsePositiveInteger(searchParams.get('page'), 1);
     const limit = Math.min(
       200,
-      Math.max(1, parseInt(searchParams.get('limit') ?? '50', 10))
+      parsePositiveInteger(searchParams.get('limit'), 50)
     );
-    const search = searchParams.get('search');
+    const search = searchParams.get('search')?.trim() || null;
 
     const { users, total } = await findTenantUsers(
       status,
@@ -98,6 +115,17 @@ export async function PATCH(req: NextRequest) {
     if (!userId || !status) {
       return NextResponse.json(
         { error: 'Brak wymaganych pól' },
+        { status: 400 }
+      );
+    }
+
+    if (
+      apartmentIds !== undefined &&
+      (!Array.isArray(apartmentIds) ||
+        apartmentIds.some((apartmentId) => typeof apartmentId !== 'string'))
+    ) {
+      return NextResponse.json(
+        { error: 'Nieprawidłowa lista mieszkań' },
         { status: 400 }
       );
     }

@@ -85,22 +85,22 @@ describe('PaymentsCard', () => {
     expect(paymentElements.length).toBeGreaterThan(0);
   });
 
-  it('should display closing balance with negative value (green)', () => {
+  it('should display closing balance with negative value (red)', () => {
     render(<PaymentsCard payment={mockPayment} />);
     const closingBalanceElement = screen.getByText(
       withExactText(formatCurrency(-500))
     );
     expect(closingBalanceElement).toBeInTheDocument();
-    expect(closingBalanceElement).toHaveClass('text-green-600');
+    expect(closingBalanceElement).toHaveClass('text-red-600');
   });
 
-  it('should display closing balance with positive value (red)', () => {
+  it('should display closing balance with positive value (green)', () => {
     const payment = {
       ...mockPayment,
       closingBalance: new Prisma.Decimal(500),
     };
     const { container } = render(<PaymentsCard payment={payment} />);
-    const closingBalanceElement = container.querySelector('.text-red-600');
+    const closingBalanceElement = container.querySelector('.text-green-600');
     expect(closingBalanceElement).toBeInTheDocument();
     expect(closingBalanceElement?.textContent).toBe(formatCurrency(500));
   });

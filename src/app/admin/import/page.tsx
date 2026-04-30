@@ -1,16 +1,11 @@
 'use client';
 
-import {
-  AlertCircle,
-  CheckCircle,
-  Database,
-  ShieldOff,
-  Trash2,
-  Upload,
-  XCircle,
-} from 'lucide-react';
+import { ShieldOff, Trash2, Upload, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { DatabaseStatsCard } from '@/app/admin/import/database-stats-card';
+import { ImportResults } from '@/app/admin/import/import-results';
+import type { DatabaseStats, ImportResponse } from '@/app/admin/import/types';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import { useConfirm } from '@/components/providers/confirm-dialog';
@@ -26,82 +21,11 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import type { ImportWarning } from '@/lib/import/types';
 
-interface DatabaseStats {
-  hoa: number;
-  apartments: number;
-  charges: number;
-  notifications: number;
-  payments: number;
-  users: number;
-}
-
-interface EntityStats {
-  created: number;
-  updated: number;
-  skipped: number;
-  deleted: number;
-  total: number;
-}
-
-interface ImportResult {
-  hoaId: string;
-  apartments: EntityStats;
-  errors: string[];
-  warnings: ImportWarning[];
-  charges?: EntityStats;
-  notifications?: EntityStats;
-  payments?: EntityStats;
-  apartmentsDataDate?: string;
-  chargesDataDate?: string;
-  notificationsDataDate?: string;
-}
-
-interface ImportWarningsProps {
-  warnings: ImportWarning[];
-}
-
-export function ImportWarnings({ warnings }: ImportWarningsProps) {
-  if (warnings.length === 0) {
-    return null;
-  }
-
-  return (
-    <div className="mt-4 rounded-lg border border-orange-500/50 bg-orange-500/10 p-3">
-      <div className="mb-2 flex items-center gap-2 text-sm font-medium text-orange-700 dark:text-orange-300">
-        <AlertCircle className="h-4 w-4" />
-        Ostrzeżenia ({warnings.length})
-      </div>
-      <ul className="space-y-1 text-sm text-orange-700/90 dark:text-orange-200">
-        {warnings.map((warning, idx) => (
-          <li
-            key={`${warning.apartmentExternalId}-${warning.period}-${warning.lineNo}-${idx}`}
-          >
-            • Lokal {warning.apartmentExternalId}, okres {warning.period}, linia{' '}
-            {warning.lineNo}, różnica {warning.difference}: {warning.message}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-interface ImportResponse {
-  success: boolean;
-  results: ImportResult[];
-  errors: Array<{ hoaId?: string; file?: string; error: string }>;
-}
+export { ImportWarnings } from '@/app/admin/import/import-warnings';
 
 export default function AdminImportPage() {
+  const confirm = useConfirm();
   const [files, setFiles] = useState<FileList | null>(null);
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<ImportResponse | null>(null);
@@ -110,12 +34,12 @@ export default function AdminImportPage() {
   const [statsLoading, setStatsLoading] = useState(true);
   const [cleanImport, setCleanImport] = useState(false);
   const [skipValidation, setSkipValidation] = useState(false);
-  const confirm = useConfirm();
 
-  const fetchStats = async () => {
+  async function fetchStats() {
     try {
       setStatsLoading(true);
       const res = await fetch('/api/admin/stats');
+
       if (res.ok) {
         const data = await res.json();
         setDbStats(data);
@@ -125,31 +49,31 @@ export default function AdminImportPage() {
     } finally {
       setStatsLoading(false);
     }
-  };
+  }
 
   useEffect(() => {
-    fetchStats();
+    void fetchStats();
   }, []);
 
-  // Refresh stats after successful import
   useEffect(() => {
     if (response?.success) {
-      fetchStats();
+      void fetchStats();
     }
   }, [response]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setFiles(e.target.files);
+  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    if (event.target.files && event.target.files.length > 0) {
+      setFiles(event.target.files);
       setResponse(null);
       setError(null);
     }
-  };
+  }
 
-  const handleImport = async () => {
-    if (!files) return;
+  async function handleImport() {
+    if (!files) {
+      return;
+    }
 
-    // Show confirmation dialog for clean import
     if (cleanImport) {
       const confirmed = await confirm({
         title: 'Potwierdzenie czystego importu',
@@ -160,7 +84,9 @@ export default function AdminImportPage() {
         variant: 'destructive',
       });
 
-      if (!confirmed) return;
+      if (!confirmed) {
+        return;
+      }
     }
 
     setLoading(true);
@@ -168,17 +94,15 @@ export default function AdminImportPage() {
     setResponse(null);
 
     try {
-      // Convert files to base64 and send as JSON to avoid HTTP/2 flow control issues
       const fileData: Array<{ path: string; content: string; name: string }> =
         [];
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+      for (let index = 0; index < files.length; index++) {
+        const file = files[index];
         const filePath =
           (file as File & { webkitRelativePath?: string }).webkitRelativePath ||
           file.name;
 
-        // Compress file content with gzip, then base64 encode
         const arrayBuffer = await file.arrayBuffer();
         const stream = new Blob([arrayBuffer]).stream();
         const compressedStream = stream.pipeThrough(
@@ -187,7 +111,6 @@ export default function AdminImportPage() {
         const compressedBlob = await new Response(compressedStream).blob();
         const compressedBuffer = await compressedBlob.arrayBuffer();
 
-        // Convert compressed data to base64
         const base64 = btoa(
           new Uint8Array(compressedBuffer).reduce(
             (data, byte) => data + String.fromCharCode(byte),
@@ -202,7 +125,6 @@ export default function AdminImportPage() {
         });
       }
 
-      // Send as JSON
       const res = await fetch('/api/admin/import', {
         method: 'POST',
         headers: {
@@ -210,7 +132,6 @@ export default function AdminImportPage() {
         },
         body: JSON.stringify({ files: fileData, cleanImport, skipValidation }),
       });
-
       const data = await res.json();
 
       if (!res.ok) {
@@ -223,64 +144,45 @@ export default function AdminImportPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  async function handleSkipValidationChange(checked: boolean) {
+    if (checked) {
+      const first = await confirm({
+        title: 'Pominięcie walidacji',
+        description:
+          'Czy na pewno chcesz pominąć walidację danych? Import może zawierać błędne lub niespójne dane.',
+        confirmText: 'Tak, pomiń walidację',
+        cancelText: 'Anuluj',
+        variant: 'destructive',
+      });
+
+      if (!first) {
+        return;
+      }
+
+      const second = await confirm({
+        title: 'Potwierdzenie – pominięcie walidacji',
+        description:
+          'To jest ostateczne potwierdzenie. Importowane dane nie zostaną sprawdzone pod kątem poprawności sum i sald. Czy kontynuować?',
+        confirmText: 'Potwierdzam – pomiń walidację',
+        cancelText: 'Anuluj',
+        variant: 'destructive',
+      });
+
+      if (!second) {
+        return;
+      }
+    }
+
+    setSkipValidation(checked);
+  }
 
   return (
     <Page maxWidth="4xl">
       <PageHeader title="Import danych" showBackButton={false} />
 
-      <Card className="mb-6">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Database className="h-4 w-4" />
-            Stan bazy danych
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {statsLoading ? (
-            <p className="text-sm text-muted-foreground">Ładowanie...</p>
-          ) : dbStats ? (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Wspólnoty</TableHead>
-                    <TableHead>Mieszkania</TableHead>
-                    <TableHead>Naliczenia</TableHead>
-                    <TableHead>Powiadomienia</TableHead>
-                    <TableHead>Wpłaty</TableHead>
-                    <TableHead>Użytkownicy</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium">{dbStats.hoa}</TableCell>
-                    <TableCell className="font-medium">
-                      {dbStats.apartments}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {dbStats.charges}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {dbStats.notifications}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {dbStats.payments}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {dbStats.users}
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Nie udało się pobrać statystyk
-            </p>
-          )}
-        </CardContent>
-      </Card>
+      <DatabaseStatsCard dbStats={dbStats} statsLoading={statsLoading} />
 
       <Card>
         <CardHeader>
@@ -299,6 +201,7 @@ export default function AdminImportPage() {
               onChange={handleFileChange}
               disabled={loading}
               multiple
+              suppressHydrationWarning
               // @ts-expect-error - webkitdirectory is not in the type definitions
               webkitdirectory=""
               directory=""
@@ -331,28 +234,8 @@ export default function AdminImportPage() {
             <Checkbox
               id="skipValidation"
               checked={skipValidation}
-              onCheckedChange={async (checked) => {
-                if (checked === true) {
-                  const first = await confirm({
-                    title: 'Pominięcie walidacji',
-                    description:
-                      'Czy na pewno chcesz pominąć walidację danych? Import może zawierać błędne lub niespójne dane.',
-                    confirmText: 'Tak, pomiń walidację',
-                    cancelText: 'Anuluj',
-                    variant: 'destructive',
-                  });
-                  if (!first) return;
-                  const second = await confirm({
-                    title: 'Potwierdzenie – pominięcie walidacji',
-                    description:
-                      'To jest ostateczne potwierdzenie. Importowane dane nie zostaną sprawdzone pod kątem poprawności sum i sald. Czy kontynuować?',
-                    confirmText: 'Potwierdzam – pomiń walidację',
-                    cancelText: 'Anuluj',
-                    variant: 'destructive',
-                  });
-                  if (!second) return;
-                }
-                setSkipValidation(checked === true);
+              onCheckedChange={(checked) => {
+                void handleSkipValidationChange(checked === true);
               }}
               disabled={loading}
             />
@@ -366,7 +249,9 @@ export default function AdminImportPage() {
           </div>
 
           <Button
-            onClick={handleImport}
+            onClick={() => {
+              void handleImport();
+            }}
             disabled={!files || loading}
             className="w-full"
             variant={cleanImport ? 'destructive' : 'default'}
@@ -397,308 +282,7 @@ export default function AdminImportPage() {
             </Alert>
           )}
 
-          {response && (
-            <div className="space-y-4">
-              {(() => {
-                const failedHoas = response.results.filter(
-                  (r) => r.errors.length > 0
-                );
-                return failedHoas.length > 0 ? (
-                  <Alert variant="destructive">
-                    <XCircle className="h-4 w-4" />
-                    <AlertTitle>
-                      Wspólnoty z błędami ({failedHoas.length})
-                    </AlertTitle>
-                    <AlertDescription>
-                      <ul className="mt-1 space-y-1">
-                        {failedHoas.map((r) => (
-                          <li key={r.hoaId}>
-                            • <span className="font-medium">{r.hoaId}</span>:{' '}
-                            {r.errors[0]}
-                            {r.errors.length > 1 &&
-                              ` (+${r.errors.length - 1} więcej)`}
-                          </li>
-                        ))}
-                      </ul>
-                    </AlertDescription>
-                  </Alert>
-                ) : null;
-              })()}
-
-              {response.success && (
-                <div className="flex items-start gap-2 rounded-lg bg-green-100 p-4 text-green-800 dark:bg-green-900 dark:text-green-200">
-                  <CheckCircle className="mt-0.5 h-5 w-5 shrink-0" />
-                  <div className="flex-1">
-                    <p className="font-medium">Import zakończony pomyślnie</p>
-                  </div>
-                </div>
-              )}
-
-              {response.errors.length > 0 && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>
-                    Błędy plików ({response.errors.length})
-                  </AlertTitle>
-                  <AlertDescription>
-                    <ul className="mt-1 space-y-1">
-                      {response.errors.map((err, idx) => (
-                        <li key={idx}>
-                          • {err.file || err.hoaId}: {err.error}
-                        </li>
-                      ))}
-                    </ul>
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {response.results.map((result) => (
-                <Card
-                  key={result.hoaId}
-                  className={
-                    result.errors.length > 0
-                      ? 'border-destructive/50 dark:border-red-800'
-                      : ''
-                  }
-                >
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      {result.errors.length > 0 && (
-                        <XCircle className="h-5 w-5 text-destructive" />
-                      )}
-                      Wspólnota: {result.hoaId}
-                    </CardTitle>
-                    {(result.apartmentsDataDate ||
-                      result.chargesDataDate ||
-                      result.notificationsDataDate) && (
-                      <div className="mt-1 flex flex-wrap gap-3 text-xs text-muted-foreground">
-                        {result.apartmentsDataDate && (
-                          <span>
-                            Mieszkania:{' '}
-                            {new Date(
-                              result.apartmentsDataDate
-                            ).toLocaleDateString('pl-PL')}
-                          </span>
-                        )}
-                        {result.chargesDataDate && (
-                          <span>
-                            Naliczenia:{' '}
-                            {new Date(
-                              result.chargesDataDate
-                            ).toLocaleDateString('pl-PL')}
-                          </span>
-                        )}
-                        {result.notificationsDataDate && (
-                          <span>
-                            Powiadomienia:{' '}
-                            {new Date(
-                              result.notificationsDataDate
-                            ).toLocaleDateString('pl-PL')}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </CardHeader>
-                  <CardContent>
-                    <div className="mb-6">
-                      <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
-                        Mieszkania
-                      </h3>
-                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        <div className="rounded-lg border p-4">
-                          <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                            {result.apartments.created}
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            Utworzonych
-                          </p>
-                        </div>
-
-                        <div className="rounded-lg border p-4">
-                          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                            {result.apartments.updated}
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            Zaktualizowanych
-                          </p>
-                        </div>
-
-                        <div className="rounded-lg border p-4">
-                          <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                            {result.apartments.deleted}
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            Dezaktywowanych
-                          </p>
-                        </div>
-
-                        <div className="rounded-lg border p-4">
-                          <div className="text-2xl font-bold">
-                            {result.apartments.total}
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            Razem w pliku
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {result.charges && (
-                      <div className="mb-6">
-                        <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
-                          Naliczenia
-                        </h3>
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                          <div className="rounded-lg border p-4">
-                            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                              {result.charges.created}
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              Utworzonych
-                            </p>
-                          </div>
-
-                          <div className="rounded-lg border p-4">
-                            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                              {result.charges.updated}
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              Zaktualizowanych
-                            </p>
-                          </div>
-
-                          <div className="rounded-lg border p-4">
-                            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                              {result.charges.skipped}
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              Pominiętych
-                            </p>
-                          </div>
-
-                          <div className="rounded-lg border p-4">
-                            <div className="text-2xl font-bold">
-                              {result.charges.total}
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              Razem w pliku
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {result.notifications && (
-                      <div className="mb-6">
-                        <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
-                          Powiadomienia o opłatach
-                        </h3>
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                          <div className="rounded-lg border p-4">
-                            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                              {result.notifications.created}
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              Utworzonych
-                            </p>
-                          </div>
-
-                          <div className="rounded-lg border p-4">
-                            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                              {result.notifications.updated}
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              Zaktualizowanych
-                            </p>
-                          </div>
-
-                          <div className="rounded-lg border p-4">
-                            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                              {result.notifications.deleted}
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              Usuniętych
-                            </p>
-                          </div>
-
-                          <div className="rounded-lg border p-4">
-                            <div className="text-2xl font-bold">
-                              {result.notifications.total}
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              Razem w pliku
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {result.payments && (
-                      <div className="mb-6">
-                        <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
-                          Wpłaty
-                        </h3>
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                          <div className="rounded-lg border p-4">
-                            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                              {result.payments.created}
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              Utworzonych
-                            </p>
-                          </div>
-
-                          <div className="rounded-lg border p-4">
-                            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                              {result.payments.updated}
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              Zaktualizowanych
-                            </p>
-                          </div>
-
-                          <div className="rounded-lg border p-4">
-                            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                              {result.payments.skipped}
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              Pominiętych
-                            </p>
-                          </div>
-
-                          <div className="rounded-lg border p-4">
-                            <div className="text-2xl font-bold">
-                              {result.payments.total}
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              Razem w pliku
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {result.errors.length > 0 && (
-                      <div className="mt-4 rounded-lg border border-destructive/50 bg-destructive/10 p-3 dark:border-red-800 dark:bg-red-950">
-                        <div className="mb-2 flex items-center gap-2 text-sm font-medium text-destructive dark:text-red-300">
-                          <XCircle className="h-4 w-4" />
-                          Błędy walidacji ({result.errors.length}) — wspólnota
-                          nie została zaimportowana
-                        </div>
-                        <ul className="space-y-1 text-sm text-destructive/80 dark:text-red-400">
-                          {result.errors.map((err, idx) => (
-                            <li key={idx}>• {err}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    <ImportWarnings warnings={result.warnings} />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+          <ImportResults response={response} />
         </CardContent>
       </Card>
     </Page>

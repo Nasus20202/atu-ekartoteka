@@ -11,26 +11,41 @@ export async function findTenantUsers(
   search?: string | null,
   role: UserRole = UserRole.TENANT
 ) {
-  const searchFilter: Prisma.UserWhereInput | undefined =
-    search && search.trim()
-      ? {
-          OR: [
-            { name: { contains: search, mode: 'insensitive' } },
-            { email: { contains: search, mode: 'insensitive' } },
-            {
-              apartments: {
-                some: {
-                  OR: [
-                    { number: { contains: search, mode: 'insensitive' } },
-                    { address: { contains: search, mode: 'insensitive' } },
-                    { owner: { contains: search, mode: 'insensitive' } },
-                  ],
-                },
+  const normalizedSearch = search?.trim();
+  const searchFilter: Prisma.UserWhereInput | undefined = normalizedSearch
+    ? {
+        OR: [
+          { name: { contains: normalizedSearch, mode: 'insensitive' } },
+          { email: { contains: normalizedSearch, mode: 'insensitive' } },
+          {
+            apartments: {
+              some: {
+                OR: [
+                  {
+                    number: {
+                      contains: normalizedSearch,
+                      mode: 'insensitive',
+                    },
+                  },
+                  {
+                    address: {
+                      contains: normalizedSearch,
+                      mode: 'insensitive',
+                    },
+                  },
+                  {
+                    owner: {
+                      contains: normalizedSearch,
+                      mode: 'insensitive',
+                    },
+                  },
+                ],
               },
             },
-          ],
-        }
-      : undefined;
+          },
+        ],
+      }
+    : undefined;
 
   const where: Prisma.UserWhereInput = {
     role,

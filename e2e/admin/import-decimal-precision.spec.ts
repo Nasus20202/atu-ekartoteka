@@ -4,11 +4,14 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 
 import { expect, test } from '../fixtures';
 
 function buildImportFiles() {
-  const importDir = path.resolve(__dirname, '../test-data/import/TEST02');
+  const importDir = fileURLToPath(
+    new URL('../test-data/import/TEST02', import.meta.url)
+  );
 
   return fs
     .readdirSync(importDir)

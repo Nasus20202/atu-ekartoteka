@@ -2,6 +2,7 @@
   "name": "atu-ekartoteka",
   "version": "0.7.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "dev:pretty": "next dev | pino-pretty",

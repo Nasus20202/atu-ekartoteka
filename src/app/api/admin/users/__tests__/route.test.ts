@@ -150,6 +150,34 @@ describe('/api/admin/users route', () => {
       expect(data.error).toBe('Nieprawidłowa rola');
       expect(mockFindTenantUsers).not.toHaveBeenCalled();
     });
+
+    it('rejects invalid tenant status values', async () => {
+      const { GET } = await import('../route');
+
+      const response = await GET(makeGetRequest({ status: 'WAITING' }));
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe('Nieprawidłowy status');
+      expect(mockFindTenantUsers).not.toHaveBeenCalled();
+    });
+
+    it('falls back to default pagination for invalid page and limit', async () => {
+      const { GET } = await import('../route');
+
+      const response = await GET(
+        makeGetRequest({ page: 'foo', limit: '-10', search: '  jan  ' })
+      );
+
+      expect(response.status).toBe(200);
+      expect(mockFindTenantUsers).toHaveBeenCalledWith(
+        null,
+        1,
+        50,
+        'jan',
+        UserRole.TENANT
+      );
+    });
   });
 
   describe('PATCH', () => {
@@ -220,6 +248,57 @@ describe('/api/admin/users route', () => {
         'tenant@example.com',
         'Tenant User'
       );
+    });
+
+    it('keeps existing apartments when approving without apartmentIds', async () => {
+      mockFindUserById.mockResolvedValue({
+        id: 'tenant-user',
+        email: 'tenant@example.com',
+        name: 'Tenant User',
+        role: UserRole.TENANT,
+        status: AccountStatus.PENDING,
+      });
+      mockUpdateUserStatus.mockResolvedValue({
+        id: 'tenant-user',
+        email: 'tenant@example.com',
+        name: 'Tenant User',
+        role: UserRole.TENANT,
+        status: AccountStatus.APPROVED,
+        apartments: [{ id: 'apt-1' }],
+      });
+
+      const { PATCH } = await import('../route');
+
+      const response = await PATCH(
+        makePatchRequest({
+          userId: 'tenant-user',
+          status: AccountStatus.APPROVED,
+        })
+      );
+
+      expect(response.status).toBe(200);
+      expect(mockUpdateUserStatus).toHaveBeenCalledWith({
+        userId: 'tenant-user',
+        status: AccountStatus.APPROVED,
+        apartmentIds: undefined,
+      });
+    });
+
+    it('rejects invalid apartmentIds payloads', async () => {
+      const { PATCH } = await import('../route');
+
+      const response = await PATCH(
+        makePatchRequest({
+          userId: 'tenant-user',
+          status: AccountStatus.APPROVED,
+          apartmentIds: 'apt-1',
+        })
+      );
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe('Nieprawidłowa lista mieszkań');
+      expect(mockFindUserById).not.toHaveBeenCalled();
     });
   });
 });
