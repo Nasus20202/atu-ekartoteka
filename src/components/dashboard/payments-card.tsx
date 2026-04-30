@@ -45,7 +45,7 @@ export const PaymentsCard = ({ payment }: PaymentsCardProps) => {
 
             <div className="border-t pt-2 font-bold">Saldo końcowe:</div>
             <div
-              className={`border-t pt-2 text-right font-bold ${closingBalance.isNegative() ? 'text-green-600' : closingBalance.greaterThan(0) ? 'text-red-600' : ''}`}
+              className={`border-t pt-2 text-right font-bold ${closingBalance.isNegative() ? 'text-red-600' : closingBalance.greaterThan(0) ? 'text-green-600' : ''}`}
             >
               {formatCurrency(closingBalance)}
             </div>

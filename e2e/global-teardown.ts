@@ -4,12 +4,12 @@
  */
 
 import dotenv from 'dotenv';
-import * as path from 'path';
+import { fileURLToPath } from 'url';
 
 import { cleanTestData } from './utils/clean-test-data';
 
 // Load environment variables
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config({ path: fileURLToPath(new URL('../.env', import.meta.url)) });
 
 async function globalTeardown() {
   const databaseUrl = process.env.DATABASE_URL;

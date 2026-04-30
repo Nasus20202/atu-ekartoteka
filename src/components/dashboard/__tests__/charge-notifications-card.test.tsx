@@ -22,10 +22,10 @@ describe('ChargeNotificationsCard', () => {
       id: '1',
       externalId: 'EXT-1',
       description: 'Czynsz',
-      quantity: 50.5,
+      quantity: '50.5',
       unit: 'm²',
-      unitPrice: 10.0,
-      totalAmount: 505.0,
+      unitPrice: '10',
+      totalAmount: '505',
       lineNo: 1,
       apartmentId: 'apt-1',
       createdAt: new Date(),
@@ -35,10 +35,10 @@ describe('ChargeNotificationsCard', () => {
       id: '2',
       externalId: 'EXT-2',
       description: 'Woda',
-      quantity: 15,
+      quantity: '15',
       unit: 'm³',
-      unitPrice: 5.0,
-      totalAmount: 75.0,
+      unitPrice: '5',
+      totalAmount: '75',
       lineNo: 2,
       apartmentId: 'apt-1',
       createdAt: new Date(),
@@ -111,8 +111,8 @@ describe('ChargeNotificationsCard', () => {
   it('should format amounts with two decimal places', () => {
     const notification = {
       ...mockNotifications[0],
-      totalAmount: 123.456,
-      unitPrice: 9.999,
+      totalAmount: '123.456',
+      unitPrice: '9.999',
     };
 
     render(<ChargeNotificationsCard notifications={[notification]} />);

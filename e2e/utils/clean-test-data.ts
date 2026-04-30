@@ -10,8 +10,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as pg from 'pg';
+import { fileURLToPath } from 'url';
 
-const SQL_DIR = path.join(__dirname, '../test-data/seed');
+const SQL_DIR = fileURLToPath(new URL('../test-data/seed', import.meta.url));
 
 function loadSql(filename: string): string {
   return fs.readFileSync(path.join(SQL_DIR, filename), 'utf-8');
@@ -100,7 +101,7 @@ export async function cleanTestData(connectionString?: string) {
 }
 
 // Allow running directly: pnpm exec tsx e2e/utils/clean-test-data.ts
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   cleanTestData().catch((err) => {
     console.error(err);
     process.exit(1);

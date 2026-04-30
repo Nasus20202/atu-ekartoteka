@@ -12,14 +12,18 @@ export function updateUserStatus({
   status,
   apartmentIds,
 }: UpdateUserStatusInput) {
+  const apartmentsUpdate =
+    apartmentIds === undefined
+      ? undefined
+      : status === AccountStatus.APPROVED && apartmentIds.length > 0
+        ? { set: apartmentIds.map((id) => ({ id })) }
+        : { set: [] };
+
   return prisma.user.update({
     where: { id: userId },
     data: {
       status,
-      apartments:
-        status === AccountStatus.APPROVED && apartmentIds?.length
-          ? { set: apartmentIds.map((id) => ({ id })) }
-          : { set: [] },
+      ...(apartmentsUpdate ? { apartments: apartmentsUpdate } : {}),
     },
     include: { apartments: true },
   });

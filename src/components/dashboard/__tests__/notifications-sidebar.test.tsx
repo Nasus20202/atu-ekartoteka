@@ -30,7 +30,7 @@ vi.mock('@/components/ui/collapsible', () => ({
 
 function makeNotification(
   id: string,
-  totalAmount: number,
+  totalAmount: string,
   hoaId: string | null = 'hoa-1',
   hoaName: string | null = 'Wspólnota Alpha'
 ) {
@@ -38,7 +38,7 @@ function makeNotification(
     id,
     externalId: `EXT-${id}`,
     description: `Naliczenie ${id}`,
-    quantity: 1,
+    quantity: '1',
     unit: 'szt',
     unitPrice: totalAmount,
     totalAmount,
@@ -63,8 +63,8 @@ describe('NotificationsSidebar', () => {
   describe('groupByHoa — single HOA', () => {
     it('renders total amount and flat list when all notifications belong to one HOA', () => {
       const notifications = [
-        makeNotification('n1', 100, 'hoa-1', 'Wspólnota Alpha'),
-        makeNotification('n2', 200, 'hoa-1', 'Wspólnota Alpha'),
+        makeNotification('n1', '100', 'hoa-1', 'Wspólnota Alpha'),
+        makeNotification('n2', '200', 'hoa-1', 'Wspólnota Alpha'),
       ];
 
       render(<NotificationsSidebar notifications={notifications} />);
@@ -82,7 +82,7 @@ describe('NotificationsSidebar', () => {
 
     it('shows hoaHeader when present in single-HOA mode', () => {
       const notification = {
-        ...makeNotification('n1', 100, 'hoa-1', 'Wspólnota Alpha'),
+        ...makeNotification('n1', '100', 'hoa-1', 'Wspólnota Alpha'),
         hoaHeader: 'Numer konta: 12 3456 7890',
       };
 
@@ -95,8 +95,8 @@ describe('NotificationsSidebar', () => {
   describe('groupByHoa — multiple HOAs', () => {
     it('renders a collapsible group per HOA when notifications span multiple HOAs', () => {
       const notifications = [
-        makeNotification('n1', 100, 'hoa-1', 'Wspólnota Alpha'),
-        makeNotification('n2', 200, 'hoa-2', 'Wspólnota Beta'),
+        makeNotification('n1', '100', 'hoa-1', 'Wspólnota Alpha'),
+        makeNotification('n2', '200', 'hoa-2', 'Wspólnota Beta'),
       ];
 
       render(<NotificationsSidebar notifications={notifications} />);
@@ -108,9 +108,9 @@ describe('NotificationsSidebar', () => {
 
     it('shows subtotal per HOA group', () => {
       const notifications = [
-        makeNotification('n1', 100, 'hoa-1', 'Wspólnota Alpha'),
-        makeNotification('n2', 150, 'hoa-1', 'Wspólnota Alpha'),
-        makeNotification('n3', 200, 'hoa-2', 'Wspólnota Beta'),
+        makeNotification('n1', '100', 'hoa-1', 'Wspólnota Alpha'),
+        makeNotification('n2', '150', 'hoa-1', 'Wspólnota Alpha'),
+        makeNotification('n3', '200', 'hoa-2', 'Wspólnota Beta'),
       ];
 
       render(<NotificationsSidebar notifications={notifications} />);
@@ -127,8 +127,8 @@ describe('NotificationsSidebar', () => {
 
     it('shows grand total across all HOAs', () => {
       const notifications = [
-        makeNotification('n1', 100, 'hoa-1', 'Wspólnota Alpha'),
-        makeNotification('n2', 200, 'hoa-2', 'Wspólnota Beta'),
+        makeNotification('n1', '100', 'hoa-1', 'Wspólnota Alpha'),
+        makeNotification('n2', '200', 'hoa-2', 'Wspólnota Beta'),
       ];
 
       render(<NotificationsSidebar notifications={notifications} />);
@@ -142,8 +142,8 @@ describe('NotificationsSidebar', () => {
 
     it('groups notifications with null hoaId under a single group', () => {
       const notifications = [
-        makeNotification('n1', 100, null, null),
-        makeNotification('n2', 50, null, null),
+        makeNotification('n1', '100', null, null),
+        makeNotification('n2', '50', null, null),
       ];
 
       render(<NotificationsSidebar notifications={notifications} />);

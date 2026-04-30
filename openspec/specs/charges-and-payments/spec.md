@@ -313,3 +313,167 @@ The system SHALL group charge notifications by HOA in the notifications sidebar 
 - **GIVEN** a tenant on the /dashboard/charges page with charges from multiple apartments in different HOAs
 - **WHEN** the page renders
 - **THEN** charge notifications are grouped by HOA with the HOA name shown as a section header
+
+---
+
+### Requirement: Payment Detail Monthly Balance Chart
+
+The system SHALL display an area-based chart on the tenant payment detail page that visualizes the selected payment year's monthly `Wpłaty`, `Naliczenia`, and running `Saldo` using the same underlying payment record shown in the table.
+
+#### Scenario: Monthly area chart shown for payment year
+
+- **GIVEN** an authenticated tenant viewing `/dashboard/payments/[apartmentId]/[year]` for an apartment assigned to them
+- **WHEN** the page loads with a payment record for that year
+- **THEN** a chart is rendered in the page showing monthly `Wpłaty`, monthly `Naliczenia`, and the running `Saldo`
+- **AND** the `Wpłaty` and `Naliczenia` series are rendered as areas rather than bars
+
+#### Scenario: Chart uses the same months as the payment detail table
+
+- **GIVEN** a payment year with one or more non-empty months
+- **WHEN** the page renders the chart and the table
+- **THEN** the chart's month points reflect the same monthly values used by the payment detail table
+- **AND** the running balance for each point is derived from the year's opening balance plus cumulative payments minus cumulative charges
+
+#### Scenario: Chart remains informational and does not replace table data
+
+- **GIVEN** an authenticated tenant on the payment detail page
+- **WHEN** the chart is visible
+- **THEN** the existing summary tiles, PDF download action, and monthly payment table remain visible on the same page
+
+---
+
+### Requirement: Dashboard Charge Trend Chart
+
+The system SHALL display a compact HOA-split area trend chart on the tenant dashboard using the tenant's existing apartment charge data, with a visible 12-month window that can be shifted through history.
+
+#### Scenario: Dashboard shows recent charge trend
+
+- **GIVEN** an approved tenant with charges in at least two billing periods across their assigned apartments
+- **WHEN** they view the dashboard
+- **THEN** the charges summary card includes a compact chart of monthly `Naliczenia` totals for the last 12 months
+- **AND** the chart splits the totals into separate HOA series
+- **AND** each HOA series is rendered as an area-based trend rather than a bar series
+
+#### Scenario: Dashboard trend uses chronological recent periods
+
+- **GIVEN** a tenant with charge data from multiple billing periods
+- **WHEN** the dashboard chart data is prepared
+- **THEN** the chart includes all available monthly periods in chronological order
+- **AND** the visible dashboard viewport shows 12 consecutive months ending with the current month by default
+- **AND** those periods are displayed in chronological order from oldest to newest within the chart
+
+#### Scenario: Dashboard trend distinguishes HOA labels
+
+- **GIVEN** an approved tenant with apartments in more than one HOA
+- **WHEN** they view the dashboard
+- **THEN** the chart renders a separate series for each HOA represented in the 12-month range
+- **AND** the legend uses the HOA names
+
+#### Scenario: Dashboard history can be shifted
+
+- **GIVEN** an approved tenant with more than 12 months of charge history
+- **WHEN** they use the dashboard chart history controls
+- **THEN** the visible 12-month chart window moves backward or forward through the available history
+- **AND** the chart keeps the HOA series split intact while changing the visible month range
+
+#### Scenario: Dashboard falls back when there is not enough history
+
+- **GIVEN** an approved tenant with charges in fewer than two billing periods
+- **WHEN** they view the dashboard
+- **THEN** the current and previous period summaries remain visible
+- **AND** the chart area is replaced by a short explanatory message or omitted rather than rendering a misleading trend plot
+
+---
+
+### Requirement: Decimal Precision for Money Display and Aggregation
+
+The system SHALL represent all monetary fields on `Charge` and `Payment` records as `Decimal(14, 4)` precision throughout the API, business logic, and UI rendering layers, formatting to 2 decimal places only at the leaf rendering step via `formatCurrency`.
+
+#### Scenario: Aggregations preserve precision
+
+- **GIVEN** an apartment with twelve monthly charge values that include sub-grosz fractions
+- **WHEN** the yearly total is computed for display
+- **THEN** the sum is computed using `Decimal` addition (not native float `+`) and the displayed total matches the file-provided sums exactly when rounded to 2 decimals
+
+#### Scenario: API responses serialise money as decimal strings
+
+- **GIVEN** a client requesting charge or payment data via the API
+- **WHEN** the API serialises the response
+- **THEN** monetary fields appear as decimal strings (e.g. `"142.1000"`) preserving the stored precision
+
+#### Scenario: Display formatter accepts Decimal, string, or number
+
+- **GIVEN** a UI component receiving a monetary value as `Prisma.Decimal`, a numeric string, or a number
+- **WHEN** the component renders the value via `formatCurrency`
+- **THEN** the helper accepts all three forms and produces the same `pl-PL` PLN-formatted output (e.g. `"142,10 zł"`) without precision loss
+
+---
+
+### Requirement: Skip Empty Months in Monthly Listings
+
+The system SHALL hide month rows where both the charge value and the payment value are zero, in all monthly listing views. Yearly totals and balance rows SHALL continue to reflect the full data set (and SHALL NOT be affected by the filtered rendering).
+
+#### Scenario: Empty month is hidden in tenant payment table
+
+- **GIVEN** a tenant viewing the payment detail table for a year where January has `januaryCharges = 0` and `januaryPayments = 0`
+- **WHEN** the table renders
+- **THEN** the January row is not displayed
+- **AND** the rows for non-empty months are displayed in their normal calendar order
+
+#### Scenario: Empty month is hidden in dashboard payments card
+
+- **GIVEN** a tenant viewing the dashboard payments card for a year that has any zero-charge-and-zero-payment months
+- **WHEN** the card renders the per-month list
+- **THEN** the empty months are omitted from the list
+
+#### Scenario: Empty month is hidden in admin payments view
+
+- **GIVEN** an admin viewing the per-apartment payments accordion
+- **WHEN** the embedded payment table renders
+- **THEN** months that are empty for both columns are hidden, identical to the tenant view
+
+#### Scenario: Yearly totals reflect full year regardless of hidden rows
+
+- **GIVEN** any month is hidden because it is empty
+- **WHEN** the `Razem` footer row renders
+- **THEN** the totals continue to be computed by summing all 12 monthly columns from the `Payment` record (the hidden rows are still part of the total and simply add zero)
+
+#### Scenario: Year with all zero months still renders header and totals
+
+- **GIVEN** a payment record where every month has zero charge and zero payment
+- **WHEN** the table renders
+- **THEN** no month rows are rendered
+- **AND** the opening balance, `Razem` footer (showing `0,00 zł`), and closing balance rows are still rendered
+
+#### Scenario: Bilans otwarcia row not affected
+
+- **GIVEN** a payment record with non-zero opening balance components but zero values for all twelve months
+- **WHEN** the table renders
+- **THEN** the `Bilans otwarcia` row is rendered with its actual `openingDebt` and `openingSurplus` values regardless of the empty-month filter
+
+---
+
+### Requirement: Explicit DTO Contracts for Charge and Payment Rendering
+
+The system SHALL use explicit DTO contracts for charge and payment data passed from server-side page composition into client-side rendering and download components.
+
+#### Scenario: Payments page maps to DTO before client rendering
+
+- **WHEN** the tenant payments overview page renders a yearly payment row
+- **THEN** the row component receives a named payment DTO contract rather than a database entity or serializer-defined alias
+
+#### Scenario: Payment detail page maps download data to DTO
+
+- **WHEN** the tenant payment detail page renders the PDF download action
+- **THEN** the download button receives a named payment DTO contract
+- **AND** the page continues to render the existing payment summary and table without changing user-visible behaviour
+
+#### Scenario: Charges pages map to DTO before client rendering
+
+- **WHEN** a tenant charges page renders grouped charge data
+- **THEN** the charge cards and download actions receive named charge DTO contracts rather than serializer-defined aliases
+
+#### Scenario: DTO migration does not change displayed content
+
+- **WHEN** charge and payment DTOs replace the previous serializer outputs
+- **THEN** the rendered values, labels, grouping, and PDF download availability remain unchanged for tenants and admins
