@@ -1,4 +1,4 @@
-# GitHub Copilot Instructions
+# Agents Instructions
 
 ## Language & Communication
 
