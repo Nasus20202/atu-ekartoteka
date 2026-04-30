@@ -2,12 +2,13 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { ChargesSummaryCard } from '@/components/dashboard/charges-summary-card';
+import { Prisma } from '@/generated/prisma/browser';
 
 describe('ChargesSummaryCard', () => {
   const mockCharges = [
-    { totalAmount: 100 },
-    { totalAmount: 200 },
-    { totalAmount: 300 },
+    { totalAmount: new Prisma.Decimal(100) },
+    { totalAmount: new Prisma.Decimal(200) },
+    { totalAmount: new Prisma.Decimal(300) },
   ];
 
   it('renders the card title', () => {
@@ -43,7 +44,7 @@ describe('ChargesSummaryCard', () => {
   });
 
   it('displays previous month charges when present', () => {
-    const prevCharges = [{ totalAmount: 400 }];
+    const prevCharges = [{ totalAmount: new Prisma.Decimal(400) }];
 
     render(
       <ChargesSummaryCard
@@ -62,7 +63,10 @@ describe('ChargesSummaryCard', () => {
   });
 
   it('displays both months when both have charges', () => {
-    const prevCharges = [{ totalAmount: 400 }, { totalAmount: 500 }];
+    const prevCharges = [
+      { totalAmount: new Prisma.Decimal(400) },
+      { totalAmount: new Prisma.Decimal(500) },
+    ];
 
     render(
       <ChargesSummaryCard
@@ -121,7 +125,7 @@ describe('ChargesSummaryCard', () => {
   });
 
   it('uses correct plural forms for charge counts', () => {
-    const singleCharge = [{ totalAmount: 100 }];
+    const singleCharge = [{ totalAmount: new Prisma.Decimal(100) }];
     const { rerender } = render(
       <ChargesSummaryCard
         currentPeriod="202501"
@@ -137,7 +141,7 @@ describe('ChargesSummaryCard', () => {
 
     const fiveCharges = Array(5)
       .fill(null)
-      .map(() => ({ totalAmount: 100 }));
+      .map(() => ({ totalAmount: new Prisma.Decimal(100) }));
     rerender(
       <ChargesSummaryCard
         currentPeriod="202501"

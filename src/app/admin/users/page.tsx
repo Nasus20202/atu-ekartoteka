@@ -14,8 +14,9 @@ import {
   X,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { type UserFilter, UserFilters } from '@/app/admin/users/user-filters';
 import { useConfirm } from '@/components/confirm-dialog';
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
@@ -37,18 +38,28 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LoadingCard } from '@/components/ui/loading-card';
+import { Select } from '@/components/ui/select';
 import { AccountStatus, Apartment, UserWithApartments } from '@/lib/types';
 
 type User = UserWithApartments;
+
+const ROLE_OPTIONS = [
+  { value: 'TENANT', label: 'Użytkownik' },
+  { value: 'ADMIN', label: 'Administrator' },
+] as const;
+
+const STATUS_OPTIONS = [
+  { value: 'PENDING', label: 'Oczekujący' },
+  { value: 'APPROVED', label: 'Zatwierdzony' },
+  { value: 'REJECTED', label: 'Odrzucony' },
+] as const;
 
 export default function AdminUsersPage() {
   const confirm = useConfirm();
   const [users, setUsers] = useState<User[]>([]);
   const [apartments, setApartments] = useState<Apartment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'ALL' | AccountStatus>(
-    AccountStatus.PENDING
-  );
+  const [filter, setFilter] = useState<UserFilter>(AccountStatus.PENDING);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [userSearch, setUserSearch] = useState('');
@@ -60,6 +71,7 @@ export default function AdminUsersPage() {
   const [editMode, setEditMode] = useState<
     'approve' | 'change-status' | 'assign-apartment' | 'create-user' | null
   >(null);
+  const latestUsersRequestId = useRef(0);
   const [newUserData, setNewUserData] = useState({
     email: '',
     password: '',
@@ -69,10 +81,14 @@ export default function AdminUsersPage() {
   });
 
   const fetchUsers = useCallback(async () => {
+    const requestId = ++latestUsersRequestId.current;
     setLoading(true);
+
     try {
       const params = new URLSearchParams();
-      if (filter !== 'ALL') {
+      if (filter === 'ADMINS') {
+        params.append('role', 'ADMIN');
+      } else if (filter !== 'ALL') {
         params.append('status', filter);
       }
       params.append('page', String(page));
@@ -83,14 +99,16 @@ export default function AdminUsersPage() {
       const response = await fetch(`/api/admin/users?${params}`);
       const data = await response.json();
 
-      if (response.ok) {
+      if (response.ok && requestId === latestUsersRequestId.current) {
         setUsers(data.users);
         setTotalPages(data.pagination?.totalPages ?? 1);
       }
     } catch (error) {
       console.error('Failed to fetch users:', error);
     } finally {
-      setLoading(false);
+      if (requestId === latestUsersRequestId.current) {
+        setLoading(false);
+      }
     }
   }, [filter, page, debouncedSearch]);
 
@@ -107,9 +125,18 @@ export default function AdminUsersPage() {
 
       if (response.ok) {
         // Fetch all users to check apartment assignments (not filtered by status)
-        const allUsersResponse = await fetch('/api/admin/users');
-        const allUsersData = await allUsersResponse.json();
-        const allUsers = allUsersData.users || [];
+        const [tenantUsersResponse, adminUsersResponse] = await Promise.all([
+          fetch('/api/admin/users?limit=1000'),
+          fetch('/api/admin/users?role=ADMIN&limit=1000'),
+        ]);
+        const [tenantUsersData, adminUsersData] = await Promise.all([
+          tenantUsersResponse.json(),
+          adminUsersResponse.json(),
+        ]);
+        const allUsers = [
+          ...(tenantUsersData.users || []),
+          ...(adminUsersData.users || []),
+        ];
 
         // For new user approval (PENDING status), show only unassigned apartments
         if (selectedUser?.status === AccountStatus.PENDING) {
@@ -396,51 +423,13 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      <div className="mb-6 flex flex-wrap gap-2">
-        <Button
-          variant={filter === 'ALL' ? 'default' : 'outline'}
-          onClick={() => {
-            setFilter('ALL');
-            setPage(1);
-          }}
-          size="sm"
-        >
-          Wszyscy
-        </Button>
-        <Button
-          variant={filter === AccountStatus.PENDING ? 'default' : 'outline'}
-          onClick={() => {
-            setFilter(AccountStatus.PENDING);
-            setPage(1);
-          }}
-          size="sm"
-        >
-          <Clock className="mr-1 h-4 w-4" />
-          Oczekujące
-        </Button>
-        <Button
-          variant={filter === AccountStatus.APPROVED ? 'default' : 'outline'}
-          onClick={() => {
-            setFilter(AccountStatus.APPROVED);
-            setPage(1);
-          }}
-          size="sm"
-        >
-          <Check className="mr-1 h-4 w-4" />
-          Zatwierdzone
-        </Button>
-        <Button
-          variant={filter === AccountStatus.REJECTED ? 'default' : 'outline'}
-          onClick={() => {
-            setFilter(AccountStatus.REJECTED);
-            setPage(1);
-          }}
-          size="sm"
-        >
-          <X className="mr-1 h-4 w-4" />
-          Odrzucone
-        </Button>
-      </div>
+      <UserFilters
+        filter={filter}
+        onChange={(nextFilter) => {
+          setFilter(nextFilter);
+          setPage(1);
+        }}
+      />
 
       {loading ? (
         <LoadingCard />
@@ -1002,35 +991,28 @@ export default function AdminUsersPage() {
                 </div>
                 <div>
                   <Label htmlFor="role">Rola</Label>
-                  <select
+                  <Select
                     id="role"
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     value={newUserData.role}
-                    onChange={(e) =>
-                      setNewUserData({ ...newUserData, role: e.target.value })
+                    options={ROLE_OPTIONS}
+                    onValueChange={(role) =>
+                      setNewUserData({ ...newUserData, role })
                     }
-                  >
-                    <option value="TENANT">Użytkownik</option>
-                    <option value="ADMIN">Administrator</option>
-                  </select>
+                  />
                 </div>
                 <div>
                   <Label htmlFor="status">Status</Label>
-                  <select
+                  <Select
                     id="status"
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     value={newUserData.status}
-                    onChange={(e) =>
+                    options={STATUS_OPTIONS}
+                    onValueChange={(status) =>
                       setNewUserData({
                         ...newUserData,
-                        status: e.target.value,
+                        status,
                       })
                     }
-                  >
-                    <option value="PENDING">Oczekujący</option>
-                    <option value="APPROVED">Zatwierdzony</option>
-                    <option value="REJECTED">Odrzucony</option>
-                  </select>
+                  />
                 </div>
 
                 <div className="flex gap-2 pt-4">

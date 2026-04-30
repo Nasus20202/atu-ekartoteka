@@ -15,7 +15,9 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import { sumDecimals } from '@/lib/money/sum';
 import { ChargeNotification } from '@/lib/types';
+import { formatCurrency } from '@/lib/utils';
 
 type NotificationItem = ChargeNotification & {
   apartmentNumber: string;
@@ -30,7 +32,7 @@ interface HoaNotificationGroup {
   hoaName: string | null;
   hoaHeader: string | null;
   notifications: NotificationItem[];
-  subtotal: number;
+  subtotal: ReturnType<typeof sumDecimals>;
 }
 
 interface NotificationsSidebarProps {
@@ -49,12 +51,12 @@ function groupByHoa(notifications: NotificationItem[]): HoaNotificationGroup[] {
         hoaName: n.hoaName ?? null,
         hoaHeader: n.hoaHeader ?? null,
         notifications: [],
-        subtotal: 0,
+        subtotal: sumDecimals([]),
       });
     }
     const group = groupMap.get(key)!;
     group.notifications.push(n);
-    group.subtotal += n.totalAmount;
+    group.subtotal = group.subtotal.plus(n.totalAmount);
   }
 
   return Array.from(groupMap.values());
@@ -68,7 +70,7 @@ function NotificationRow({ notification }: { notification: NotificationItem }) {
           {notification.apartmentAddress}
         </span>
         <span className="shrink-0 font-semibold">
-          {notification.totalAmount.toFixed(2)} zł
+          {formatCurrency(notification.totalAmount)}
         </span>
       </div>
       <div className="text-xs text-muted-foreground">
@@ -77,7 +79,7 @@ function NotificationRow({ notification }: { notification: NotificationItem }) {
       {notification.quantity > 0 && (
         <div className="mt-1 text-xs text-muted-foreground">
           {notification.quantity} {notification.unit} ×{' '}
-          {notification.unitPrice.toFixed(2)} zł
+          {formatCurrency(notification.unitPrice)}
         </div>
       )}
     </div>
@@ -92,7 +94,9 @@ function HoaGroup({ group }: { group: HoaNotificationGroup }) {
       <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border p-3 text-sm transition-colors hover:bg-muted">
         <span className="font-medium">{group.hoaName ?? 'Wspólnota'}</span>
         <div className="flex items-center gap-2 shrink-0">
-          <span className="font-semibold">{group.subtotal.toFixed(2)} zł</span>
+          <span className="font-semibold">
+            {formatCurrency(group.subtotal)}
+          </span>
           <ChevronDown
             className={`h-4 w-4 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`}
           />
@@ -126,7 +130,9 @@ export const NotificationsSidebar = ({
     return null;
   }
 
-  const totalAmount = notifications.reduce((sum, n) => sum + n.totalAmount, 0);
+  const totalAmount = sumDecimals(
+    notifications.map((notification) => notification.totalAmount)
+  );
   const hoaGroups = groupByHoa(notifications);
   const isSingle = hoaGroups.length === 1;
 
@@ -146,7 +152,7 @@ export const NotificationsSidebar = ({
                   Łączna kwota do zapłaty
                 </div>
                 <div className="text-2xl font-bold">
-                  {totalAmount.toFixed(2)} zł
+                  {formatCurrency(totalAmount)}
                 </div>
               </div>
               {hoaGroups[0].hoaHeader && (
@@ -173,7 +179,7 @@ export const NotificationsSidebar = ({
                   Łączna kwota do zapłaty
                 </div>
                 <div className="text-2xl font-bold">
-                  {totalAmount.toFixed(2)} zł
+                  {formatCurrency(totalAmount)}
                 </div>
               </div>
               {hoaGroups.map((group, gi) => (

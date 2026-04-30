@@ -38,14 +38,14 @@ test.describe('Dashboard Home', () => {
       await userPage.goto('/dashboard');
 
       // Should see balance information (seeded as -444.25)
-      await expect(userPage.getByText('-444.25 zł').first()).toBeVisible();
+      await expect(userPage.getByText('-444,25 zł').first()).toBeVisible();
     });
 
     test('negative balance is highlighted in red', async ({ userPage }) => {
       await userPage.goto('/dashboard');
 
       // Balance should have red color class for negative amount
-      const balanceElement = userPage.getByText('-444.25 zł').first();
+      const balanceElement = userPage.getByText('-444,25 zł').first();
       await expect(balanceElement).toBeVisible();
       await expect(balanceElement).toHaveClass(/text-red/);
     });
@@ -136,7 +136,7 @@ test.describe('Dashboard Home', () => {
       await expect(
         userPage.getByText(/Łączna kwota do zapłaty/i)
       ).toBeVisible();
-      await expect(userPage.getByText('444.25 zł').first()).toBeVisible();
+      await expect(userPage.getByText('444,25 zł').first()).toBeVisible();
     });
 
     test('single-HOA mode renders flat notification list without collapsible HOA sections', async ({

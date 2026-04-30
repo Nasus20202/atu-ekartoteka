@@ -19,6 +19,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { LoadingCard } from '@/components/ui/loading-card';
+import { sumDecimals } from '@/lib/money/sum';
 import type {
   Apartment,
   ChargeNotification,
@@ -26,6 +27,7 @@ import type {
   Payment,
   User,
 } from '@/lib/types';
+import { formatCurrency } from '@/lib/utils';
 
 type ApartmentDetailsData = Pick<
   Apartment,
@@ -277,12 +279,12 @@ export default function ApartmentDetailsPage() {
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {notification.quantity} {notification.unit} ×{' '}
-                        {notification.unitPrice.toFixed(2)} zł
+                        {formatCurrency(notification.unitPrice)}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-semibold">
-                        {notification.totalAmount.toFixed(2)} zł
+                        {formatCurrency(notification.totalAmount)}
                       </p>
                     </div>
                   </div>
@@ -291,10 +293,13 @@ export default function ApartmentDetailsPage() {
                   <div className="flex justify-between">
                     <span>Razem:</span>
                     <span>
-                      {apartment.chargeNotifications
-                        .reduce((sum, n) => sum + n.totalAmount, 0)
-                        .toFixed(2)}{' '}
-                      zł
+                      {formatCurrency(
+                        sumDecimals(
+                          apartment.chargeNotifications.map(
+                            (notification) => notification.totalAmount
+                          )
+                        )
+                      )}
                     </span>
                   </div>
                 </div>

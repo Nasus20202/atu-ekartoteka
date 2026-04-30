@@ -5,11 +5,14 @@ import { auth } from '@/auth';
 import { ChargesDisplay } from '@/components/charges/charges-display';
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
-import type { SerializableCharge } from '@/components/pdf/download-charges-pdf-button';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  type SerializableChargeDisplay,
+  serializeCharge,
+} from '@/lib/charges/serialize-charge';
 import { findApartmentWithChargesCached } from '@/lib/queries/apartments/find-apartment-with-charges';
 import { findUserByIdCached } from '@/lib/queries/users/find-user-by-id';
-import { AccountStatus, type ChargeDisplay } from '@/lib/types';
+import { AccountStatus } from '@/lib/types';
 
 export default async function ApartmentChargesPage({
   params,
@@ -41,33 +44,24 @@ export default async function ApartmentChargesPage({
     notFound();
   }
 
-  const chargesByPeriod: Record<string, ChargeDisplay[]> = {};
-  const serializableByPeriod: Record<string, SerializableCharge[]> = {};
+  const chargesByPeriod: Record<string, SerializableChargeDisplay[]> = {};
 
   apartment.charges.forEach((charge: (typeof apartment.charges)[number]) => {
     if (!chargesByPeriod[charge.period]) {
       chargesByPeriod[charge.period] = [];
-      serializableByPeriod[charge.period] = [];
     }
 
     chargesByPeriod[charge.period].push({
-      id: charge.id,
-      description: charge.description,
-      quantity: charge.quantity,
-      unit: charge.unit,
-      unitPrice: charge.unitPrice,
-      totalAmount: charge.totalAmount,
-      dateFrom: charge.dateFrom,
-      dateTo: charge.dateTo,
-    });
-
-    serializableByPeriod[charge.period].push({
-      id: charge.id,
-      description: charge.description,
-      quantity: charge.quantity,
-      unit: charge.unit,
-      unitPrice: charge.unitPrice,
-      totalAmount: charge.totalAmount,
+      ...serializeCharge({
+        id: charge.id,
+        description: charge.description,
+        quantity: charge.quantity,
+        unit: charge.unit,
+        unitPrice: charge.unitPrice,
+        totalAmount: charge.totalAmount,
+        dateFrom: charge.dateFrom,
+        dateTo: charge.dateTo,
+      }),
     });
   });
 
@@ -99,7 +93,6 @@ export default async function ApartmentChargesPage({
         <ChargesDisplay
           periods={periods}
           chargesByPeriod={chargesByPeriod}
-          serializableByPeriod={serializableByPeriod}
           activeMonth={activeMonth}
           apartmentLabel={apartmentLabel}
           hoaName={apartment.homeownersAssociation.name}

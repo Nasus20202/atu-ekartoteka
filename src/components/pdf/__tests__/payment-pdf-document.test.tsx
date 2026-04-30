@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import type { PaymentPdfDocumentProps } from '@/components/pdf/payment-pdf-document';
+import { Prisma } from '@/generated/prisma/browser';
+import type { PaymentLike } from '@/lib/payments/serialize-payment';
 import type { Payment } from '@/lib/types';
 
 vi.mock('@react-pdf/renderer', () => ({
@@ -15,45 +17,45 @@ vi.mock('@react-pdf/renderer', () => ({
 
 vi.mock('@/lib/pdf/register-fonts', () => ({ registerPdfFonts: vi.fn() }));
 
-function makePayment(overrides: Partial<Payment> = {}): Payment {
+function makePayment(overrides: Partial<PaymentLike> = {}): Payment {
   return {
     id: 'pay-1',
     apartmentId: 'apt-1',
     year: 2024,
     dateFrom: new Date('2024-01-01'),
     dateTo: new Date('2024-12-31'),
-    openingBalance: 0,
-    closingBalance: -100,
-    openingDebt: 0,
-    openingSurplus: 0,
-    januaryPayments: 500,
-    februaryPayments: 500,
-    marchPayments: 500,
-    aprilPayments: 500,
-    mayPayments: 500,
-    junePayments: 500,
-    julyPayments: 500,
-    augustPayments: 500,
-    septemberPayments: 500,
-    octoberPayments: 500,
-    novemberPayments: 500,
-    decemberPayments: 500,
-    januaryCharges: 600,
-    februaryCharges: 600,
-    marchCharges: 600,
-    aprilCharges: 600,
-    mayCharges: 600,
-    juneCharges: 600,
-    julyCharges: 600,
-    augustCharges: 600,
-    septemberCharges: 600,
-    octoberCharges: 600,
-    novemberCharges: 600,
-    decemberCharges: 600,
+    openingBalance: new Prisma.Decimal(0),
+    closingBalance: new Prisma.Decimal(-100),
+    openingDebt: new Prisma.Decimal(0),
+    openingSurplus: new Prisma.Decimal(0),
+    januaryPayments: new Prisma.Decimal(500),
+    februaryPayments: new Prisma.Decimal(500),
+    marchPayments: new Prisma.Decimal(500),
+    aprilPayments: new Prisma.Decimal(500),
+    mayPayments: new Prisma.Decimal(500),
+    junePayments: new Prisma.Decimal(500),
+    julyPayments: new Prisma.Decimal(500),
+    augustPayments: new Prisma.Decimal(500),
+    septemberPayments: new Prisma.Decimal(500),
+    octoberPayments: new Prisma.Decimal(500),
+    novemberPayments: new Prisma.Decimal(500),
+    decemberPayments: new Prisma.Decimal(500),
+    januaryCharges: new Prisma.Decimal(600),
+    februaryCharges: new Prisma.Decimal(600),
+    marchCharges: new Prisma.Decimal(600),
+    aprilCharges: new Prisma.Decimal(600),
+    mayCharges: new Prisma.Decimal(600),
+    juneCharges: new Prisma.Decimal(600),
+    julyCharges: new Prisma.Decimal(600),
+    augustCharges: new Prisma.Decimal(600),
+    septemberCharges: new Prisma.Decimal(600),
+    octoberCharges: new Prisma.Decimal(600),
+    novemberCharges: new Prisma.Decimal(600),
+    decemberCharges: new Prisma.Decimal(600),
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
     ...overrides,
-  };
+  } as Payment;
 }
 
 const SAMPLE_PROPS: PaymentPdfDocumentProps = {
@@ -75,7 +77,10 @@ describe('PaymentPdfDocument', () => {
       await import('@/components/pdf/payment-pdf-document');
     const props: PaymentPdfDocumentProps = {
       ...SAMPLE_PROPS,
-      payment: makePayment({ openingBalance: 100, closingBalance: 500 }),
+      payment: makePayment({
+        openingBalance: new Prisma.Decimal(100),
+        closingBalance: new Prisma.Decimal(500),
+      }),
     };
     expect(() => PaymentPdfDocument(props)).not.toThrow();
   });

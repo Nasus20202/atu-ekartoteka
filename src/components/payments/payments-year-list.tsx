@@ -4,12 +4,12 @@ import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
 import { PaymentYearRow } from '@/components/payments/payment-year-row';
-import type { SerializablePayment } from '@/components/pdf/download-payment-pdf-button';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import type { SerializablePayment } from '@/lib/payments/serialize-payment';
 
 interface PaymentEntry {
   payment: SerializablePayment;

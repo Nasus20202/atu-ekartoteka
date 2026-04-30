@@ -129,10 +129,10 @@ model Charge {
   
   // Charge details
   description     String
-  quantity        Float
+  quantity        Decimal  @db.Decimal(14, 4)
   unit            String   // e.g. "szt", "m2"
-  unitPrice       Float
-  totalAmount     Float
+  unitPrice       Decimal  @db.Decimal(14, 4)
+  totalAmount     Decimal  @db.Decimal(14, 4)
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -178,40 +178,40 @@ model Payment {
   dateTo          DateTime
   
   // Balances
-  openingBalance  Float
-  closingBalance  Float
+  openingBalance  Decimal  @db.Decimal(14, 4)
+  closingBalance  Decimal  @db.Decimal(14, 4)
 
   // Opening period breakdown (from wplaty.txt fields 6 and 7)
-  openingDebt    Float    @default(0)
-  openingSurplus Float    @default(0)
-  
+  openingDebt    Decimal  @default(0) @db.Decimal(14, 4)
+  openingSurplus Decimal  @default(0) @db.Decimal(14, 4)
+
   // Monthly payments (12 months)
-  januaryPayments         Float    @default(0)
-  februaryPayments        Float    @default(0)
-  marchPayments           Float    @default(0)
-  aprilPayments           Float    @default(0)
-  mayPayments             Float    @default(0)
-  junePayments            Float    @default(0)
-  julyPayments            Float    @default(0)
-  augustPayments          Float    @default(0)
-  septemberPayments       Float    @default(0)
-  octoberPayments         Float    @default(0)
-  novemberPayments        Float    @default(0)
-  decemberPayments        Float    @default(0)
-  
+  januaryPayments         Decimal  @default(0) @db.Decimal(14, 4)
+  februaryPayments        Decimal  @default(0) @db.Decimal(14, 4)
+  marchPayments           Decimal  @default(0) @db.Decimal(14, 4)
+  aprilPayments           Decimal  @default(0) @db.Decimal(14, 4)
+  mayPayments             Decimal  @default(0) @db.Decimal(14, 4)
+  junePayments            Decimal  @default(0) @db.Decimal(14, 4)
+  julyPayments            Decimal  @default(0) @db.Decimal(14, 4)
+  augustPayments          Decimal  @default(0) @db.Decimal(14, 4)
+  septemberPayments       Decimal  @default(0) @db.Decimal(14, 4)
+  octoberPayments         Decimal  @default(0) @db.Decimal(14, 4)
+  novemberPayments        Decimal  @default(0) @db.Decimal(14, 4)
+  decemberPayments        Decimal  @default(0) @db.Decimal(14, 4)
+
   // Monthly charges (12 months)
-  januaryCharges   Float    @default(0)
-  februaryCharges  Float    @default(0)
-  marchCharges     Float    @default(0)
-  aprilCharges     Float    @default(0)
-  mayCharges       Float    @default(0)
-  juneCharges      Float    @default(0)
-  julyCharges      Float    @default(0)
-  augustCharges    Float    @default(0)
-  septemberCharges Float    @default(0)
-  octoberCharges   Float    @default(0)
-  novemberCharges  Float    @default(0)
-  decemberCharges  Float    @default(0)
+  januaryCharges   Decimal  @default(0) @db.Decimal(14, 4)
+  februaryCharges  Decimal  @default(0) @db.Decimal(14, 4)
+  marchCharges     Decimal  @default(0) @db.Decimal(14, 4)
+  aprilCharges     Decimal  @default(0) @db.Decimal(14, 4)
+  mayCharges       Decimal  @default(0) @db.Decimal(14, 4)
+  juneCharges      Decimal  @default(0) @db.Decimal(14, 4)
+  julyCharges      Decimal  @default(0) @db.Decimal(14, 4)
+  augustCharges    Decimal  @default(0) @db.Decimal(14, 4)
+  septemberCharges Decimal  @default(0) @db.Decimal(14, 4)
+  octoberCharges   Decimal  @default(0) @db.Decimal(14, 4)
+  novemberCharges  Decimal  @default(0) @db.Decimal(14, 4)
+  decemberCharges  Decimal  @default(0) @db.Decimal(14, 4)
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

@@ -4,10 +4,7 @@ import { auth } from '@/auth';
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
 import { PaymentTable } from '@/components/payment-table';
-import {
-  DownloadPaymentPdfButton,
-  type SerializablePayment,
-} from '@/components/pdf/download-payment-pdf-button';
+import { DownloadPaymentPdfButton } from '@/components/pdf/download-payment-pdf-button';
 import {
   Card,
   CardContent,
@@ -15,7 +12,18 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { toDecimal } from '@/lib/money/decimal';
+import { sumDecimals } from '@/lib/money/sum';
+import {
+  CHARGE_MONTH_FIELD_KEYS,
+  PAYMENT_MONTH_FIELD_KEYS,
+} from '@/lib/payments/empty-months';
+import {
+  type SerializablePayment,
+  serializePayment,
+} from '@/lib/payments/serialize-payment';
 import { findApartmentWithPaymentsByYearCached } from '@/lib/queries/apartments/find-apartment-with-payments-by-year';
+import { formatCurrency } from '@/lib/utils';
 
 interface PaymentDetailsPageProps {
   params: Promise<{
@@ -52,43 +60,18 @@ export default async function PaymentDetailsPage({
 
   const payment = apartment.payments[0];
 
-  const totalPayments =
-    payment.januaryPayments +
-    payment.februaryPayments +
-    payment.marchPayments +
-    payment.aprilPayments +
-    payment.mayPayments +
-    payment.junePayments +
-    payment.julyPayments +
-    payment.augustPayments +
-    payment.septemberPayments +
-    payment.octoberPayments +
-    payment.novemberPayments +
-    payment.decemberPayments;
-
-  const totalCharges =
-    payment.januaryCharges +
-    payment.februaryCharges +
-    payment.marchCharges +
-    payment.aprilCharges +
-    payment.mayCharges +
-    payment.juneCharges +
-    payment.julyCharges +
-    payment.augustCharges +
-    payment.septemberCharges +
-    payment.octoberCharges +
-    payment.novemberCharges +
-    payment.decemberCharges;
+  const totalPayments = sumDecimals(
+    PAYMENT_MONTH_FIELD_KEYS.map((key) => payment[key])
+  );
+  const totalCharges = sumDecimals(
+    CHARGE_MONTH_FIELD_KEYS.map((key) => payment[key])
+  );
+  const openingBalance = toDecimal(payment.openingBalance);
+  const closingBalance = toDecimal(payment.closingBalance);
 
   const apartmentLabel = `${apartment.address} ${apartment.building || ''}/${apartment.number}`;
 
-  const serializablePayment: SerializablePayment = {
-    ...payment,
-    dateFrom: payment.dateFrom.toISOString(),
-    dateTo: payment.dateTo.toISOString(),
-    createdAt: payment.createdAt.toISOString(),
-    updatedAt: payment.updatedAt.toISOString(),
-  };
+  const serializablePayment: SerializablePayment = serializePayment(payment);
 
   return (
     <Page maxWidth="4xl">
@@ -126,26 +109,26 @@ export default async function PaymentDetailsPage({
                 </div>
                 <div
                   className={`text-2xl font-bold ${
-                    payment.openingBalance < 0
+                    openingBalance.isNegative()
                       ? 'text-red-600'
-                      : payment.openingBalance > 0
+                      : openingBalance.greaterThan(0)
                         ? 'text-green-600'
                         : ''
                   }`}
                 >
-                  {payment.openingBalance.toFixed(2)} zł
+                  {formatCurrency(openingBalance)}
                 </div>
               </div>
               <div className="rounded-lg bg-muted p-4">
                 <div className="text-sm text-muted-foreground">Naliczenia</div>
                 <div className="text-2xl font-bold">
-                  {totalCharges.toFixed(2)} zł
+                  {formatCurrency(totalCharges)}
                 </div>
               </div>
               <div className="rounded-lg bg-muted p-4">
                 <div className="text-sm text-muted-foreground">Suma wpłat</div>
                 <div className="text-2xl font-bold">
-                  {totalPayments.toFixed(2)} zł
+                  {formatCurrency(totalPayments)}
                 </div>
               </div>
               <div className="rounded-lg bg-muted p-4">
@@ -154,12 +137,12 @@ export default async function PaymentDetailsPage({
                 </div>
                 <div
                   className={`text-2xl font-bold ${
-                    payment.closingBalance >= 0
+                    closingBalance.greaterThanOrEqualTo(0)
                       ? 'text-green-600'
                       : 'text-red-600'
                   }`}
                 >
-                  {payment.closingBalance.toFixed(2)} zł
+                  {formatCurrency(closingBalance)}
                 </div>
               </div>
             </div>

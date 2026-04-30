@@ -51,6 +51,7 @@ async function importSingleHOA(
     hoaId,
     apartments: createEmptyStats(),
     errors: [],
+    warnings: [],
   };
 
   const {
@@ -116,10 +117,9 @@ async function importSingleHOA(
 
     // Validate before entering transaction
     if (chargeEntries && !options.skipValidation) {
-      const nalErrors = validateNalCzynsz(chargeEntries);
-      if (nalErrors.length > 0) {
-        result.errors.push(...nalErrors);
-        return result;
+      const nalWarnings = validateNalCzynsz(chargeEntries);
+      if (nalWarnings.length > 0) {
+        result.warnings.push(...nalWarnings);
       }
     }
 

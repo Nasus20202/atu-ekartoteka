@@ -180,16 +180,33 @@ describe('import-handler additional coverage', () => {
       expect(mockValidateChargesCrossFile).toHaveBeenCalled();
     });
 
-    it('returns errors when nal_czynsz validation fails without skipValidation', async () => {
+    it('returns warnings when nal_czynsz validation fails without skipValidation', async () => {
       const chargesFile = makeFile('hoa1/nal_czynsz.txt');
 
       mockParseNalCzynszBuffer.mockResolvedValue([]);
-      mockValidateNalCzynsz.mockReturnValue(['error: mismatch']);
+      mockValidateNalCzynsz.mockReturnValue([
+        {
+          apartmentExternalId: 'APT001',
+          period: '202401',
+          lineNo: 1,
+          difference: '0.0200',
+          message: 'warning: mismatch',
+        },
+      ]);
 
       const result = await processBatchImport([chargesFile]);
 
-      expect(result.success).toBe(false);
-      expect(result.results[0].errors).toContain('error: mismatch');
+      expect(result.success).toBe(true);
+      expect(result.results[0].errors).toHaveLength(0);
+      expect(result.results[0].warnings).toEqual([
+        expect.objectContaining({
+          apartmentExternalId: 'APT001',
+          period: '202401',
+          lineNo: 1,
+          difference: '0.0200',
+          message: 'warning: mismatch',
+        }),
+      ]);
     });
 
     it('returns errors when wplaty validation fails without skipValidation', async () => {

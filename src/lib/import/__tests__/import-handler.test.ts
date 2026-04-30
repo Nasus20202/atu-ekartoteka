@@ -507,6 +507,64 @@ describe('import-handler', () => {
       });
     });
 
+    it('should include structured warnings for charge line mismatches without blocking import', async () => {
+      const chargesFile = createMockFile('charges data', 'hoa1/nal_czynsz.txt');
+
+      mockParseNalCzynszBuffer.mockResolvedValue([
+        {
+          id: 'W001',
+          apartmentExternalId: 'APT001',
+          dateFrom: new Date('2024-01-01'),
+          dateTo: new Date('2024-01-31'),
+          period: '202401',
+          lineNo: 7,
+          description: 'Test charge',
+          quantity: 2,
+          unit: 'szt',
+          unitPrice: 10,
+          totalAmount: 25,
+        },
+      ]);
+
+      mockTransaction.mockImplementation(async (fn: unknown) => {
+        const mockTx = {
+          homeownersAssociation: {
+            upsert: vi
+              .fn()
+              .mockResolvedValue({ id: 'hoa-id', externalId: 'hoa1' }),
+          },
+          apartment: {
+            findMany: vi.fn().mockResolvedValue([
+              {
+                id: 'apt-1',
+                externalOwnerId: 'W001',
+                externalApartmentId: 'APT001',
+                isActive: true,
+              },
+            ]),
+            updateMany: vi.fn().mockResolvedValue({ count: 0 }),
+          },
+          charge: {
+            findMany: vi.fn().mockResolvedValue([]),
+            createMany: vi.fn().mockResolvedValue({ count: 1 }),
+          },
+        };
+        return (fn as (tx: typeof mockTx) => Promise<void>)(mockTx);
+      });
+
+      const result = await processBatchImport([chargesFile]);
+
+      expect(result.success).toBe(true);
+      expect(result.results[0].warnings).toEqual([
+        expect.objectContaining({
+          apartmentExternalId: 'APT001',
+          period: '202401',
+          lineNo: 7,
+          difference: '5.0000',
+        }),
+      ]);
+    });
+
     it('should skip charges when apartment key does not match', async () => {
       const chargesFile = createMockFile('charges data', 'hoa1/nal_czynsz.txt');
 

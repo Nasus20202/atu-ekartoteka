@@ -1,7 +1,9 @@
+import { Prisma } from '@/generated/prisma/client';
+import { sumDecimals } from '@/lib/money/sum';
 import {
   decodeBuffer,
   parseDate,
-  parseDecimal,
+  parseDecimalValue,
   ParseResult,
 } from '@/lib/parsers/parser-utils';
 
@@ -11,13 +13,13 @@ export interface PaymentEntry {
   year: number;
   dateFrom: Date;
   dateTo: Date;
-  openingDebt: number;
-  openingSurplus: number;
-  openingBalance: number;
-  totalCharges: number;
-  monthlyCharges: number[];
-  monthlyPayments: number[];
-  closingBalance: number;
+  openingDebt: Prisma.Decimal;
+  openingSurplus: Prisma.Decimal;
+  openingBalance: Prisma.Decimal;
+  totalCharges: Prisma.Decimal;
+  monthlyCharges: Prisma.Decimal[];
+  monthlyPayments: Prisma.Decimal[];
+  closingBalance: Prisma.Decimal;
 }
 
 export async function parseWplatyFile(
@@ -42,31 +44,31 @@ export async function parseWplatyFile(
       const year = parseInt(parts[2].trim(), 10);
       const dateFrom = parseDate(parts[3].trim());
       const dateTo = parseDate(parts[4].trim());
-      const openingDebt = parseDecimal(parts[5].trim());
-      const openingSurplus = parseDecimal(parts[6].trim());
+      const openingDebt = parseDecimalValue(parts[5].trim());
+      const openingSurplus = parseDecimalValue(parts[6].trim());
       // The file expresses opening debt and surplus separately - balance is surplus - debt
-      const openingBalance = openingSurplus - openingDebt;
+      const openingBalance = openingSurplus.minus(openingDebt);
 
-      const monthlyCharges: number[] = [];
-      const monthlyPayments: number[] = [];
+      const monthlyCharges: Prisma.Decimal[] = [];
+      const monthlyPayments: Prisma.Decimal[] = [];
       for (let i = 0; i < 12; i++) {
         const chargesIndex = 9 + i * 2;
         const paymentsIndex = 10 + i * 2;
 
-        const charge = parseDecimal(parts[chargesIndex]?.trim() || '0');
-        const payment = parseDecimal(parts[paymentsIndex]?.trim() || '0');
+        const charge = parseDecimalValue(parts[chargesIndex]?.trim() || '0');
+        const payment = parseDecimalValue(parts[paymentsIndex]?.trim() || '0');
         monthlyCharges.push(charge);
         monthlyPayments.push(payment);
       }
 
-      const totalCharges = monthlyCharges.reduce((sum, c) => sum + c, 0);
-      const closingBalance = parseDecimal(parts[33].trim());
+      const totalCharges = sumDecimals(monthlyCharges);
+      const closingBalance = parseDecimalValue(parts[33].trim());
 
       if (
         !isNaN(year) &&
-        !isNaN(openingBalance) &&
-        !isNaN(totalCharges) &&
-        !isNaN(closingBalance)
+        !openingBalance.isNaN() &&
+        !totalCharges.isNaN() &&
+        !closingBalance.isNaN()
       ) {
         entries.push({
           externalId,

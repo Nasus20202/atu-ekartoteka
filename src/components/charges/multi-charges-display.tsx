@@ -9,22 +9,15 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import type { SerializableChargeDisplay } from '@/lib/charges/serialize-charge';
+import { sumDecimals } from '@/lib/money/sum';
 import { formatCurrency, formatPeriod } from '@/lib/utils';
 
 interface ApartmentPeriodData {
   apartmentNumber: string;
   apartmentAddress: string;
-  charges: {
-    id: string;
-    description: string;
-    quantity: number;
-    unit: string;
-    unitPrice: number;
-    totalAmount: number;
-    dateFrom: Date;
-    dateTo: Date;
-  }[];
-  action?: React.ReactNode;
+  hoaName: string;
+  charges: SerializableChargeDisplay[];
 }
 
 interface MultiChargesDisplayProps {
@@ -46,12 +39,11 @@ function groupByYear(
     .map(([year, ps]) => ({ year, periods: ps }));
 }
 
-function computePeriodTotal(periodData: ApartmentPeriodData[]): number {
-  return periodData.reduce(
-    (sum, apt) =>
-      sum +
-      apt.charges.reduce((aptSum, charge) => aptSum + charge.totalAmount, 0),
-    0
+function computePeriodTotal(periodData: ApartmentPeriodData[]) {
+  return sumDecimals(
+    periodData.flatMap((apartment) =>
+      apartment.charges.map((charge) => charge.totalAmount)
+    )
   );
 }
 

@@ -14,6 +14,12 @@ export async function deleteApartment(id: string): Promise<void> {
   const client = new pg.Client({ connectionString: dbUrl });
   try {
     await client.connect();
+    await client.query(`DELETE FROM "Charge" WHERE "apartmentId" = $1`, [id]);
+    await client.query(
+      `DELETE FROM "ChargeNotification" WHERE "apartmentId" = $1`,
+      [id]
+    );
+    await client.query(`DELETE FROM "Payment" WHERE "apartmentId" = $1`, [id]);
     await client.query(`DELETE FROM "Apartment" WHERE id = $1`, [id]);
   } finally {
     await client.end();

@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 
-import {
-  DownloadPaymentPdfButton,
-  type SerializablePayment,
-} from '@/components/pdf/download-payment-pdf-button';
+import { DownloadPaymentPdfButton } from '@/components/pdf/download-payment-pdf-button';
+import { toDecimal } from '@/lib/money/decimal';
+import type { SerializablePayment } from '@/lib/payments/serialize-payment';
+import { formatCurrency } from '@/lib/utils';
 
 type PaymentYearRowProps = {
   apartmentId: string;
@@ -45,10 +45,12 @@ export function PaymentYearRow({
       <div className="ml-auto text-right">
         <div
           className={`text-xl font-bold ${
-            payment.closingBalance >= 0 ? 'text-green-600' : 'text-red-600'
+            toDecimal(payment.closingBalance).greaterThanOrEqualTo(0)
+              ? 'text-green-600'
+              : 'text-red-600'
           }`}
         >
-          {payment.closingBalance.toFixed(2)} zł
+          {formatCurrency(payment.closingBalance)}
         </div>
         <div className="text-sm text-muted-foreground">Saldo końcowe</div>
       </div>

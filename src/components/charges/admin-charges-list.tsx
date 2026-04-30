@@ -12,6 +12,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import { sumDecimals } from '@/lib/money/sum';
 import { formatCurrency, formatPeriod } from '@/lib/utils';
 
 type AdminCharge = SerializableCharge & { period: string };
@@ -30,7 +31,7 @@ function PeriodSection({
   hoaName,
 }: PeriodSectionProps) {
   const [open, setOpen] = useState(false);
-  const total = charges.reduce((sum, c) => sum + c.totalAmount, 0);
+  const total = sumDecimals(charges.map((charge) => charge.totalAmount));
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>

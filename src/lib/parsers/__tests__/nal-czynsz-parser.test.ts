@@ -1,6 +1,7 @@
 import iconv from 'iconv-lite';
 import { describe, expect, it } from 'vitest';
 
+import { Prisma } from '@/generated/prisma/client';
 import { parseNalCzynszBuffer } from '@/lib/parsers/nal-czynsz-parser';
 
 describe('nal-czynsz-parser', () => {
@@ -34,10 +35,11 @@ describe('nal-czynsz-parser', () => {
         'description',
         'Zarządzanie Nieruchomością Wspólną'
       );
-      expect(firstEntry).toHaveProperty('quantity', 1);
+      expect(firstEntry.quantity).toBeInstanceOf(Prisma.Decimal);
+      expect(firstEntry.quantity.toNumber()).toBe(1);
       expect(firstEntry).toHaveProperty('unit', 'szt');
-      expect(firstEntry).toHaveProperty('unitPrice', 73);
-      expect(firstEntry).toHaveProperty('totalAmount', 73);
+      expect(firstEntry.unitPrice.toNumber()).toBe(73);
+      expect(firstEntry.totalAmount.toNumber()).toBe(73);
     });
 
     it('should parse dates correctly', async () => {
@@ -62,9 +64,21 @@ describe('nal-czynsz-parser', () => {
       const entries = await parseNalCzynszBuffer(buffer);
       const firstEntry = entries[0];
 
-      expect(firstEntry.quantity).toBe(1.5);
-      expect(firstEntry.unitPrice).toBe(73.5);
-      expect(firstEntry.totalAmount).toBe(110.25);
+      expect(firstEntry.quantity.toNumber()).toBe(1.5);
+      expect(firstEntry.unitPrice.toNumber()).toBe(73.5);
+      expect(firstEntry.totalAmount.toNumber()).toBe(110.25);
+    });
+
+    it('preserves sub-grosz unit price precision', async () => {
+      const mockData =
+        'W00162#hoa1-hoa1-00000-00001M#01/01/2025#31/01/2025#202501#1#Test#1,42#szt#100,0725#142,10\n';
+      const buffer = iconv.encode(mockData, 'iso-8859-2');
+      const entries = await parseNalCzynszBuffer(buffer);
+      const firstEntry = entries[0];
+
+      expect(firstEntry.quantity.toFixed(2)).toBe('1.42');
+      expect(firstEntry.unitPrice.toFixed(4)).toBe('100.0725');
+      expect(firstEntry.totalAmount.toFixed(2)).toBe('142.10');
     });
 
     it('should handle Polish characters correctly', async () => {
@@ -74,6 +88,19 @@ describe('nal-czynsz-parser', () => {
       const entries = await parseNalCzynszBuffer(buffer);
 
       expect(entries[0].description).toBe('Koszta zarządu - eksploatacja');
+    });
+
+    it('should parse CRLF lines without dropping the last field', async () => {
+      const mockData =
+        'W00164#KLO11-KLO11-00000-00004M#01/01/2025#31/01/2025#202501#39#Zarządzanie Nieruchomością Wspólną#1#szt#73#73,00\r\n' +
+        'W00164#KLO11-KLO11-00000-00004M#01/01/2025#31/01/2025#202501#40#Koszta zarządu - eksploatacja#1#szt.#245#245,00\r\n';
+      const buffer = iconv.encode(mockData, 'iso-8859-2');
+      const entries = await parseNalCzynszBuffer(buffer);
+
+      expect(entries).toHaveLength(2);
+      expect(entries[0].totalAmount.toNumber()).toBe(73);
+      expect(entries[1].totalAmount.toNumber()).toBe(245);
+      expect(entries[1].unit).toBe('szt.');
     });
 
     it('should skip lines with insufficient fields', async () => {

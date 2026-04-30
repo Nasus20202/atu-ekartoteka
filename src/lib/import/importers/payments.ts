@@ -1,4 +1,6 @@
+import { Prisma } from '@/generated/prisma/client';
 import { EntityStats, TransactionClient } from '@/lib/import/types';
+import { toDecimal } from '@/lib/money/decimal';
 import { PaymentEntry } from '@/lib/parsers/wplaty-parser';
 
 type PaymentKey = {
@@ -10,34 +12,34 @@ type ExistingPayment = PaymentKey & {
   id: string;
   dateFrom: Date;
   dateTo: Date;
-  openingDebt: number;
-  openingSurplus: number;
-  openingBalance: number;
-  closingBalance: number;
-  januaryPayments: number;
-  februaryPayments: number;
-  marchPayments: number;
-  aprilPayments: number;
-  mayPayments: number;
-  junePayments: number;
-  julyPayments: number;
-  augustPayments: number;
-  septemberPayments: number;
-  octoberPayments: number;
-  novemberPayments: number;
-  decemberPayments: number;
-  januaryCharges: number;
-  februaryCharges: number;
-  marchCharges: number;
-  aprilCharges: number;
-  mayCharges: number;
-  juneCharges: number;
-  julyCharges: number;
-  augustCharges: number;
-  septemberCharges: number;
-  octoberCharges: number;
-  novemberCharges: number;
-  decemberCharges: number;
+  openingDebt: Prisma.Decimal;
+  openingSurplus: Prisma.Decimal;
+  openingBalance: Prisma.Decimal;
+  closingBalance: Prisma.Decimal;
+  januaryPayments: Prisma.Decimal;
+  februaryPayments: Prisma.Decimal;
+  marchPayments: Prisma.Decimal;
+  aprilPayments: Prisma.Decimal;
+  mayPayments: Prisma.Decimal;
+  junePayments: Prisma.Decimal;
+  julyPayments: Prisma.Decimal;
+  augustPayments: Prisma.Decimal;
+  septemberPayments: Prisma.Decimal;
+  octoberPayments: Prisma.Decimal;
+  novemberPayments: Prisma.Decimal;
+  decemberPayments: Prisma.Decimal;
+  januaryCharges: Prisma.Decimal;
+  februaryCharges: Prisma.Decimal;
+  marchCharges: Prisma.Decimal;
+  aprilCharges: Prisma.Decimal;
+  mayCharges: Prisma.Decimal;
+  juneCharges: Prisma.Decimal;
+  julyCharges: Prisma.Decimal;
+  augustCharges: Prisma.Decimal;
+  septemberCharges: Prisma.Decimal;
+  octoberCharges: Prisma.Decimal;
+  novemberCharges: Prisma.Decimal;
+  decemberCharges: Prisma.Decimal;
 };
 
 function makePaymentKey(p: PaymentKey): string {
@@ -80,34 +82,40 @@ function hasPaymentChanged(
   return (
     existing.dateFrom.getTime() !== entry.dateFrom.getTime() ||
     existing.dateTo.getTime() !== entry.dateTo.getTime() ||
-    existing.openingDebt !== entry.openingDebt ||
-    existing.openingSurplus !== entry.openingSurplus ||
-    existing.openingBalance !== entry.openingBalance ||
-    existing.closingBalance !== entry.closingBalance ||
-    existing.januaryPayments !== janP ||
-    existing.februaryPayments !== febP ||
-    existing.marchPayments !== marP ||
-    existing.aprilPayments !== aprP ||
-    existing.mayPayments !== mayP ||
-    existing.junePayments !== junP ||
-    existing.julyPayments !== julP ||
-    existing.augustPayments !== augP ||
-    existing.septemberPayments !== sepP ||
-    existing.octoberPayments !== octP ||
-    existing.novemberPayments !== novP ||
-    existing.decemberPayments !== decP ||
-    existing.januaryCharges !== janC ||
-    existing.februaryCharges !== febC ||
-    existing.marchCharges !== marC ||
-    existing.aprilCharges !== aprC ||
-    existing.mayCharges !== mayC ||
-    existing.juneCharges !== junC ||
-    existing.julyCharges !== julC ||
-    existing.augustCharges !== augC ||
-    existing.septemberCharges !== sepC ||
-    existing.octoberCharges !== octC ||
-    existing.novemberCharges !== novC ||
-    existing.decemberCharges !== decC
+    !toDecimal(existing.openingDebt).equals(toDecimal(entry.openingDebt)) ||
+    !toDecimal(existing.openingSurplus).equals(
+      toDecimal(entry.openingSurplus)
+    ) ||
+    !toDecimal(existing.openingBalance).equals(
+      toDecimal(entry.openingBalance)
+    ) ||
+    !toDecimal(existing.closingBalance).equals(
+      toDecimal(entry.closingBalance)
+    ) ||
+    !toDecimal(existing.januaryPayments).equals(toDecimal(janP)) ||
+    !toDecimal(existing.februaryPayments).equals(toDecimal(febP)) ||
+    !toDecimal(existing.marchPayments).equals(toDecimal(marP)) ||
+    !toDecimal(existing.aprilPayments).equals(toDecimal(aprP)) ||
+    !toDecimal(existing.mayPayments).equals(toDecimal(mayP)) ||
+    !toDecimal(existing.junePayments).equals(toDecimal(junP)) ||
+    !toDecimal(existing.julyPayments).equals(toDecimal(julP)) ||
+    !toDecimal(existing.augustPayments).equals(toDecimal(augP)) ||
+    !toDecimal(existing.septemberPayments).equals(toDecimal(sepP)) ||
+    !toDecimal(existing.octoberPayments).equals(toDecimal(octP)) ||
+    !toDecimal(existing.novemberPayments).equals(toDecimal(novP)) ||
+    !toDecimal(existing.decemberPayments).equals(toDecimal(decP)) ||
+    !toDecimal(existing.januaryCharges).equals(toDecimal(janC)) ||
+    !toDecimal(existing.februaryCharges).equals(toDecimal(febC)) ||
+    !toDecimal(existing.marchCharges).equals(toDecimal(marC)) ||
+    !toDecimal(existing.aprilCharges).equals(toDecimal(aprC)) ||
+    !toDecimal(existing.mayCharges).equals(toDecimal(mayC)) ||
+    !toDecimal(existing.juneCharges).equals(toDecimal(junC)) ||
+    !toDecimal(existing.julyCharges).equals(toDecimal(julC)) ||
+    !toDecimal(existing.augustCharges).equals(toDecimal(augC)) ||
+    !toDecimal(existing.septemberCharges).equals(toDecimal(sepC)) ||
+    !toDecimal(existing.octoberCharges).equals(toDecimal(octC)) ||
+    !toDecimal(existing.novemberCharges).equals(toDecimal(novC)) ||
+    !toDecimal(existing.decemberCharges).equals(toDecimal(decC))
   );
 }
 

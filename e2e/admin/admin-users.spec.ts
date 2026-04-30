@@ -33,7 +33,7 @@ test.describe.serial('Admin User Management', () => {
 
   test('admin can create and accept a new user', async ({ adminPage }) => {
     // Seed a unique unassigned apartment so the approval dialog has something to assign
-    await createUniqueUnassignedApartment();
+    const apartment = await createUniqueUnassignedApartment();
 
     // Navigate to users page
     await adminPage.goto('/admin/users');
@@ -86,9 +86,11 @@ test.describe.serial('Admin User Management', () => {
 
     // Search for the unassigned apartment and select it
     await adminPage.getByLabel(/Przypisz mieszkanie/i).fill('ul. Testowa 1/2B');
-    const firstApartmentCheckbox = adminPage.getByRole('checkbox').first();
-    await expect(firstApartmentCheckbox).toBeEnabled({ timeout: 5000 });
-    await firstApartmentCheckbox.click();
+    const apartmentOption = adminPage.locator('label').filter({
+      hasText: apartment.externalOwnerId,
+    });
+    await expect(apartmentOption).toBeVisible({ timeout: 5000 });
+    await apartmentOption.click();
 
     // Submit approval and wait for API response
     await Promise.all([

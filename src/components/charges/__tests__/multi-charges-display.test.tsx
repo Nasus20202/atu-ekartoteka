@@ -4,8 +4,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { MultiChargesDisplay } from '@/components/charges/multi-charges-display';
 
 vi.mock('@/components/charges/multi-apartment-period-card', () => ({
-  MultiApartmentPeriodCard: ({ totalAmount }: { totalAmount: number }) => (
-    <div data-testid="period-card">{totalAmount.toFixed(2)}</div>
+  MultiApartmentPeriodCard: ({ totalAmount }: { totalAmount: unknown }) => (
+    <div data-testid="period-card">{String(totalAmount)}</div>
   ),
 }));
 
@@ -29,12 +29,12 @@ function makeCharge(totalAmount: number) {
   return {
     id: `charge-${totalAmount}`,
     description: 'Test charge',
-    quantity: 1,
+    quantity: '1',
     unit: 'szt',
-    unitPrice: totalAmount,
-    totalAmount,
-    dateFrom: new Date('2025-01-01'),
-    dateTo: new Date('2025-01-31'),
+    unitPrice: String(totalAmount),
+    totalAmount: String(totalAmount),
+    dateFrom: '2025-01-01T00:00:00.000Z',
+    dateTo: '2025-01-31T00:00:00.000Z',
   };
 }
 
@@ -42,6 +42,7 @@ function makeApartmentData(totalAmount: number) {
   return {
     apartmentNumber: '101',
     apartmentAddress: 'ul. Testowa 1 A/101',
+    hoaName: 'Wspólnota Testowa',
     charges: [makeCharge(totalAmount)],
   };
 }
@@ -112,11 +113,13 @@ describe('MultiChargesDisplay', () => {
           {
             apartmentNumber: '101',
             apartmentAddress: 'ul. A 1/101',
+            hoaName: 'Wspólnota Testowa',
             charges: [makeCharge(100), makeCharge(50)],
           },
           {
             apartmentNumber: '102',
             apartmentAddress: 'ul. A 1/102',
+            hoaName: 'Wspólnota Testowa',
             charges: [makeCharge(200)],
           },
         ],
@@ -131,7 +134,7 @@ describe('MultiChargesDisplay', () => {
 
       // The period card receives the total: 100 + 50 + 200 = 350
       const card = screen.getByTestId('period-card');
-      expect(card.textContent).toBe('350.00');
+      expect(card.textContent).toBe('350');
     });
 
     it('returns 0 for a period with no data', () => {
@@ -140,7 +143,7 @@ describe('MultiChargesDisplay', () => {
       render(<MultiChargesDisplay periods={periods} chargesByPeriod={{}} />);
 
       const card = screen.getByTestId('period-card');
-      expect(card.textContent).toBe('0.00');
+      expect(card.textContent).toBe('0');
     });
   });
 });

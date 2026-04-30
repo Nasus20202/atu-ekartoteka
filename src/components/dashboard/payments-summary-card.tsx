@@ -8,11 +8,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { type DecimalLike, toDecimal } from '@/lib/money/decimal';
+import { sumDecimals } from '@/lib/money/sum';
+import { formatCurrency } from '@/lib/utils';
 
 interface HoaPaymentGroup {
   hoaId: string;
   hoaName: string;
-  totalClosingBalance: number;
+  totalClosingBalance: DecimalLike;
 }
 
 interface PaymentsSummaryCardProps {
@@ -24,9 +27,8 @@ export const PaymentsSummaryCard = ({
 }: PaymentsSummaryCardProps) => {
   if (hoaGroups.length === 0) return null;
 
-  const grandTotal = hoaGroups.reduce(
-    (sum, g) => sum + g.totalClosingBalance,
-    0
+  const grandTotal = sumDecimals(
+    hoaGroups.map((group) => group.totalClosingBalance)
   );
 
   const isSingle = hoaGroups.length === 1;
@@ -46,10 +48,12 @@ export const PaymentsSummaryCard = ({
               </span>
               <span
                 className={`text-2xl font-bold ${
-                  grandTotal >= 0 ? 'text-green-600' : 'text-red-600'
+                  grandTotal.greaterThanOrEqualTo(0)
+                    ? 'text-green-600'
+                    : 'text-red-600'
                 }`}
               >
-                {grandTotal.toFixed(2)} zł
+                {formatCurrency(grandTotal)}
               </span>
             </div>
           ) : (
@@ -63,12 +67,14 @@ export const PaymentsSummaryCard = ({
                     <span className="text-sm font-medium">{group.hoaName}</span>
                     <span
                       className={`font-semibold ${
-                        group.totalClosingBalance >= 0
+                        toDecimal(
+                          group.totalClosingBalance
+                        ).greaterThanOrEqualTo(0)
                           ? 'text-green-600'
                           : 'text-red-600'
                       }`}
                     >
-                      {group.totalClosingBalance.toFixed(2)} zł
+                      {formatCurrency(group.totalClosingBalance)}
                     </span>
                   </div>
                 ))}
@@ -78,10 +84,12 @@ export const PaymentsSummaryCard = ({
                 <span className="text-sm text-muted-foreground">Łącznie</span>
                 <span
                   className={`text-xl font-bold ${
-                    grandTotal >= 0 ? 'text-green-600' : 'text-red-600'
+                    grandTotal.greaterThanOrEqualTo(0)
+                      ? 'text-green-600'
+                      : 'text-red-600'
                   }`}
                 >
-                  {grandTotal.toFixed(2)} zł
+                  {formatCurrency(grandTotal)}
                 </span>
               </div>
             </>

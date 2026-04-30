@@ -46,51 +46,63 @@ vi.mock('@/components/ui/collapsible', () => ({
   ),
 }));
 
-vi.mock('@/components/ui/alert-dialog', () => ({
-  AlertDialog: ({
-    children,
-    open,
-    onOpenChange,
-  }: {
-    children: React.ReactNode;
-    open: boolean;
-    onOpenChange?: (open: boolean) => void;
-  }) =>
-    open ? (
-      <div role="dialog" data-close={() => onOpenChange?.(false)}>
+vi.mock('@/components/ui/alert-dialog', () => {
+  let latestOnOpenChange: ((open: boolean) => void) | undefined;
+
+  return {
+    AlertDialog: ({
+      children,
+      open,
+      onOpenChange,
+    }: {
+      children: React.ReactNode;
+      open: boolean;
+      onOpenChange?: (open: boolean) => void;
+    }) => {
+      latestOnOpenChange = onOpenChange;
+
+      return open ? <div role="dialog">{children}</div> : null;
+    },
+    AlertDialogContent: ({ children }: { children: React.ReactNode }) => (
+      <div>{children}</div>
+    ),
+    AlertDialogHeader: ({ children }: { children: React.ReactNode }) => (
+      <div>{children}</div>
+    ),
+    AlertDialogFooter: ({ children }: { children: React.ReactNode }) => (
+      <div>{children}</div>
+    ),
+    AlertDialogTitle: ({ children }: { children: React.ReactNode }) => (
+      <h2>{children}</h2>
+    ),
+    AlertDialogDescription: ({ children }: { children: React.ReactNode }) => (
+      <p>{children}</p>
+    ),
+    AlertDialogCancel: ({
+      children,
+      onClick,
+    }: {
+      children: React.ReactNode;
+      onClick?: () => void;
+    }) => (
+      <button
+        onClick={() => {
+          onClick?.();
+          latestOnOpenChange?.(false);
+        }}
+      >
         {children}
-      </div>
-    ) : null,
-  AlertDialogContent: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
-  AlertDialogHeader: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
-  AlertDialogFooter: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
-  AlertDialogTitle: ({ children }: { children: React.ReactNode }) => (
-    <h2>{children}</h2>
-  ),
-  AlertDialogDescription: ({ children }: { children: React.ReactNode }) => (
-    <p>{children}</p>
-  ),
-  AlertDialogCancel: ({
-    children,
-    onClick,
-  }: {
-    children: React.ReactNode;
-    onClick?: () => void;
-  }) => <button onClick={onClick}>{children}</button>,
-  AlertDialogAction: ({
-    children,
-    onClick,
-  }: {
-    children: React.ReactNode;
-    onClick: () => void;
-  }) => <button onClick={onClick}>{children}</button>,
-}));
+      </button>
+    ),
+    AlertDialogAction: ({
+      children,
+      onClick,
+    }: {
+      children: React.ReactNode;
+      onClick: () => void;
+    }) => <button onClick={onClick}>{children}</button>,
+  };
+});
 
 vi.mock('@/components/ui/card', () => ({
   Card: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,

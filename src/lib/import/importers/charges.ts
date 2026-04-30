@@ -1,4 +1,6 @@
+import { Prisma } from '@/generated/prisma/client';
 import { EntityStats, TransactionClient } from '@/lib/import/types';
+import { toDecimal } from '@/lib/money/decimal';
 import { NalCzynszEntry } from '@/lib/parsers/nal-czynsz-parser';
 
 type ChargeKey = {
@@ -12,10 +14,10 @@ type ExistingCharge = ChargeKey & {
   dateFrom: Date;
   dateTo: Date;
   description: string;
-  quantity: number;
+  quantity: Prisma.Decimal;
   unit: string;
-  unitPrice: number;
-  totalAmount: number;
+  unitPrice: Prisma.Decimal;
+  totalAmount: Prisma.Decimal;
 };
 
 function makeChargeKey(c: ChargeKey): string {
@@ -30,10 +32,10 @@ function hasChargeChanged(
     existing.dateFrom.getTime() !== entry.dateFrom.getTime() ||
     existing.dateTo.getTime() !== entry.dateTo.getTime() ||
     existing.description !== entry.description ||
-    existing.quantity !== entry.quantity ||
+    !toDecimal(existing.quantity).equals(toDecimal(entry.quantity)) ||
     existing.unit !== entry.unit ||
-    existing.unitPrice !== entry.unitPrice ||
-    existing.totalAmount !== entry.totalAmount
+    !toDecimal(existing.unitPrice).equals(toDecimal(entry.unitPrice)) ||
+    !toDecimal(existing.totalAmount).equals(toDecimal(entry.totalAmount))
   );
 }
 

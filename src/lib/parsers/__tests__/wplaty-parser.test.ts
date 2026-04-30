@@ -12,21 +12,19 @@ W00163#hoa1-hoa1-00000-00002M#2025#01/01/2025#30/11/2025#0#300#0#0#318#310#318#3
     const result = await parseWplatyFile(buffer);
 
     expect(result.entries).toHaveLength(2);
-    expect(result.entries[0]).toMatchObject({
-      externalId: 'W00162',
-      apartmentCode: 'hoa1-hoa1-00000-00001M',
-      year: 2025,
-      openingBalance: 20, // surplus - debt = 20 - 0
-      totalCharges: 3498, // sum of charges
-      closingBalance: -948.0,
-    });
+    expect(result.entries[0].externalId).toBe('W00162');
+    expect(result.entries[0].apartmentCode).toBe('hoa1-hoa1-00000-00001M');
+    expect(result.entries[0].year).toBe(2025);
+    expect(result.entries[0].openingBalance.toNumber()).toBe(20);
+    expect(result.entries[0].totalCharges.toNumber()).toBe(3498);
+    expect(result.entries[0].closingBalance.toNumber()).toBe(-948.0);
     expect(result.entries[0].monthlyPayments).toHaveLength(12);
-    expect(result.entries[0].monthlyPayments[0]).toBe(620);
-    expect(result.entries[0].monthlyPayments[1]).toBe(0);
-    expect(result.entries[0].monthlyPayments[2]).toBe(0);
+    expect(result.entries[0].monthlyPayments[0].toNumber()).toBe(620);
+    expect(result.entries[0].monthlyPayments[1].toNumber()).toBe(0);
+    expect(result.entries[0].monthlyPayments[2].toNumber()).toBe(0);
     expect(result.entries[0].monthlyCharges).toHaveLength(12);
-    expect(result.entries[0].monthlyCharges[0]).toBe(318);
-    expect(result.entries[0].monthlyCharges[1]).toBe(318);
+    expect(result.entries[0].monthlyCharges[0].toNumber()).toBe(318);
+    expect(result.entries[0].monthlyCharges[1].toNumber()).toBe(318);
   });
 
   it('should handle empty file', async () => {
@@ -72,10 +70,10 @@ W00163#hoa1-hoa1-00000-00002M#2025#01/01/2025#30/11/2025#0#300#0#0#318#310#318#3
 
     expect(result.entries).toHaveLength(1);
     // openingBalance is surplus - debt
-    expect(result.entries[0].openingBalance).toBe(200.75 - 100.5);
-    expect(result.entries[0].totalCharges).toBe(50.25 * 12); // sum of charges
-    expect(result.entries[0].closingBalance).toBe(-250.5);
-    expect(result.entries[0].monthlyPayments[0]).toBe(50.25);
-    expect(result.entries[0].monthlyCharges[0]).toBe(50.25);
+    expect(result.entries[0].openingBalance.toNumber()).toBe(200.75 - 100.5);
+    expect(result.entries[0].totalCharges.toNumber()).toBe(50.25 * 12);
+    expect(result.entries[0].closingBalance.toNumber()).toBe(-250.5);
+    expect(result.entries[0].monthlyPayments[0].toNumber()).toBe(50.25);
+    expect(result.entries[0].monthlyCharges[0].toNumber()).toBe(50.25);
   });
 });
