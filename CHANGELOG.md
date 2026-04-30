@@ -5,6 +5,66 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.1] - 2026-04-30
+
+- fix: test coverage
+- feat: add charts
+- feat: add support for non-calculated sums
+- chore: update openspec
+- chore(deps): update dependency jsdom to v29.1.1 (#339)
+- chore(deps): update opentelemetry-js-contrib monorepo (#338)
+- chore(deps): update opentelemetry-js monorepo (#337)
+- chore(deps): update dependency lucide-react to v1.14.0 (#336)
+- chore(deps): update dependency lucide-react to v1.12.0 (#335)
+- chore(deps): update dependency nodemailer to v8.0.7 (#334)
+- chore(deps): update dependency jsdom to v29.1.0 (#333)
+- chore(deps): update dependency @marsidev/react-turnstile to v1.5.1 (#332)
+- chore(deps): update dependency lucide-react to v1.11.0 (#331)
+- chore(deps): update dependency nodemailer to v8.0.6 (#330)
+- chore(deps): update grafana/otel-lgtm docker tag to v0.26.0 (#329)
+- chore(deps): update dependency lucide-react to v1.9.0 (#328)
+- chore(deps): update dependency vite to v8.0.10 (#327)
+- chore(deps): update semgrep/semgrep docker tag to v1.161.0 (#326)
+- chore(deps): update prisma monorepo to v7.8.0 (#325)
+- chore(deps): update aquasecurity/trivy-action action to v0.36.0 (#324)
+- chore(deps): update tailwindcss monorepo to v4.2.4 (#322)
+- chore(deps): update vitest monorepo to v4.1.5 (#323)
+- chore(deps): update tailwindcss monorepo to v4.2.3 (#321)
+- chore(deps): update dependency eslint-plugin-playwright to v2.10.2 (#319)
+- chore(deps): update dependency vite to v8.0.9 (#320)
+- chore(deps): update opentelemetry-js-contrib monorepo (#318)
+- chore(deps): update opentelemetry-js monorepo (#317)
+- chore(deps): update grafana/otel-lgtm docker tag to v0.25.0 (#316)
+- chore(deps): update dependency typescript to v6.0.3 (#315)
+- chore(deps): update node.js to v24.15.0 (#313)
+- chore(deps): update semgrep/semgrep docker tag to v1.160.0 (#314)
+- chore(deps): update dependency @react-pdf/renderer to v4.5.1 (#312)
+- chore(deps): update nextjs monorepo to v16.2.4 (#311)
+- chore(deps): update grafana/otel-lgtm docker tag to v0.24.1 (#310)
+- chore(deps): update dependency prettier to v3.8.3 (#309)
+- chore(deps): update dependency @auth/prisma-adapter to v2.11.2 (#307)
+- chore(deps): update dependency next-auth to v5.0.0-beta.31 (#308)
+- chore(deps): update dependency dotenv to v17.4.2 (#306)
+- chore(deps): update pnpm/action-setup action to v6
+- chore(deps): update dependency @react-pdf/renderer to v4.4.1 (#303)
+- chore(deps): update semgrep/semgrep docker tag to v1.159.0 (#304)
+- chore(deps): update grafana/otel-lgtm docker tag to v0.24.0 (#302)
+- chore(deps): update semgrep/semgrep docker tag to v1.158.0 (#301)
+- chore(deps): update dependency @types/node to v25.6.0 (#300)
+- chore(deps): update dependency prettier to v3.8.2 (#299)
+- chore(deps): update vitest monorepo to v4.1.4 (#297)
+- chore(deps): update dependency lucide-react to v1.8.0 (#298)
+- chore(deps): update dependency vite to v8.0.8 (#296)
+- chore(deps): update nextjs monorepo to v16.2.3 (#294)
+- chore(deps): update react monorepo to v19.2.5 (#295)
+- chore(deps): update dependency import-in-the-middle to v3.0.1 (#293)
+- chore(deps): update prisma monorepo to v7.7.0 (#292)
+- chore(deps): update dependency vite to v8.0.7 (#291)
+- chore(deps): update dependency nodemailer to v8.0.5 (#290)
+- chore(deps): update dependency vite to v8.0.6 (#289)
+- chore(deps): update vitest monorepo to v4.1.3 (#288)
+- chore(deps): update dependency jsdom to v29.0.2 (#287)
+
 ## [0.7.0] - 2026-04-07
 
 - test: improve unit test coverage across key business logic files
