@@ -6,16 +6,16 @@ import {
   SectionTitle,
   styles,
 } from '@/components/pdf/primitives';
-import { type Decimal, toDecimal } from '@/lib/money/decimal';
-import { sumDecimals } from '@/lib/money/sum';
+import { registerPdfFonts } from '@/lib/pdf/register-fonts';
+import type { Payment } from '@/lib/types';
+import { formatCurrency, MONTH_NAMES_PL } from '@/lib/utils';
+import { type Decimal, toDecimal } from '@/lib/utils/decimal';
 import {
   CHARGE_MONTH_FIELD_KEYS,
   getNonEmptyMonths,
   PAYMENT_MONTH_FIELD_KEYS,
-} from '@/lib/payments/empty-months';
-import { registerPdfFonts } from '@/lib/pdf/register-fonts';
-import type { Payment } from '@/lib/types';
-import { formatCurrency, MONTH_NAMES_PL } from '@/lib/utils';
+} from '@/lib/utils/payment-months';
+import { sumDecimals } from '@/lib/utils/sum';
 
 registerPdfFonts();
 

@@ -3,8 +3,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { AdminPaymentsList } from '@/components/payments/admin-payments-list';
 import { Prisma } from '@/generated/prisma/browser';
-import type { PaymentLike } from '@/lib/payments/serialize-payment';
 import type { Payment } from '@/lib/types';
+import type { PaymentDtoSource } from '@/lib/types/dto/payment-dto';
 import { formatCurrency } from '@/lib/utils';
 
 const withExactText =
@@ -19,9 +19,15 @@ const withExactText =
     );
   };
 
-vi.mock('@/components/payment-table', () => ({
+vi.mock('@/components/payments/payment-table', () => ({
   PaymentTable: ({ payment }: { payment: Payment }) => (
     <div data-testid={`payment-table-${payment.year}`}>{payment.year}</div>
+  ),
+}));
+
+vi.mock('@/components/charts/payment-monthly-balance-chart', () => ({
+  PaymentMonthlyBalanceChart: ({ data }: { data: unknown[] }) => (
+    <div data-testid="payment-monthly-chart">{data.length}</div>
   ),
 }));
 
@@ -41,7 +47,7 @@ vi.mock('@/components/ui/collapsible', () => ({
   ),
 }));
 
-function makePayment(overrides: Partial<PaymentLike> = {}): Payment {
+function makePayment(overrides: Partial<PaymentDtoSource> = {}): Payment {
   return {
     id: 'pay-1',
     apartmentId: 'apt-1',
@@ -193,5 +199,19 @@ describe('AdminPaymentsList', () => {
       el.textContent?.includes(formatCurrency(-150))
     );
     expect(hasNegative).toBe(true);
+  });
+
+  it('renders monthly chart inside the payment year section', () => {
+    const payment = makePayment({
+      januaryPayments: 100,
+      januaryCharges: 50,
+    });
+
+    render(<AdminPaymentsList {...baseProps} payments={[payment]} />);
+
+    expect(
+      screen.getByText('Wykres rozliczeń miesięcznych')
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('payment-monthly-chart')).toBeInTheDocument();
   });
 });

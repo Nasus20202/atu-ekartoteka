@@ -132,6 +132,7 @@ describe('/api/admin/users route', () => {
         UserRole.ADMIN
       );
       expect(data.users).toHaveLength(2);
+      expect(data.users[0].createdAt).toBeTypeOf('string');
       expect(
         data.users.every(
           (user: { role: UserRole }) => user.role === UserRole.ADMIN
@@ -184,6 +185,7 @@ describe('/api/admin/users route', () => {
       expect(response.status).toBe(200);
       expect(mockNotifyAccountApproved).not.toHaveBeenCalled();
       expect(data.user.role).toBe(UserRole.ADMIN);
+      expect(data.user).toHaveProperty('createdAt');
     });
 
     it('sends approval email when approving a tenant user for the first time', async () => {

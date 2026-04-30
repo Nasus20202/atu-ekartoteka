@@ -9,15 +9,15 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import type { SerializableChargeDisplay } from '@/lib/charges/serialize-charge';
-import { sumDecimals } from '@/lib/money/sum';
+import type { ChargeDisplayDto } from '@/lib/types/dto/charge-dto';
 import { formatCurrency, formatPeriod } from '@/lib/utils';
+import { sumDecimals } from '@/lib/utils/sum';
 
 interface ApartmentPeriodData {
   apartmentNumber: string;
   apartmentAddress: string;
   hoaName: string;
-  charges: SerializableChargeDisplay[];
+  charges: ChargeDisplayDto[];
 }
 
 interface MultiChargesDisplayProps {

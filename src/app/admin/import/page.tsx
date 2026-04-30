@@ -11,9 +11,9 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { useConfirm } from '@/components/confirm-dialog';
-import { Page } from '@/components/page';
-import { PageHeader } from '@/components/page-header';
+import { Page } from '@/components/layout/page';
+import { PageHeader } from '@/components/layout/page-header';
+import { useConfirm } from '@/components/providers/confirm-dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {

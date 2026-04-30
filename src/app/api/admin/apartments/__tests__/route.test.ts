@@ -137,6 +137,7 @@ describe('Admin Apartments API', () => {
 
       expect(response.status).toBe(200);
       expect(data.apartments).toHaveLength(2);
+      expect(data.apartments[0]).not.toHaveProperty('homeownersAssociationId');
       expect(data.pagination).toEqual({
         page: 1,
         limit: 20,
@@ -167,6 +168,7 @@ describe('Admin Apartments API', () => {
       expect(response.status).toBe(200);
       expect(data.apartments).toHaveLength(1);
       expect(data.apartments[0].number).toBe('101');
+      expect(data.apartments[0]).not.toHaveProperty('homeownersAssociationId');
     });
 
     it('should filter by search term (owner)', async () => {

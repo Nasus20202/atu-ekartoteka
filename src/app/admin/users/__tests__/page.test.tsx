@@ -3,11 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import AdminUsersPage from '@/app/admin/users/page';
 
-vi.mock('@/components/page', () => ({
+vi.mock('@/components/layout/page', () => ({
   Page: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-vi.mock('@/components/page-header', () => ({
+vi.mock('@/components/layout/page-header', () => ({
   PageHeader: ({
     title,
     description,
@@ -25,7 +25,7 @@ vi.mock('@/components/page-header', () => ({
   ),
 }));
 
-vi.mock('@/components/confirm-dialog', () => ({
+vi.mock('@/components/providers/confirm-dialog', () => ({
   useConfirm: () => vi.fn().mockResolvedValue(true),
 }));
 

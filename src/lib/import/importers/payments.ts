@@ -1,7 +1,7 @@
 import { Prisma } from '@/generated/prisma/client';
 import { EntityStats, TransactionClient } from '@/lib/import/types';
-import { toDecimal } from '@/lib/money/decimal';
 import { PaymentEntry } from '@/lib/parsers/wplaty-parser';
+import { toDecimal } from '@/lib/utils/decimal';
 
 type PaymentKey = {
   apartmentId: string;

@@ -5,12 +5,21 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { sumDecimals } from '@/lib/money/sum';
-import { ChargeNotification } from '@/lib/types';
 import { formatCurrency, MONTH_NAMES_PL } from '@/lib/utils';
+import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
+import { sumDecimals } from '@/lib/utils/sum';
+
+type ChargeNotificationCardItem = {
+  id: string;
+  description: string;
+  quantity: DecimalLike;
+  unit: string;
+  unitPrice: DecimalLike;
+  totalAmount: DecimalLike;
+};
 
 interface ChargeNotificationsCardProps {
-  notifications: ChargeNotification[];
+  notifications: ChargeNotificationCardItem[];
   hoaHeader?: string | null;
 }
 
@@ -53,7 +62,8 @@ export const ChargeNotificationsCard = ({
                     {notification.description}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {notification.quantity} {notification.unit} ×{' '}
+                    {toDecimal(notification.quantity).toString()}{' '}
+                    {notification.unit} ×{' '}
                     {formatCurrency(notification.unitPrice)}
                   </p>
                 </div>

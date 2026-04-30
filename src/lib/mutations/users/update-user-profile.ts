@@ -17,6 +17,10 @@ export function updateUserProfile({ id, ...data }: UpdateUserProfileInput) {
       name: true,
       role: true,
       status: true,
+      emailVerified: true,
+      mustChangePassword: true,
+      createdAt: true,
+      updatedAt: true,
     },
   });
 }

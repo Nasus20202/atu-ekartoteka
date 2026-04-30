@@ -153,10 +153,10 @@ model ChargeNotification {
   
   // Charge details
   description     String
-  quantity        Float
+  quantity        Decimal  @db.Decimal(14, 4)
   unit            String   // e.g. "szt.", "m2"
-  unitPrice       Float
-  totalAmount     Float
+  unitPrice       Decimal  @db.Decimal(14, 4)
+  totalAmount     Decimal  @db.Decimal(14, 4)
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

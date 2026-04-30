@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ChargesDisplay } from '@/components/charges/charges-display';
+import type { ChargeDisplayDto } from '@/lib/types/dto/charge-dto';
 
 vi.mock('@/components/charges/period-card', () => ({
   PeriodCard: ({ period }: { period: string }) => (
@@ -32,7 +33,7 @@ vi.mock('@/components/ui/collapsible', () => ({
 }));
 
 const baseProps = {
-  chargesByPeriod: {},
+  chargesByPeriod: {} as Record<string, ChargeDisplayDto[]>,
   activeMonth: null,
   apartmentLabel: 'A/101',
   hoaName: 'Wspólnota Testowa',

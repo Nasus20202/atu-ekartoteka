@@ -6,10 +6,10 @@ import {
   SectionTitle,
   styles,
 } from '@/components/pdf/primitives';
-import { type DecimalLike, toDecimal } from '@/lib/money/decimal';
 import { registerPdfFonts } from '@/lib/pdf/register-fonts';
 import type { ChargeDisplay } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
+import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
 
 registerPdfFonts();
 

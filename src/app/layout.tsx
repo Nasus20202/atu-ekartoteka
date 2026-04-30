@@ -3,10 +3,10 @@ import '@/app/globals.css';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 
-import { ConfirmProvider } from '@/components/confirm-dialog';
-import { SessionProvider } from '@/components/session-provider';
-import { ThemeProvider } from '@/components/theme-provider';
-import { TrackingScript } from '@/components/tracking-script';
+import { ConfirmProvider } from '@/components/providers/confirm-dialog';
+import { SessionProvider } from '@/components/providers/session-provider';
+import { ThemeProvider } from '@/components/providers/theme-provider';
+import { TrackingScript } from '@/components/providers/tracking-script';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',

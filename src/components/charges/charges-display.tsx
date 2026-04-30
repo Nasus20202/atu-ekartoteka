@@ -11,12 +11,12 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import {
-  type SerializableChargeDisplay,
-  toSerializableCharge,
-} from '@/lib/charges/serialize-charge';
-import type { DecimalLike } from '@/lib/money/decimal';
-import { sumDecimals } from '@/lib/money/sum';
+  type ChargeDisplayDto,
+  toChargePdfItemDto,
+} from '@/lib/types/dto/charge-dto';
 import { formatCurrency, formatPeriod } from '@/lib/utils';
+import type { DecimalLike } from '@/lib/utils/decimal';
+import { sumDecimals } from '@/lib/utils/sum';
 
 interface YearGroup {
   year: string;
@@ -25,7 +25,7 @@ interface YearGroup {
 
 interface ChargesDisplayProps {
   periods: string[];
-  chargesByPeriod: Record<string, SerializableChargeDisplay[]>;
+  chargesByPeriod: Record<string, ChargeDisplayDto[]>;
   activeMonth: string | null;
   apartmentLabel: string;
   hoaName: string;
@@ -162,7 +162,7 @@ export function ChargesDisplay({
                             apartmentLabel={apartmentLabel}
                             hoaName={hoaName}
                             period={period}
-                            charges={charges.map(toSerializableCharge)}
+                            charges={charges.map(toChargePdfItemDto)}
                           />
                         }
                       />

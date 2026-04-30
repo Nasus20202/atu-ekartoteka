@@ -1,11 +1,11 @@
 import { Prisma } from '@/generated/prisma/client';
-import { sumDecimals } from '@/lib/money/sum';
 import {
   decodeBuffer,
   parseDate,
   parseDecimalValue,
   ParseResult,
 } from '@/lib/parsers/parser-utils';
+import { sumDecimals } from '@/lib/utils/sum';
 
 export interface PaymentEntry {
   externalId: string;

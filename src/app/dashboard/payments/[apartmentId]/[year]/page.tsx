@@ -1,9 +1,12 @@
 import { notFound, redirect } from 'next/navigation';
 
 import { auth } from '@/auth';
-import { Page } from '@/components/page';
-import { PageHeader } from '@/components/page-header';
-import { PaymentTable } from '@/components/payment-table';
+import { getPaymentMonthlyChartData } from '@/components/charts/chart-data';
+import { Page } from '@/components/layout/page';
+import { PageHeader } from '@/components/layout/page-header';
+import { PaymentApartmentDetailsCard } from '@/components/payments/payment-apartment-details-card';
+import { PaymentMonthlyChartCard } from '@/components/payments/payment-monthly-chart-card';
+import { PaymentTable } from '@/components/payments/payment-table';
 import { DownloadPaymentPdfButton } from '@/components/pdf/download-payment-pdf-button';
 import {
   Card,
@@ -12,18 +15,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { toDecimal } from '@/lib/money/decimal';
-import { sumDecimals } from '@/lib/money/sum';
+import { findApartmentWithPaymentsByYearCached } from '@/lib/queries/apartments/find-apartment-with-payments-by-year';
+import { toPaymentPdfDto } from '@/lib/types/dto/payment-dto';
+import { formatCurrency } from '@/lib/utils';
+import { toDecimal } from '@/lib/utils/decimal';
 import {
   CHARGE_MONTH_FIELD_KEYS,
   PAYMENT_MONTH_FIELD_KEYS,
-} from '@/lib/payments/empty-months';
-import {
-  type SerializablePayment,
-  serializePayment,
-} from '@/lib/payments/serialize-payment';
-import { findApartmentWithPaymentsByYearCached } from '@/lib/queries/apartments/find-apartment-with-payments-by-year';
-import { formatCurrency } from '@/lib/utils';
+} from '@/lib/utils/payment-months';
+import { sumDecimals } from '@/lib/utils/sum';
 
 interface PaymentDetailsPageProps {
   params: Promise<{
@@ -68,10 +68,11 @@ export default async function PaymentDetailsPage({
   );
   const openingBalance = toDecimal(payment.openingBalance);
   const closingBalance = toDecimal(payment.closingBalance);
+  const monthlyChartData = getPaymentMonthlyChartData(payment);
 
   const apartmentLabel = `${apartment.address} ${apartment.building || ''}/${apartment.number}`;
 
-  const serializablePayment: SerializablePayment = serializePayment(payment);
+  const paymentPdfDto = toPaymentPdfDto(payment);
 
   return (
     <Page maxWidth="4xl">
@@ -96,7 +97,7 @@ export default async function PaymentDetailsPage({
                 <DownloadPaymentPdfButton
                   apartmentLabel={apartmentLabel}
                   hoaName={apartment.homeownersAssociation.name}
-                  payment={serializablePayment}
+                  payment={paymentPdfDto}
                 />
               </div>
             </div>
@@ -149,6 +150,8 @@ export default async function PaymentDetailsPage({
           </CardContent>
         </Card>
 
+        <PaymentMonthlyChartCard data={monthlyChartData} />
+
         {/* Monthly Payments Table */}
         <Card>
           <CardHeader>
@@ -162,52 +165,15 @@ export default async function PaymentDetailsPage({
           </CardContent>
         </Card>
 
-        {/* Apartment Details Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Dane lokalu</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
-              <div>
-                <div className="font-medium text-muted-foreground">Adres</div>
-                <div>
-                  {apartment.address} {apartment.building || ''}/
-                  {apartment.number}
-                </div>
-              </div>
-              <div>
-                <div className="font-medium text-muted-foreground">Miasto</div>
-                <div>
-                  {apartment.postalCode} {apartment.city}
-                </div>
-              </div>
-              <div>
-                <div className="font-medium text-muted-foreground">
-                  Numer lokalu
-                </div>
-                <div>{apartment.number}</div>
-              </div>
-              <div>
-                <div className="font-medium text-muted-foreground">
-                  Procent udziału
-                </div>
-                <div>
-                  {apartment.shareNumerator &&
-                  apartment.shareDenominator &&
-                  apartment.shareDenominator > 0
-                    ? (
-                        (apartment.shareNumerator /
-                          apartment.shareDenominator) *
-                        100
-                      ).toFixed(1)
-                    : '-'}
-                  %
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <PaymentApartmentDetailsCard
+          address={apartment.address ?? ''}
+          building={apartment.building}
+          number={apartment.number}
+          postalCode={apartment.postalCode ?? ''}
+          city={apartment.city ?? ''}
+          shareNumerator={apartment.shareNumerator}
+          shareDenominator={apartment.shareDenominator}
+        />
       </div>
     </Page>
   );

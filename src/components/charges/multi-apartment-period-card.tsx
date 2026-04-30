@@ -11,22 +11,22 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import {
-  type SerializableChargeDisplay,
-  toSerializableCharge,
-} from '@/lib/charges/serialize-charge';
-import { type DecimalLike, toDecimal } from '@/lib/money/decimal';
-import { sumDecimals } from '@/lib/money/sum';
+  type ChargeDisplayDto,
+  toChargePdfItemDto,
+} from '@/lib/types/dto/charge-dto';
 import { formatCurrency, formatDate, formatPeriod } from '@/lib/utils';
+import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
+import { sumDecimals } from '@/lib/utils/sum';
 
 type ApartmentChargesData = {
   apartmentNumber: string;
   apartmentAddress: string;
   hoaName: string;
-  charges: SerializableChargeDisplay[];
+  charges: ChargeDisplayDto[];
 };
 
 type ChargeItemProps = {
-  charge: SerializableChargeDisplay;
+  charge: ChargeDisplayDto;
 };
 
 function ChargeItem({ charge }: ChargeItemProps) {
@@ -94,7 +94,7 @@ function ApartmentSection({ apartmentData, period }: ApartmentSectionProps) {
               apartmentLabel={apartmentData.apartmentAddress}
               hoaName={apartmentData.hoaName}
               period={period}
-              charges={apartmentData.charges.map(toSerializableCharge)}
+              charges={apartmentData.charges.map(toChargePdfItemDto)}
             />
           </div>
         </div>

@@ -4,6 +4,12 @@ import { auth } from '@/auth';
 import { createLogger } from '@/lib/logger';
 import { updateApartmentStatus } from '@/lib/mutations/apartments/update-apartment-status';
 import { findApartmentDetail } from '@/lib/queries/apartments/find-apartment-detail';
+import {
+  toApartmentDetailDto,
+  toApartmentSummaryDto,
+} from '@/lib/types/dto/apartment-dto';
+import { toChargePeriodItemDto } from '@/lib/types/dto/charge-dto';
+import { toPaymentPdfDto } from '@/lib/types/dto/payment-dto';
 
 const logger = createLogger('api:admin:apartments:detail');
 
@@ -29,7 +35,13 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(apartment);
+    return NextResponse.json(
+      toApartmentDetailDto({
+        ...apartment,
+        charges: apartment.charges.map(toChargePeriodItemDto),
+        payments: apartment.payments.map(toPaymentPdfDto),
+      })
+    );
   } catch (error) {
     logger.error({ error }, 'Error fetching apartment details');
     return NextResponse.json(
@@ -68,7 +80,7 @@ export async function PATCH(
       'Apartment status updated'
     );
 
-    return NextResponse.json(apartment);
+    return NextResponse.json(toApartmentSummaryDto(apartment));
   } catch (error) {
     logger.error({ error }, 'Error updating apartment status');
     return NextResponse.json(

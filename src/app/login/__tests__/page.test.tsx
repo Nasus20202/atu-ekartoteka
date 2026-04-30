@@ -21,7 +21,7 @@ vi.mock('next/navigation', () => ({
   useSearchParams: vi.fn(),
 }));
 
-vi.mock('@/components/auth-layout', () => ({
+vi.mock('@/components/layout/auth-layout', () => ({
   AuthLayout: ({
     children,
   }: {

@@ -95,6 +95,17 @@ test.describe('Payments', () => {
       await expect(userPage.getByText(/Styczeń/i).first()).toBeVisible();
     });
 
+    test('apartment payments page shows monthly balance chart', async ({
+      userPage,
+    }) => {
+      await userPage.goto('/dashboard/payments');
+
+      const currentYear = new Date().getFullYear();
+      await userPage.getByText(`Rok ${currentYear}`).first().click();
+
+      await expect(userPage.getByTestId('payment-monthly-chart')).toBeVisible();
+    });
+
     test('apartment payments page shows charges and payments columns', async ({
       userPage,
     }) => {

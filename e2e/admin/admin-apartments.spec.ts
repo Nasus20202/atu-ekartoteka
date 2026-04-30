@@ -212,6 +212,32 @@ test.describe('Admin Apartment Browser', () => {
       await expect(apartmentCard.getByText(/Warszawa/i)).toBeVisible();
     });
 
+    test('apartment details shows monthly chart section inside payment history', async ({
+      adminPage,
+    }) => {
+      await adminPage.goto('/admin/apartments');
+      await expect(adminPage.getByText('TEST01')).toBeVisible();
+
+      const hoaCard = adminPage.locator('.text-card-foreground').filter({
+        hasText: 'TEST01',
+      });
+      await hoaCard.getByRole('button', { name: /Zobacz mieszkania/i }).click();
+      await adminPage.waitForURL(/\/admin\/apartments\/[a-f0-9-]+$/, {
+        timeout: 10000,
+      });
+
+      const apartmentCard = adminPage
+        .locator('.text-card-foreground')
+        .filter({ hasText: 'ul. Testowa 1/1A' });
+      await apartmentCard
+        .getByRole('button', { name: /Zobacz szczegóły/i })
+        .click();
+
+      await expect(
+        adminPage.getByText(/Wykres rozliczeń miesięcznych/i).first()
+      ).toBeVisible();
+    });
+
     test('apartment list shows external ID', async ({ adminPage }) => {
       await adminPage.goto('/admin/apartments');
 

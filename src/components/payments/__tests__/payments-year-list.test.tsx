@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { PaymentsYearList } from '@/components/payments/payments-year-list';
+import type { PaymentListItemDto } from '@/lib/types/dto/payment-dto';
 
 vi.mock('@/components/payments/payment-year-row', () => ({
   PaymentYearRow: ({
@@ -67,7 +68,7 @@ function makePaymentEntry(year: number, id = `payment-${year}`) {
       createdAt: '2025-01-01T00:00:00.000Z',
       updatedAt: '2025-01-01T00:00:00.000Z',
       apartmentId: 'apt-1',
-    },
+    } satisfies PaymentListItemDto,
     apartmentId: 'apt-1',
     apartmentLabel: 'A/101',
     hoaName: 'Wspólnota Testowa',

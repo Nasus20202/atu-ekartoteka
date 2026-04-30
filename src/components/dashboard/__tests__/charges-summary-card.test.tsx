@@ -10,6 +10,13 @@ describe('ChargesSummaryCard', () => {
     { totalAmount: new Prisma.Decimal(200) },
     { totalAmount: new Prisma.Decimal(300) },
   ];
+  const trendData = [
+    { period: '202412', label: 'Grudzień 2024', hoa_test: 400 },
+    { period: '202501', label: 'Styczeń 2025', hoa_test: 600 },
+  ];
+  const trendSeries = [
+    { key: 'hoa_test', label: 'Test HOA', color: 'hsl(var(--primary))' },
+  ];
 
   it('renders the card title', () => {
     render(
@@ -20,6 +27,8 @@ describe('ChargesSummaryCard', () => {
         previousMonthCharges={[]}
         currentMonthTotal={600}
         previousMonthTotal={0}
+        trendData={trendData}
+        trendSeries={trendSeries}
       />
     );
 
@@ -35,10 +44,12 @@ describe('ChargesSummaryCard', () => {
         previousMonthCharges={[]}
         currentMonthTotal={600}
         previousMonthTotal={0}
+        trendData={trendData}
+        trendSeries={trendSeries}
       />
     );
 
-    expect(screen.getByText('Styczeń 2025')).toBeInTheDocument();
+    expect(screen.getAllByText('Styczeń 2025')[1]).toBeInTheDocument();
     expect(screen.getByText('3 naliczenia')).toBeInTheDocument();
     expect(screen.getByText('600,00 zł')).toBeInTheDocument();
   });
@@ -54,6 +65,8 @@ describe('ChargesSummaryCard', () => {
         previousMonthCharges={prevCharges}
         currentMonthTotal={0}
         previousMonthTotal={400}
+        trendData={trendData}
+        trendSeries={trendSeries}
       />
     );
 
@@ -76,11 +89,13 @@ describe('ChargesSummaryCard', () => {
         previousMonthCharges={prevCharges}
         currentMonthTotal={600}
         previousMonthTotal={900}
+        trendData={trendData}
+        trendSeries={trendSeries}
       />
     );
 
-    expect(screen.getByText('Styczeń 2025')).toBeInTheDocument();
-    expect(screen.getByText('Grudzień 2024')).toBeInTheDocument();
+    expect(screen.getAllByText('Styczeń 2025').at(-1)).toBeInTheDocument();
+    expect(screen.getAllByText('Grudzień 2024').at(-1)).toBeInTheDocument();
     expect(screen.getByText('3 naliczenia')).toBeInTheDocument();
     expect(screen.getByText('2 naliczenia')).toBeInTheDocument();
   });
@@ -94,6 +109,8 @@ describe('ChargesSummaryCard', () => {
         previousMonthCharges={[]}
         currentMonthTotal={600}
         previousMonthTotal={0}
+        trendData={trendData}
+        trendSeries={trendSeries}
       />
     );
 
@@ -113,6 +130,8 @@ describe('ChargesSummaryCard', () => {
         previousMonthCharges={[]}
         currentMonthTotal={0}
         previousMonthTotal={0}
+        trendData={[]}
+        trendSeries={[]}
       />
     );
 
@@ -134,6 +153,8 @@ describe('ChargesSummaryCard', () => {
         previousMonthCharges={[]}
         currentMonthTotal={100}
         previousMonthTotal={0}
+        trendData={trendData}
+        trendSeries={trendSeries}
       />
     );
 
@@ -150,9 +171,45 @@ describe('ChargesSummaryCard', () => {
         previousMonthCharges={[]}
         currentMonthTotal={500}
         previousMonthTotal={0}
+        trendData={trendData}
+        trendSeries={trendSeries}
       />
     );
 
     expect(screen.getByText('5 naliczeń')).toBeInTheDocument();
+  });
+
+  it('renders the recent charge trend chart when enough history exists', () => {
+    render(
+      <ChargesSummaryCard
+        currentPeriod="202501"
+        previousPeriod="202412"
+        currentMonthCharges={mockCharges}
+        previousMonthCharges={[]}
+        currentMonthTotal={600}
+        previousMonthTotal={0}
+        trendData={trendData}
+        trendSeries={trendSeries}
+      />
+    );
+
+    expect(screen.getByTestId('charge-trend-chart')).toBeInTheDocument();
+  });
+
+  it('renders the trend fallback when history is too short', () => {
+    render(
+      <ChargesSummaryCard
+        currentPeriod="202501"
+        previousPeriod="202412"
+        currentMonthCharges={[]}
+        previousMonthCharges={[]}
+        currentMonthTotal={0}
+        previousMonthTotal={0}
+        trendData={[]}
+        trendSeries={[]}
+      />
+    );
+
+    expect(screen.getByTestId('charge-trend-fallback')).toBeInTheDocument();
   });
 });

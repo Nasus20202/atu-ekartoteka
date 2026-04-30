@@ -5,11 +5,10 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { AdminChargesList } from '@/components/charges/admin-charges-list';
-import { useConfirm } from '@/components/confirm-dialog';
-import { Page } from '@/components/page';
-import { PageHeader } from '@/components/page-header';
-import { AdminPaymentsList } from '@/components/payments/admin-payments-list';
-import type { SerializableCharge } from '@/components/pdf/download-charges-pdf-button';
+import { Page } from '@/components/layout/page';
+import { PageHeader } from '@/components/layout/page-header';
+import { ApartmentPaymentsSection } from '@/components/payments/apartment-payments-section';
+import { useConfirm } from '@/components/providers/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -19,45 +18,16 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { LoadingCard } from '@/components/ui/loading-card';
-import { sumDecimals } from '@/lib/money/sum';
-import type {
-  Apartment,
-  ChargeNotification,
-  HomeownersAssociation,
-  Payment,
-  User,
-} from '@/lib/types';
+import type { ApartmentDetailDto } from '@/lib/types/dto/apartment-dto';
 import { formatCurrency } from '@/lib/utils';
-
-type ApartmentDetailsData = Pick<
-  Apartment,
-  | 'id'
-  | 'externalOwnerId'
-  | 'externalApartmentId'
-  | 'owner'
-  | 'email'
-  | 'address'
-  | 'building'
-  | 'number'
-  | 'postalCode'
-  | 'city'
-  | 'shareNumerator'
-  | 'shareDenominator'
-  | 'isActive'
-> & {
-  homeownersAssociation: HomeownersAssociation;
-  user: Omit<User, 'password'> | null;
-  charges: (SerializableCharge & { period: string })[];
-  chargeNotifications: ChargeNotification[];
-  payments: Payment[];
-};
+import { sumDecimals } from '@/lib/utils/sum';
 
 export default function ApartmentDetailsPage() {
   const params = useParams();
   const apartmentId = params.apartmentId as string;
   const confirm = useConfirm();
 
-  const [apartment, setApartment] = useState<ApartmentDetailsData | null>(null);
+  const [apartment, setApartment] = useState<ApartmentDetailDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
 
@@ -308,24 +278,13 @@ export default function ApartmentDetailsPage() {
           </Card>
         )}
 
-        {/* Payments */}
         {apartment.payments.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Historia wpłat</CardTitle>
-              <CardDescription>
-                Zapisane okresy rozliczeniowe ({apartment.payments.length})
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <AdminPaymentsList
-                payments={apartment.payments}
-                apartmentId={apartmentId}
-                apartmentLabel={`${apartment.address} ${apartment.building}/${apartment.number}`}
-                hoaName={apartment.homeownersAssociation.name}
-              />
-            </CardContent>
-          </Card>
+          <ApartmentPaymentsSection
+            payments={apartment.payments}
+            apartmentId={apartmentId}
+            apartmentLabel={`${apartment.address} ${apartment.building}/${apartment.number}`}
+            hoaName={apartment.homeownersAssociation.name}
+          />
         )}
 
         {/* Charges */}

@@ -1,4 +1,4 @@
-import type { DecimalLike } from '@/lib/money/decimal';
+import type { DecimalLike } from '@/lib/utils/decimal';
 
 export type { Charge, ChargeNotification } from '@/generated/prisma/client';
 

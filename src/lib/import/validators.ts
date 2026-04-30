@@ -4,10 +4,10 @@ import {
   WPLATY_BALANCE_TOLERANCE,
 } from '@/lib/import/constants';
 import type { ImportWarning } from '@/lib/import/types';
-import { toDecimal } from '@/lib/money/decimal';
-import { sumDecimals } from '@/lib/money/sum';
 import { NalCzynszEntry } from '@/lib/parsers/nal-czynsz-parser';
 import { PaymentEntry } from '@/lib/parsers/wplaty-parser';
+import { toDecimal } from '@/lib/utils/decimal';
+import { sumDecimals } from '@/lib/utils/sum';
 
 export function validateNalCzynsz(entries: NalCzynszEntry[]): ImportWarning[] {
   const warnings: ImportWarning[] = [];

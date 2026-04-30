@@ -16,7 +16,7 @@ vi.mock('next/navigation', () => ({
   useRouter: vi.fn(),
 }));
 
-vi.mock('@/components/auth-layout', () => ({
+vi.mock('@/components/layout/auth-layout', () => ({
   AuthLayout: ({ children }: { children: React.ReactNode }) => (
     <div>{children}</div>
   ),

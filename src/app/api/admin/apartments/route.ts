@@ -4,6 +4,10 @@ import { auth } from '@/auth';
 import { createLogger } from '@/lib/logger';
 import { findApartmentsPaginated } from '@/lib/queries/apartments/find-apartments-paginated';
 import { Apartment, UserRole } from '@/lib/types';
+import {
+  toApartmentSummaryDto,
+  toHomeownersAssociationSummaryDto,
+} from '@/lib/types/dto/apartment-dto';
 
 const logger = createLogger('api:admin:apartments');
 
@@ -109,8 +113,8 @@ export async function GET(req: NextRequest) {
     const apartments = sortedApartments.slice(skip, skip + limit);
 
     return NextResponse.json({
-      apartments,
-      hoa,
+      apartments: apartments.map(toApartmentSummaryDto),
+      hoa: hoa ? toHomeownersAssociationSummaryDto(hoa) : null,
       pagination: {
         page,
         limit,

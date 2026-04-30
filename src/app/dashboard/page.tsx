@@ -1,14 +1,16 @@
 import { redirect } from 'next/navigation';
 
 import { auth } from '@/auth';
+import { UserStatusSection } from '@/components/account/user-status-section';
+import { getRecentChargeTrendByHoa } from '@/components/charts/chart-data';
 import { ApartmentsSection } from '@/components/dashboard/apartments-section';
 import { ChargesSummaryCard } from '@/components/dashboard/charges-summary-card';
 import { NotificationsSidebar } from '@/components/dashboard/notifications-sidebar';
 import { PaymentsSummaryCard } from '@/components/dashboard/payments-summary-card';
-import { UserStatusSection } from '@/components/user-status-section';
-import { sumDecimals } from '@/lib/money/sum';
 import { findUserWithApartmentsCached } from '@/lib/queries/users/find-user-with-apartments';
 import { AccountStatus } from '@/lib/types';
+import { toDecimal } from '@/lib/utils/decimal';
+import { sumDecimals } from '@/lib/utils/sum';
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -51,6 +53,7 @@ export default async function DashboardPage() {
   const previousMonthTotal = sumDecimals(
     previousMonthCharges.map((charge) => charge.totalAmount)
   );
+  const recentChargeTrend = getRecentChargeTrendByHoa(userData.apartments);
 
   // Prepare notifications grouped by HOA for sidebar
   const allNotifications = userData.apartments.flatMap(
@@ -58,6 +61,9 @@ export default async function DashboardPage() {
       apt.chargeNotifications.map(
         (n: (typeof apt.chargeNotifications)[number]) => ({
           ...n,
+          quantity: toDecimal(n.quantity).toString(),
+          unitPrice: toDecimal(n.unitPrice).toString(),
+          totalAmount: toDecimal(n.totalAmount).toString(),
           apartmentNumber: apt.number,
           apartmentAddress: `${apt.address} ${apt.building || ''}/${apt.number}`
             .replace(/\s+\//g, ' /')
@@ -139,6 +145,8 @@ export default async function DashboardPage() {
                     previousMonthCharges={previousMonthCharges}
                     currentMonthTotal={currentMonthTotal}
                     previousMonthTotal={previousMonthTotal}
+                    trendData={recentChargeTrend.data}
+                    trendSeries={recentChargeTrend.series}
                   />
                 )}
 

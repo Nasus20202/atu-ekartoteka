@@ -5,6 +5,7 @@ import { auth } from '@/auth';
 import { createLogger } from '@/lib/logger';
 import { updateUserProfile } from '@/lib/mutations/users/update-user-profile';
 import { findUserById } from '@/lib/queries/users/find-user-by-id';
+import { toUserDto } from '@/lib/types/dto/user-dto';
 
 const logger = createLogger('api:user:profile');
 
@@ -112,7 +113,7 @@ export async function PATCH(request: NextRequest) {
       'Profile updated successfully'
     );
 
-    return NextResponse.json(updatedUser);
+    return NextResponse.json(toUserDto(updatedUser));
   } catch (error) {
     logger.error({ error }, 'Failed to update profile');
     return NextResponse.json(

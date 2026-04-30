@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { Prisma } from '@/generated/prisma/browser';
 import { UserRole } from '@/lib/types';
 
 vi.mock('@/auth', () => ({
@@ -37,12 +38,18 @@ describe('Admin Apartment Detail API', () => {
   describe('GET /api/admin/apartments/[apartmentId]', () => {
     const mockApartment = {
       id: 'apt-1',
+      externalOwnerId: 'owner-1',
+      externalApartmentId: 'apartment-1',
       number: '101',
       building: 'A',
       owner: 'Jan Kowalski',
       email: 'jan@example.com',
       address: 'ul. Testowa 1',
+      postalCode: '00-001',
       city: 'Warszawa',
+      shareNumerator: 1,
+      shareDenominator: 10,
+      isActive: true,
       homeownersAssociation: {
         id: 'hoa-1',
         externalId: 'HOA-001',
@@ -53,9 +60,71 @@ describe('Admin Apartment Detail API', () => {
         name: 'Jan Kowalski',
         email: 'jan@example.com',
       },
-      charges: [{ id: 'charge-1', period: '2024-01', amount: 500.0 }],
-      chargeNotifications: [{ id: 'notif-1', lineNo: 1, content: 'Test' }],
-      payments: [{ id: 'payment-1', year: 2024, amount: 6000.0 }],
+      charges: [
+        {
+          id: 'charge-1',
+          description: 'Czynsz',
+          quantity: new Prisma.Decimal('1.0000'),
+          unit: 'szt',
+          unitPrice: new Prisma.Decimal('500.0000'),
+          totalAmount: new Prisma.Decimal('500.0000'),
+          period: '2024-01',
+          dateFrom: new Date('2024-01-01T00:00:00.000Z'),
+          dateTo: new Date('2024-01-31T00:00:00.000Z'),
+        },
+      ],
+      chargeNotifications: [
+        {
+          id: 'notif-1',
+          lineNo: 1,
+          description: 'Test',
+          quantity: new Prisma.Decimal('1.0000'),
+          unit: 'szt',
+          unitPrice: new Prisma.Decimal('500.0000'),
+          totalAmount: new Prisma.Decimal('500.0000'),
+          createdAt: new Date('2024-01-01T00:00:00.000Z'),
+          updatedAt: new Date('2024-01-02T00:00:00.000Z'),
+        },
+      ],
+      payments: [
+        {
+          id: 'payment-1',
+          apartmentId: 'apt-1',
+          year: 2024,
+          dateFrom: new Date('2024-01-01T00:00:00.000Z'),
+          dateTo: new Date('2024-12-31T00:00:00.000Z'),
+          openingBalance: new Prisma.Decimal('0.0000'),
+          closingBalance: new Prisma.Decimal('6000.0000'),
+          openingDebt: new Prisma.Decimal('0.0000'),
+          openingSurplus: new Prisma.Decimal('0.0000'),
+          januaryPayments: new Prisma.Decimal('500.0000'),
+          februaryPayments: new Prisma.Decimal('500.0000'),
+          marchPayments: new Prisma.Decimal('500.0000'),
+          aprilPayments: new Prisma.Decimal('500.0000'),
+          mayPayments: new Prisma.Decimal('500.0000'),
+          junePayments: new Prisma.Decimal('500.0000'),
+          julyPayments: new Prisma.Decimal('500.0000'),
+          augustPayments: new Prisma.Decimal('500.0000'),
+          septemberPayments: new Prisma.Decimal('500.0000'),
+          octoberPayments: new Prisma.Decimal('500.0000'),
+          novemberPayments: new Prisma.Decimal('500.0000'),
+          decemberPayments: new Prisma.Decimal('500.0000'),
+          januaryCharges: new Prisma.Decimal('0.0000'),
+          februaryCharges: new Prisma.Decimal('0.0000'),
+          marchCharges: new Prisma.Decimal('0.0000'),
+          aprilCharges: new Prisma.Decimal('0.0000'),
+          mayCharges: new Prisma.Decimal('0.0000'),
+          juneCharges: new Prisma.Decimal('0.0000'),
+          julyCharges: new Prisma.Decimal('0.0000'),
+          augustCharges: new Prisma.Decimal('0.0000'),
+          septemberCharges: new Prisma.Decimal('0.0000'),
+          octoberCharges: new Prisma.Decimal('0.0000'),
+          novemberCharges: new Prisma.Decimal('0.0000'),
+          decemberCharges: new Prisma.Decimal('0.0000'),
+          createdAt: new Date('2024-01-01T00:00:00.000Z'),
+          updatedAt: new Date('2024-01-01T00:00:00.000Z'),
+        },
+      ],
     };
 
     it('should return 401 when not authenticated', async () => {
@@ -205,6 +274,14 @@ describe('Admin Apartment Detail API', () => {
 
       expect(data.charges).toHaveLength(1);
       expect(data.charges[0].period).toBe('2024-01');
+      expect(data.charges[0].totalAmount).toBe('500');
+      expect(data.payments[0].openingBalance).toBe('0');
+      expect(data.chargeNotifications[0].quantity).toBe('1');
+      expect(data.chargeNotifications[0].unitPrice).toBe('500');
+      expect(data.chargeNotifications[0].totalAmount).toBe('500');
+      expect(data.chargeNotifications[0].createdAt).toBe(
+        '2024-01-01T00:00:00.000Z'
+      );
     });
 
     it('should handle apartment without user', async () => {
@@ -345,6 +422,7 @@ describe('Admin Apartment Detail API', () => {
 
       expect(response.status).toBe(200);
       expect(data.isActive).toBe(false);
+      expect(data).not.toHaveProperty('homeownersAssociationId');
       expect(mockApartmentUpdate).toHaveBeenCalledWith({
         where: { id: 'apt-1' },
         data: { isActive: false },

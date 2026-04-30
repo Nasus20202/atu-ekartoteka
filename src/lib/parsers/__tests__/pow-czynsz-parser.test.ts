@@ -26,14 +26,17 @@ W00162#hoa1-hoa1-00000-00001M#2#Zarządzanie#1#szt#73#73,00`;
       apartmentCode: 'hoa1-hoa1-00000-00001M',
       lineNo: 1,
       description: 'Koszta zarządu',
-      quantity: 1,
+      quantity: expect.objectContaining({}),
       unit: 'szt.',
-      unitPrice: 245,
-      totalAmount: 245.0,
+      unitPrice: expect.objectContaining({}),
+      totalAmount: expect.objectContaining({}),
     });
+    expect(result.entries[0].quantity.toString()).toBe('1');
+    expect(result.entries[0].unitPrice.toString()).toBe('245');
+    expect(result.entries[0].totalAmount.toString()).toBe('245');
   });
 
-  it('parses quantity and unitPrice as floats (comma decimal separator)', async () => {
+  it('parses quantity and unitPrice as decimals (comma decimal separator)', async () => {
     const content = `#
 #
 W00001#SYM17-SYM17-00000-00001M#1#Zarządzanie#45,89#m2#1,2300#56,44`;
@@ -41,9 +44,9 @@ W00001#SYM17-SYM17-00000-00001M#1#Zarządzanie#45,89#m2#1,2300#56,44`;
     const result = await parsePowCzynszFile(encode(content));
 
     expect(result.entries).toHaveLength(1);
-    expect(result.entries[0].quantity).toBeCloseTo(45.89);
-    expect(result.entries[0].unitPrice).toBeCloseTo(1.23);
-    expect(result.entries[0].totalAmount).toBeCloseTo(56.44);
+    expect(result.entries[0].quantity.toFixed(2)).toBe('45.89');
+    expect(result.entries[0].unitPrice.toFixed(4)).toBe('1.2300');
+    expect(result.entries[0].totalAmount.toFixed(2)).toBe('56.44');
   });
 
   it('extracts header lines before first # separator', async () => {

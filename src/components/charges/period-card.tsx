@@ -1,12 +1,12 @@
 import { Calendar } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { SerializableChargeDisplay } from '@/lib/charges/serialize-charge';
-import { type DecimalLike, toDecimal } from '@/lib/money/decimal';
+import type { ChargeDisplayDto } from '@/lib/types/dto/charge-dto';
 import { formatCurrency, formatDate, formatPeriod } from '@/lib/utils';
+import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
 
 type ChargeItemProps = {
-  charge: SerializableChargeDisplay;
+  charge: ChargeDisplayDto;
 };
 
 function ChargeItem({ charge }: ChargeItemProps) {
@@ -40,7 +40,7 @@ function ChargeItem({ charge }: ChargeItemProps) {
 
 type PeriodCardProps = {
   period: string;
-  charges: SerializableChargeDisplay[];
+  charges: ChargeDisplayDto[];
   totalAmount: DecimalLike;
   action?: React.ReactNode;
 };

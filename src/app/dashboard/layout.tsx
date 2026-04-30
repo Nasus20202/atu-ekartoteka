@@ -2,8 +2,8 @@ import { redirect } from 'next/navigation';
 
 import packageJson from '@/../package.json';
 import { auth } from '@/auth';
-import { DashboardNavbar } from '@/components/dashboard-navbar';
-import { EmailVerificationBanner } from '@/components/email-verification-banner';
+import { EmailVerificationBanner } from '@/components/account/email-verification-banner';
+import { DashboardNavbar } from '@/components/navigation/dashboard-navbar';
 import { findUserByIdCached } from '@/lib/queries/users/find-user-by-id';
 import { UserRole } from '@/lib/types';
 

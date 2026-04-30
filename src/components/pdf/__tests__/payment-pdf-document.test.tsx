@@ -2,8 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 import type { PaymentPdfDocumentProps } from '@/components/pdf/payment-pdf-document';
 import { Prisma } from '@/generated/prisma/browser';
-import type { PaymentLike } from '@/lib/payments/serialize-payment';
 import type { Payment } from '@/lib/types';
+import type { PaymentDtoSource } from '@/lib/types/dto/payment-dto';
 
 vi.mock('@react-pdf/renderer', () => ({
   Document: ({ children }: { children: React.ReactNode }) => children,
@@ -17,7 +17,7 @@ vi.mock('@react-pdf/renderer', () => ({
 
 vi.mock('@/lib/pdf/register-fonts', () => ({ registerPdfFonts: vi.fn() }));
 
-function makePayment(overrides: Partial<PaymentLike> = {}): Payment {
+function makePayment(overrides: Partial<PaymentDtoSource> = {}): Payment {
   return {
     id: 'pay-1',
     apartmentId: 'apt-1',

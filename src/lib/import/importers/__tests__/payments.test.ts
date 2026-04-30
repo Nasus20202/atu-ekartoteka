@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { importPayments } from '@/lib/import/importers/payments';
 import { EntityStats, TransactionClient } from '@/lib/import/types';
-import type { DecimalLike } from '@/lib/money/decimal';
 import { PaymentEntry } from '@/lib/parsers/wplaty-parser';
+import type { DecimalLike } from '@/lib/utils/decimal';
 
 type PaymentEntryOverrides = Partial<
   Omit<

@@ -71,9 +71,11 @@ test.describe('Dashboard Home', () => {
     test('user sees current month charges', async ({ userPage }) => {
       await userPage.goto('/dashboard');
 
-      // Should see current period charges
+      // The summary card and chart both render month labels, so target the card label.
       await expect(
-        userPage.getByText(new RegExp(CURRENT_MONTH_YEAR, 'i'))
+        userPage.locator('p.font-medium', {
+          hasText: new RegExp(`^${CURRENT_MONTH_YEAR}$`, 'i'),
+        })
       ).toBeVisible();
     });
 
@@ -90,6 +92,14 @@ test.describe('Dashboard Home', () => {
       await userPage.getByText(/Zobacz wszystkie naliczenia/i).click();
 
       await expect(userPage).toHaveURL(/\/dashboard\/charges/);
+    });
+
+    test('user sees 12-month charges chart section', async ({ userPage }) => {
+      await userPage.goto('/dashboard');
+
+      await expect(
+        userPage.getByText(/Naliczenia z ostatnich 12 miesięcy/i)
+      ).toBeVisible();
     });
   });
 

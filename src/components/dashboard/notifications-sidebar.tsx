@@ -15,11 +15,17 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { sumDecimals } from '@/lib/money/sum';
-import { ChargeNotification } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
+import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
+import { sumDecimals } from '@/lib/utils/sum';
 
-type NotificationItem = ChargeNotification & {
+type NotificationItem = {
+  id: string;
+  description: string;
+  quantity: DecimalLike;
+  unit: string;
+  unitPrice: DecimalLike;
+  totalAmount: DecimalLike;
   apartmentNumber: string;
   apartmentAddress: string;
   hoaId?: string | null;
@@ -76,9 +82,9 @@ function NotificationRow({ notification }: { notification: NotificationItem }) {
       <div className="text-xs text-muted-foreground">
         {notification.description}
       </div>
-      {notification.quantity > 0 && (
+      {toDecimal(notification.quantity).greaterThan(0) && (
         <div className="mt-1 text-xs text-muted-foreground">
-          {notification.quantity} {notification.unit} ×{' '}
+          {toDecimal(notification.quantity).toString()} {notification.unit} ×{' '}
           {formatCurrency(notification.unitPrice)}
         </div>
       )}

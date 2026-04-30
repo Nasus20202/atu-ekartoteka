@@ -3,7 +3,7 @@
 import { AlertTriangle } from 'lucide-react';
 import { useEffect } from 'react';
 
-import { BackButton } from '@/components/back-button';
+import { BackButton } from '@/components/navigation/back-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { logger } from '@/lib/logger';

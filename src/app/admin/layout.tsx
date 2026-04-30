@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 
 import packageJson from '@/../package.json';
 import { auth } from '@/auth';
-import { DashboardNavbar } from '@/components/dashboard-navbar';
+import { DashboardNavbar } from '@/components/navigation/dashboard-navbar';
 import { UserRole } from '@/lib/types';
 
 export default async function AdminLayout({

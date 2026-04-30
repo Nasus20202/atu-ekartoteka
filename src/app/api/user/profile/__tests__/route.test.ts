@@ -122,8 +122,14 @@ describe('User Profile API', () => {
           name: true,
           role: true,
           status: true,
+          emailVerified: true,
+          mustChangePassword: true,
+          createdAt: true,
+          updatedAt: true,
         },
       });
+      expect(data.createdAt).toBeTypeOf('string');
+      expect(data.updatedAt).toBeTypeOf('string');
     });
 
     it('should set name to null when empty string provided', async () => {
@@ -158,8 +164,14 @@ describe('User Profile API', () => {
           name: true,
           role: true,
           status: true,
+          emailVerified: true,
+          mustChangePassword: true,
+          createdAt: true,
+          updatedAt: true,
         },
       });
+      expect(data.createdAt).toBeTypeOf('string');
+      expect(data.updatedAt).toBeTypeOf('string');
     });
 
     it('should require current password when changing password', async () => {
