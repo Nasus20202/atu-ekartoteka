@@ -3,19 +3,17 @@
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
-import {
-  DownloadChargesPdfButton,
-  type SerializableCharge,
-} from '@/components/pdf/download-charges-pdf-button';
+import { DownloadChargesPdfButton } from '@/components/pdf/download-charges-pdf-button';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { sumDecimals } from '@/lib/money/sum';
+import type { ChargePeriodItemDto } from '@/lib/types/dto/charge-dto';
 import { formatCurrency, formatPeriod } from '@/lib/utils';
+import { sumDecimals } from '@/lib/utils/sum';
 
-type AdminCharge = SerializableCharge & { period: string };
+type AdminCharge = ChargePeriodItemDto;
 
 interface PeriodSectionProps {
   period: string;

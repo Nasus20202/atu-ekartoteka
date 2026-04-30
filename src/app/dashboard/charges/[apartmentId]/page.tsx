@@ -3,16 +3,16 @@ import { notFound, redirect } from 'next/navigation';
 
 import { auth } from '@/auth';
 import { ChargesDisplay } from '@/components/charges/charges-display';
-import { Page } from '@/components/page';
-import { PageHeader } from '@/components/page-header';
+import { Page } from '@/components/layout/page';
+import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  type SerializableChargeDisplay,
-  serializeCharge,
-} from '@/lib/charges/serialize-charge';
 import { findApartmentWithChargesCached } from '@/lib/queries/apartments/find-apartment-with-charges';
 import { findUserByIdCached } from '@/lib/queries/users/find-user-by-id';
 import { AccountStatus } from '@/lib/types';
+import {
+  type ChargeDisplayDto,
+  toChargeDisplayDto,
+} from '@/lib/types/dto/charge-dto';
 
 export default async function ApartmentChargesPage({
   params,
@@ -44,25 +44,14 @@ export default async function ApartmentChargesPage({
     notFound();
   }
 
-  const chargesByPeriod: Record<string, SerializableChargeDisplay[]> = {};
+  const chargesByPeriod: Record<string, ChargeDisplayDto[]> = {};
 
   apartment.charges.forEach((charge: (typeof apartment.charges)[number]) => {
     if (!chargesByPeriod[charge.period]) {
       chargesByPeriod[charge.period] = [];
     }
 
-    chargesByPeriod[charge.period].push({
-      ...serializeCharge({
-        id: charge.id,
-        description: charge.description,
-        quantity: charge.quantity,
-        unit: charge.unit,
-        unitPrice: charge.unitPrice,
-        totalAmount: charge.totalAmount,
-        dateFrom: charge.dateFrom,
-        dateTo: charge.dateTo,
-      }),
-    });
+    chargesByPeriod[charge.period].push(toChargeDisplayDto(charge));
   });
 
   const periods = Object.keys(chargesByPeriod).sort().reverse();
@@ -79,7 +68,7 @@ export default async function ApartmentChargesPage({
 
       {periods.length === 0 ? (
         <Card>
-          <CardContent className="flex min-h-[200px] items-center justify-center">
+          <CardContent className="flex min-h-50 items-center justify-center">
             <div className="text-center">
               <Building2 className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
               <p className="text-lg font-medium">Brak naliczeń</p>

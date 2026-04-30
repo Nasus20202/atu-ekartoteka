@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { Page } from '@/components/page';
-import { PageHeader } from '@/components/page-header';
+import { Page } from '@/components/layout/page';
+import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -18,7 +18,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { LoadingCard } from '@/components/ui/loading-card';
-import { Apartment } from '@/lib/types';
+import { type ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
 
 interface PaginationData {
   page: number;
@@ -33,11 +33,13 @@ interface HOA {
   name: string;
 }
 
-function buildAddressKey(apt: Apartment): string {
+function buildAddressKey(apt: ApartmentSummaryDto): string {
   return `${apt.address ?? ''}__${apt.building ?? ''}__${apt.number}`;
 }
 
-function computeDuplicateActiveAddresses(apartments: Apartment[]): Set<string> {
+function computeDuplicateActiveAddresses(
+  apartments: ApartmentSummaryDto[]
+): Set<string> {
   const counts = new Map<string, number>();
   for (const apt of apartments) {
     if (!apt.isActive) continue;
@@ -61,7 +63,7 @@ export default function HOAApartmentsPage() {
   const search = searchParams.get('search') || '';
   const activeOnly = searchParams.get('activeOnly') === 'true';
 
-  const [apartments, setApartments] = useState<Apartment[]>([]);
+  const [apartments, setApartments] = useState<ApartmentSummaryDto[]>([]);
   const [hoa, setHoa] = useState<HOA | null>(null);
   const [pagination, setPagination] = useState<PaginationData>({
     page: 1,

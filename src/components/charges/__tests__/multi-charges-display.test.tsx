@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { MultiChargesDisplay } from '@/components/charges/multi-charges-display';
+import type { ChargeDisplayDto } from '@/lib/types/dto/charge-dto';
 
 vi.mock('@/components/charges/multi-apartment-period-card', () => ({
   MultiApartmentPeriodCard: ({ totalAmount }: { totalAmount: unknown }) => (
@@ -35,7 +36,7 @@ function makeCharge(totalAmount: number) {
     totalAmount: String(totalAmount),
     dateFrom: '2025-01-01T00:00:00.000Z',
     dateTo: '2025-01-31T00:00:00.000Z',
-  };
+  } satisfies ChargeDisplayDto;
 }
 
 function makeApartmentData(totalAmount: number) {

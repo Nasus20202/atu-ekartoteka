@@ -4,20 +4,20 @@ import { FileDown } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { toDecimal } from '@/lib/money/decimal';
+import type { Payment } from '@/lib/types';
 import {
   PAYMENT_AMOUNT_FIELD_KEYS,
-  type SerializablePayment,
-} from '@/lib/payments/serialize-payment';
-import type { Payment } from '@/lib/types';
+  type PaymentPdfDto,
+} from '@/lib/types/dto/payment-dto';
+import { toDecimal } from '@/lib/utils/decimal';
 
 interface DownloadPaymentPdfButtonProps {
   apartmentLabel: string;
   hoaName: string;
-  payment: SerializablePayment;
+  payment: PaymentPdfDto;
 }
 
-export type { SerializablePayment };
+export type { PaymentPdfDto };
 
 type PaymentAmountFieldKey = (typeof PAYMENT_AMOUNT_FIELD_KEYS)[number];
 

@@ -9,10 +9,10 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import type { SerializablePayment } from '@/lib/payments/serialize-payment';
+import type { PaymentListItemDto } from '@/lib/types/dto/payment-dto';
 
 interface PaymentEntry {
-  payment: SerializablePayment;
+  payment: PaymentListItemDto;
   apartmentId: string;
   apartmentLabel: string;
   hoaName: string;

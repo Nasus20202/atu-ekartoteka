@@ -2,8 +2,8 @@ import { FileText, Wallet } from 'lucide-react';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
-import { type DecimalLike, toDecimal } from '@/lib/money/decimal';
 import { formatCurrency } from '@/lib/utils';
+import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
 
 interface ApartmentCardProps {
   apartment: {

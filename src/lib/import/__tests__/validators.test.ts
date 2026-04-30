@@ -5,9 +5,9 @@ import {
   validateNalCzynsz,
   validateWplaty,
 } from '@/lib/import/validators';
-import type { DecimalLike } from '@/lib/money/decimal';
 import { NalCzynszEntry } from '@/lib/parsers/nal-czynsz-parser';
 import { PaymentEntry } from '@/lib/parsers/wplaty-parser';
+import type { DecimalLike } from '@/lib/utils/decimal';
 
 type NalCzynszEntryOverrides = Partial<
   Omit<NalCzynszEntry, 'quantity' | 'unitPrice' | 'totalAmount'>

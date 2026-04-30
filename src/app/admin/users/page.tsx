@@ -17,9 +17,9 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { type UserFilter, UserFilters } from '@/app/admin/users/user-filters';
-import { useConfirm } from '@/components/confirm-dialog';
-import { Page } from '@/components/page';
-import { PageHeader } from '@/components/page-header';
+import { Page } from '@/components/layout/page';
+import { PageHeader } from '@/components/layout/page-header';
+import { useConfirm } from '@/components/providers/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -39,9 +39,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LoadingCard } from '@/components/ui/loading-card';
 import { Select } from '@/components/ui/select';
-import { AccountStatus, Apartment, UserWithApartments } from '@/lib/types';
+import { AccountStatus } from '@/lib/types';
+import { type ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
+import { type UserDto } from '@/lib/types/dto/user-dto';
 
-type User = UserWithApartments;
+type User = UserDto;
+type Apartment = ApartmentSummaryDto;
 
 const ROLE_OPTIONS = [
   { value: 'TENANT', label: 'Użytkownik' },

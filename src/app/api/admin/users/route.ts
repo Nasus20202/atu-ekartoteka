@@ -8,6 +8,7 @@ import { findApartmentsByIds } from '@/lib/queries/apartments/find-apartments-by
 import { findTenantUsers } from '@/lib/queries/users/find-tenant-users';
 import { findUserById } from '@/lib/queries/users/find-user-by-id';
 import { AccountStatus, UserRole } from '@/lib/types';
+import { toUserDto } from '@/lib/types/dto/user-dto';
 
 const logger = createLogger('api:admin:users');
 
@@ -59,7 +60,7 @@ export async function GET(req: NextRequest) {
     const totalPages = Math.ceil(total / limit);
 
     return NextResponse.json({
-      users,
+      users: users.map(toUserDto),
       pagination: { page, limit, total, totalPages },
     });
   } catch (error) {
@@ -174,7 +175,7 @@ export async function PATCH(req: NextRequest) {
       await notifyAccountApproved(updatedUser.email, updatedUser.name);
     }
 
-    return NextResponse.json({ user: updatedUser });
+    return NextResponse.json({ user: toUserDto(updatedUser) });
   } catch (error) {
     logger.error({ error }, 'User update error');
     return NextResponse.json(

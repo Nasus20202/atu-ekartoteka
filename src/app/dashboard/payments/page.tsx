@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation';
 
 import { auth } from '@/auth';
-import { Page } from '@/components/page';
-import { PageHeader } from '@/components/page-header';
+import { Page } from '@/components/layout/page';
+import { PageHeader } from '@/components/layout/page-header';
 import { PaymentYearRow } from '@/components/payments/payment-year-row';
 import {
   Card,
@@ -11,9 +11,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { serializePayment } from '@/lib/payments/serialize-payment';
 import { findUserWithApartmentPaymentsCached } from '@/lib/queries/users/find-user-with-apartment-payments';
 import { AccountStatus } from '@/lib/types';
+import { toPaymentListItemDto } from '@/lib/types/dto/payment-dto';
 
 export default async function PaymentsPage() {
   const session = await auth();
@@ -41,7 +41,7 @@ export default async function PaymentsPage() {
             const apartmentLabel = `${apartment.address} ${apartment.building || ''}/${apartment.number}`;
             const entries = apartment.payments.map(
               (payment: (typeof apartment.payments)[number]) => ({
-                payment: serializePayment(payment),
+                payment: toPaymentListItemDto(payment),
                 apartmentId: apartment.id,
                 apartmentLabel,
                 hoaName: apartment.homeownersAssociation.name,

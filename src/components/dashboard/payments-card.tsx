@@ -5,11 +5,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { toDecimal } from '@/lib/money/decimal';
-import { sumDecimals } from '@/lib/money/sum';
-import { getNonEmptyMonths } from '@/lib/payments/empty-months';
 import { Payment } from '@/lib/types';
 import { formatCurrency, MONTH_NAMES_PL } from '@/lib/utils';
+import { toDecimal } from '@/lib/utils/decimal';
+import { getNonEmptyMonths } from '@/lib/utils/payment-months';
+import { sumDecimals } from '@/lib/utils/sum';
 
 interface PaymentsCardProps {
   payment: Payment;

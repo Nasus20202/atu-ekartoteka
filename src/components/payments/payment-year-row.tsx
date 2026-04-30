@@ -3,15 +3,15 @@
 import Link from 'next/link';
 
 import { DownloadPaymentPdfButton } from '@/components/pdf/download-payment-pdf-button';
-import { toDecimal } from '@/lib/money/decimal';
-import type { SerializablePayment } from '@/lib/payments/serialize-payment';
+import type { PaymentListItemDto } from '@/lib/types/dto/payment-dto';
 import { formatCurrency } from '@/lib/utils';
+import { toDecimal } from '@/lib/utils/decimal';
 
 type PaymentYearRowProps = {
   apartmentId: string;
   apartmentLabel: string;
   hoaName: string;
-  payment: SerializablePayment;
+  payment: PaymentListItemDto;
   dateFromLabel: string;
   dateToLabel: string;
 };

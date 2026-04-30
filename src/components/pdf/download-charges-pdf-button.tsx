@@ -5,18 +5,18 @@ import { useState } from 'react';
 
 import type { ChargePeriodGroup } from '@/components/pdf/charge-pdf-document';
 import { Button } from '@/components/ui/button';
-import type { SerializableCharge } from '@/lib/charges/serialize-charge';
-import { sumDecimals } from '@/lib/money/sum';
+import type { ChargePdfItemDto } from '@/lib/types/dto/charge-dto';
 import { formatPeriod } from '@/lib/utils';
+import { sumDecimals } from '@/lib/utils/sum';
 
 interface DownloadChargesPdfButtonProps {
   apartmentLabel: string;
   hoaName: string;
   period: string;
-  charges: SerializableCharge[];
+  charges: ChargePdfItemDto[];
 }
 
-export type { SerializableCharge };
+export type { ChargePdfItemDto };
 
 export function DownloadChargesPdfButton({
   apartmentLabel,

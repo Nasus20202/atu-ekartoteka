@@ -8,9 +8,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { type DecimalLike, toDecimal } from '@/lib/money/decimal';
-import { sumDecimals } from '@/lib/money/sum';
 import { formatCurrency } from '@/lib/utils';
+import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
+import { sumDecimals } from '@/lib/utils/sum';
 
 interface HoaPaymentGroup {
   hoaId: string;

@@ -3,21 +3,21 @@ import { redirect } from 'next/navigation';
 
 import { auth } from '@/auth';
 import { MultiChargesDisplay } from '@/components/charges/multi-charges-display';
-import { Page } from '@/components/page';
-import { PageHeader } from '@/components/page-header';
+import { Page } from '@/components/layout/page';
+import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  type SerializableChargeDisplay,
-  serializeCharge,
-} from '@/lib/charges/serialize-charge';
 import { findUserWithApartmentChargesCached } from '@/lib/queries/users/find-user-with-apartment-charges';
 import { AccountStatus } from '@/lib/types';
+import {
+  type ChargeDisplayDto,
+  toChargeDisplayDto,
+} from '@/lib/types/dto/charge-dto';
 
 type ApartmentPeriodData = {
   apartmentNumber: string;
   apartmentAddress: string;
   hoaName: string;
-  charges: SerializableChargeDisplay[];
+  charges: ChargeDisplayDto[];
 };
 
 export default async function ChargesPage() {
@@ -63,18 +63,7 @@ export default async function ChargesPage() {
             periodData.push(apartmentData);
           }
 
-          apartmentData.charges.push({
-            ...serializeCharge({
-              id: charge.id,
-              description: charge.description,
-              quantity: charge.quantity,
-              unit: charge.unit,
-              unitPrice: charge.unitPrice,
-              totalAmount: charge.totalAmount,
-              dateFrom: charge.dateFrom,
-              dateTo: charge.dateTo,
-            }),
-          });
+          apartmentData.charges.push(toChargeDisplayDto(charge));
         }
       );
     }
@@ -88,7 +77,7 @@ export default async function ChargesPage() {
 
       {periods.length === 0 ? (
         <Card>
-          <CardContent className="flex min-h-[200px] items-center justify-center">
+          <CardContent className="flex min-h-50 items-center justify-center">
             <div className="text-center">
               <FileText className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
               <p className="text-lg font-medium">Brak naliczeń</p>

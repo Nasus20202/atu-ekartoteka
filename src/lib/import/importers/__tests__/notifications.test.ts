@@ -4,6 +4,7 @@ import { importNotifications } from '@/lib/import/importers/notifications';
 import { EntityStats, HOAContext, TransactionClient } from '@/lib/import/types';
 import { ParseResult } from '@/lib/parsers/parser-utils';
 import { ChargeNotificationEntry } from '@/lib/parsers/pow-czynsz-parser';
+import { toDecimal } from '@/lib/utils/decimal';
 
 function createMockTx() {
   return {
@@ -35,10 +36,10 @@ function createNotificationEntry(
     apartmentCode: 'APT001',
     lineNo: 1,
     description: 'Test charge',
-    quantity: 1,
+    quantity: toDecimal(1),
     unit: 'szt',
-    unitPrice: 100,
-    totalAmount: 100,
+    unitPrice: toDecimal(100),
+    totalAmount: toDecimal(100),
     ...overrides,
   };
 }
@@ -116,10 +117,10 @@ describe('importNotifications', () => {
           apartmentId: 'apt-1',
           lineNo: 1,
           description: 'Test charge',
-          quantity: 1,
+          quantity: toDecimal(1),
           unit: 'szt',
-          unitPrice: 100,
-          totalAmount: 100,
+          unitPrice: toDecimal(100),
+          totalAmount: toDecimal(100),
         },
       ],
       skipDuplicates: true,
@@ -136,10 +137,10 @@ describe('importNotifications', () => {
       apartmentId: 'apt-1',
       lineNo: 1,
       description: 'Old charge',
-      quantity: 1,
+      quantity: toDecimal(1),
       unit: 'szt',
-      unitPrice: 100,
-      totalAmount: 100,
+      unitPrice: toDecimal(100),
+      totalAmount: toDecimal(100),
     };
 
     (mockTx.chargeNotification.findMany as ReturnType<typeof vi.fn>)
@@ -164,10 +165,10 @@ describe('importNotifications', () => {
       where: { id: 'notif-1' },
       data: {
         description: 'Updated charge',
-        quantity: 1,
+        quantity: toDecimal(1),
         unit: 'szt',
-        unitPrice: 100,
-        totalAmount: 100,
+        unitPrice: toDecimal(100),
+        totalAmount: toDecimal(100),
       },
     });
   });
@@ -180,10 +181,10 @@ describe('importNotifications', () => {
       apartmentId: 'apt-1',
       lineNo: 1,
       description: 'Test charge',
-      quantity: 1,
+      quantity: toDecimal(1),
       unit: 'szt',
-      unitPrice: 100,
-      totalAmount: 100,
+      unitPrice: toDecimal(100),
+      totalAmount: toDecimal(100),
     };
 
     (mockTx.chargeNotification.findMany as ReturnType<typeof vi.fn>)
@@ -269,10 +270,10 @@ describe('importNotifications', () => {
       apartmentId: 'apt-1',
       lineNo: 1,
       description: 'Old',
-      quantity: 1,
+      quantity: toDecimal(1),
       unit: 'szt',
-      unitPrice: 100,
-      totalAmount: 100,
+      unitPrice: toDecimal(100),
+      totalAmount: toDecimal(100),
     };
 
     (mockTx.chargeNotification.findMany as ReturnType<typeof vi.fn>)
@@ -298,17 +299,17 @@ describe('importNotifications', () => {
   });
 
   it('should detect changes in quantity', async () => {
-    const entries = [createNotificationEntry({ quantity: 5 })];
+    const entries = [createNotificationEntry({ quantity: toDecimal(5) })];
 
     const existingNotification = {
       id: 'notif-1',
       apartmentId: 'apt-1',
       lineNo: 1,
       description: 'Test charge',
-      quantity: 1,
+      quantity: toDecimal(1),
       unit: 'szt',
-      unitPrice: 100,
-      totalAmount: 100,
+      unitPrice: toDecimal(100),
+      totalAmount: toDecimal(100),
     };
 
     (mockTx.chargeNotification.findMany as ReturnType<typeof vi.fn>)
@@ -339,10 +340,10 @@ describe('importNotifications', () => {
       apartmentId: 'apt-1',
       lineNo: 1,
       description: 'Test charge',
-      quantity: 1,
+      quantity: toDecimal(1),
       unit: 'szt',
-      unitPrice: 100,
-      totalAmount: 100,
+      unitPrice: toDecimal(100),
+      totalAmount: toDecimal(100),
     };
 
     (mockTx.chargeNotification.findMany as ReturnType<typeof vi.fn>)
@@ -366,17 +367,17 @@ describe('importNotifications', () => {
   });
 
   it('should detect changes in unitPrice', async () => {
-    const entries = [createNotificationEntry({ unitPrice: 200 })];
+    const entries = [createNotificationEntry({ unitPrice: toDecimal(200) })];
 
     const existingNotification = {
       id: 'notif-1',
       apartmentId: 'apt-1',
       lineNo: 1,
       description: 'Test charge',
-      quantity: 1,
+      quantity: toDecimal(1),
       unit: 'szt',
-      unitPrice: 100,
-      totalAmount: 100,
+      unitPrice: toDecimal(100),
+      totalAmount: toDecimal(100),
     };
 
     (mockTx.chargeNotification.findMany as ReturnType<typeof vi.fn>)
@@ -400,17 +401,17 @@ describe('importNotifications', () => {
   });
 
   it('should detect changes in totalAmount', async () => {
-    const entries = [createNotificationEntry({ totalAmount: 500 })];
+    const entries = [createNotificationEntry({ totalAmount: toDecimal(500) })];
 
     const existingNotification = {
       id: 'notif-1',
       apartmentId: 'apt-1',
       lineNo: 1,
       description: 'Test charge',
-      quantity: 1,
+      quantity: toDecimal(1),
       unit: 'szt',
-      unitPrice: 100,
-      totalAmount: 100,
+      unitPrice: toDecimal(100),
+      totalAmount: toDecimal(100),
     };
 
     (mockTx.chargeNotification.findMany as ReturnType<typeof vi.fn>)

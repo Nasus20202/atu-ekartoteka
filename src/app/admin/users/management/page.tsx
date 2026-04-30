@@ -10,8 +10,8 @@ import {
   type UnassignedApartment,
 } from '@/app/admin/users/management/HoaCard';
 import { useHoaSelection } from '@/app/admin/users/management/use-hoa-selection';
-import { Page } from '@/components/page';
-import { PageHeader } from '@/components/page-header';
+import { Page } from '@/components/layout/page';
+import { PageHeader } from '@/components/layout/page-header';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   AlertDialog,

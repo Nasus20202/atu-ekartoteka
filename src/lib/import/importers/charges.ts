@@ -1,7 +1,7 @@
 import { Prisma } from '@/generated/prisma/client';
 import { EntityStats, TransactionClient } from '@/lib/import/types';
-import { toDecimal } from '@/lib/money/decimal';
 import { NalCzynszEntry } from '@/lib/parsers/nal-czynsz-parser';
+import { toDecimal } from '@/lib/utils/decimal';
 
 type ChargeKey = {
   apartmentId: string;

@@ -3,43 +3,47 @@
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
-import { PaymentTable } from '@/components/payment-table';
+import { getPaymentMonthlyChartData } from '@/components/charts/chart-data';
+import { PaymentMonthlyBalanceChart } from '@/components/charts/payment-monthly-balance-chart';
+import { PaymentTable } from '@/components/payments/payment-table';
 import { DownloadPaymentPdfButton } from '@/components/pdf/download-payment-pdf-button';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { toDecimal } from '@/lib/money/decimal';
-import { sumDecimals } from '@/lib/money/sum';
+import {
+  type PaymentDtoSource,
+  toPaymentPdfDto,
+} from '@/lib/types/dto/payment-dto';
+import { formatCurrency } from '@/lib/utils';
+import { toDecimal } from '@/lib/utils/decimal';
 import {
   CHARGE_MONTH_FIELD_KEYS,
   PAYMENT_MONTH_FIELD_KEYS,
-} from '@/lib/payments/empty-months';
-import { serializePayment } from '@/lib/payments/serialize-payment';
-import type { Payment } from '@/lib/types';
-import { formatCurrency } from '@/lib/utils';
+} from '@/lib/utils/payment-months';
+import { sumDecimals } from '@/lib/utils/sum';
 
 type PaymentMonthKey = (typeof PAYMENT_MONTH_FIELD_KEYS)[number];
 type ChargeMonthKey = (typeof CHARGE_MONTH_FIELD_KEYS)[number];
 
 interface AdminPaymentsListProps {
-  payments: Payment[];
+  payments: PaymentDtoSource[];
   apartmentId: string;
   apartmentLabel: string;
   hoaName: string;
 }
 
 function sumMonths(
-  payment: Payment,
+  payment: PaymentDtoSource,
   keys: readonly PaymentMonthKey[]
-): Payment['openingBalance'];
+): ReturnType<typeof toDecimal>;
 function sumMonths(
-  payment: Payment,
+  payment: PaymentDtoSource,
   keys: readonly ChargeMonthKey[]
-): Payment['openingBalance'];
+): ReturnType<typeof toDecimal>;
 function sumMonths(
-  payment: Payment,
+  payment: PaymentDtoSource,
   keys: readonly (PaymentMonthKey | ChargeMonthKey)[]
 ) {
   return sumDecimals(keys.map((key) => payment[key]));
@@ -52,7 +56,7 @@ function PaymentYearSection({
   hoaName,
   defaultOpen,
 }: {
-  payment: Payment;
+  payment: PaymentDtoSource;
   apartmentId: string;
   apartmentLabel: string;
   hoaName: string;
@@ -63,7 +67,8 @@ function PaymentYearSection({
   const closingBalance = toDecimal(payment.closingBalance);
   const totalPayments = sumMonths(payment, PAYMENT_MONTH_FIELD_KEYS);
   const totalCharges = sumMonths(payment, CHARGE_MONTH_FIELD_KEYS);
-  const serializable = serializePayment(payment);
+  const monthlyChartData = getPaymentMonthlyChartData(payment);
+  const paymentPdfDto = toPaymentPdfDto(payment);
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
@@ -84,7 +89,7 @@ function PaymentYearSection({
         <DownloadPaymentPdfButton
           apartmentLabel={apartmentLabel}
           hoaName={hoaName}
-          payment={serializable}
+          payment={paymentPdfDto}
         />
       </div>
       <CollapsibleContent>
@@ -106,6 +111,12 @@ function PaymentYearSection({
             >
               {formatCurrency(closingBalance)}
             </div>
+          </div>
+          <div className="border-t pt-3">
+            <p className="mb-2 text-sm font-semibold">
+              Wykres rozliczeń miesięcznych
+            </p>
+            <PaymentMonthlyBalanceChart data={monthlyChartData} />
           </div>
           <div className="border-t pt-3">
             <p className="mb-2 text-sm font-semibold">

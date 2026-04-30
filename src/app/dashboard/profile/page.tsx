@@ -1,9 +1,9 @@
 import { redirect } from 'next/navigation';
 
 import { auth } from '@/auth';
-import { Page } from '@/components/page';
-import { PageHeader } from '@/components/page-header';
-import { ProfileForm } from '@/components/profile-form';
+import { ProfileForm } from '@/components/account/profile-form';
+import { Page } from '@/components/layout/page';
+import { PageHeader } from '@/components/layout/page-header';
 import {
   Card,
   CardContent,

@@ -1,14 +1,19 @@
-import { decodeBuffer, ParseResult } from '@/lib/parsers/parser-utils';
+import { Prisma } from '@/generated/prisma/client';
+import {
+  decodeBuffer,
+  parseDecimalValue,
+  ParseResult,
+} from '@/lib/parsers/parser-utils';
 
 export interface ChargeNotificationEntry {
   externalId: string;
   apartmentCode: string;
   lineNo: number;
   description: string;
-  quantity: number;
+  quantity: Prisma.Decimal;
   unit: string;
-  unitPrice: number;
-  totalAmount: number;
+  unitPrice: Prisma.Decimal;
+  totalAmount: Prisma.Decimal;
 }
 
 const SECTION_SEPARATOR = '#';
@@ -57,16 +62,16 @@ export async function parsePowCzynszFile(
       const apartmentCode = parts[1].trim();
       const lineNo = parseInt(parts[2].trim(), 10);
       const description = parts[3].trim();
-      const quantity = parseFloat(parts[4].replace(',', '.').trim());
+      const quantity = parseDecimalValue(parts[4].trim());
       const unit = parts[5].trim();
-      const unitPrice = parseFloat(parts[6].replace(',', '.').trim());
-      const totalAmount = parseFloat(parts[7].replace(',', '.').trim());
+      const unitPrice = parseDecimalValue(parts[6].trim());
+      const totalAmount = parseDecimalValue(parts[7].trim());
 
       if (
         !isNaN(lineNo) &&
-        !isNaN(quantity) &&
-        !isNaN(unitPrice) &&
-        !isNaN(totalAmount)
+        !quantity.isNaN() &&
+        !unitPrice.isNaN() &&
+        !totalAmount.isNaN()
       ) {
         entries.push({
           externalId,

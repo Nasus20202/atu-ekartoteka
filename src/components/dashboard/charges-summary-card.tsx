@@ -1,10 +1,15 @@
 import { FileText } from 'lucide-react';
 import Link from 'next/link';
 
+import { ChargeTrendChart } from '@/components/charts/charge-trend-chart';
+import type {
+  ChargeTrendDatum,
+  ChargeTrendSeries,
+} from '@/components/charts/chart-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { DecimalLike } from '@/lib/money/decimal';
 import { formatCurrency, formatPeriod } from '@/lib/utils';
+import type { DecimalLike } from '@/lib/utils/decimal';
 
 interface ChargesSummaryCardProps {
   currentPeriod: string;
@@ -13,6 +18,8 @@ interface ChargesSummaryCardProps {
   previousMonthCharges: Array<{ totalAmount: DecimalLike }>;
   currentMonthTotal: DecimalLike;
   previousMonthTotal: DecimalLike;
+  trendData?: ChargeTrendDatum[];
+  trendSeries?: ChargeTrendSeries[];
 }
 
 export function ChargesSummaryCard({
@@ -22,6 +29,8 @@ export function ChargesSummaryCard({
   previousMonthCharges,
   currentMonthTotal,
   previousMonthTotal,
+  trendData = [],
+  trendSeries = [],
 }: ChargesSummaryCardProps) {
   const hasCharges =
     currentMonthCharges.length > 0 || previousMonthCharges.length > 0;
@@ -83,6 +92,12 @@ export function ChargesSummaryCard({
                 </div>
               )}
             </div>
+            <div className="space-y-2 rounded-lg border p-3">
+              <p className="text-sm font-medium">
+                Naliczenia z ostatnich 12 miesięcy
+              </p>
+              <ChargeTrendChart data={trendData} series={trendSeries} />
+            </div>
             <Link href="/dashboard/charges">
               <Button className="w-full" variant="secondary">
                 Zobacz wszystkie naliczenia
@@ -94,6 +109,9 @@ export function ChargesSummaryCard({
             <p className="text-sm text-muted-foreground">
               Brak naliczeń dla ostatnich miesięcy.
             </p>
+            <div className="rounded-lg border p-3">
+              <ChargeTrendChart data={trendData} series={trendSeries} />
+            </div>
             <Link href="/dashboard/charges">
               <Button className="w-full" variant="secondary">
                 Zobacz naliczenia

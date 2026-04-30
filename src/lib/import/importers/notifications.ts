@@ -1,6 +1,8 @@
+import { Prisma } from '@/generated/prisma/client';
 import { EntityStats, HOAContext, TransactionClient } from '@/lib/import/types';
 import { ParseResult } from '@/lib/parsers/parser-utils';
 import { ChargeNotificationEntry } from '@/lib/parsers/pow-czynsz-parser';
+import { toDecimal } from '@/lib/utils/decimal';
 
 type NotificationKey = {
   apartmentId: string;
@@ -10,10 +12,10 @@ type NotificationKey = {
 type ExistingNotification = NotificationKey & {
   id: string;
   description: string;
-  quantity: number;
+  quantity: Prisma.Decimal;
   unit: string;
-  unitPrice: number;
-  totalAmount: number;
+  unitPrice: Prisma.Decimal;
+  totalAmount: Prisma.Decimal;
 };
 
 function makeNotificationKey(n: NotificationKey): string {
@@ -26,10 +28,10 @@ function hasNotificationChanged(
 ): boolean {
   return (
     existing.description !== entry.description ||
-    existing.quantity !== entry.quantity ||
+    !toDecimal(existing.quantity).equals(toDecimal(entry.quantity)) ||
     existing.unit !== entry.unit ||
-    existing.unitPrice !== entry.unitPrice ||
-    existing.totalAmount !== entry.totalAmount
+    !toDecimal(existing.unitPrice).equals(toDecimal(entry.unitPrice)) ||
+    !toDecimal(existing.totalAmount).equals(toDecimal(entry.totalAmount))
   );
 }
 
