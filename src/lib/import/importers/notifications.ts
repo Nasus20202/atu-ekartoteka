@@ -1,5 +1,7 @@
 import { Prisma } from '@/generated/prisma/client';
+import { IMPORT_CREATE_BATCH_SIZE } from '@/lib/import/constants';
 import { EntityStats, HOAContext, TransactionClient } from '@/lib/import/types';
+import { processInBatches } from '@/lib/import/utils';
 import { ParseResult } from '@/lib/parsers/parser-utils';
 import { ChargeNotificationEntry } from '@/lib/parsers/pow-czynsz-parser';
 import { toDecimal } from '@/lib/utils/decimal';
@@ -78,24 +80,17 @@ export async function importNotifications(
     )
   );
 
-  if (validEntries.length === 0) {
-    // Still need to delete stale notifications even if no new ones
-    await deleteStaleNotifications(tx, hoa, notificationsInFile, stats);
-    return;
-  }
-
-  // Fetch all existing notifications with full data for comparison
-  const uniqueKeys = validEntries.map(({ entry, apartmentId }) => ({
-    apartmentId,
-    lineNo: entry.lineNo,
-  }));
-
   const existingNotifications = await tx.chargeNotification.findMany({
-    where: {
-      OR: uniqueKeys.map((k) => ({
-        apartmentId: k.apartmentId,
-        lineNo: k.lineNo,
-      })),
+    where: { apartment: { is: { homeownersAssociationId: hoa.id } } },
+    select: {
+      id: true,
+      apartmentId: true,
+      lineNo: true,
+      description: true,
+      quantity: true,
+      unit: true,
+      unitPrice: true,
+      totalAmount: true,
     },
   });
 
@@ -105,6 +100,23 @@ export async function importNotifications(
       n,
     ])
   );
+
+  const toDelete = existingNotifications
+    .filter(
+      (n: NotificationKey & { id: string }) =>
+        !notificationsInFile.has(makeNotificationKey(n))
+    )
+    .map((n: NotificationKey & { id: string }) => n.id);
+
+  if (validEntries.length === 0) {
+    if (toDelete.length > 0) {
+      await tx.chargeNotification.deleteMany({
+        where: { id: { in: toDelete } },
+      });
+      stats.deleted = toDelete.length;
+    }
+    return;
+  }
 
   const toCreate: Array<{
     entry: ChargeNotificationEntry;
@@ -132,18 +144,24 @@ export async function importNotifications(
   // Batch create new notifications
   if (toCreate.length > 0) {
     try {
-      await tx.chargeNotification.createMany({
-        data: toCreate.map(({ entry, apartmentId }) => ({
-          apartmentId,
-          lineNo: entry.lineNo,
-          description: entry.description,
-          quantity: entry.quantity,
-          unit: entry.unit,
-          unitPrice: entry.unitPrice,
-          totalAmount: entry.totalAmount,
-        })),
-        skipDuplicates: true,
-      });
+      await processInBatches(
+        toCreate,
+        IMPORT_CREATE_BATCH_SIZE,
+        async (batch) => {
+          await tx.chargeNotification.createMany({
+            data: batch.map(({ entry, apartmentId }) => ({
+              apartmentId,
+              lineNo: entry.lineNo,
+              description: entry.description,
+              quantity: entry.quantity,
+              unit: entry.unit,
+              unitPrice: entry.unitPrice,
+              totalAmount: entry.totalAmount,
+            })),
+            skipDuplicates: true,
+          });
+        }
+      );
       stats.created = toCreate.length;
     } catch (error) {
       errors.push(
@@ -176,31 +194,6 @@ export async function importNotifications(
   }
 
   // Delete stale notifications
-  await deleteStaleNotifications(tx, hoa, notificationsInFile, stats);
-}
-
-async function deleteStaleNotifications(
-  tx: TransactionClient,
-  hoa: HOAContext,
-  notificationsInFile: Set<string>,
-  stats: EntityStats
-): Promise<void> {
-  const existingNotifications = await tx.chargeNotification.findMany({
-    where: { apartment: { homeownersAssociationId: hoa.id } },
-    select: {
-      id: true,
-      apartmentId: true,
-      lineNo: true,
-    },
-  });
-
-  const toDelete = existingNotifications
-    .filter(
-      (n: NotificationKey & { id: string }) =>
-        !notificationsInFile.has(makeNotificationKey(n))
-    )
-    .map((n: NotificationKey & { id: string }) => n.id);
-
   if (toDelete.length > 0) {
     await tx.chargeNotification.deleteMany({
       where: { id: { in: toDelete } },

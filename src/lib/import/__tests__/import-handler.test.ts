@@ -275,13 +275,25 @@ describe('import-handler', () => {
 
       expect(result.success).toBe(true);
       expect(deleteChargeMock).toHaveBeenCalledWith({
-        where: { apartmentId: { in: ['apt-1', 'apt-2'] } },
+        where: {
+          apartment: {
+            is: { homeownersAssociationId: 'hoa-id' },
+          },
+        },
       });
       expect(deleteNotificationMock).toHaveBeenCalledWith({
-        where: { apartmentId: { in: ['apt-1', 'apt-2'] } },
+        where: {
+          apartment: {
+            is: { homeownersAssociationId: 'hoa-id' },
+          },
+        },
       });
       expect(deletePaymentMock).toHaveBeenCalledWith({
-        where: { apartmentId: { in: ['apt-1', 'apt-2'] } },
+        where: {
+          apartment: {
+            is: { homeownersAssociationId: 'hoa-id' },
+          },
+        },
       });
     });
 

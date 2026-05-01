@@ -105,3 +105,42 @@ export function groupFilesByHOA(
 
   return filesByHOA;
 }
+
+export async function processInBatches<T>(
+  items: T[],
+  batchSize: number,
+  handler: (batch: T[]) => Promise<void>
+): Promise<void> {
+  for (let index = 0; index < items.length; index += batchSize) {
+    await handler(items.slice(index, index + batchSize));
+  }
+}
+
+export async function mapWithConcurrency<T, R>(
+  items: T[],
+  concurrency: number,
+  mapper: (item: T, index: number) => Promise<R>
+): Promise<R[]> {
+  if (items.length === 0) {
+    return [];
+  }
+
+  const results = new Array<R>(items.length);
+  let nextIndex = 0;
+
+  async function worker(): Promise<void> {
+    while (nextIndex < items.length) {
+      const currentIndex = nextIndex;
+      nextIndex++;
+      results[currentIndex] = await mapper(items[currentIndex], currentIndex);
+    }
+  }
+
+  const workerCount =
+    Number.isFinite(concurrency) && concurrency > 0
+      ? Math.min(Math.floor(concurrency), items.length)
+      : 1;
+  await Promise.all(Array.from({ length: workerCount }, () => worker()));
+
+  return results;
+}
