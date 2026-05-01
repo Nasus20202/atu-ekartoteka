@@ -1,9 +1,11 @@
+import { IMPORT_CREATE_BATCH_SIZE } from '@/lib/import/constants';
 import {
   ApartmentMap,
   EntityStats,
   HOAContext,
   TransactionClient,
 } from '@/lib/import/types';
+import { processInBatches } from '@/lib/import/utils';
 import { ApartmentEntry } from '@/lib/parsers/apartment-parser';
 
 type ExistingApartment = {
@@ -22,6 +24,43 @@ type ExistingApartment = {
   isActive: boolean;
   homeownersAssociationId: string;
 };
+
+type ApartmentMapRow = Pick<
+  ExistingApartment,
+  'id' | 'externalOwnerId' | 'externalApartmentId'
+>;
+
+const EXISTING_APARTMENT_SELECT = {
+  id: true,
+  externalOwnerId: true,
+  externalApartmentId: true,
+  owner: true,
+  email: true,
+  address: true,
+  building: true,
+  number: true,
+  postalCode: true,
+  city: true,
+  shareNumerator: true,
+  shareDenominator: true,
+  isActive: true,
+  homeownersAssociationId: true,
+} as const;
+
+const APARTMENT_MAP_SELECT = {
+  id: true,
+  externalOwnerId: true,
+  externalApartmentId: true,
+} as const;
+
+function buildApartmentMap(apartments: ApartmentMapRow[]): Map<string, string> {
+  return new Map(
+    apartments.map((a) => [
+      `${a.externalOwnerId}#${a.externalApartmentId}`,
+      a.id,
+    ])
+  );
+}
 
 function hasApartmentChanged(
   existing: ExistingApartment,
@@ -53,10 +92,24 @@ export async function importApartments(
   const ownerApartmentKeys = apartments.map(
     (a) => `${a.externalOwnerId}#${a.externalApartmentId}`
   );
+  const apartmentKeysInFile = new Set(ownerApartmentKeys);
+
+  if (apartments.length === 0) {
+    const apartmentsInDb = await tx.apartment.findMany({
+      where: { homeownersAssociationId: hoa.id },
+      select: APARTMENT_MAP_SELECT,
+    });
+
+    return {
+      map: buildApartmentMap(apartmentsInDb),
+      apartmentKeysInFile,
+    };
+  }
 
   // Fetch all existing apartments with full data for comparison
   const existingApartments = await tx.apartment.findMany({
     where: { homeownersAssociationId: hoa.id },
+    select: EXISTING_APARTMENT_SELECT,
   });
 
   const existingMap = new Map<string, ExistingApartment>(
@@ -85,24 +138,30 @@ export async function importApartments(
   // Batch create new apartments
   if (toCreate.length > 0) {
     try {
-      await tx.apartment.createMany({
-        data: toCreate.map((a) => ({
-          externalOwnerId: a.externalOwnerId,
-          externalApartmentId: a.externalApartmentId,
-          owner: a.owner,
-          email: a.email || null,
-          address: a.address,
-          building: a.building,
-          number: a.number,
-          postalCode: a.postalCode,
-          city: a.city,
-          shareNumerator: a.shareNumerator,
-          shareDenominator: a.shareDenominator,
-          isActive: true,
-          homeownersAssociationId: hoa.id,
-        })),
-        skipDuplicates: true,
-      });
+      await processInBatches(
+        toCreate,
+        IMPORT_CREATE_BATCH_SIZE,
+        async (batch) => {
+          await tx.apartment.createMany({
+            data: batch.map((a) => ({
+              externalOwnerId: a.externalOwnerId,
+              externalApartmentId: a.externalApartmentId,
+              owner: a.owner,
+              email: a.email || null,
+              address: a.address,
+              building: a.building,
+              number: a.number,
+              postalCode: a.postalCode,
+              city: a.city,
+              shareNumerator: a.shareNumerator,
+              shareDenominator: a.shareDenominator,
+              isActive: true,
+              homeownersAssociationId: hoa.id,
+            })),
+            skipDuplicates: true,
+          });
+        }
+      );
       stats.created = toCreate.length;
     } catch (error) {
       errors.push(
@@ -141,44 +200,41 @@ export async function importApartments(
   }
 
   // Deactivate apartments not in file (those whose externalOwnerId#externalApartmentId is not in the file)
-  // Only deactivate if we have apartments in the file (lok.txt was provided)
-  const keysInFile = new Set(ownerApartmentKeys);
-  if (apartments.length > 0) {
-    const toDeactivate = existingApartments
-      .filter(
-        (a: ExistingApartment) =>
-          a.isActive &&
-          !keysInFile.has(`${a.externalOwnerId}#${a.externalApartmentId}`)
-      )
-      .map((a: ExistingApartment) => a.id);
-
-    const deactivated =
-      toDeactivate.length > 0
-        ? await tx.apartment.updateMany({
-            where: { id: { in: toDeactivate } },
-            data: { isActive: false },
-          })
-        : { count: 0 };
-    stats.deleted = deactivated.count;
-  }
-
-  // Build apartment lookup map (externalOwnerId#externalApartmentId -> id)
-  const apartmentsInDb = await tx.apartment.findMany({
-    where: { homeownersAssociationId: hoa.id },
-    select: { id: true, externalOwnerId: true, externalApartmentId: true },
-  });
-
-  const map = new Map<string, string>(
-    apartmentsInDb.map(
-      (a: {
-        id: string;
-        externalOwnerId: string;
-        externalApartmentId: string;
-      }) => [`${a.externalOwnerId}#${a.externalApartmentId}`, a.id]
+  const toDeactivate = existingApartments
+    .filter(
+      (a: ExistingApartment) =>
+        a.isActive &&
+        !apartmentKeysInFile.has(
+          `${a.externalOwnerId}#${a.externalApartmentId}`
+        )
     )
-  );
+    .map((a: ExistingApartment) => a.id);
 
-  const apartmentKeysInFile = new Set(ownerApartmentKeys);
+  const deactivated =
+    toDeactivate.length > 0
+      ? await tx.apartment.updateMany({
+          where: { id: { in: toDeactivate } },
+          data: { isActive: false },
+        })
+      : { count: 0 };
+  stats.deleted = deactivated.count;
 
-  return { map, apartmentKeysInFile };
+  const apartmentsInDb =
+    toCreate.length > 0
+      ? await tx.apartment.findMany({
+          where: { homeownersAssociationId: hoa.id },
+          select: APARTMENT_MAP_SELECT,
+        })
+      : existingApartments.map(
+          ({ id, externalOwnerId, externalApartmentId }: ApartmentMapRow) => ({
+            id,
+            externalOwnerId,
+            externalApartmentId,
+          })
+        );
+
+  return {
+    map: buildApartmentMap(apartmentsInDb),
+    apartmentKeysInFile,
+  };
 }

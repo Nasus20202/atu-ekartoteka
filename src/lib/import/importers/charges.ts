@@ -1,5 +1,7 @@
 import { Prisma } from '@/generated/prisma/client';
+import { IMPORT_CREATE_BATCH_SIZE } from '@/lib/import/constants';
 import { EntityStats, TransactionClient } from '@/lib/import/types';
+import { processInBatches } from '@/lib/import/utils';
 import { NalCzynszEntry } from '@/lib/parsers/nal-czynsz-parser';
 import { toDecimal } from '@/lib/utils/decimal';
 
@@ -47,34 +49,48 @@ export async function importCharges(
   errors: string[]
 ): Promise<void> {
   // Filter entries with valid apartment IDs (using combined key: externalOwnerId#externalApartmentId)
-  const validEntries = chargeEntries
-    .map((entry) => ({
-      entry,
-      apartmentId: apartmentMap.get(`${entry.id}#${entry.apartmentExternalId}`),
-    }))
-    .filter(
-      (item): item is { entry: NalCzynszEntry; apartmentId: string } =>
-        item.apartmentId !== undefined
+  const validEntries: Array<{ entry: NalCzynszEntry; apartmentId: string }> =
+    [];
+  const apartmentIds = new Set<string>();
+  const periods = new Set<string>();
+  const lineNumbers = new Set<number>();
+
+  for (const entry of chargeEntries) {
+    const apartmentId = apartmentMap.get(
+      `${entry.id}#${entry.apartmentExternalId}`
     );
+    if (!apartmentId) {
+      continue;
+    }
+
+    validEntries.push({ entry, apartmentId });
+    apartmentIds.add(apartmentId);
+    periods.add(entry.period);
+    lineNumbers.add(entry.lineNo);
+  }
 
   stats.skipped = chargeEntries.length - validEntries.length;
 
   if (validEntries.length === 0) return;
 
-  // Fetch all existing charges with full data for comparison
-  const uniqueKeys = validEntries.map(({ entry, apartmentId }) => ({
-    apartmentId,
-    period: entry.period,
-    externalLineNo: entry.lineNo,
-  }));
-
   const existingCharges = await tx.charge.findMany({
     where: {
-      OR: uniqueKeys.map((k) => ({
-        apartmentId: k.apartmentId,
-        period: k.period,
-        externalLineNo: k.externalLineNo,
-      })),
+      apartmentId: { in: Array.from(apartmentIds) },
+      period: { in: Array.from(periods) },
+      externalLineNo: { in: Array.from(lineNumbers) },
+    },
+    select: {
+      id: true,
+      apartmentId: true,
+      period: true,
+      externalLineNo: true,
+      dateFrom: true,
+      dateTo: true,
+      description: true,
+      quantity: true,
+      unit: true,
+      unitPrice: true,
+      totalAmount: true,
     },
   });
 
@@ -106,21 +122,27 @@ export async function importCharges(
   // Batch create new charges
   if (toCreate.length > 0) {
     try {
-      await tx.charge.createMany({
-        data: toCreate.map(({ entry, apartmentId }) => ({
-          externalLineNo: entry.lineNo,
-          apartmentId,
-          period: entry.period,
-          dateFrom: entry.dateFrom,
-          dateTo: entry.dateTo,
-          description: entry.description,
-          quantity: entry.quantity,
-          unit: entry.unit,
-          unitPrice: entry.unitPrice,
-          totalAmount: entry.totalAmount,
-        })),
-        skipDuplicates: true,
-      });
+      await processInBatches(
+        toCreate,
+        IMPORT_CREATE_BATCH_SIZE,
+        async (batch) => {
+          await tx.charge.createMany({
+            data: batch.map(({ entry, apartmentId }) => ({
+              externalLineNo: entry.lineNo,
+              apartmentId,
+              period: entry.period,
+              dateFrom: entry.dateFrom,
+              dateTo: entry.dateTo,
+              description: entry.description,
+              quantity: entry.quantity,
+              unit: entry.unit,
+              unitPrice: entry.unitPrice,
+              totalAmount: entry.totalAmount,
+            })),
+            skipDuplicates: true,
+          });
+        }
+      );
       stats.created = toCreate.length;
     } catch (error) {
       errors.push(

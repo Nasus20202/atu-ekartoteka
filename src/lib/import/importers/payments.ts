@@ -1,5 +1,7 @@
 import { Prisma } from '@/generated/prisma/client';
+import { IMPORT_CREATE_BATCH_SIZE } from '@/lib/import/constants';
 import { EntityStats, TransactionClient } from '@/lib/import/types';
+import { processInBatches } from '@/lib/import/utils';
 import { PaymentEntry } from '@/lib/parsers/wplaty-parser';
 import { toDecimal } from '@/lib/utils/decimal';
 
@@ -127,34 +129,66 @@ export async function importPayments(
   errors: string[]
 ): Promise<void> {
   // Filter entries with valid apartment IDs (using combined key: externalOwnerId#externalApartmentId)
-  const validEntries = entries
-    .map((entry) => ({
-      entry,
-      apartmentId: apartmentMap.get(
-        `${entry.externalId}#${entry.apartmentCode}`
-      ),
-    }))
-    .filter(
-      (item): item is { entry: PaymentEntry; apartmentId: string } =>
-        item.apartmentId !== undefined
+  const validEntries: Array<{ entry: PaymentEntry; apartmentId: string }> = [];
+  const apartmentIds = new Set<string>();
+  const years = new Set<number>();
+
+  for (const entry of entries) {
+    const apartmentId = apartmentMap.get(
+      `${entry.externalId}#${entry.apartmentCode}`
     );
+    if (!apartmentId) {
+      continue;
+    }
+
+    validEntries.push({ entry, apartmentId });
+    apartmentIds.add(apartmentId);
+    years.add(entry.year);
+  }
 
   stats.skipped = entries.length - validEntries.length;
 
   if (validEntries.length === 0) return;
 
-  // Fetch all existing payments with full data for comparison
-  const uniqueKeys = validEntries.map(({ entry, apartmentId }) => ({
-    apartmentId,
-    year: entry.year,
-  }));
-
   const existingPayments = await tx.payment.findMany({
     where: {
-      OR: uniqueKeys.map((k) => ({
-        apartmentId: k.apartmentId,
-        year: k.year,
-      })),
+      apartmentId: { in: Array.from(apartmentIds) },
+      year: { in: Array.from(years) },
+    },
+    select: {
+      id: true,
+      apartmentId: true,
+      year: true,
+      dateFrom: true,
+      dateTo: true,
+      openingDebt: true,
+      openingSurplus: true,
+      openingBalance: true,
+      closingBalance: true,
+      januaryPayments: true,
+      februaryPayments: true,
+      marchPayments: true,
+      aprilPayments: true,
+      mayPayments: true,
+      junePayments: true,
+      julyPayments: true,
+      augustPayments: true,
+      septemberPayments: true,
+      octoberPayments: true,
+      novemberPayments: true,
+      decemberPayments: true,
+      januaryCharges: true,
+      februaryCharges: true,
+      marchCharges: true,
+      aprilCharges: true,
+      mayCharges: true,
+      juneCharges: true,
+      julyCharges: true,
+      augustCharges: true,
+      septemberCharges: true,
+      octoberCharges: true,
+      novemberCharges: true,
+      decemberCharges: true,
     },
   });
 
@@ -185,73 +219,79 @@ export async function importPayments(
   // Batch create new payments
   if (toCreate.length > 0) {
     try {
-      await tx.payment.createMany({
-        data: toCreate.map(({ entry, apartmentId }) => {
-          const [
-            janP,
-            febP,
-            marP,
-            aprP,
-            mayP,
-            junP,
-            julP,
-            augP,
-            sepP,
-            octP,
-            novP,
-            decP,
-          ] = entry.monthlyPayments;
-          const [
-            janC,
-            febC,
-            marC,
-            aprC,
-            mayC,
-            junC,
-            julC,
-            augC,
-            sepC,
-            octC,
-            novC,
-            decC,
-          ] = entry.monthlyCharges;
-          return {
-            apartmentId,
-            year: entry.year,
-            dateFrom: entry.dateFrom,
-            dateTo: entry.dateTo,
-            openingDebt: entry.openingDebt,
-            openingSurplus: entry.openingSurplus,
-            openingBalance: entry.openingBalance,
-            closingBalance: entry.closingBalance,
-            januaryPayments: janP,
-            februaryPayments: febP,
-            marchPayments: marP,
-            aprilPayments: aprP,
-            mayPayments: mayP,
-            junePayments: junP,
-            julyPayments: julP,
-            augustPayments: augP,
-            septemberPayments: sepP,
-            octoberPayments: octP,
-            novemberPayments: novP,
-            decemberPayments: decP,
-            januaryCharges: janC,
-            februaryCharges: febC,
-            marchCharges: marC,
-            aprilCharges: aprC,
-            mayCharges: mayC,
-            juneCharges: junC,
-            julyCharges: julC,
-            augustCharges: augC,
-            septemberCharges: sepC,
-            octoberCharges: octC,
-            novemberCharges: novC,
-            decemberCharges: decC,
-          };
-        }),
-        skipDuplicates: true,
-      });
+      await processInBatches(
+        toCreate,
+        IMPORT_CREATE_BATCH_SIZE,
+        async (batch) => {
+          await tx.payment.createMany({
+            data: batch.map(({ entry, apartmentId }) => {
+              const [
+                janP,
+                febP,
+                marP,
+                aprP,
+                mayP,
+                junP,
+                julP,
+                augP,
+                sepP,
+                octP,
+                novP,
+                decP,
+              ] = entry.monthlyPayments;
+              const [
+                janC,
+                febC,
+                marC,
+                aprC,
+                mayC,
+                junC,
+                julC,
+                augC,
+                sepC,
+                octC,
+                novC,
+                decC,
+              ] = entry.monthlyCharges;
+              return {
+                apartmentId,
+                year: entry.year,
+                dateFrom: entry.dateFrom,
+                dateTo: entry.dateTo,
+                openingDebt: entry.openingDebt,
+                openingSurplus: entry.openingSurplus,
+                openingBalance: entry.openingBalance,
+                closingBalance: entry.closingBalance,
+                januaryPayments: janP,
+                februaryPayments: febP,
+                marchPayments: marP,
+                aprilPayments: aprP,
+                mayPayments: mayP,
+                junePayments: junP,
+                julyPayments: julP,
+                augustPayments: augP,
+                septemberPayments: sepP,
+                octoberPayments: octP,
+                novemberPayments: novP,
+                decemberPayments: decP,
+                januaryCharges: janC,
+                februaryCharges: febC,
+                marchCharges: marC,
+                aprilCharges: aprC,
+                mayCharges: mayC,
+                juneCharges: junC,
+                julyCharges: julC,
+                augustCharges: augC,
+                septemberCharges: sepC,
+                octoberCharges: octC,
+                novemberCharges: novC,
+                decemberCharges: decC,
+              };
+            }),
+            skipDuplicates: true,
+          });
+        }
+      );
       stats.created = toCreate.length;
     } catch (error) {
       errors.push(

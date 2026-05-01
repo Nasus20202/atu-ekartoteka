@@ -1,5 +1,6 @@
 import { PrismaClient } from '@/generated/prisma/client';
 import { prisma } from '@/lib/database/prisma';
+import { IMPORT_HOA_CONCURRENCY } from '@/lib/import/constants';
 import {
   importApartments,
   importCharges,
@@ -16,6 +17,7 @@ import {
 import {
   createEmptyStats,
   groupFilesByHOA,
+  mapWithConcurrency,
   parseFileToBuffer,
   parseWmbDate,
 } from '@/lib/import/utils';
@@ -165,35 +167,37 @@ async function importSingleHOA(
         if (options.cleanImport) {
           logger.info({ hoaId }, 'Clean import: deleting existing data');
 
-          const apartmentIds = await tx.apartment.findMany({
-            where: { homeownersAssociationId: hoa.id },
-            select: { id: true },
-          });
-          const ids = apartmentIds.map((a: { id: string }) => a.id);
-
-          if (ids.length > 0) {
-            const deletedCharges = await tx.charge.deleteMany({
-              where: { apartmentId: { in: ids } },
-            });
-            const deletedNotifications = await tx.chargeNotification.deleteMany(
-              {
-                where: { apartmentId: { in: ids } },
-              }
-            );
-            const deletedPayments = await tx.payment.deleteMany({
-              where: { apartmentId: { in: ids } },
-            });
-
-            logger.info(
-              {
-                hoaId,
-                deletedCharges: deletedCharges.count,
-                deletedNotifications: deletedNotifications.count,
-                deletedPayments: deletedPayments.count,
+          const deletedCharges = await tx.charge.deleteMany({
+            where: {
+              apartment: {
+                is: { homeownersAssociationId: hoa.id },
               },
-              'Clean import: deleted existing data'
-            );
-          }
+            },
+          });
+          const deletedNotifications = await tx.chargeNotification.deleteMany({
+            where: {
+              apartment: {
+                is: { homeownersAssociationId: hoa.id },
+              },
+            },
+          });
+          const deletedPayments = await tx.payment.deleteMany({
+            where: {
+              apartment: {
+                is: { homeownersAssociationId: hoa.id },
+              },
+            },
+          });
+
+          logger.info(
+            {
+              hoaId,
+              deletedCharges: deletedCharges.count,
+              deletedNotifications: deletedNotifications.count,
+              deletedPayments: deletedPayments.count,
+            },
+            'Clean import: deleted existing data'
+          );
         }
 
         const { map: apartmentMap } = await importApartments(
@@ -235,7 +239,7 @@ async function importSingleHOA(
           );
         }
       },
-      { timeout: 30000 }
+      { timeout: 60000 }
     );
 
     logger.info(
@@ -265,7 +269,11 @@ export async function processBatchImport(
   const errors: ImportError[] = [];
   const filesByHOA = groupFilesByHOA(files, errors);
 
-  const hoaImportPromises = Array.from(filesByHOA.entries()).map(
+  const hoaEntries = Array.from(filesByHOA.entries());
+
+  const results = await mapWithConcurrency(
+    hoaEntries,
+    IMPORT_HOA_CONCURRENCY,
     async ([hoaId, fileGroup]) => {
       try {
         return await importSingleHOA(hoaId, fileGroup, options);
@@ -284,8 +292,6 @@ export async function processBatchImport(
       }
     }
   );
-
-  const results = await Promise.all(hoaImportPromises);
 
   for (const result of results) {
     if (result.errors.length > 0 && result.apartments.total === 0) {
