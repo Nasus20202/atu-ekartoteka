@@ -10,66 +10,44 @@ services:
     volumes:
       - ./grafana/dashboards:/otel-lgtm/grafana/dashboards
       - ./grafana/provisioning/dashboards/dashboards.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/ekartoteka.yaml
-    networks:
-      - atu-network
     profiles:
       - otel
 
   db:
     image: postgres:18.3-alpine
-    container_name: atu-postgres-prod
+    container_name: atu-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-atu_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-atu_password}
-      POSTGRES_DB: ${POSTGRES_DB:-atu_ekartoteka}
+      POSTGRES_USER: atu_user
+      POSTGRES_PASSWORD: atu_password
+      POSTGRES_DB: atu_ekartoteka
     ports:
-      - '${POSTGRES_PORT:-5432}:5432'
+      - '5432:5432'
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - atu-network
+      - postgres_data:/var/lib/postgresql
     healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'pg_isready -U ${POSTGRES_USER:-atu_user} -d ${POSTGRES_DB:-atu_ekartoteka}',
-        ]
+      test: ['CMD-SHELL', 'pg_isready -U atu_user -d atu_ekartoteka']
       interval: 10s
       timeout: 5s
       retries: 5
 
-  ekartoteka-migrations:
-    image: ${APP_IMAGE:-ghcr.io/nasus20202/atu-ekartoteka:latest}
-    container_name: atu-ekartoteka-migrations-prod
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-atu_user}:${POSTGRES_PASSWORD:-atu_password}@db:5432/${POSTGRES_DB:-atu_ekartoteka}?schema=public
-      NODE_ENV: production
-    command: ['pnpm', 'db:deploy']
-    networks:
-      - atu-network
-    restart: 'no'
-
   ekartoteka:
-    image: ${APP_IMAGE:-ghcr.io/nasus20202/atu-ekartoteka:latest}
-    container_name: atu-ekartoteka-prod
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: atu-ekartoteka
     restart: unless-stopped
     depends_on:
-      ekartoteka-migrations:
-        condition: service_completed_successfully
-      db:
-        condition: service_healthy
+      - db
+      - ekartoteka-migrations
     environment:
       # Database
-      DATABASE_URL: postgresql://${POSTGRES_USER:-atu_user}:${POSTGRES_PASSWORD:-atu_password}@db:5432/${POSTGRES_DB:-atu_ekartoteka}?schema=public
+      DATABASE_URL: postgresql://atu_user:atu_password@db:5432/atu_ekartoteka?schema=public
 
       # NextAuth
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_URL: http://localhost:3000
       AUTH_TRUST_HOST: 'true'
-      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?NEXTAUTH_SECRET must be set}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-your-secret-key-change-this-in-production}
 
       # Node Environment
       NODE_ENV: production
@@ -91,17 +69,22 @@ services:
       TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
       TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-}
 
+      # Google OAuth Configuration
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+
+      # Tracking Script (optional)
+      TRACKING_SCRIPT: ${TRACKING_SCRIPT:-}
+
       # OpenTelemetry (optional)
       OTEL_EXPORTER_ENDPOINT: ${OTEL_EXPORTER_ENDPOINT:-http://otel-lgtm:4318}
       OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME:-atu-ekartoteka}
     env_file:
       - .env
     ports:
-      - '${APP_PORT:-3000}:3000'
+      - '3000:3000'
     volumes:
-      - app_data:/app/data
-    networks:
-      - atu-network
+      - ./data:/app/data
     healthcheck:
       test:
         [
@@ -113,12 +96,19 @@ services:
       retries: 3
       start_period: 40s
 
+  ekartoteka-migrations:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: atu-ekartoteka-migrations
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://atu_user:atu_password@db:5432/atu_ekartoteka?schema=public
+      NODE_ENV: production
+    command: ['pnpm', 'db:deploy']
+    restart: 'no'
+
 volumes:
   postgres_data:
-    driver: local
-  app_data:
-    driver: local
-
-networks:
-  atu-network:
-    driver: bridge
