@@ -60,7 +60,8 @@ jobs:
           fi
 
           # Bump version (without creating commit/tag)
-          VERSION=$(pnpm version "$INCREMENT" --no-git-tag-version)
+          pnpm version "$INCREMENT" --no-git-tag-version
+          VERSION="v$(jq -r '.version' package.json)"
           echo "New version: $VERSION"
           echo "new-version=$VERSION" >> $GITHUB_OUTPUT
 
