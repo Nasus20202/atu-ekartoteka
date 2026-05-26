@@ -5,6 +5,49 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.3] - 2026-05-26
+
+- fix: release version workflow
+- chore(deps): update vitest monorepo to v4.1.7 (#378)
+- chore(deps): update dependency tsx to v4.22.2 (#368)
+- chore(deps): update node.js to v24.16.0 (#379)
+- chore(deps): update dependency pg to v8.21.0 (#367)
+- chore(deps): update dependency nodemailer to v8.0.8 (#376)
+- chore(deps): update dependency vite to v8.0.14 (#377)
+- chore(deps): update dependency @types/node to v25.9.0 (#365)
+- chore(deps): update dependency eslint-plugin-playwright to v2.10.4 (#375)
+- chore(deps): update dependency @types/react to v19.2.15 (#374)
+- chore(deps): update opentelemetry-js-contrib monorepo (#371)
+- chore(deps): update opentelemetry-js monorepo (#370)
+- chore(deps): update postgres docker tag to v18.4 (#372)
+- chore(deps): update semgrep/semgrep docker tag to v1.163.0 (#373)
+- chore(deps): update dependency lucide-react to v1.16.0 (#366)
+- chore(deps): update grafana/otel-lgtm docker tag to v0.28.0 (#369)
+- chore(deps): update vitest monorepo to v4.1.6 (#363)
+- chore(deps): update dependency @playwright/test to v1.60.0 (#364)
+- chore(deps): update dependency lint-staged to v17.0.5 (#361)
+- chore(deps): update dependency eslint-plugin-playwright to v2.10.3 (#360)
+- chore(deps): update dependency vite to v8.0.13 (#362)
+- chore(deps): update dependency @vitejs/plugin-react to v6.0.2 (#359)
+- fix: docker volume path
+- chore(deps): update dependency tailwind-merge to v3.6.0
+- chore(deps): update dependency vite to v8.0.12 (#358)
+- chore(deps): update tailwindcss monorepo to v4.3.0 (#357)
+- chore(deps): update dependency lint-staged to v17.0.4 (#354)
+- chore(deps): update semgrep/semgrep docker tag to v1.162.0 (#355)
+- chore(deps): update dependency lint-staged to v17
+- chore(deps): update nextjs monorepo to v16.2.6 (#352)
+- chore(deps): update dependency tailwind-merge to v3.6.0 (#353)
+- chore(deps): update dependency @types/node to v25.6.2 (#350)
+- chore(deps): update grafana/otel-lgtm docker tag to v0.27.1 (#351)
+- chore(deps): update dependency vite to v8.0.11 (#349)
+- chore(deps): update opentelemetry-js monorepo to ^0.217.0 (#347)
+- chore(deps): update nextjs monorepo to v16.2.5 (#345)
+- chore(deps): update opentelemetry-js-contrib monorepo (#348)
+- chore(deps): update react monorepo to v19.2.6 (#346)
+- chore(deps): update dependency @marsidev/react-turnstile to v1.5.2 (#343)
+- chore(deps): update grafana/otel-lgtm docker tag to v0.27.0 (#342)
+
 ## [0.7.2] - 2026-05-01
 
 - fix: import process db operations performance
