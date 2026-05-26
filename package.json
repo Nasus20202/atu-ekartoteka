@@ -26,8 +26,7 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "prisma": "^7.1.0",
-    "recharts": "^3.8.1"
+    "prisma": "^7.1.0"
   },
   "devDependencies": {
     "@auth/prisma-adapter": "^2.11.1",
@@ -58,6 +57,7 @@
     "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-tabs": "^1.1.13",
     "@react-pdf/renderer": "^4.3.3",
+    "recharts": "^3.8.1",
     "@tailwindcss/postcss": "^4.1.18",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
