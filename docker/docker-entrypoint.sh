@@ -10,7 +10,7 @@ if [ "${RUN_MIGRATIONS_ON_STARTUP:-false}" = "true" ]; then
   i=0
   until [ $i -ge $max_retries ]
   do
-    if pnpm db:deploy; then
+    if ./node_modules/.bin/prisma migrate deploy; then
       echo "Migrations applied successfully."
       break
     fi
