@@ -11,3 +11,4 @@ overrides:
   '@auth/core': '*'
 
 minimumReleaseAge: 1440
+minimumReleaseAgeStrict: false
