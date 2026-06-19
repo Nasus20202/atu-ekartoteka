@@ -110,13 +110,52 @@ export default function BulkCreateUsersPage() {
   };
 
   useEffect(() => {
+    let cancelled = false;
+
+    async function loadApartments() {
+      try {
+        const modeParam = mode === 'assign' ? 'assignable' : 'creatable';
+        const res = await fetch(
+          `/api/admin/unassigned-apartments?mode=${modeParam}`
+        );
+        const data = await res.json();
+
+        if (cancelled) {
+          return;
+        }
+
+        if (res.ok) {
+          setHoas(data.hoas);
+        } else {
+          setError(data.error || 'Nie udało się pobrać listy mieszkań');
+        }
+      } catch {
+        if (!cancelled) {
+          setError('Nie udało się pobrać listy mieszkań');
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadApartments();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [mode]);
+
+  const handleModeChange = (nextMode: string) => {
+    setLoading(true);
+    setHoas([]);
     setSelectedIds(new Set());
     setCreateResult(null);
     setAssignResult(null);
     setError(null);
-    fetchApartments(mode);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode]);
+    setMode(nextMode as BulkMode);
+  };
 
   const doCreate = async () => {
     setSubmitting(true);
@@ -216,11 +255,7 @@ export default function BulkCreateUsersPage() {
         }
       />
 
-      <Tabs
-        value={mode}
-        onValueChange={(v) => setMode(v as BulkMode)}
-        className="space-y-4"
-      >
+      <Tabs value={mode} onValueChange={handleModeChange} className="space-y-4">
         <TabsList>
           <TabsTrigger value="create">
             <UserPlus className="mr-2 h-4 w-4" />

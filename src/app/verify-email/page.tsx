@@ -3,7 +3,7 @@
 import { CheckCircle, Loader2, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useCallback, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
 import { AuthLayout } from '@/components/layout/auth-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -11,43 +11,55 @@ import { Button } from '@/components/ui/button';
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
-  const [verifying, setVerifying] = useState(true);
+  const token = searchParams.get('token');
+  const [verifying, setVerifying] = useState(Boolean(token));
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const verifyToken = useCallback(async (verificationToken: string) => {
-    setVerifying(true);
-    setError(null);
-    try {
-      const response = await fetch('/api/verify-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: verificationToken }),
-      });
-      const data = await response.json();
-      if (!response.ok)
-        throw new Error(data.error || 'Weryfikacja nie powiodła się');
-      setSuccess(true);
-      // Full page navigation so the server re-reads emailVerified from DB
-      setTimeout(() => {
-        window.location.href = '/dashboard';
-      }, 2000);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Wystąpił błąd');
-    } finally {
-      setVerifying(false);
-    }
-  }, []);
-
   useEffect(() => {
-    const tokenParam = searchParams.get('token');
-    if (tokenParam) {
-      verifyToken(tokenParam);
-    } else {
-      setError('Brak tokenu weryfikacyjnego w linku');
-      setVerifying(false);
+    let cancelled = false;
+
+    async function verifyToken() {
+      if (!token) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/verify-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token }),
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Weryfikacja nie powiodła się');
+        }
+
+        if (!cancelled) {
+          setSuccess(true);
+          // Full page navigation so the server re-reads emailVerified from DB
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 2000);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Wystąpił błąd');
+        }
+      } finally {
+        if (!cancelled) {
+          setVerifying(false);
+        }
+      }
     }
-  }, [searchParams, verifyToken]);
+
+    void verifyToken();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
 
   if (verifying) {
     return (
@@ -95,7 +107,9 @@ function VerifyEmailContent() {
       }
     >
       <Alert variant="destructive" className="mb-4">
-        <AlertDescription>{error || 'Wystąpił nieznany błąd'}</AlertDescription>
+        <AlertDescription>
+          {error || 'Brak tokenu weryfikacyjnego w linku'}
+        </AlertDescription>
       </Alert>
       <Button asChild className="w-full">
         <Link href="/login">Wróć do logowania</Link>

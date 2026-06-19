@@ -2,7 +2,7 @@
 
 import { Building2, Edit2, Search } from 'lucide-react';
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
@@ -41,10 +41,10 @@ export default function ApartmentsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
 
-  const fetchHOAs = useCallback(async () => {
-    setLoading(true);
+  async function fetchHOAs(nextSearch: string) {
     try {
-      const params = new URLSearchParams({ search });
+      setLoading(true);
+      const params = new URLSearchParams({ search: nextSearch });
       const response = await fetch(`/api/admin/hoa?${params}`);
       const data = await response.json();
       if (response.ok) {
@@ -55,15 +55,38 @@ export default function ApartmentsPage() {
     } finally {
       setLoading(false);
     }
-  }, [search]);
+  }
 
   useEffect(() => {
-    fetchHOAs();
-  }, [fetchHOAs]);
+    let cancelled = false;
+
+    async function loadHOAs() {
+      try {
+        const params = new URLSearchParams({ search });
+        const response = await fetch(`/api/admin/hoa?${params}`);
+        const data = await response.json();
+        if (!cancelled && response.ok) {
+          setHoas(data.homeownersAssociations);
+        }
+      } catch (error) {
+        console.error('Failed to fetch HOAs:', error);
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadHOAs();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [search]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchHOAs();
+    void fetchHOAs(search);
   };
 
   const startEditing = (hoa: HOA) => {
@@ -86,7 +109,7 @@ export default function ApartmentsPage() {
       if (response.ok) {
         setEditingId(null);
         setEditingName('');
-        fetchHOAs();
+        void fetchHOAs(search);
       }
     } catch (error) {
       console.error('Failed to update HOA:', error);

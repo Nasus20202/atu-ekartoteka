@@ -3,7 +3,7 @@
 import { AlertTriangle, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
@@ -53,6 +53,36 @@ function computeDuplicateActiveAddresses(
   return duplicates;
 }
 
+function ApartmentSearchForm({
+  defaultSearch,
+  onSearch,
+}: {
+  defaultSearch: string;
+  onSearch: (search: string) => void;
+}) {
+  const [searchInput, setSearchInput] = useState(defaultSearch);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSearch(searchInput);
+  };
+
+  return (
+    <form onSubmit={handleSearch} className="flex gap-2">
+      <div className="relative flex-1">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          placeholder="Wyszukaj..."
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          className="pl-9"
+        />
+      </div>
+      <Button type="submit">Szukaj</Button>
+    </form>
+  );
+}
+
 export default function HOAApartmentsPage() {
   const params = useParams();
   const router = useRouter();
@@ -71,7 +101,6 @@ export default function HOAApartmentsPage() {
     total: 0,
     totalPages: 0,
   });
-  const [searchInput, setSearchInput] = useState(search);
   const [loading, setLoading] = useState(true);
 
   const duplicateActiveAddresses = useMemo(
@@ -79,41 +108,44 @@ export default function HOAApartmentsPage() {
     [apartments]
   );
 
-  const fetchApartments = useCallback(async () => {
-    setLoading(true);
-    try {
-      const urlParams = new URLSearchParams({
-        page: page.toString(),
-        limit: pagination.limit.toString(),
-        search,
-        activeOnly: activeOnly.toString(),
-        hoaId,
-      });
+  useEffect(() => {
+    let cancelled = false;
 
-      const response = await fetch(`/api/admin/apartments?${urlParams}`);
-      const data = await response.json();
+    async function loadApartments() {
+      try {
+        const urlParams = new URLSearchParams({
+          page: page.toString(),
+          limit: pagination.limit.toString(),
+          search,
+          activeOnly: activeOnly.toString(),
+          hoaId,
+        });
 
-      if (response.ok) {
-        setApartments(data.apartments);
-        setPagination(data.pagination);
-        if (data.hoa) {
-          setHoa(data.hoa);
+        const response = await fetch(`/api/admin/apartments?${urlParams}`);
+        const data = await response.json();
+
+        if (!cancelled && response.ok) {
+          setApartments(data.apartments);
+          setPagination(data.pagination);
+          if (data.hoa) {
+            setHoa(data.hoa);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch apartments:', error);
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
         }
       }
-    } catch (error) {
-      console.error('Failed to fetch apartments:', error);
-    } finally {
-      setLoading(false);
     }
+
+    void loadApartments();
+
+    return () => {
+      cancelled = true;
+    };
   }, [page, pagination.limit, search, activeOnly, hoaId]);
-
-  useEffect(() => {
-    fetchApartments();
-  }, [fetchApartments]);
-
-  useEffect(() => {
-    setSearchInput(search);
-  }, [search]);
 
   const updateURL = (updates: Record<string, string | null>) => {
     const newParams = new URLSearchParams(searchParams);
@@ -124,12 +156,11 @@ export default function HOAApartmentsPage() {
         newParams.set(key, value);
       }
     });
-    router.push(`?${newParams}`, { scroll: false });
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateURL({ search: searchInput, page: '1' });
+    const nextQuery = newParams.toString();
+    if (nextQuery !== searchParams.toString()) {
+      setLoading(true);
+      router.push(`?${nextQuery}`, { scroll: false });
+    }
   };
 
   const handleActiveOnlyChange = (checked: boolean) => {
@@ -172,18 +203,13 @@ export default function HOAApartmentsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSearch} className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Wyszukaj..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Button type="submit">Szukaj</Button>
-          </form>
+          <ApartmentSearchForm
+            key={search}
+            defaultSearch={search}
+            onSearch={(nextSearch) => {
+              updateURL({ search: nextSearch, page: '1' });
+            }}
+          />
         </CardContent>
       </Card>
 

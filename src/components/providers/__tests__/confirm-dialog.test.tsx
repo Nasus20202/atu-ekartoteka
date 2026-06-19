@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, renderHook, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -73,22 +73,9 @@ describe('ConfirmDialog', () => {
       const originalError = console.error;
       console.error = vi.fn();
 
-      const TestComponentWithoutProvider = () => {
-        try {
-          useConfirm();
-          return <div>Should not reach here</div>;
-        } catch (error) {
-          return <div>Error: {(error as Error).message}</div>;
-        }
-      };
-
-      render(<TestComponentWithoutProvider />);
-
-      expect(
-        screen.getByText(
-          'Error: useConfirm must be used within ConfirmProvider'
-        )
-      ).toBeInTheDocument();
+      expect(() => renderHook(() => useConfirm())).toThrow(
+        'useConfirm must be used within ConfirmProvider'
+      );
 
       console.error = originalError;
     });
