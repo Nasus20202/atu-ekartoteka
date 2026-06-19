@@ -5,6 +5,58 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.4] - 2026-06-19
+
+- chore(deps): update react monorepo (#427)
+- chore(deps): update eslint to v10
+- chore(deps): update dependency @types/node to v25.9.4 (#423)
+- chore(deps): update dependency pg to v8.22.0 (#422)
+- chore(deps): update actions/checkout action to v7
+- chore(deps): update node.js to v24.17.0 (#420)
+- chore(deps): update lucide monorepo to v1.21.0 (#419)
+- chore(deps): update dependency node-cron to v4.4.1 (#418)
+- chore(deps): update dependency node-cron to v4.4.0 (#417)
+- chore(deps): update dependency node-cron to v4.3.0 (#416)
+- chore(deps): update dependency import-in-the-middle to v3.1.0 (#415)
+- chore(deps): update dependency nodemailer to v9.0.1 (#414)
+- chore: set minimumReleaseAge to 0
+- chore: disable minimumReleaseAgeStrict option
+- chore(deps): update semgrep/semgrep docker tag to v1.167.0 (#413)
+- chore(deps): update lucide monorepo to v1.20.0 (#412)
+- chore(deps): update dependency nodemailer to v9
+- chore(deps): update playwright monorepo to v1.61.0 (#409)
+- chore(deps): update vitest monorepo to v4.1.9 (#408)
+- chore(deps): update radix-ui-primitives monorepo (#407)
+- chore(deps): update opentelemetry-js-contrib monorepo (#402)
+- chore(deps): update opentelemetry-js monorepo (#401)
+- chore(deps): update lucide monorepo to v1.18.0 (#405)
+- chore(deps): update tailwindcss monorepo to v4.3.1 (#404)
+- chore(deps): update semgrep/semgrep docker tag to v1.166.0 (#403)
+- chore(deps): update dependency nodemailer to v8.0.11 (#400)
+- chore(deps): update dependency @types/node to v25.9.3 (#399)
+- chore(deps): update nextjs monorepo to v16.2.9 (#398)
+- chore(deps): update dependency prettier to v3.8.4 (#397)
+- chore(deps): update dependency import-in-the-middle to v3.0.2 (#396)
+- chore(deps): update dependency @marsidev/react-turnstile to v1.5.3 (#395)
+- chore(deps): update radix-ui-primitives monorepo (#394)
+- chore(deps): update react monorepo to v19.2.17 (#393)
+- chore(deps): update dependency @types/node to v25.9.2 (#392)
+- chore(deps): update semgrep/semgrep docker tag to v1.165.0 (#391)
+- chore(deps): update vitest monorepo to v4.1.8 (#390)
+- chore(deps): update react monorepo (#389)
+- chore(deps): update nextjs monorepo to v16.2.7 (#388)
+- chore(deps): update dependency vite to v8.0.15 (#387)
+- chore(deps): update dependency lint-staged to v17.0.6 (#385)
+- chore(deps): update dependency tsx to v4.22.4 (#386)
+- chore(deps): update dependency nodemailer to v8.0.10 (#384)
+- chore(deps): update dependency lucide-react to v1.17.0 (#382)
+- chore(deps): update dependency eslint-plugin-prettier to v5.5.6 (#383)
+- chore: set explicit pnpm minimumReleaseAge
+- chore(deps): update dependency nodemailer to v8.0.9 (#380)
+- chore(deps): update semgrep/semgrep docker tag to v1.164.0 (#381)
+- fix: docker entrypoint prisma migration
+- chore: move recharts to dev dependencies
+
 ## [0.7.3] - 2026-05-26
 
 - fix: release version workflow
