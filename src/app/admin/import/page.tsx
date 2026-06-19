@@ -52,14 +52,33 @@ export default function AdminImportPage() {
   }
 
   useEffect(() => {
-    void fetchStats();
-  }, []);
+    let cancelled = false;
 
-  useEffect(() => {
-    if (response?.success) {
-      void fetchStats();
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/admin/stats');
+
+        if (cancelled || !res.ok) {
+          return;
+        }
+
+        const data = await res.json();
+        setDbStats(data);
+      } catch {
+        // Ignore stats errors
+      } finally {
+        if (!cancelled) {
+          setStatsLoading(false);
+        }
+      }
     }
-  }, [response]);
+
+    void loadStats();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     if (event.target.files && event.target.files.length > 0) {
@@ -139,6 +158,9 @@ export default function AdminImportPage() {
       }
 
       setResponse(data);
+      if (data.success) {
+        await fetchStats();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Import failed');
     } finally {

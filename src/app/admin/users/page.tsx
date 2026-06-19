@@ -87,46 +87,39 @@ export default function AdminUsersPage() {
     }
   }, [debouncedSearch, filter, page]);
 
-  const fetchApartments = useCallback(async () => {
-    try {
-      const apartmentParams = new URLSearchParams({
-        page: '1',
-        limit: String(APARTMENT_FETCH_LIMIT),
-        activeOnly: 'false',
-      });
-
-      const response = await fetch(`/api/admin/apartments?${apartmentParams}`);
-      const data = await response.json();
-
-      if (!response.ok) {
-        return;
-      }
-
-      const [tenantUsersResponse, adminUsersResponse] = await Promise.all([
-        fetch('/api/admin/users?limit=1000'),
-        fetch('/api/admin/users?role=ADMIN&limit=1000'),
-      ]);
-      const [tenantUsersData, adminUsersData] = await Promise.all([
-        tenantUsersResponse.json(),
-        adminUsersResponse.json(),
-      ]);
-
-      const allUsers = [
-        ...(tenantUsersData.users || []),
-        ...(adminUsersData.users || []),
-      ];
-
-      setApartments(
-        getAvailableApartments(data.apartments, allUsers, selectedUser)
-      );
-    } catch (error) {
-      console.error('Failed to fetch apartments:', error);
-    }
-  }, [selectedUser]);
-
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    const requestId = ++latestUsersRequestId.current;
+    let cancelled = false;
+
+    async function loadUsers() {
+      try {
+        const query = buildUsersQuery(filter, page, debouncedSearch);
+        const response = await fetch(`/api/admin/users?${query}`);
+        const data = await response.json();
+
+        if (
+          !cancelled &&
+          response.ok &&
+          requestId === latestUsersRequestId.current
+        ) {
+          setUsers(data.users);
+          setTotalPages(data.pagination?.totalPages ?? 1);
+        }
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+      } finally {
+        if (!cancelled && requestId === latestUsersRequestId.current) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadUsers();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedSearch, filter, page]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -142,9 +135,57 @@ export default function AdminUsersPage() {
       return;
     }
 
-    fetchApartments();
-    setSelectedApartments(selectedUser.apartments?.map((apt) => apt.id) || []);
-  }, [fetchApartments, selectedUser]);
+    let cancelled = false;
+
+    async function loadApartments() {
+      try {
+        const apartmentParams = new URLSearchParams({
+          page: '1',
+          limit: String(APARTMENT_FETCH_LIMIT),
+          activeOnly: 'false',
+        });
+
+        const response = await fetch(
+          `/api/admin/apartments?${apartmentParams}`
+        );
+        const data = await response.json();
+
+        if (!response.ok) {
+          return;
+        }
+
+        const [tenantUsersResponse, adminUsersResponse] = await Promise.all([
+          fetch('/api/admin/users?limit=1000'),
+          fetch('/api/admin/users?role=ADMIN&limit=1000'),
+        ]);
+        const [tenantUsersData, adminUsersData] = await Promise.all([
+          tenantUsersResponse.json(),
+          adminUsersResponse.json(),
+        ]);
+
+        if (cancelled) {
+          return;
+        }
+
+        const allUsers = [
+          ...(tenantUsersData.users || []),
+          ...(adminUsersData.users || []),
+        ];
+
+        setApartments(
+          getAvailableApartments(data.apartments, allUsers, selectedUser)
+        );
+      } catch (error) {
+        console.error('Failed to fetch apartments:', error);
+      }
+    }
+
+    void loadApartments();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedUser]);
 
   const handleUpdateUser = useCallback(
     async (userId: string, status: AccountStatus, apartmentIds?: string[]) => {
@@ -329,14 +370,23 @@ export default function AdminUsersPage() {
               actionLoading={actionLoading}
               onApprove={() => {
                 setSelectedUser(user);
+                setSelectedApartments(
+                  user.apartments?.map((apartment) => apartment.id) || []
+                );
                 setEditMode('approve');
               }}
               onAssignApartment={() => {
                 setSelectedUser(user);
+                setSelectedApartments(
+                  user.apartments?.map((apartment) => apartment.id) || []
+                );
                 setEditMode('assign-apartment');
               }}
               onChangeStatus={() => {
                 setSelectedUser(user);
+                setSelectedApartments(
+                  user.apartments?.map((apartment) => apartment.id) || []
+                );
                 setEditMode('change-status');
               }}
               onReject={() => handleUpdateUser(user.id, AccountStatus.REJECTED)}
