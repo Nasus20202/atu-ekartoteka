@@ -9,5 +9,6 @@ allowBuilds:
 
 overrides:
   '@auth/core': '*'
+  eslint-plugin-react-hooks: 7.0.1
 
 minimumReleaseAge: 0
