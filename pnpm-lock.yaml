@@ -213,7 +213,7 @@ importers:
         version: 1.0.0-beta.0(next@16.2.9(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       node-cron:
         specifier: ^4.2.1
-        version: 4.4.1
+        version: 4.5.0
       nodemailer:
         specifier: ^9.0.0
         version: 9.0.1
@@ -3779,8 +3779,8 @@ packages:
     resolution: {integrity: sha512-/bRZty2mXUIFY/xU5HLvveNHlswNJej+RnxBjOMkidWfwZzgTbPG1E3K5TOxRLOR+5hX7bSofy8yf1hZevMS8A==}
     engines: {node: ^18 || ^20 || >= 21}
 
-  node-cron@4.4.1:
-    resolution: {integrity: sha512-1e4Gku1qeKx1ywNnMoA0o5hiZ8iA4klH84TIszTHZAME68xVIjLkiBo5KrtowbcOJn8MQqJG/yWHjC/dFdMWyQ==}
+  node-cron@4.5.0:
+    resolution: {integrity: sha512-4Trh+kjvbXokyJkwQumvD5YAgeJfgHLR/sKyu71uSmxfCR5QMO1hldpvmFZOICN5pLgNY+J5Y8+ar3XKo5/4tQ==}
     engines: {node: '>=20'}
 
   node-gyp-build@4.8.4:
@@ -8396,7 +8396,7 @@ snapshots:
 
   node-addon-api@8.5.0: {}
 
-  node-cron@4.4.1: {}
+  node-cron@4.5.0: {}
 
   node-gyp-build@4.8.4: {}
 
