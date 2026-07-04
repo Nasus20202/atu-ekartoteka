@@ -33,8 +33,7 @@ export async function credentialsAuthorize(
 
   if (isTurnstileEnabled()) {
     const autoLoginBypassToken = credentials.autoLoginBypassToken as
-      | string
-      | undefined;
+      string | undefined;
     const isAutoLoginBypassValid = verifyRegistrationAutoLoginToken(
       autoLoginBypassToken,
       credentials.email as string
