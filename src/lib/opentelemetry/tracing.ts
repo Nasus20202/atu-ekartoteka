@@ -77,11 +77,11 @@ export async function initTracing() {
       exportIntervalMillis: 60000, // Export metrics every 60 seconds
     }),
     logRecordProcessors: [
-      new BatchLogRecordProcessor(
-        new OTLPLogExporter({
+      new BatchLogRecordProcessor({
+        exporter: new OTLPLogExporter({
           url: `${collectorEndpoint}/v1/logs`,
-        })
-      ),
+        }),
+      }),
     ],
     instrumentations: [
       new PinoInstrumentation(),
