@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/card';
 import { LoadingCard } from '@/components/ui/loading-card';
 import type { ApartmentDetailDto } from '@/lib/types/dto/apartment-dto';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatSharePercent } from '@/lib/utils';
 import { sumDecimals } from '@/lib/utils/sum';
 
 export default function ApartmentDetailsPage() {
@@ -191,11 +191,10 @@ export default function ApartmentDetailsPage() {
                   {apartment.shareNumerator &&
                   apartment.shareDenominator &&
                   apartment.shareDenominator > 0
-                    ? (
-                        (apartment.shareNumerator /
-                          apartment.shareDenominator) *
-                        100
-                      ).toFixed(1)
+                    ? formatSharePercent(
+                        apartment.shareNumerator,
+                        apartment.shareDenominator
+                      )
                     : 'Brak'}
                   %
                 </p>

@@ -45,3 +45,11 @@ export const formatDate = (date: Date): string => {
     year: 'numeric',
   });
 };
+
+export function formatSharePercent(
+  numerator: number,
+  denominator: number
+): string {
+  const percent = ((numerator / denominator) * 100).toFixed(4);
+  return percent.replace(/\.?0+$/, '');
+}

@@ -1,6 +1,7 @@
 import nodemailer, { type Transporter } from 'nodemailer';
 
 import { renderEmailTemplate } from '@/lib/email/template-loader';
+import { hashToken } from '@/lib/email/verification-utils';
 import { createLogger } from '@/lib/logger';
 import { emailMetrics } from '@/lib/opentelemetry/email-metrics';
 
@@ -165,8 +166,8 @@ export class EmailService {
       {
         to,
         tokenLength: token.length,
+        tokenFingerprint: hashToken(token).slice(0, 12),
         hasName: !!name,
-        url: verificationUrl,
       },
       'Sending verification email'
     );

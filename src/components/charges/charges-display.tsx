@@ -16,6 +16,7 @@ import {
 } from '@/lib/types/dto/charge-dto';
 import { formatCurrency, formatPeriod } from '@/lib/utils';
 import type { DecimalLike } from '@/lib/utils/decimal';
+import { isPeriodAfterDate } from '@/lib/utils/payment-months';
 import { sumDecimals } from '@/lib/utils/sum';
 
 interface YearGroup {
@@ -29,6 +30,7 @@ interface ChargesDisplayProps {
   activeMonth: string | null;
   apartmentLabel: string;
   hoaName: string;
+  chargesDataDate?: string | null;
 }
 
 function groupByYear(periods: string[]): YearGroup[] {
@@ -49,9 +51,13 @@ export function ChargesDisplay({
   activeMonth,
   apartmentLabel,
   hoaName,
+  chargesDataDate,
 }: ChargesDisplayProps) {
+  const filteredPeriods = chargesDataDate
+    ? periods.filter((p) => !isPeriodAfterDate(p, chargesDataDate))
+    : periods;
   const activeYear = activeMonth ? activeMonth.slice(0, 4) : null;
-  const yearGroups = groupByYear(periods);
+  const yearGroups = groupByYear(filteredPeriods);
   const mostRecentPeriod = periods[0] ?? null;
 
   // All years open by default; if activeMonth given, ensure its year is included

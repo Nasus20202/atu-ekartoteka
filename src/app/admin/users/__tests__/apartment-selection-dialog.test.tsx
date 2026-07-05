@@ -174,7 +174,7 @@ describe('ApartmentSelectionDialog', () => {
 
     expect(screen.getByText(/zatwierdź konto/i)).toBeInTheDocument();
     expect(screen.getByText(/dopasowanie/i)).toBeInTheDocument();
-    expect(screen.getByText(/25.0%/i)).toBeInTheDocument();
+    expect(screen.getByText(/25%/i)).toBeInTheDocument();
 
     await user.type(
       screen.getByLabelText(/przypisz mieszkanie \(opcjonalne\)/i),

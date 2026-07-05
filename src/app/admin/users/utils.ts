@@ -1,6 +1,7 @@
 import type { Apartment, User } from '@/app/admin/users/types';
 import type { UserFilter } from '@/app/admin/users/user-filters';
 import { AccountStatus } from '@/lib/types';
+import { formatSharePercent } from '@/lib/utils';
 
 export function buildUsersQuery(
   filter: UserFilter,
@@ -168,5 +169,5 @@ export function getApartmentSharePercent(apartment: Apartment): string | null {
     return null;
   }
 
-  return `${((apartment.shareNumerator / apartment.shareDenominator) * 100).toFixed(1)}%`;
+  return `${formatSharePercent(apartment.shareNumerator, apartment.shareDenominator)}%`;
 }

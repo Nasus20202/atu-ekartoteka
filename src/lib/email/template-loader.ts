@@ -42,6 +42,15 @@ function loadTemplates(): TemplateMap {
 
 const templates = loadTemplates();
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export function renderEmailTemplate(
   templateName: TemplateName,
   format: Format,
@@ -49,11 +58,11 @@ export function renderEmailTemplate(
 ): string {
   const template = templates[templateName][format];
 
-  // Replace variables
   let result = template;
   for (const [key, value] of Object.entries(variables)) {
     const placeholder = `{{${key}}}`;
-    result = result.replace(new RegExp(placeholder, 'g'), value);
+    const escapedValue = format === 'html' ? escapeHtml(value) : value;
+    result = result.replace(new RegExp(placeholder, 'g'), escapedValue);
   }
 
   return result;

@@ -14,6 +14,7 @@ import { formatCurrency, MONTH_NAMES_PL } from '@/lib/utils';
 import { toDecimal } from '@/lib/utils/decimal';
 import {
   CHARGE_MONTH_FIELD_KEYS,
+  dateToPeriod,
   getNonEmptyMonths,
   PAYMENT_MONTH_FIELD_KEYS,
 } from '@/lib/utils/payment-months';
@@ -23,15 +24,20 @@ interface PaymentTableProps {
   payment: PaymentDtoSource;
   apartmentId: string;
   disableLinks?: boolean;
+  chargesDataDate?: string | null;
 }
 
 export function PaymentTable({
   payment,
   apartmentId,
   disableLinks = false,
+  chargesDataDate,
 }: PaymentTableProps) {
   const openingBalance = toDecimal(payment.openingBalance);
-  const monthlyData = getNonEmptyMonths(payment).reduce<
+  const maxPeriod = chargesDataDate
+    ? dateToPeriod(new Date(chargesDataDate))
+    : null;
+  const monthlyData = getNonEmptyMonths(payment, maxPeriod).reduce<
     Array<{
       monthIndex: number;
       name: string;

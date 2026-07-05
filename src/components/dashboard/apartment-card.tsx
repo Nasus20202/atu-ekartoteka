@@ -2,7 +2,7 @@ import { FileText, Wallet } from 'lucide-react';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatSharePercent } from '@/lib/utils';
 import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
 
 interface ApartmentCardProps {
@@ -34,10 +34,10 @@ export function ApartmentCard({
   index,
 }: ApartmentCardProps) {
   const sharePercent =
-    apartment.shareNumerator != null && apartment.shareDenominator != null
-      ? ((apartment.shareNumerator / apartment.shareDenominator) * 100).toFixed(
-          1
-        ) + '%'
+    apartment.shareNumerator != null &&
+    apartment.shareDenominator != null &&
+    apartment.shareDenominator > 0
+      ? `${formatSharePercent(apartment.shareNumerator, apartment.shareDenominator)}%`
       : null;
 
   return (

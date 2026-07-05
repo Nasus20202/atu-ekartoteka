@@ -132,7 +132,7 @@ describe('admin users utils', () => {
   });
 
   it('formats apartment share percent only for valid denominators', () => {
-    expect(getApartmentSharePercent(apartmentA)).toBe('50.0%');
+    expect(getApartmentSharePercent(apartmentA)).toBe('50%');
     expect(getApartmentSharePercent(apartmentC)).toBeNull();
     expect(
       getApartmentSharePercent({

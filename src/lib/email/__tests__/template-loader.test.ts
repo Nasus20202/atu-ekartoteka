@@ -77,8 +77,36 @@ describe('renderEmailTemplate', () => {
       VERIFICATION_URL: 'https://example.com/verify?token=abc&test=true',
     });
 
-    expect(result).toContain('https://example.com/verify?token=abc&test=true');
-    expect(result).toContain("O'Brien & Partners");
+    expect(result).toContain(
+      'https://example.com/verify?token=abc&amp;test=true'
+    );
+    expect(result).toContain('O&#39;Brien');
+    expect(result).toContain('&amp;');
+    expect(result).not.toContain('&test=true');
+  });
+
+  it('should escape HTML in html templates but not in txt templates', () => {
+    const variables = {
+      NAME: '<script>alert("xss")</script>',
+      VERIFICATION_URL: 'https://example.com/verify',
+    };
+
+    const htmlResult = renderEmailTemplate(
+      'verification-email',
+      'html',
+      variables
+    );
+    expect(htmlResult).not.toContain('<script>');
+    expect(htmlResult).toContain('&lt;script&gt;');
+    expect(htmlResult).toContain('&quot;');
+
+    const txtResult = renderEmailTemplate(
+      'verification-email',
+      'txt',
+      variables
+    );
+    expect(txtResult).toContain('<script>');
+    expect(txtResult).toContain('alert("xss")');
   });
 
   it('should type check template names at compile time', () => {

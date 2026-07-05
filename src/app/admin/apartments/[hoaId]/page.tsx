@@ -19,6 +19,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { LoadingCard } from '@/components/ui/loading-card';
 import { type ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
+import { formatSharePercent } from '@/lib/utils';
 
 interface PaginationData {
   page: number;
@@ -280,13 +281,7 @@ export default function HOAApartmentsPage() {
                             {apartment.shareNumerator &&
                             apartment.shareDenominator &&
                             apartment.shareDenominator > 0
-                              ? `${Number(
-                                  (
-                                    (apartment.shareNumerator /
-                                      apartment.shareDenominator) *
-                                    100
-                                  ).toFixed(1)
-                                )}%`
+                              ? `${formatSharePercent(apartment.shareNumerator, apartment.shareDenominator)}%`
                               : '-'}
                           </dd>
                         </div>

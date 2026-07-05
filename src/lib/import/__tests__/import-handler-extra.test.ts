@@ -83,8 +83,10 @@ function makeTx(overrides: Record<string, unknown> = {}) {
     },
     payment: {
       findMany: vi.fn().mockResolvedValue([]),
+      findFirst: vi.fn().mockResolvedValue(null),
       upsert: vi.fn().mockResolvedValue({}),
       create: vi.fn().mockResolvedValue({}),
+      createMany: vi.fn().mockResolvedValue({ count: 0 }),
       deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
     },
     ...overrides,
@@ -306,6 +308,185 @@ describe('import-handler additional coverage', () => {
 
       expect(result.success).toBe(false);
       expect(result.results[0].errors[0]).toContain('Nieznany błąd');
+    });
+  });
+
+  describe('cross-year balance validation', () => {
+    it('passes when no previous year payment exists', async () => {
+      const paymentsFile = makeFile('hoa1/wplaty.txt');
+
+      mockParseWplatyFile.mockResolvedValue({
+        entries: [
+          {
+            externalId: 'W001',
+            apartmentCode: 'APT001',
+            year: 2024,
+            dateFrom: new Date('2024-01-01'),
+            dateTo: new Date('2024-12-31'),
+            openingDebt: 0,
+            openingSurplus: 0,
+            openingBalance: 500,
+            totalCharges: 2400,
+            closingBalance: 600,
+            monthlyCharges: [
+              200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200,
+            ],
+            monthlyPayments: [
+              100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+            ],
+          },
+        ],
+      });
+
+      const tx = makeTx({
+        payment: {
+          findMany: vi.fn().mockResolvedValue([]),
+          findFirst: vi.fn().mockResolvedValue(null),
+          createMany: vi.fn().mockResolvedValue({ count: 1 }),
+          deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
+        },
+        apartment: {
+          findMany: vi.fn().mockResolvedValue([
+            {
+              id: 'apt-1',
+              externalOwnerId: 'W001',
+              externalApartmentId: 'APT001',
+            },
+          ]),
+          createMany: vi.fn().mockResolvedValue({ count: 0 }),
+          updateMany: vi.fn().mockResolvedValue({ count: 0 }),
+        },
+      });
+
+      mockTransaction.mockImplementation(async (fn: unknown) =>
+        (fn as (tx: ReturnType<typeof makeTx>) => Promise<void>)(tx)
+      );
+
+      const result = await processBatchImport([paymentsFile]);
+
+      expect(result.success).toBe(true);
+      expect(result.results[0].errors).toHaveLength(0);
+    });
+
+    it('passes when opening balance matches previous year closing balance', async () => {
+      const paymentsFile = makeFile('hoa1/wplaty.txt');
+
+      mockParseWplatyFile.mockResolvedValue({
+        entries: [
+          {
+            externalId: 'W001',
+            apartmentCode: 'APT001',
+            year: 2024,
+            dateFrom: new Date('2024-01-01'),
+            dateTo: new Date('2024-12-31'),
+            openingDebt: 0,
+            openingSurplus: 0,
+            openingBalance: 100,
+            totalCharges: 2400,
+            closingBalance: 200,
+            monthlyCharges: [
+              200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200,
+            ],
+            monthlyPayments: [
+              100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+            ],
+          },
+        ],
+      });
+
+      const tx = makeTx({
+        payment: {
+          findMany: vi.fn().mockResolvedValue([]),
+          findFirst: vi.fn().mockResolvedValue({
+            id: 'payment-2023',
+            closingBalance: 100,
+          }),
+          createMany: vi.fn().mockResolvedValue({ count: 1 }),
+          deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
+        },
+        apartment: {
+          findMany: vi.fn().mockResolvedValue([
+            {
+              id: 'apt-1',
+              externalOwnerId: 'W001',
+              externalApartmentId: 'APT001',
+            },
+          ]),
+          createMany: vi.fn().mockResolvedValue({ count: 0 }),
+          updateMany: vi.fn().mockResolvedValue({ count: 0 }),
+        },
+      });
+
+      mockTransaction.mockImplementation(async (fn: unknown) =>
+        (fn as (tx: ReturnType<typeof makeTx>) => Promise<void>)(tx)
+      );
+
+      const result = await processBatchImport([paymentsFile]);
+
+      expect(result.success).toBe(true);
+      expect(result.results[0].errors).toHaveLength(0);
+    });
+
+    it('fails when opening balance does not match previous year closing balance', async () => {
+      const paymentsFile = makeFile('hoa1/wplaty.txt');
+
+      mockParseWplatyFile.mockResolvedValue({
+        entries: [
+          {
+            externalId: 'W001',
+            apartmentCode: 'APT001',
+            year: 2024,
+            dateFrom: new Date('2024-01-01'),
+            dateTo: new Date('2024-12-31'),
+            openingDebt: 0,
+            openingSurplus: 0,
+            openingBalance: 500,
+            totalCharges: 2400,
+            closingBalance: 600,
+            monthlyCharges: [
+              200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200,
+            ],
+            monthlyPayments: [
+              100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+            ],
+          },
+        ],
+      });
+
+      const tx = makeTx({
+        payment: {
+          findMany: vi.fn().mockResolvedValue([]),
+          findFirst: vi.fn().mockResolvedValue({
+            id: 'payment-2023',
+            closingBalance: 100,
+          }),
+          createMany: vi.fn().mockResolvedValue({ count: 0 }),
+          deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
+        },
+        apartment: {
+          findMany: vi.fn().mockResolvedValue([
+            {
+              id: 'apt-1',
+              externalOwnerId: 'W001',
+              externalApartmentId: 'APT001',
+            },
+          ]),
+          createMany: vi.fn().mockResolvedValue({ count: 0 }),
+          updateMany: vi.fn().mockResolvedValue({ count: 0 }),
+        },
+      });
+
+      mockTransaction.mockImplementation(async (fn: unknown) =>
+        (fn as (tx: ReturnType<typeof makeTx>) => Promise<void>)(tx)
+      );
+
+      const result = await processBatchImport([paymentsFile]);
+
+      expect(result.success).toBe(false);
+      expect(result.results[0].errors[0]).toContain('saldo otwarcia');
+      expect(result.results[0].errors[0]).toContain('≠');
+      expect(result.results[0].errors[0]).toContain('APT001');
+      expect(result.results[0].errors[0]).toContain('2024');
     });
   });
 });
