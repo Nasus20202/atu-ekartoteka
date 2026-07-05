@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 
 import { DatabaseStatsCard } from '@/app/admin/import/database-stats-card';
 import { ImportResults } from '@/app/admin/import/import-results';
+import { prepareImportFiles } from '@/app/admin/import/prepare-import-files';
 import type { DatabaseStats, ImportResponse } from '@/app/admin/import/types';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
@@ -24,6 +25,11 @@ import { Label } from '@/components/ui/label';
 
 export { ImportWarnings } from '@/app/admin/import/import-warnings';
 
+const directoryInputProps = {
+  webkitdirectory: '',
+  directory: '',
+} as React.InputHTMLAttributes<HTMLInputElement>;
+
 export default function AdminImportPage() {
   const confirm = useConfirm();
   const [files, setFiles] = useState<FileList | null>(null);
@@ -35,19 +41,25 @@ export default function AdminImportPage() {
   const [cleanImport, setCleanImport] = useState(false);
   const [skipValidation, setSkipValidation] = useState(false);
 
-  async function fetchStats() {
+  async function fetchStats(
+    options: { isCancelled?: () => boolean; skipLoading?: boolean } = {}
+  ) {
     try {
-      setStatsLoading(true);
+      if (!options.skipLoading) {
+        setStatsLoading(true);
+      }
       const res = await fetch('/api/admin/stats');
 
-      if (res.ok) {
+      if (res.ok && !options.isCancelled?.()) {
         const data = await res.json();
         setDbStats(data);
       }
     } catch {
       // Ignore stats errors
     } finally {
-      setStatsLoading(false);
+      if (!options.isCancelled?.()) {
+        setStatsLoading(false);
+      }
     }
   }
 
@@ -55,22 +67,7 @@ export default function AdminImportPage() {
     let cancelled = false;
 
     async function loadStats() {
-      try {
-        const res = await fetch('/api/admin/stats');
-
-        if (cancelled || !res.ok) {
-          return;
-        }
-
-        const data = await res.json();
-        setDbStats(data);
-      } catch {
-        // Ignore stats errors
-      } finally {
-        if (!cancelled) {
-          setStatsLoading(false);
-        }
-      }
+      await fetchStats({ isCancelled: () => cancelled, skipLoading: true });
     }
 
     void loadStats();
@@ -113,36 +110,7 @@ export default function AdminImportPage() {
     setResponse(null);
 
     try {
-      const fileData: Array<{ path: string; content: string; name: string }> =
-        [];
-
-      for (let index = 0; index < files.length; index++) {
-        const file = files[index];
-        const filePath =
-          (file as File & { webkitRelativePath?: string }).webkitRelativePath ||
-          file.name;
-
-        const arrayBuffer = await file.arrayBuffer();
-        const stream = new Blob([arrayBuffer]).stream();
-        const compressedStream = stream.pipeThrough(
-          new CompressionStream('gzip')
-        );
-        const compressedBlob = await new Response(compressedStream).blob();
-        const compressedBuffer = await compressedBlob.arrayBuffer();
-
-        const base64 = btoa(
-          new Uint8Array(compressedBuffer).reduce(
-            (data, byte) => data + String.fromCharCode(byte),
-            ''
-          )
-        );
-
-        fileData.push({
-          path: filePath,
-          name: file.name,
-          content: base64,
-        });
-      }
+      const fileData = await prepareImportFiles(files);
 
       const res = await fetch('/api/admin/import', {
         method: 'POST',
@@ -224,9 +192,7 @@ export default function AdminImportPage() {
               disabled={loading}
               multiple
               suppressHydrationWarning
-              // @ts-expect-error - webkitdirectory is not in the type definitions
-              webkitdirectory=""
-              directory=""
+              {...directoryInputProps}
             />
             {files && (
               <p className="text-sm text-muted-foreground">

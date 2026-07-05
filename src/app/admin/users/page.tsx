@@ -65,6 +65,14 @@ export default function AdminUsersPage() {
     setEditMode(null);
   }, []);
 
+  const openUserDialog = useCallback((user: User, mode: EditMode) => {
+    setSelectedUser(user);
+    setSelectedApartments(
+      user.apartments?.map((apartment) => apartment.id) || []
+    );
+    setEditMode(mode);
+  }, []);
+
   const fetchUsers = useCallback(async () => {
     const requestId = ++latestUsersRequestId.current;
     setLoading(true);
@@ -88,38 +96,12 @@ export default function AdminUsersPage() {
   }, [debouncedSearch, filter, page]);
 
   useEffect(() => {
-    const requestId = ++latestUsersRequestId.current;
-    let cancelled = false;
-
     async function loadUsers() {
-      try {
-        const query = buildUsersQuery(filter, page, debouncedSearch);
-        const response = await fetch(`/api/admin/users?${query}`);
-        const data = await response.json();
-
-        if (
-          !cancelled &&
-          response.ok &&
-          requestId === latestUsersRequestId.current
-        ) {
-          setUsers(data.users);
-          setTotalPages(data.pagination?.totalPages ?? 1);
-        }
-      } catch (error) {
-        console.error('Failed to fetch users:', error);
-      } finally {
-        if (!cancelled && requestId === latestUsersRequestId.current) {
-          setLoading(false);
-        }
-      }
+      await fetchUsers();
     }
 
     void loadUsers();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [debouncedSearch, filter, page]);
+  }, [fetchUsers]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -368,27 +350,9 @@ export default function AdminUsersPage() {
               key={user.id}
               user={user}
               actionLoading={actionLoading}
-              onApprove={() => {
-                setSelectedUser(user);
-                setSelectedApartments(
-                  user.apartments?.map((apartment) => apartment.id) || []
-                );
-                setEditMode('approve');
-              }}
-              onAssignApartment={() => {
-                setSelectedUser(user);
-                setSelectedApartments(
-                  user.apartments?.map((apartment) => apartment.id) || []
-                );
-                setEditMode('assign-apartment');
-              }}
-              onChangeStatus={() => {
-                setSelectedUser(user);
-                setSelectedApartments(
-                  user.apartments?.map((apartment) => apartment.id) || []
-                );
-                setEditMode('change-status');
-              }}
+              onApprove={() => openUserDialog(user, 'approve')}
+              onAssignApartment={() => openUserDialog(user, 'assign-apartment')}
+              onChangeStatus={() => openUserDialog(user, 'change-status')}
               onReject={() => handleUpdateUser(user.id, AccountStatus.REJECTED)}
             />
           ))}
