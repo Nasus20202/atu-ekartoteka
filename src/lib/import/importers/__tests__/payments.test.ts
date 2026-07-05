@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { importPayments } from '@/lib/import/importers/payments';
+import {
+  buildPaymentData,
+  importPayments,
+} from '@/lib/import/importers/payments';
 import { EntityStats, TransactionClient } from '@/lib/import/types';
 import { PaymentEntry } from '@/lib/parsers/wplaty-parser';
 import type { DecimalLike } from '@/lib/utils/decimal';
@@ -76,6 +79,18 @@ describe('importPayments', () => {
     stats = createStats();
     errors = [];
     apartmentMap = new Map([['W001#APT001', 'apt-1']]);
+  });
+
+  it('should map payment entry month values to named payment fields', () => {
+    const data = buildPaymentData(createPaymentEntry(), 'apt-1');
+
+    expect(data).toMatchObject({
+      apartmentId: 'apt-1',
+      januaryPayments: 100,
+      decemberPayments: 100,
+      januaryCharges: 200,
+      decemberCharges: 200,
+    });
   });
 
   it('should skip entries without matching apartment', async () => {

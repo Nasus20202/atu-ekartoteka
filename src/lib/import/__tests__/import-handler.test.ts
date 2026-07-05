@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { processBatchImport } from '@/lib/import/import-handler';
+import {
+  processBatchImport,
+  validateCrossYearBalances,
+} from '@/lib/import/import-handler';
 
 const {
   mockTransaction,
@@ -44,6 +47,37 @@ describe('import-handler', () => {
   });
 
   describe('processBatchImport', () => {
+    it('should report cross-year balance mismatches', async () => {
+      const mockTx = {
+        payment: {
+          findFirst: vi.fn().mockResolvedValue({ closingBalance: 50 }),
+        },
+      };
+      const errors: string[] = [];
+
+      await expect(
+        validateCrossYearBalances(
+          mockTx,
+          new Map([['W001#APT001', 'apt-1']]),
+          [
+            {
+              externalId: 'W001',
+              apartmentCode: 'APT001',
+              year: 2024,
+              openingBalance: 100,
+            },
+          ],
+          errors
+        )
+      ).rejects.toThrow('saldo otwarcia');
+
+      expect(errors[0]).toContain('saldo otwarcia 100');
+      expect(mockTx.payment.findFirst).toHaveBeenCalledWith({
+        where: { apartmentId: 'apt-1', year: 2023 },
+        select: { closingBalance: true },
+      });
+    });
+
     it('should group files by HOA and process them', async () => {
       const lokFile = createMockFile('lok data', 'hoa1/lok.txt');
       const chargesFile = createMockFile('charges data', 'hoa1/nal_czynsz.txt');
