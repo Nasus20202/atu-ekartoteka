@@ -31,7 +31,13 @@ export async function POST(req: NextRequest) {
     const verification = await findVerificationByCode(hashedToken);
 
     if (!verification) {
-      logger.warn({ token }, 'Invalid verification token');
+      logger.warn(
+        {
+          tokenLength: token.length,
+          tokenFingerprint: hashToken(token).slice(0, 12),
+        },
+        'Invalid verification token'
+      );
       return NextResponse.json(
         { error: 'Nieprawidłowy token weryfikacyjny' },
         { status: 400 }

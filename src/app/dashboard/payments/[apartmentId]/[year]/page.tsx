@@ -161,7 +161,14 @@ export default async function PaymentDetailsPage({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <PaymentTable payment={payment} apartmentId={apartment.id} />
+            <PaymentTable
+              payment={payment}
+              apartmentId={apartment.id}
+              chargesDataDate={
+                apartment.homeownersAssociation.chargesDataDate?.toISOString() ??
+                null
+              }
+            />
           </CardContent>
         </Card>
 

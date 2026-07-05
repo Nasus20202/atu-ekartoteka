@@ -1,8 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
+import { ImportResultCard } from '@/app/admin/import/import-result-card';
 import { ImportResults } from '@/app/admin/import/import-results';
-import type { ImportResponse } from '@/app/admin/import/types';
+import type { ImportResponse, ImportResult } from '@/app/admin/import/types';
 
 const response: ImportResponse = {
   success: true,
@@ -55,6 +56,72 @@ const response: ImportResponse = {
   ],
 };
 
+const successResponseOnly: ImportResponse = {
+  success: true,
+  errors: [],
+  results: [
+    {
+      hoaId: 'HOA-2',
+      apartments: {
+        created: 1,
+        updated: 0,
+        skipped: 0,
+        deleted: 0,
+        total: 1,
+      },
+      errors: [],
+      warnings: [],
+    },
+  ],
+};
+
+const resultWithoutErrors: ImportResult = {
+  hoaId: 'HOA-OK',
+  apartments: {
+    created: 5,
+    updated: 0,
+    skipped: 0,
+    deleted: 0,
+    total: 5,
+  },
+  errors: [],
+  warnings: [],
+};
+
+const resultWithErrors: ImportResult = {
+  hoaId: 'HOA-ERR',
+  apartments: {
+    created: 0,
+    updated: 0,
+    skipped: 0,
+    deleted: 0,
+    total: 0,
+  },
+  errors: ['Błąd A'],
+  warnings: [],
+};
+
+const resultWithWarnings: ImportResult = {
+  hoaId: 'HOA-WARN',
+  apartments: {
+    created: 5,
+    updated: 0,
+    skipped: 0,
+    deleted: 0,
+    total: 5,
+  },
+  errors: [],
+  warnings: [
+    {
+      apartmentExternalId: 'APT-1',
+      period: '202401',
+      lineNo: 1,
+      difference: '0.01',
+      message: 'Ostrzeżenie',
+    },
+  ],
+};
+
 describe('ImportResults', () => {
   it('renders nothing without response', () => {
     const { container } = render(<ImportResults response={null} />);
@@ -77,5 +144,47 @@ describe('ImportResults', () => {
     expect(screen.getByText(/wpłaty/i)).toBeInTheDocument();
     expect(screen.getByText(/błędy walidacji \(2\)/i)).toBeInTheDocument();
     expect(screen.getByText(/ostrzeżenia \(1\)/i)).toBeInTheDocument();
+  });
+
+  it('shows combined download button when errors or warnings exist', () => {
+    render(<ImportResults response={response} />);
+
+    expect(
+      screen.getByRole('button', { name: /pobierz wszystkie błędy/i })
+    ).toBeInTheDocument();
+  });
+
+  it('hides combined download button when no errors or warnings', () => {
+    render(<ImportResults response={successResponseOnly} />);
+
+    expect(
+      screen.queryByRole('button', { name: /pobierz wszystkie błędy/i })
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe('ImportResultCard', () => {
+  it('shows download button when errors exist', () => {
+    render(<ImportResultCard result={resultWithErrors} />);
+
+    expect(
+      screen.getByRole('button', { name: /pobierz błędy/i })
+    ).toBeInTheDocument();
+  });
+
+  it('shows download button when warnings exist', () => {
+    render(<ImportResultCard result={resultWithWarnings} />);
+
+    expect(
+      screen.getByRole('button', { name: /pobierz błędy/i })
+    ).toBeInTheDocument();
+  });
+
+  it('hides download button when no errors or warnings', () => {
+    render(<ImportResultCard result={resultWithoutErrors} />);
+
+    expect(
+      screen.queryByRole('button', { name: /pobierz błędy/i })
+    ).not.toBeInTheDocument();
   });
 });

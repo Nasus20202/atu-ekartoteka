@@ -102,7 +102,7 @@ describe('UserCard', () => {
     );
 
     expect(screen.getByText(/przypisane mieszkania: 1/i)).toBeInTheDocument();
-    expect(screen.getByText(/25.0%/i)).toBeInTheDocument();
+    expect(screen.getByText(/25%/i)).toBeInTheDocument();
     expect(screen.getByText(/nieaktywny/i)).toBeInTheDocument();
 
     await user.click(screen.getAllByRole('button', { name: /mieszkania/i })[0]);

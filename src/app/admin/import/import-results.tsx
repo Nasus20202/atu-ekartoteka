@@ -1,8 +1,10 @@
-import { AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, Download, XCircle } from 'lucide-react';
 
 import { ImportResultCard } from '@/app/admin/import/import-result-card';
 import type { ImportResponse } from '@/app/admin/import/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { serialiseErrorsToTxt } from '@/lib/utils/export-errors';
 
 interface ImportResultsProps {
   response: ImportResponse | null;
@@ -15,6 +17,9 @@ export function ImportResults({ response }: ImportResultsProps) {
 
   const failedHoas = response.results.filter(
     (result) => result.errors.length > 0
+  );
+  const hasAnyErrors = response.results.some(
+    (result) => result.errors.length > 0 || result.warnings.length > 0
   );
 
   return (
@@ -61,6 +66,39 @@ export function ImportResults({ response }: ImportResultsProps) {
             </ul>
           </AlertDescription>
         </Alert>
+      )}
+
+      {hasAnyErrors && (
+        <div className="flex justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const entries = response.results
+                .filter((r) => r.errors.length > 0 || r.warnings.length > 0)
+                .map((r) => ({
+                  hoaId: r.hoaId,
+                  errors: r.errors,
+                  warnings: r.warnings.map((w) => ({
+                    apartmentExternalId: w.apartmentExternalId,
+                    period: w.period,
+                    message: w.message,
+                  })),
+                }));
+              const content = serialiseErrorsToTxt(entries);
+              const blob = new Blob([content], { type: 'text/plain' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'bledy-import.txt';
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Pobierz wszystkie błędy
+          </Button>
+        </div>
       )}
 
       {response.results.map((result) => (

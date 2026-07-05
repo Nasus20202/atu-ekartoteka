@@ -85,6 +85,10 @@ export default async function ApartmentChargesPage({
           activeMonth={activeMonth}
           apartmentLabel={apartmentLabel}
           hoaName={apartment.homeownersAssociation.name}
+          chargesDataDate={
+            apartment.homeownersAssociation.chargesDataDate?.toISOString() ??
+            null
+          }
         />
       )}
     </Page>

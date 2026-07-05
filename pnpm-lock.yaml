@@ -6,7 +6,6 @@ settings:
 
 overrides:
   '@auth/core': '*'
-  eslint-plugin-react-hooks: 7.1.1
 
 importers:
 

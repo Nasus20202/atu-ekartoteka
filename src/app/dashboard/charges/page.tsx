@@ -71,6 +71,16 @@ export default async function ChargesPage() {
 
   const periods = Object.keys(chargesByPeriod).sort().reverse();
 
+  const chargesDataDates = userData.apartments
+    .map((a) => a.homeownersAssociation.chargesDataDate)
+    .filter(Boolean) as Date[];
+  const chargesDataDate =
+    chargesDataDates.length === userData.apartments.length
+      ? new Date(
+          Math.max(...chargesDataDates.map((d) => d.getTime()))
+        ).toISOString()
+      : null;
+
   return (
     <Page>
       <PageHeader title="Naliczenia" />
@@ -91,6 +101,7 @@ export default async function ChargesPage() {
         <MultiChargesDisplay
           periods={periods}
           chargesByPeriod={chargesByPeriod}
+          chargesDataDate={chargesDataDate}
         />
       )}
     </Page>

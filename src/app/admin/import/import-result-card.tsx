@@ -1,8 +1,10 @@
-import { XCircle } from 'lucide-react';
+import { Download, XCircle } from 'lucide-react';
 
 import { ImportWarnings } from '@/app/admin/import/import-warnings';
 import type { EntityStats, ImportResult } from '@/app/admin/import/types';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { serialiseErrorsToTxt } from '@/lib/utils/export-errors';
 
 interface ImportResultCardProps {
   result: ImportResult;
@@ -148,6 +150,38 @@ export function ImportResultCard({ result }: ImportResultCardProps) {
         )}
 
         <ImportWarnings warnings={result.warnings} />
+
+        {(result.errors.length > 0 || result.warnings.length > 0) && (
+          <div className="mt-4 flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const content = serialiseErrorsToTxt([
+                  {
+                    hoaId: result.hoaId,
+                    errors: result.errors,
+                    warnings: result.warnings.map((w) => ({
+                      apartmentExternalId: w.apartmentExternalId,
+                      period: w.period,
+                      message: w.message,
+                    })),
+                  },
+                ]);
+                const blob = new Blob([content], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `bledy-${result.hoaId}.txt`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Pobierz błędy
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

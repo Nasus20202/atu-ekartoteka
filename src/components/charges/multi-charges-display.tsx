@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/collapsible';
 import type { ChargeDisplayDto } from '@/lib/types/dto/charge-dto';
 import { formatCurrency, formatPeriod } from '@/lib/utils';
+import { isPeriodAfterDate } from '@/lib/utils/payment-months';
 import { sumDecimals } from '@/lib/utils/sum';
 
 interface ApartmentPeriodData {
@@ -23,6 +24,7 @@ interface ApartmentPeriodData {
 interface MultiChargesDisplayProps {
   periods: string[];
   chargesByPeriod: Record<string, ApartmentPeriodData[]>;
+  chargesDataDate?: string | null;
 }
 
 function groupByYear(
@@ -50,8 +52,12 @@ function computePeriodTotal(periodData: ApartmentPeriodData[]) {
 export function MultiChargesDisplay({
   periods,
   chargesByPeriod,
+  chargesDataDate,
 }: MultiChargesDisplayProps) {
-  const yearGroups = groupByYear(periods);
+  const filteredPeriods = chargesDataDate
+    ? periods.filter((p) => !isPeriodAfterDate(p, chargesDataDate))
+    : periods;
+  const yearGroups = groupByYear(filteredPeriods);
   const mostRecentPeriod = periods[0] ?? null;
 
   const [openYears, setOpenYears] = useState<Set<string>>(

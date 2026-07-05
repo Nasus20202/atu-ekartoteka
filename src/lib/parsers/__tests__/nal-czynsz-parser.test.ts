@@ -136,5 +136,69 @@ describe('nal-czynsz-parser', () => {
       expect(entries[0].description).toBe('Zarządzanie');
       expect(entries[1].description).toBe('Eksploatacja');
     });
+
+    it('preserves original line numbers when no duplicates exist', async () => {
+      const mockData =
+        'W00162#hoa1-hoa1-00000-00001M#01/01/2025#31/01/2025#202501#1#Test1#1#szt#73#73,00\n' +
+        'W00162#hoa1-hoa1-00000-00001M#01/01/2025#31/01/2025#202501#2#Test2#1#szt#73#73,00\n' +
+        'W00163#hoa1-hoa1-00000-00002M#01/01/2025#31/01/2025#202501#1#Test3#1#szt#73#73,00\n';
+      const buffer = iconv.encode(mockData, 'iso-8859-2');
+      const entries = await parseNalCzynszBuffer(buffer);
+
+      expect(entries).toHaveLength(3);
+      expect(entries[0].lineNo).toBe(1);
+      expect(entries[1].lineNo).toBe(2);
+      expect(entries[2].lineNo).toBe(1);
+    });
+
+    it('assigns synthetic line number to duplicate (same apartment + period + lineNo)', async () => {
+      const mockData =
+        'W00162#hoa1-hoa1-00000-00001M#01/01/2025#31/01/2025#202501#1#Oryginal#1#szt#73#73,00\n' +
+        'W00162#hoa1-hoa1-00000-00001M#01/01/2025#31/01/2025#202501#1#Duplikat#1#szt#73#73,00\n';
+      const buffer = iconv.encode(mockData, 'iso-8859-2');
+      const entries = await parseNalCzynszBuffer(buffer);
+
+      expect(entries).toHaveLength(2);
+      expect(entries[0].lineNo).toBe(1);
+      expect(entries[1].lineNo).toBe(1_000_001);
+    });
+
+    it('assigns 2_000_000 offset to third duplicate', async () => {
+      const mockData =
+        'W00162#hoa1-hoa1-00000-00001M#01/01/2025#31/01/2025#202501#1#Pierwsza#1#szt#73#73,00\n' +
+        'W00162#hoa1-hoa1-00000-00001M#01/01/2025#31/01/2025#202501#1#Druga#1#szt#73#73,00\n' +
+        'W00162#hoa1-hoa1-00000-00001M#01/01/2025#31/01/2025#202501#1#Trzecia#1#szt#73#73,00\n';
+      const buffer = iconv.encode(mockData, 'iso-8859-2');
+      const entries = await parseNalCzynszBuffer(buffer);
+
+      expect(entries).toHaveLength(3);
+      expect(entries[0].lineNo).toBe(1);
+      expect(entries[1].lineNo).toBe(1_000_001);
+      expect(entries[2].lineNo).toBe(2_000_001);
+    });
+
+    it('does not treat different apartments with same lineNo as duplicates', async () => {
+      const mockData =
+        'W00162#hoa1-hoa1-00000-00001M#01/01/2025#31/01/2025#202501#1#ApartA#1#szt#73#73,00\n' +
+        'W00163#hoa1-hoa1-00000-00002M#01/01/2025#31/01/2025#202501#1#ApartB#1#szt#73#73,00\n';
+      const buffer = iconv.encode(mockData, 'iso-8859-2');
+      const entries = await parseNalCzynszBuffer(buffer);
+
+      expect(entries).toHaveLength(2);
+      expect(entries[0].lineNo).toBe(1);
+      expect(entries[1].lineNo).toBe(1);
+    });
+
+    it('does not treat same apartment different periods as duplicates', async () => {
+      const mockData =
+        'W00162#hoa1-hoa1-00000-00001M#01/01/2025#31/01/2025#202501#1#Styczen#1#szt#73#73,00\n' +
+        'W00162#hoa1-hoa1-00000-00001M#01/02/2025#28/02/2025#202502#1#Luty#1#szt#73#73,00\n';
+      const buffer = iconv.encode(mockData, 'iso-8859-2');
+      const entries = await parseNalCzynszBuffer(buffer);
+
+      expect(entries).toHaveLength(2);
+      expect(entries[0].lineNo).toBe(1);
+      expect(entries[1].lineNo).toBe(1);
+    });
   });
 });

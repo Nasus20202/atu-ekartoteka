@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { formatSharePercent } from '@/lib/utils';
 
 interface PaymentApartmentDetailsCardProps {
   address: string;
@@ -21,7 +22,7 @@ export function PaymentApartmentDetailsCard({
 }: PaymentApartmentDetailsCardProps) {
   const sharePercentage =
     shareNumerator && shareDenominator && shareDenominator > 0
-      ? ((shareNumerator / shareDenominator) * 100).toFixed(1)
+      ? formatSharePercent(shareNumerator, shareDenominator)
       : '-';
 
   return (

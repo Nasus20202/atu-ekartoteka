@@ -40,7 +40,7 @@ describe('ApartmentCard', () => {
     render(<ApartmentCard apartment={mockApartment} index={0} />);
 
     expect(screen.getByText('Udział')).toBeInTheDocument();
-    expect(screen.getByText('2000.0%')).toBeInTheDocument();
+    expect(screen.getByText('2000%')).toBeInTheDocument();
   });
 
   it('renders links to apartment charges and payments when data is available', () => {
@@ -132,6 +132,21 @@ describe('ApartmentCard', () => {
 
     expect(screen.getByText(/\/5/)).toBeInTheDocument();
     expect(screen.queryByText('Właściciel')).not.toBeInTheDocument();
+    expect(screen.queryByText('Udział')).not.toBeInTheDocument();
+  });
+
+  it('handles denominator 0 gracefully', () => {
+    const apartmentWithZeroDenominator = {
+      ...mockApartment,
+      owner: null,
+      shareNumerator: 5000,
+      shareDenominator: 0,
+    };
+
+    render(
+      <ApartmentCard apartment={apartmentWithZeroDenominator} index={0} />
+    );
+
     expect(screen.queryByText('Udział')).not.toBeInTheDocument();
   });
 

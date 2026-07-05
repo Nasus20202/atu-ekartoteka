@@ -29,6 +29,7 @@ export async function parseNalCzynszBuffer(
   const lines = content.split(/\r?\n/).filter((line: string) => line.trim());
 
   const entries: NalCzynszEntry[] = [];
+  const seen = new Map<string, number>();
 
   for (const line of lines) {
     const fields = line.split('#').map((field) => field.trim());
@@ -54,17 +55,42 @@ export async function parseNalCzynszBuffer(
     try {
       const dateFrom = parseDate(dateFromStr);
       const dateTo = parseDate(dateToStr);
-      const lineNo = parseInt(lineNoStr);
+      const originalLineNo = parseInt(lineNoStr);
       const quantity = parseDecimalValue(quantityStr);
       const unitPrice = parseDecimalValue(unitPriceStr);
       const totalAmount = parseDecimalValue(totalAmountStr);
 
+      const aId = apartmentExternalId.trim();
+      const p = period.trim();
+      const key = `${aId}|${p}|${originalLineNo}`;
+      const seenCount = seen.get(key) ?? 0;
+      seen.set(key, seenCount + 1);
+
+      const lineNo =
+        seenCount === 0
+          ? originalLineNo
+          : originalLineNo + 1_000_000 * seenCount;
+
+      if (seenCount > 0) {
+        logger.info(
+          {
+            id: id.trim(),
+            apartmentExternalId: aId,
+            period: p,
+            originalLineNo,
+            syntheticLineNo: lineNo,
+            occurrence: seenCount + 1,
+          },
+          'Duplicate charge line detected, assigned synthetic line number'
+        );
+      }
+
       entries.push({
         id: id.trim(),
-        apartmentExternalId: apartmentExternalId.trim(),
+        apartmentExternalId: aId,
         dateFrom,
         dateTo,
-        period: period.trim(),
+        period: p,
         lineNo,
         description: description.trim(),
         quantity,
