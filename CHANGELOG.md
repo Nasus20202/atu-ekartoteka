@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.5] - 2026-07-05
+
+- refactor: small cleanup
+- feat: improve data import and display
+- chore: add more opencode skills
+- chore: update openspec
+- chore(deps): update dependency prettier to v3.9.4 (#450)
+- chore(deps): update dependency tsx to v4.23.0 (#451)
+- chore(deps): update dependency lucide-react to v1.23.0 (#449)
+- chore(deps): update dependency eslint to v10.6.0 (#447)
+- chore(deps): update dependency import-in-the-middle to v3.3.0 (#448)
+- chore(deps): update opentelemetry-js monorepo (#437)
+- chore(deps): update tailwindcss monorepo to v4.3.2 (#446)
+- chore(deps): update radix-ui-primitives monorepo (#445)
+- chore(deps): update nextjs monorepo to v16.2.10 (#436)
+- chore(deps): update dependency vite to v8.1.3 (#444)
+- chore(deps): update dependency recharts to v3.9.2 (#443)
+- chore(deps): update opentelemetry-js-contrib monorepo (#438)
+- chore(deps): update dependency recharts to v3.9.1 (#442)
+- chore(deps): update dependency nodemailer to v9.0.3 (#441)
+- chore(deps): update dependency iconv-lite to v0.7.3 (#440)
+- chore(deps): update dependency @playwright/test to v1.61.1 (#439)
+- chore(deps): update node.js to v24.18.0 (#434)
+- chore(deps): update semgrep/semgrep docker tag to v1.168.0 (#435)
+- chore(deps): update dependency vite to v8.1.0 (#433)
+- chore(deps): update dependency recharts to v3.9.0 (#432)
+- chore(deps): update dependency @vitejs/plugin-react to v6.0.3 (#431)
+- chore(deps): update dependency import-in-the-middle to v3.2.0 (#430)
+- chore(deps): update dependency node-cron to v4.5.0 (#429)
+- chore(deps): update dependency lint-staged to v17.0.8 (#428)
+
 ## [0.7.4] - 2026-06-19
 
 - chore(deps): update react monorepo (#427)
