@@ -60,7 +60,7 @@
     "@radix-ui/react-tabs": "^1.1.13",
     "@react-pdf/renderer": "^4.3.3",
     "@tailwindcss/postcss": "^4.1.18",
-    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/bcrypt": "^6.0.0",
