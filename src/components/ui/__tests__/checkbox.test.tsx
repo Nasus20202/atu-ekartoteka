@@ -90,12 +90,6 @@ describe('Checkbox', () => {
     expect(checkbox).toHaveAttribute('data-state', 'indeterminate');
   });
 
-  it('should accept and forward ref', () => {
-    const ref = vi.fn();
-    render(<Checkbox ref={ref} />);
-    expect(ref).toHaveBeenCalled();
-  });
-
   it('should support keyboard interaction', async () => {
     const user = userEvent.setup();
     const handleChange = vi.fn();

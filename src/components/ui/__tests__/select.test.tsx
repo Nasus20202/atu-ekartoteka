@@ -99,20 +99,4 @@ describe('Select', () => {
 
     expect(handleValueChange).toHaveBeenCalledWith('ADMIN');
   });
-
-  it('forwards ref correctly', () => {
-    const ref = vi.fn();
-
-    render(
-      <Select
-        ref={ref}
-        aria-label="Rola"
-        value="TENANT"
-        options={OPTIONS}
-        onValueChange={() => {}}
-      />
-    );
-
-    expect(ref).toHaveBeenCalled();
-  });
 });

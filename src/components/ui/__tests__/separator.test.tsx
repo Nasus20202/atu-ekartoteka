@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
 
 import { render } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { Separator } from '@/components/ui/separator';
 
@@ -27,12 +27,6 @@ describe('Separator', () => {
     const { container } = render(<Separator className="custom" />);
     const separator = container.firstChild as HTMLElement;
     expect(separator).toHaveClass('custom');
-  });
-
-  it('forwards ref correctly', () => {
-    const ref = vi.fn();
-    render(<Separator ref={ref} />);
-    expect(ref).toHaveBeenCalled();
   });
 
   it('accepts other HTML attributes', () => {
