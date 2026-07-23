@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
 
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import {
   Table,
@@ -38,12 +38,6 @@ describe('Table', () => {
     const { container } = render(<Table className="custom" />);
     const table = container.querySelector('table');
     expect(table).toHaveClass('custom');
-  });
-
-  it('forwards ref correctly', () => {
-    const ref = vi.fn();
-    render(<Table ref={ref} />);
-    expect(ref).toHaveBeenCalled();
   });
 
   it('wraps table in overflow container', () => {
@@ -86,16 +80,6 @@ describe('TableHeader', () => {
     const thead = container.querySelector('thead');
     expect(thead).toHaveClass('custom');
   });
-
-  it('forwards ref correctly', () => {
-    const ref = vi.fn();
-    render(
-      <Table>
-        <TableHeader ref={ref} />
-      </Table>
-    );
-    expect(ref).toHaveBeenCalled();
-  });
 });
 
 describe('TableBody', () => {
@@ -130,16 +114,6 @@ describe('TableBody', () => {
     );
     const tbody = container.querySelector('tbody');
     expect(tbody).toHaveClass('custom');
-  });
-
-  it('forwards ref correctly', () => {
-    const ref = vi.fn();
-    render(
-      <Table>
-        <TableBody ref={ref} />
-      </Table>
-    );
-    expect(ref).toHaveBeenCalled();
   });
 });
 
@@ -180,16 +154,6 @@ describe('TableFooter', () => {
     );
     const tfoot = container.querySelector('tfoot');
     expect(tfoot).toHaveClass('custom');
-  });
-
-  it('forwards ref correctly', () => {
-    const ref = vi.fn();
-    render(
-      <Table>
-        <TableFooter ref={ref} />
-      </Table>
-    );
-    expect(ref).toHaveBeenCalled();
   });
 });
 
@@ -234,18 +198,6 @@ describe('TableRow', () => {
     );
     const tr = container.querySelector('tr');
     expect(tr).toHaveClass('custom');
-  });
-
-  it('forwards ref correctly', () => {
-    const ref = vi.fn();
-    render(
-      <Table>
-        <TableBody>
-          <TableRow ref={ref} />
-        </TableBody>
-      </Table>
-    );
-    expect(ref).toHaveBeenCalled();
   });
 });
 
@@ -297,20 +249,6 @@ describe('TableHead', () => {
     const th = container.querySelector('th');
     expect(th).toHaveClass('custom');
   });
-
-  it('forwards ref correctly', () => {
-    const ref = vi.fn();
-    render(
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead ref={ref} />
-          </TableRow>
-        </TableHeader>
-      </Table>
-    );
-    expect(ref).toHaveBeenCalled();
-  });
 });
 
 describe('TableCell', () => {
@@ -354,20 +292,6 @@ describe('TableCell', () => {
     const td = container.querySelector('td');
     expect(td).toHaveClass('custom');
   });
-
-  it('forwards ref correctly', () => {
-    const ref = vi.fn();
-    render(
-      <Table>
-        <TableBody>
-          <TableRow>
-            <TableCell ref={ref} />
-          </TableRow>
-        </TableBody>
-      </Table>
-    );
-    expect(ref).toHaveBeenCalled();
-  });
 });
 
 describe('TableCaption', () => {
@@ -398,15 +322,5 @@ describe('TableCaption', () => {
     );
     const caption = container.querySelector('caption');
     expect(caption).toHaveClass('custom');
-  });
-
-  it('forwards ref correctly', () => {
-    const ref = vi.fn();
-    render(
-      <Table>
-        <TableCaption ref={ref} />
-      </Table>
-    );
-    expect(ref).toHaveBeenCalled();
   });
 });

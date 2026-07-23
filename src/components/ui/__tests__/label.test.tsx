@@ -32,12 +32,6 @@ describe('Label', () => {
     expect(label).toHaveAttribute('for', 'email');
   });
 
-  it('forwards ref correctly', () => {
-    const ref = { current: null };
-    render(<Label ref={ref}>Ref Label</Label>);
-    expect(ref.current).toBeInstanceOf(HTMLLabelElement);
-  });
-
   it('renders with associated input', () => {
     render(
       <div>

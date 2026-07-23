@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
 
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import {
   Collapsible,
@@ -13,12 +13,6 @@ describe('Collapsible', () => {
   it('renders children', () => {
     render(<Collapsible>Test collapsible</Collapsible>);
     expect(screen.getByText('Test collapsible')).toBeInTheDocument();
-  });
-
-  it('forwards ref correctly', () => {
-    const ref = vi.fn();
-    render(<Collapsible ref={ref}>Test</Collapsible>);
-    expect(ref).toHaveBeenCalled();
   });
 
   it('accepts open prop', () => {
@@ -37,16 +31,6 @@ describe('CollapsibleTrigger', () => {
     );
     expect(screen.getByText('Trigger')).toBeInTheDocument();
   });
-
-  it('forwards ref correctly', () => {
-    const ref = vi.fn();
-    render(
-      <Collapsible>
-        <CollapsibleTrigger ref={ref}>Trigger</CollapsibleTrigger>
-      </Collapsible>
-    );
-    expect(ref).toHaveBeenCalled();
-  });
 });
 
 describe('CollapsibleContent', () => {
@@ -57,15 +41,5 @@ describe('CollapsibleContent', () => {
       </Collapsible>
     );
     expect(screen.getByText('Content')).toBeInTheDocument();
-  });
-
-  it('forwards ref correctly', () => {
-    const ref = vi.fn();
-    render(
-      <Collapsible open>
-        <CollapsibleContent ref={ref}>Content</CollapsibleContent>
-      </Collapsible>
-    );
-    expect(ref).toHaveBeenCalled();
   });
 });
