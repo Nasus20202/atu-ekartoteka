@@ -40,7 +40,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
         with:
-          version: '11.16'
+          version: '11.16.0'
 
       - name: Bump up ${{ github.event.inputs.increment }} version
         id: increment_version
