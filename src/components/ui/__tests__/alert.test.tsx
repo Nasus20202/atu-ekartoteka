@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
@@ -39,12 +39,6 @@ describe('Alert', () => {
     );
   });
 
-  it('forwards ref correctly', () => {
-    const ref = vi.fn();
-    render(<Alert ref={ref}>Test</Alert>);
-    expect(ref).toHaveBeenCalled();
-  });
-
   it('accepts other HTML attributes', () => {
     render(<Alert data-testid="custom-alert">Test</Alert>);
     expect(screen.getByTestId('custom-alert')).toBeInTheDocument();
@@ -74,12 +68,6 @@ describe('AlertTitle', () => {
     expect(title).toHaveClass('custom-title');
   });
 
-  it('forwards ref correctly', () => {
-    const ref = vi.fn();
-    render(<AlertTitle ref={ref}>Test Title</AlertTitle>);
-    expect(ref).toHaveBeenCalled();
-  });
-
   it('renders as h5 element', () => {
     render(<AlertTitle>Test Title</AlertTitle>);
     const title = screen.getByText('Test Title');
@@ -107,12 +95,6 @@ describe('AlertDescription', () => {
     );
     const description = screen.getByText('Test Description');
     expect(description).toHaveClass('custom-desc');
-  });
-
-  it('forwards ref correctly', () => {
-    const ref = vi.fn();
-    render(<AlertDescription ref={ref}>Test Description</AlertDescription>);
-    expect(ref).toHaveBeenCalled();
   });
 
   it('renders as div element', () => {

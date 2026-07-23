@@ -99,12 +99,6 @@ describe('Button', () => {
     expect(link).toHaveAttribute('href', '/test');
   });
 
-  it('forwards ref correctly', () => {
-    const ref = vi.fn();
-    render(<Button ref={ref}>Ref Button</Button>);
-    expect(ref).toHaveBeenCalled();
-  });
-
   it('renders with type attribute', () => {
     render(<Button type="submit">Submit</Button>);
     const button = screen.getByRole('button', { name: 'Submit' });

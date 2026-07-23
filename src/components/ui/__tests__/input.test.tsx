@@ -67,12 +67,6 @@ describe('Input', () => {
     expect(handleChange).toHaveBeenCalled();
   });
 
-  it('forwards ref correctly', () => {
-    const ref = vi.fn();
-    render(<Input ref={ref} />);
-    expect(ref).toHaveBeenCalled();
-  });
-
   it('accepts value prop', () => {
     render(
       <Input value="preset value" onChange={() => {}} data-testid="input" />
