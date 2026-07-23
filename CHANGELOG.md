@@ -5,6 +5,58 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.6] - 2026-07-23
+
+- chore: pin patch pnpm version in release workflow
+- chore(deps): update radix-ui-primitives monorepo and remove forwardRef from UI components
+- chore(deps): update semgrep/semgrep docker tag to v1.171.0 (#502)
+- chore(deps): update pnpm to v11.16.0 (#500)
+- chore(deps): update react monorepo to v19.2.8 (#499)
+- chore(deps): update dependency lint-staged to v17.1.1 (#496)
+- chore(deps): update dependency @vitejs/plugin-react to v6.0.4 (#495)
+- chore(deps): update semgrep/semgrep docker tag to v1.170.1 (#494)
+- chore(deps): update opentelemetry-js monorepo (#493)
+- chore(deps): update nextjs monorepo to v16.2.11 (#492)
+- chore(deps): update dependency prettier to v3.9.6 (#489)
+- chore(deps): update dependency next-auth to v5.0.0-beta.32 (#487)
+- chore(deps): update dependency recharts to v3.10.0 (#488)
+- chore(deps): update dependency @testing-library/jest-dom to v7
+- chore(deps): update dependency import-in-the-middle to v3.3.2 (#486)
+- chore(deps): update dependency @auth/prisma-adapter to v2.11.3 (#485)
+- chore(deps): update prisma monorepo to v7.9.0 (#483)
+- chore(deps): update radix-ui-primitives monorepo (#482)
+- chore(deps): update pnpm to v11.15.1 (#481)
+- chore(deps): update pnpm to v11.15.0 (#480)
+- chore(deps): update dependency lint-staged to v17.1.0 (#479)
+- chore(deps): update pnpm to v11.14.0 (#478)
+- chore(deps): update grafana/otel-lgtm docker tag to v0.29.1 (#477)
+- chore(deps): update dependency eslint-plugin-simple-import-sort to v14
+- chore(deps): update dependency lucide-react to v1.25.0 (#476)
+- chore(deps): update tailwindcss monorepo to v4.3.3 (#474)
+- chore(deps): update dependency vite to v8.1.5 (#473)
+- chore(deps): update pnpm to v11.13.1 (#472)
+- chore(deps): update semgrep/semgrep docker tag to v1.170.0 (#471)
+- chore(deps): update actions/setup-node action to v7
+- chore(deps): update pnpm to v11.12.0 (#468)
+- chore(deps): update grafana/otel-lgtm docker tag to v0.29.0 (#469)
+- chore(deps): update dependency tsx to v4.23.1 (#467)
+- chore: update dockerfile
+- chore: add .node-version
+- chore: pin versions
+- chore(deps): update dependency eslint to v10.7.0 (#466)
+- chore(deps): update dependency @opentelemetry/semantic-conventions to v1.43.0 (#465)
+- chore(deps): update dependency prettier to v3.9.5 (#464)
+- chore(deps): update dependency lucide-react to v1.24.0 (#463)
+- chore(deps): update dependency vite to v8.1.4 (#462)
+- chore(deps): update semgrep/semgrep docker tag to v1.169.0 (#461)
+- chore(deps): update dependency @types/node to v25.9.5 (#459)
+- chore(deps): update dependency import-in-the-middle to v3.3.1 (#458)
+- chore(deps): update radix-ui-primitives monorepo (#457)
+- chore(deps): update dependency @opentelemetry/semantic-conventions to v1.42.0 (#456)
+- chore(deps): update vitest monorepo to v4.1.10 (#455)
+- chore(deps): update dependency eslint-plugin-playwright to v2.10.5 (#454)
+- chore(deps): update dependency node-cron to v4.6.0 (#453)
+
 ## [0.7.5] - 2026-07-05
 
 - refactor: small cleanup
