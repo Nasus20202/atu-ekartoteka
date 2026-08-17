@@ -128,7 +128,7 @@ importers:
         version: 8.0.1
       '@types/pg':
         specifier: ^8.16.0
-        version: 8.21.0
+        version: 8.23.0
       '@types/react':
         specifier: ^19.2.7
         version: 19.2.18
@@ -2103,8 +2103,8 @@ packages:
   '@types/pg@8.15.6':
     resolution: {integrity: sha512-NoaMtzhxOrubeL/7UZuNTrejB4MPAJ0RpxZqXQf2qXuVlTPuG6Y8p4u9dKRaue4yjmC7ZhzVO2/Yyyn25znrPQ==}
 
-  '@types/pg@8.21.0':
-    resolution: {integrity: sha512-AYdtudzabjLZgVgRZmAnU8bAnVUXzuJX2IYHeSIiIHm68olD+LgQYCGWdtcNYnP0uq9c4S4NibVG3Ni7VbKW7Q==}
+  '@types/pg@8.23.0':
+    resolution: {integrity: sha512-gPGYzOgqj8wcPJ3GSojYWD1i3wjym3ezWgis/Zk2gY8u29x9tEsP3oaBYFwqsFYmKOm6sawDu3IHNwladQc0ig==}
 
   '@types/react-dom@19.2.4':
     resolution: {integrity: sha512-Bsc+QHgp+P/F02XDzNCY9jnZNCUuLki36KT7VKrTXXLdHf+vHMNZnW1rVu5DNW/rCK+fya3DATySbLM4yhtKUw==}
@@ -4118,9 +4118,6 @@ packages:
     peerDependencies:
       pg: '>=8.0'
 
-  pg-protocol@1.15.0:
-    resolution: {integrity: sha512-cq9sECI5s0+uPUXjbz8ioyPJni6RzsRib0US67i5IoTZKw8fNeYlVE7u8F4dG7vEJJtc5wdD1K189lCCUwqWTQ==}
-
   pg-protocol@1.16.0:
     resolution: {integrity: sha512-sILXutLVjCLjcDuOmvhX5e2Z4cS5qG/6Bu3VkpFwdf/633ElGLpEh9bgmuI5I4sqKqkifQiGyiCcx1HdtrK7tg==}
 
@@ -5889,7 +5886,7 @@ snapshots:
   '@prisma/adapter-pg@7.9.1':
     dependencies:
       '@prisma/driver-adapter-utils': 7.9.1
-      '@types/pg': 8.21.0
+      '@types/pg': 8.23.0
       pg: 8.23.0
       postgres-array: 3.0.4
     transitivePeerDependencies:
@@ -6781,18 +6778,18 @@ snapshots:
 
   '@types/pg-pool@2.0.7':
     dependencies:
-      '@types/pg': 8.21.0
+      '@types/pg': 8.23.0
 
   '@types/pg@8.15.6':
     dependencies:
       '@types/node': 25.9.5
-      pg-protocol: 1.15.0
+      pg-protocol: 1.16.0
       pg-types: 2.2.0
 
-  '@types/pg@8.21.0':
+  '@types/pg@8.23.0':
     dependencies:
       '@types/node': 25.9.5
-      pg-protocol: 1.15.0
+      pg-protocol: 1.16.0
       pg-types: 2.2.0
 
   '@types/react-dom@19.2.4(@types/react@19.2.18)':
@@ -8858,8 +8855,6 @@ snapshots:
   pg-pool@3.14.0(pg@8.23.0):
     dependencies:
       pg: 8.23.0
-
-  pg-protocol@1.15.0: {}
 
   pg-protocol@1.16.0: {}
 
