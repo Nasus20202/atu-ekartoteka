@@ -72,8 +72,8 @@
     "@types/react-dom": "^19.2.3",
     "@typescript/native": "npm:typescript@^7.0.2",
     "@vitejs/plugin-react": "^6.0.0",
-    "@vitest/coverage-v8": "^4.0.15",
-    "@vitest/ui": "^4.0.15",
+    "@vitest/coverage-v8": "^5.0.0",
+    "@vitest/ui": "^5.0.0",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
@@ -111,7 +111,7 @@
     "tsx": "^4.21.0",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "vite": "^8.0.0",
-    "vitest": "^4.0.15"
+    "vitest": "^5.0.0"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs}": [
