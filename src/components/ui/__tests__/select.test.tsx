@@ -52,9 +52,10 @@ describe('Select', () => {
     );
   });
 
-  it('shows options when opened', async () => {
+  it('opens, selects an option and calls onValueChange', async () => {
+    const handleValueChange = vi.fn();
     const user = userEvent.setup();
-    render(<TestSelect />);
+    render(<TestSelect onValueChange={handleValueChange} />);
 
     await user.click(screen.getByRole('button', { name: 'Rola' }));
 
@@ -63,7 +64,12 @@ describe('Select', () => {
     expect(option).toBeInTheDocument();
     expect(option).toHaveClass('ui-select-option');
 
-    await user.keyboard('{Escape}');
+    await user.click(option);
+
+    expect(screen.getByRole('button', { name: 'Rola' })).toHaveTextContent(
+      'Administrator'
+    );
+    expect(handleValueChange).toHaveBeenCalledWith('ADMIN');
   });
 
   it('adds open-state animation hook to the trigger icon', () => {
@@ -72,33 +78,5 @@ describe('Select', () => {
     expect(screen.getByRole('button', { name: 'Rola' })).toHaveClass(
       'data-[state=open]:[&_svg]:rotate-180'
     );
-  });
-
-  it('handles value changes', async () => {
-    const user = userEvent.setup();
-    render(<TestSelect />);
-
-    await user.click(screen.getByRole('button', { name: 'Rola' }));
-    await user.click(
-      screen.getByRole('menuitemradio', { name: 'Administrator' })
-    );
-
-    expect(screen.getByRole('button', { name: 'Rola' })).toHaveTextContent(
-      'Administrator'
-    );
-  });
-
-  it('calls onValueChange handler', async () => {
-    const handleValueChange = vi.fn();
-    const user = userEvent.setup();
-
-    render(<TestSelect onValueChange={handleValueChange} />);
-
-    await user.click(screen.getByRole('button', { name: 'Rola' }));
-    await user.click(
-      screen.getByRole('menuitemradio', { name: 'Administrator' })
-    );
-
-    expect(handleValueChange).toHaveBeenCalledWith('ADMIN');
   });
 });
