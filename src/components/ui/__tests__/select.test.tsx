@@ -58,7 +58,9 @@ describe('Select', () => {
 
     await user.click(screen.getByRole('button', { name: 'Rola' }));
 
-    const option = screen.getByRole('menuitemradio', { name: 'Administrator' });
+    const option = await screen.findByRole('menuitemradio', {
+      name: 'Administrator',
+    });
 
     expect(option).toBeInTheDocument();
     expect(option).toHaveClass('ui-select-option');
@@ -78,7 +80,7 @@ describe('Select', () => {
 
     await user.click(screen.getByRole('button', { name: 'Rola' }));
     await user.click(
-      screen.getByRole('menuitemradio', { name: 'Administrator' })
+      await screen.findByRole('menuitemradio', { name: 'Administrator' })
     );
 
     expect(screen.getByRole('button', { name: 'Rola' })).toHaveTextContent(
@@ -94,7 +96,7 @@ describe('Select', () => {
 
     await user.click(screen.getByRole('button', { name: 'Rola' }));
     await user.click(
-      screen.getByRole('menuitemradio', { name: 'Administrator' })
+      await screen.findByRole('menuitemradio', { name: 'Administrator' })
     );
 
     expect(handleValueChange).toHaveBeenCalledWith('ADMIN');
