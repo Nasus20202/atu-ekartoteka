@@ -62,6 +62,8 @@ describe('Select', () => {
 
     expect(option).toBeInTheDocument();
     expect(option).toHaveClass('ui-select-option');
+
+    await user.keyboard('{Escape}');
   });
 
   it('adds open-state animation hook to the trigger icon', () => {
