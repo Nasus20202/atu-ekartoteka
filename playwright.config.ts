@@ -58,7 +58,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'pnpm dev',
+    command: 'node_modules/.bin/next dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: WEB_SERVER_TIMEOUT_MS,
