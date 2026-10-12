@@ -334,7 +334,9 @@ export default function HOAApartmentsPage() {
               <Checkbox
                 id="active-only"
                 checked={activeOnly}
-                onCheckedChange={handleActiveOnlyChange}
+                onCheckedChange={(checked) =>
+                  handleActiveOnlyChange(checked === true)
+                }
               />
               Tylko aktywne
             </label>
