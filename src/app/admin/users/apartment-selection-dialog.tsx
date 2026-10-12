@@ -145,8 +145,11 @@ export function ApartmentSelectionDialog({
                       <Checkbox
                         id={`apt-${apartment.id}`}
                         checked={selectedApartments.includes(apartment.id)}
-                        onCheckedChange={(checked: boolean) => {
-                          void handleApartmentCheckedChange(apartment, checked);
+                        onCheckedChange={(checked) => {
+                          void handleApartmentCheckedChange(
+                            apartment,
+                            checked === true
+                          );
                         }}
                         className="mt-1"
                       />
