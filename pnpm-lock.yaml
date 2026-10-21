@@ -169,6 +169,9 @@ importers:
 
   .:
     dependencies:
+      forwarded-parse:
+        specifier: 2.1.2
+        version: 2.1.2
       prisma:
         specifier: ^7.1.0
         version: 7.10.1(@types/node@25.9.9)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(@typescript/typescript6@6.0.2)(magicast@0.5.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)

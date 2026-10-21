@@ -27,6 +27,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "forwarded-parse": "2.1.2",
     "prisma": "^7.1.0"
   },
   "devDependencies": {
