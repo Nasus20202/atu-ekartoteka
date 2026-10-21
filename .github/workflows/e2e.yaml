@@ -1,14 +1,7 @@
 name: E2E Tests
 
 on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [main]
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  workflow_call:
 
 env:
   DATABASE_URL: postgresql://postgres:postgres@localhost:5432/e2e_test
@@ -39,7 +32,7 @@ jobs:
           cache-to: type=gha,scope=e2e,mode=max
 
       - name: Start application and database
-        run: docker compose -f docker-compose.e2e.yaml up --no-build --wait
+        run: docker compose -f docker-compose.e2e.yaml up --no-build --wait --wait-timeout 180
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
@@ -86,7 +79,10 @@ jobs:
 
       - name: Show application logs
         if: failure()
-        run: docker compose -f docker-compose.e2e.yaml logs
+        run: |
+          docker compose -f docker-compose.e2e.yaml ps
+          docker inspect --format '{{json .State.Health}}' "$(docker compose -f docker-compose.e2e.yaml ps -q ekartoteka)" || true
+          docker compose -f docker-compose.e2e.yaml logs
 
       - name: Upload Playwright Report
         uses: actions/upload-artifact@v7
