@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.9] - 2026-10-21
+
+- fix(docker): add forwarded-parse and run e2e against the Docker image (#781)
+- chore(deps): update node.js to v24.22.1 (#777)
+- chore(deps): update dependency nodemailer to v10.2.0 (#780)
+- chore(deps): update dependency @marsidev/react-turnstile to v1.6.3 (#779)
+
 ## [0.7.8] - 2026-10-21
 
 - chore(deps): update opentelemetry-js monorepo to v3
