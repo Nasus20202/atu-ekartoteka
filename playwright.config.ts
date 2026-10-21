@@ -56,20 +56,22 @@ export default defineConfig({
     },
   ],
 
-  /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'node_modules/.bin/next dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    timeout: WEB_SERVER_TIMEOUT_MS,
-    env: {
-      ...process.env,
-      // Disable Turnstile and SMTP for E2E tests
-      TURNSTILE_SITE_KEY: '',
-      TURNSTILE_SECRET_KEY: '',
-      SMTP_HOST: '',
-    },
-  },
+  /* Run your local dev server before starting the tests, unless an already running app (e.g. the Docker image) is targeted */
+  webServer: process.env.PLAYWRIGHT_SKIP_WEBSERVER
+    ? undefined
+    : {
+        command: 'node_modules/.bin/next dev',
+        url: 'http://localhost:3000',
+        reuseExistingServer: !process.env.CI,
+        timeout: WEB_SERVER_TIMEOUT_MS,
+        env: {
+          ...process.env,
+          // Disable Turnstile and SMTP for E2E tests
+          TURNSTILE_SITE_KEY: '',
+          TURNSTILE_SECRET_KEY: '',
+          SMTP_HOST: '',
+        },
+      },
 
   /* Global timeout for each test */
   timeout: TEST_TIMEOUT_MS,
