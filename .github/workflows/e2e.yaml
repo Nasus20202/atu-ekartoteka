@@ -24,7 +24,10 @@ jobs:
           path: ${{ runner.temp }}
 
       - name: Load Docker image
-        run: docker load --input "${{ runner.temp }}/ekartoteka-image.tar"
+        run: |
+          skopeo copy --override-os linux --override-arch amd64 \
+            "oci-archive:${{ runner.temp }}/ekartoteka-image.tar" \
+            docker-daemon:ekartoteka:e2e
 
       - name: Start application and database
         run: docker compose -f docker-compose.e2e.yaml up --no-build --wait --wait-timeout 180
