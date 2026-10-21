@@ -41,8 +41,7 @@ export async function initTracing() {
     await import('@opentelemetry/instrumentation-pg');
   const { PinoInstrumentation } =
     await import('@opentelemetry/instrumentation-pino');
-  const { resources } = await import('@opentelemetry/sdk-node');
-  const { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } =
+  const { ATTR_SERVICE_VERSION } =
     await import('@opentelemetry/semantic-conventions');
 
   const K8S_NAMESPACE_NAME = 'k8s.namespace.name';
@@ -53,7 +52,6 @@ export async function initTracing() {
   const k8sPodName = process.env.K8S_POD_NAME;
 
   const resourceAttributes: Record<string, string> = {
-    [ATTR_SERVICE_NAME]: serviceName,
     [ATTR_SERVICE_VERSION]: packageJson.version,
   };
 
@@ -65,17 +63,30 @@ export async function initTracing() {
     resourceAttributes[K8S_POD_NAME] = k8sPodName;
   }
 
+  // sdk-node no longer re-exports `resources`, so the extra resource attributes
+  // are passed through OTEL_RESOURCE_ATTRIBUTES, which the default env detector reads.
+  process.env.OTEL_RESOURCE_ATTRIBUTES = [
+    process.env.OTEL_RESOURCE_ATTRIBUTES,
+    ...Object.entries(resourceAttributes).map(
+      ([key, value]) => `${key}=${value}`
+    ),
+  ]
+    .filter(Boolean)
+    .join(',');
+
   const sdk = new NodeSDK({
-    resource: resources.resourceFromAttributes(resourceAttributes),
+    serviceName,
     traceExporter: new OTLPTraceExporter({
       url: `${collectorEndpoint}/v1/traces`,
     }),
-    metricReader: new PeriodicExportingMetricReader({
-      exporter: new OTLPMetricExporter({
-        url: `${collectorEndpoint}/v1/metrics`,
+    metricReaders: [
+      new PeriodicExportingMetricReader({
+        exporter: new OTLPMetricExporter({
+          url: `${collectorEndpoint}/v1/metrics`,
+        }),
+        exportIntervalMillis: 60000, // Export metrics every 60 seconds
       }),
-      exportIntervalMillis: 60000, // Export metrics every 60 seconds
-    }),
+    ],
     logRecordProcessors: [
       new BatchLogRecordProcessor({
         exporter: new OTLPLogExporter({
