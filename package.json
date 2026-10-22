@@ -3,7 +3,7 @@
   "version": "0.7.9",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@12.14.0",
+  "packageManager": "pnpm@12.15.0",
   "scripts": {
     "dev": "next dev",
     "dev:pretty": "next dev | pino-pretty",
