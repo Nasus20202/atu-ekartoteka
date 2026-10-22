@@ -2,7 +2,7 @@
 
 import { CheckCircle, Loader2, XCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 
 import { AuthLayout } from '@/components/layout/auth-layout';
@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 
 function VerifyEmailContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
   const [verifying, setVerifying] = useState(Boolean(token));
@@ -38,9 +39,8 @@ function VerifyEmailContent() {
 
         if (!cancelled) {
           setSuccess(true);
-          // Full page navigation so the server re-reads emailVerified from DB
           setTimeout(() => {
-            window.location.href = '/dashboard';
+            router.push('/dashboard');
           }, 2000);
         }
       } catch (err) {
@@ -59,7 +59,7 @@ function VerifyEmailContent() {
     return () => {
       cancelled = true;
     };
-  }, [token]);
+  }, [token, router]);
 
   if (verifying) {
     return (
