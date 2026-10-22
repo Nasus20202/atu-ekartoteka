@@ -55,3 +55,6 @@ prisma/*.db-journal
 
 # Test data
 /data/
+
+# CI lint caches
+.cache/
