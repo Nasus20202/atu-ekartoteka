@@ -1,7 +1,8 @@
 'use client';
 
 import { AlertTriangle } from 'lucide-react';
-import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { startTransition, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -14,6 +15,8 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const router = useRouter();
+
   useEffect(() => {
     // Log the error to an error reporting service
     logger.error(
@@ -36,7 +39,12 @@ export default function Error({
               <Button onClick={() => reset()}>Spróbuj ponownie</Button>
               <Button
                 variant="outline"
-                onClick={() => (window.location.href = '/dashboard')}
+                onClick={() =>
+                  startTransition(() => {
+                    router.push('/dashboard');
+                    reset();
+                  })
+                }
               >
                 Powrót do strony głównej
               </Button>
