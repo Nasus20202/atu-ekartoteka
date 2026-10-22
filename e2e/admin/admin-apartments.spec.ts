@@ -279,19 +279,15 @@ test.describe('Admin Apartment Browser', () => {
       // Enter "1/1A" in the search field — splits on "/" into building=1, number=1A
       const searchInput = adminPage.getByPlaceholder('Wyszukaj...');
       await searchInput.fill('1/1A');
-      await adminPage.waitForResponse(
-        (resp) =>
-          resp.url().includes('/api/admin/apartments') &&
-          resp.url().includes('search=') &&
-          resp.status() === 200
-      );
-      await adminPage.getByRole('button', { name: /Szukaj/i }).click();
-
-      // Wait for results to update
-      await adminPage.waitForResponse(
-        (resp) =>
-          resp.url().includes('/api/admin/apartments') && resp.status() === 200
-      );
+      await Promise.all([
+        adminPage.waitForResponse(
+          (resp) =>
+            resp.url().includes('/api/admin/apartments') &&
+            resp.url().includes('search=1') &&
+            resp.status() === 200
+        ),
+        adminPage.getByRole('button', { name: /Szukaj/i }).click(),
+      ]);
 
       // Seeded apartment (building=1, number=1A) should be visible
       await expect(adminPage.getByText('ul. Testowa 1/1A').first()).toBeVisible(
@@ -315,12 +311,15 @@ test.describe('Admin Apartment Browser', () => {
 
       const searchInput = adminPage.getByPlaceholder('Wyszukaj...');
       await searchInput.fill('ZZZNOMATCH999');
-      await adminPage.getByRole('button', { name: /Szukaj/i }).click();
-
-      await adminPage.waitForResponse(
-        (resp) =>
-          resp.url().includes('/api/admin/apartments') && resp.status() === 200
-      );
+      await Promise.all([
+        adminPage.waitForResponse(
+          (resp) =>
+            resp.url().includes('/api/admin/apartments') &&
+            resp.url().includes('search=ZZZNOMATCH999') &&
+            resp.status() === 200
+        ),
+        adminPage.getByRole('button', { name: /Szukaj/i }).click(),
+      ]);
 
       await expect(adminPage.getByText(/Nie znaleziono mieszkań/i)).toBeVisible(
         { timeout: 5000 }
