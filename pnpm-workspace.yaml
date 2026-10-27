@@ -10,4 +10,4 @@ allowBuilds:
 overrides:
   '@auth/core': '*'
 
-minimumReleaseAge: 0
+minimumReleaseAge: 1440
