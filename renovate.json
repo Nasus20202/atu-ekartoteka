@@ -8,12 +8,6 @@
     {
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
-    },
-    {
-      "description": "Own images are built by this owner's CI, so no release delay",
-      "matchDatasources": ["docker"],
-      "matchPackageNames": ["ghcr.io/nasus20202/**"],
-      "minimumReleaseAge": "0 days"
     }
   ]
 }
