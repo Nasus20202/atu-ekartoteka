@@ -1,6 +1,9 @@
-FROM node:24.22.1-alpine AS base
+FROM node:26.12.1-alpine@sha256:40cd011b55415bc894e45b02fdd5a5dfde056921b7d23a64c74f80497af48797 AS base
 WORKDIR /app
-RUN corepack enable
+# Node 26 images no longer bundle corepack, so install it from npm first
+# renovate: datasource=npm depName=corepack
+ARG COREPACK_VERSION=0.36.0
+RUN npm install -g corepack@${COREPACK_VERSION} && corepack enable
 
 # Install all dependencies (for building)
 FROM base AS builder-deps
