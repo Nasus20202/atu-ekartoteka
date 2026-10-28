@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.10] - 2026-10-28
+
+- chore(deps): pin dependencies (#793)
+- chore(deps): update dependency @types/node to v26
+- chore(deps): lock file maintenance (#798)
+- chore(deps): pin dependencies (#796)
+- refactor(renovate): extend shared preset
+- chore(renovate): add minimumReleaseAge of 1 day (#792)
+- chore(deps): update dependency lucide-react to v1.62.0 (#791)
+- chore(deps): update dependency import-in-the-middle to v3.5.3 (#789)
+- chore(deps): update grafana/otel-lgtm docker tag to v0.38.1 (#790)
+- chore(deps): update nextjs monorepo to v16.4.3 (#788)
+- chore(deps): update grafana/otel-lgtm docker tag to v0.38.0 (#787)
+- chore(deps): update dependency dotenv to v18.0.9 (#786)
+- chore(deps): update dependency nodemailer to v10.2.1 (#785)
+- refactor: use next router instead of window.location for internal navigation
+- ci: build docker image in parallel and cache lint results
+- chore(deps): update pnpm to v12.15.0 (#784)
+- chore(deps): update semgrep/semgrep docker tag to v1.182.1 (#782)
+
 ## [0.7.9] - 2026-10-21
 
 - fix(docker): add forwarded-parse and run e2e against the Docker image (#781)
