@@ -26,7 +26,8 @@ COPY . .
 
 ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 
-RUN pnpm exec prisma generate && pnpm build
+# --liftoff-only: Node 26 wasm optimizer corrupts Prisma DMMF under QEMU arm64
+RUN node --liftoff-only node_modules/prisma generate && pnpm build
 
 # Production image
 FROM base AS runner
