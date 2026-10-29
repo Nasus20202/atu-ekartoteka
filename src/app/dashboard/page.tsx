@@ -1,5 +1,11 @@
 import { redirect } from 'next/navigation';
 
+import {
+  buildDashboardNotifications,
+  buildHoaPaymentGroups,
+  getChargesForPeriod,
+  getDashboardPeriods,
+} from '@/app/dashboard/dashboard-data';
 import { auth } from '@/auth';
 import { UserStatusSection } from '@/components/account/user-status-section';
 import { getRecentChargeTrendByHoa } from '@/components/charts/chart-data';
@@ -9,7 +15,6 @@ import { NotificationsSidebar } from '@/components/dashboard/notifications-sideb
 import { PaymentsSummaryCard } from '@/components/dashboard/payments-summary-card';
 import { findUserWithApartmentsCached } from '@/lib/queries/users/find-user-with-apartments';
 import { AccountStatus } from '@/lib/types';
-import { toDecimal } from '@/lib/utils/decimal';
 import { getRequestNow } from '@/lib/utils/request-now';
 import { sumDecimals } from '@/lib/utils/sum';
 
@@ -26,26 +31,16 @@ export default async function DashboardPage() {
     redirect('/login');
   }
 
-  // Calculate current and previous month periods
   const now = await getRequestNow();
-  const currentPeriod = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
-  const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1);
-  const previousPeriod = `${prevMonth.getFullYear()}${String(prevMonth.getMonth() + 1).padStart(2, '0')}`;
+  const { currentPeriod, previousPeriod } = getDashboardPeriods(now);
 
-  // Calculate charges for current and previous month
-  const currentMonthCharges = userData.apartments.flatMap(
-    (apt: (typeof userData.apartments)[number]) =>
-      apt.charges.filter(
-        (charge: (typeof apt.charges)[number]) =>
-          charge.period === currentPeriod
-      )
+  const currentMonthCharges = getChargesForPeriod(
+    userData.apartments,
+    currentPeriod
   );
-  const previousMonthCharges = userData.apartments.flatMap(
-    (apt: (typeof userData.apartments)[number]) =>
-      apt.charges.filter(
-        (charge: (typeof apt.charges)[number]) =>
-          charge.period === previousPeriod
-      )
+  const previousMonthCharges = getChargesForPeriod(
+    userData.apartments,
+    previousPeriod
   );
 
   const currentMonthTotal = sumDecimals(
@@ -59,51 +54,8 @@ export default async function DashboardPage() {
     currentPeriod
   );
 
-  // Prepare notifications grouped by HOA for sidebar
-  const allNotifications = userData.apartments.flatMap(
-    (apt: (typeof userData.apartments)[number]) =>
-      apt.chargeNotifications.map(
-        (n: (typeof apt.chargeNotifications)[number]) => ({
-          ...n,
-          quantity: toDecimal(n.quantity).toString(),
-          unitPrice: toDecimal(n.unitPrice).toString(),
-          totalAmount: toDecimal(n.totalAmount).toString(),
-          apartmentNumber: apt.number,
-          apartmentAddress: `${apt.address} ${apt.building || ''}/${apt.number}`
-            .replace(/\s+\//g, ' /')
-            .trim(),
-          hoaId: apt.homeownersAssociation?.id ?? null,
-          hoaName: apt.homeownersAssociation?.name ?? null,
-          hoaHeader: apt.homeownersAssociation?.header ?? null,
-        })
-      )
-  );
-
-  // Prepare per-HOA payment groups for summary card
-  type HoaPaymentGroup = {
-    hoaId: string;
-    hoaName: string;
-    totalClosingBalance: ReturnType<typeof sumDecimals>;
-  };
-  const hoaPaymentMap = new Map<string, HoaPaymentGroup>();
-
-  for (const apt of userData.apartments) {
-    if (apt.payments.length === 0) continue;
-    const hoa = apt.homeownersAssociation;
-    if (!hoa?.id) continue;
-    const existing = hoaPaymentMap.get(hoa.id);
-    const balance = apt.payments[0].closingBalance;
-    if (existing) {
-      existing.totalClosingBalance = existing.totalClosingBalance.plus(balance);
-    } else {
-      hoaPaymentMap.set(hoa.id, {
-        hoaId: hoa.id,
-        hoaName: hoa.name,
-        totalClosingBalance: balance,
-      });
-    }
-  }
-  const hoaPaymentGroups = Array.from(hoaPaymentMap.values());
+  const allNotifications = buildDashboardNotifications(userData.apartments);
+  const hoaPaymentGroups = buildHoaPaymentGroups(userData.apartments);
 
   return (
     <div className="w-full bg-background">
