@@ -263,6 +263,28 @@ describe('Admin HOA API', () => {
       expect(data.error).toBe('Nie udało się pobrać wspólnot');
     });
 
+    it('reports non-Error fetch failures as unknown errors', async () => {
+      mockAuth.mockResolvedValueOnce({
+        user: {
+          id: 'admin-id',
+          email: 'admin@example.com',
+          role: UserRole.ADMIN,
+        },
+        expires: new Date().toISOString(),
+      });
+      mockHoaFindMany.mockRejectedValueOnce('Database error');
+
+      const { GET } = await import('../route');
+      const request = createMockRequest();
+
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe('Nie udało się pobrać wspólnot');
+      expect(data.message).toBe('Nieznany błąd');
+    });
+
     it('should return correct response schema', async () => {
       mockAuth.mockResolvedValueOnce({
         user: {
@@ -452,7 +474,7 @@ describe('Admin HOA API', () => {
       expect(data.error).toBe('Nie udało się zaktualizować wspólnoty');
     });
 
-    it('should handle database errors gracefully', async () => {
+    it('should handle update database errors gracefully', async () => {
       mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
@@ -475,6 +497,31 @@ describe('Admin HOA API', () => {
       expect(response.status).toBe(500);
       expect(data.error).toBe('Nie udało się zaktualizować wspólnoty');
       expect(data.message).toBe('Database error');
+    });
+
+    it('reports non-Error update failures as unknown errors', async () => {
+      mockAuth.mockResolvedValueOnce({
+        user: {
+          id: 'admin-id',
+          email: 'admin@example.com',
+          role: UserRole.ADMIN,
+        },
+        expires: new Date().toISOString(),
+      });
+      mockHoaUpdate.mockRejectedValueOnce('Database error');
+
+      const { PATCH } = await import('../route');
+      const request = createMockRequest(undefined, {
+        id: 'hoa-1',
+        name: 'New Name',
+      });
+
+      const response = await PATCH(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe('Nie udało się zaktualizować wspólnoty');
+      expect(data.message).toBe('Nieznany błąd');
     });
   });
 });

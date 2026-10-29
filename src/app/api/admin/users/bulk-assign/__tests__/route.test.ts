@@ -212,4 +212,16 @@ describe('POST /api/admin/users/bulk-assign', () => {
     expect(response.status).toBe(200);
     expect(data).toEqual({ assigned: 2, skipped: 0, errors: 0 });
   });
+
+  it('returns 500 when the request body cannot be read', async () => {
+    mockAuth.mockResolvedValueOnce(adminSession());
+    const request = {
+      json: vi.fn().mockRejectedValue(new Error('bad json')),
+    } as unknown as NextRequest;
+
+    const { POST } = await import('../route');
+    const response = await POST(request);
+
+    expect(response.status).toBe(500);
+  });
 });

@@ -300,5 +300,167 @@ describe('/api/admin/users route', () => {
       expect(data.error).toBe('Nieprawidłowa lista mieszkań');
       expect(mockFindUserById).not.toHaveBeenCalled();
     });
+
+    describe('validation and errors', () => {
+      const tenant = {
+        id: 'tenant-user',
+        email: 'tenant@example.com',
+        name: 'Tenant User',
+        role: UserRole.TENANT,
+        status: AccountStatus.PENDING,
+      };
+
+      const approve = (apartmentIds?: string[]) =>
+        makePatchRequest({
+          userId: 'tenant-user',
+          status: AccountStatus.APPROVED,
+          apartmentIds,
+        });
+
+      it.each([
+        null,
+        { user: { email: 'jan@example.com', role: UserRole.TENANT } },
+      ])('rejects a non-admin session (%o)', async (session) => {
+        mockAuth.mockResolvedValue(session);
+        const { PATCH } = await import('../route');
+
+        const response = await PATCH(approve());
+
+        expect(response.status).toBe(401);
+      });
+
+      it.each([
+        [{ status: AccountStatus.APPROVED }, 'Brak wymaganych pól'],
+        [{ userId: 'tenant-user', status: 'UNKNOWN' }, 'Nieprawidłowy status'],
+        [
+          {
+            userId: 'tenant-user',
+            status: AccountStatus.APPROVED,
+            apartmentIds: [1],
+          },
+          'Nieprawidłowa lista mieszkań',
+        ],
+      ])('rejects the payload %o', async (body, error) => {
+        const { PATCH } = await import('../route');
+
+        const response = await PATCH(makePatchRequest(body));
+
+        expect(response.status).toBe(400);
+        await expect(response.json()).resolves.toEqual({ error });
+      });
+
+      it('returns 404 for an unknown user', async () => {
+        mockFindUserById.mockResolvedValue(null);
+        const { PATCH } = await import('../route');
+
+        const response = await PATCH(approve());
+
+        expect(response.status).toBe(404);
+      });
+
+      it('returns 404 when some apartments do not exist', async () => {
+        mockFindUserById.mockResolvedValue(tenant);
+        mockFindApartmentsByIds.mockResolvedValue([
+          { id: 'apt-1', user: null },
+        ]);
+        const { PATCH } = await import('../route');
+
+        const response = await PATCH(approve(['apt-1', 'apt-2']));
+
+        expect(response.status).toBe(404);
+        expect(mockUpdateUserStatus).not.toHaveBeenCalled();
+      });
+
+      it('rejects apartments assigned to another user', async () => {
+        mockFindUserById.mockResolvedValue(tenant);
+        mockFindApartmentsByIds.mockResolvedValue([
+          { id: 'apt-1', user: { id: 'other-user' } },
+        ]);
+        const { PATCH } = await import('../route');
+
+        const response = await PATCH(approve(['apt-1']));
+
+        expect(response.status).toBe(400);
+        expect(mockUpdateUserStatus).not.toHaveBeenCalled();
+      });
+
+      it('allows apartments already assigned to the same user and skips the email for approved users', async () => {
+        mockFindUserById.mockResolvedValue({
+          ...tenant,
+          status: AccountStatus.APPROVED,
+        });
+        mockFindApartmentsByIds.mockResolvedValue([
+          { id: 'apt-1', user: { id: 'tenant-user' } },
+        ]);
+        mockUpdateUserStatus.mockResolvedValue({
+          ...tenant,
+          status: AccountStatus.APPROVED,
+          apartments: [{ id: 'apt-1' }],
+        });
+        const { PATCH } = await import('../route');
+
+        const response = await PATCH(approve(['apt-1']));
+
+        expect(response.status).toBe(200);
+        expect(mockNotifyAccountApproved).not.toHaveBeenCalled();
+      });
+
+      it.each([
+        [new Error('db down'), 'db down'],
+        ['db down', 'Nieznany błąd'],
+      ])(
+        'returns 500 when the update fails with %o',
+        async (error, message) => {
+          mockFindUserById.mockRejectedValue(error);
+          const { PATCH } = await import('../route');
+
+          const response = await PATCH(approve());
+
+          expect(response.status).toBe(500);
+          await expect(response.json()).resolves.toMatchObject({ message });
+        }
+      );
+    });
+  });
+
+  describe('GET validation and errors', () => {
+    it.each([
+      null,
+      { user: { email: 'jan@example.com', role: UserRole.TENANT } },
+    ])('rejects a non-admin session (%o)', async (session) => {
+      mockAuth.mockResolvedValue(session);
+      const { GET } = await import('../route');
+
+      const response = await GET(makeGetRequest());
+
+      expect(response.status).toBe(401);
+    });
+
+    it('passes a trimmed search to the query', async () => {
+      const { GET } = await import('../route');
+
+      await GET(makeGetRequest({ search: '  jan  ' }));
+
+      expect(mockFindTenantUsers).toHaveBeenCalledWith(
+        null,
+        1,
+        50,
+        'jan',
+        UserRole.TENANT
+      );
+    });
+
+    it.each([
+      [new Error('db down'), 'db down'],
+      ['db down', 'Nieznany błąd'],
+    ])('returns 500 when loading fails with %o', async (error, message) => {
+      mockFindTenantUsers.mockRejectedValue(error);
+      const { GET } = await import('../route');
+
+      const response = await GET(makeGetRequest());
+
+      expect(response.status).toBe(500);
+      await expect(response.json()).resolves.toMatchObject({ message });
+    });
   });
 });

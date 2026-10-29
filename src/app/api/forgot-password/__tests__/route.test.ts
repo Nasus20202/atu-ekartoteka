@@ -156,6 +156,36 @@ describe('POST /api/forgot-password', () => {
     expect(mockPasswordResetCreate).toHaveBeenCalled();
   });
 
+  it('sends the reset email without a name when the user has none', async () => {
+    const sendPasswordResetEmail = vi.fn().mockResolvedValue(true);
+    const { getEmailService } = await import('@/lib/email/email-service');
+    vi.mocked(getEmailService).mockReturnValueOnce({
+      sendPasswordResetEmail,
+    } as never);
+    mockUserFindUnique.mockResolvedValue({
+      id: 'user-123',
+      email: 'test@example.com',
+      name: null,
+      authMethod: AuthMethod.CREDENTIALS,
+    });
+
+    const req = new NextRequest('http://localhost:3000/api/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: 'test@example.com',
+        turnstileToken: 'test-turnstile-token',
+      }),
+    });
+
+    await POST(req);
+
+    expect(sendPasswordResetEmail).toHaveBeenCalledWith(
+      'test@example.com',
+      'test-token-123',
+      undefined
+    );
+  });
+
   it('should block OAuth users from password reset', async () => {
     const mockOAuthUser = {
       id: 'oauth-user-123',

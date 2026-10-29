@@ -562,5 +562,80 @@ describe('Admin Apartments API', () => {
         })
       );
     });
+
+    describe('edge cases', () => {
+      beforeEach(() => {
+        mockAuth.mockResolvedValueOnce({
+          user: { id: 'admin-id', role: UserRole.ADMIN },
+        });
+        mockApartmentCount.mockResolvedValueOnce(3);
+      });
+
+      it('handles slash-search with only the number part', async () => {
+        mockApartmentFindMany.mockResolvedValueOnce([]);
+
+        const { GET } = await import('../route');
+        await GET(createMockRequest({ search: '/12' }));
+
+        expect(mockApartmentFindMany).toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: expect.objectContaining({
+              AND: expect.arrayContaining([
+                expect.objectContaining({
+                  AND: [
+                    {},
+                    { number: { contains: '12', mode: 'insensitive' } },
+                  ],
+                }),
+              ]),
+            }),
+          })
+        );
+      });
+
+      it('sorts by building first, treating a missing building as empty', async () => {
+        mockApartmentFindMany.mockResolvedValueOnce([
+          { ...mockApartments[0], id: 'b', building: 'B', number: '1' },
+          { ...mockApartments[0], id: 'none', building: null, number: '5' },
+          { ...mockApartments[0], id: 'a', building: 'A', number: '2' },
+        ]);
+
+        const { GET } = await import('../route');
+        const response = await GET(createMockRequest());
+        const data = await response.json();
+
+        expect(data.hoa).toBeNull();
+        expect(data.apartments.map((a: { id: string }) => a.id)).toEqual([
+          'none',
+          'a',
+          'b',
+        ]);
+      });
+
+      it('returns the HOA summary for a hoaId filter', async () => {
+        mockApartmentFindMany.mockResolvedValueOnce([]);
+        mockHoaFindUnique.mockReset();
+        mockHoaFindUnique.mockResolvedValue(mockHOA);
+
+        const { GET } = await import('../route');
+        const response = await GET(createMockRequest({ hoaId: 'hoa-1' }));
+
+        await expect(response.json()).resolves.toMatchObject({
+          hoa: mockHOA,
+        });
+      });
+
+      it('reports non-Error failures as unknown errors', async () => {
+        mockApartmentFindMany.mockRejectedValueOnce('boom');
+
+        const { GET } = await import('../route');
+        const response = await GET(createMockRequest());
+
+        expect(response.status).toBe(500);
+        await expect(response.json()).resolves.toMatchObject({
+          message: 'Nieznany błąd',
+        });
+      });
+    });
   });
 });

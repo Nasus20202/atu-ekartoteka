@@ -198,4 +198,19 @@ describe('GET /api/admin/hoa/[hoaId]/financial-summary', () => {
     expect(response.status).toBe(500);
     expect(data.error).toBe('Nie udało się pobrać podsumowania finansowego');
   });
+
+  it('reports non-Error failures as unknown errors', async () => {
+    mockAuth.mockResolvedValueOnce(adminSession);
+    mockApartmentFindMany.mockRejectedValueOnce('DB failure');
+
+    const { GET } = await import('../route');
+    const response = await GET(makeRequest(), {
+      params: Promise.resolve({ hoaId: 'hoa-1' }),
+    });
+    const data = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(data.error).toBe('Nie udało się pobrać podsumowania finansowego');
+    expect(data.message).toBe('Nieznany błąd');
+  });
 });

@@ -12,6 +12,8 @@ const {
   mockNotifyAdminsOfNewUser,
   mockCreateRegistrationAutoLoginToken,
   mockRecordRegistration,
+  mockIsTurnstileEnabled,
+  mockVerifyTurnstileToken,
 } = vi.hoisted(() => ({
   mockFindUserByEmail: vi.fn(),
   mockFindFirstAdmin: vi.fn(),
@@ -21,6 +23,8 @@ const {
   mockNotifyAdminsOfNewUser: vi.fn(),
   mockCreateRegistrationAutoLoginToken: vi.fn().mockReturnValue('mock-token'),
   mockRecordRegistration: vi.fn(),
+  mockIsTurnstileEnabled: vi.fn(),
+  mockVerifyTurnstileToken: vi.fn(),
 }));
 
 vi.mock('@/lib/queries/users/find-user-by-email', () => ({
@@ -58,8 +62,8 @@ vi.mock('@/lib/opentelemetry/auth-metrics', () => ({
 }));
 
 vi.mock('@/lib/turnstile', () => ({
-  isTurnstileEnabled: () => false,
-  verifyTurnstileToken: vi.fn(),
+  isTurnstileEnabled: mockIsTurnstileEnabled,
+  verifyTurnstileToken: mockVerifyTurnstileToken,
 }));
 
 vi.mock('@/lib/email/verification-utils', () => ({
@@ -102,6 +106,7 @@ describe('POST /api/register (route handler)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockCreateRegistrationAutoLoginToken.mockReturnValue('mock-token');
+    mockIsTurnstileEnabled.mockReturnValue(false);
   });
 
   it('returns 400 when email is missing', async () => {
@@ -250,6 +255,47 @@ describe('POST /api/register (route handler)', () => {
     expect(mockRecordRegistration).toHaveBeenCalledWith(
       'credentials',
       'failure'
+    );
+  });
+
+  it('returns 400 when the Turnstile check fails', async () => {
+    mockIsTurnstileEnabled.mockReturnValue(true);
+    mockVerifyTurnstileToken.mockResolvedValue(false);
+
+    const { POST } = await import('@/app/api/register/route');
+    const res = await POST(
+      makeRequest({
+        email: 'test@example.com',
+        password: 'password123',
+        turnstileToken: 'bad-token',
+      })
+    );
+
+    expect(res.status).toBe(400);
+    expect(mockVerifyTurnstileToken).toHaveBeenCalledWith('bad-token');
+    expect(mockCreateUser).not.toHaveBeenCalled();
+  });
+
+  it('registers when Turnstile is enabled and the token is valid', async () => {
+    mockIsTurnstileEnabled.mockReturnValue(true);
+    mockVerifyTurnstileToken.mockResolvedValue(true);
+    mockFindUserByEmail.mockResolvedValue(null);
+    mockCreateUser.mockResolvedValue(makeUser({ name: null }));
+
+    const { POST } = await import('@/app/api/register/route');
+    const res = await POST(
+      makeRequest({
+        email: 'test@example.com',
+        password: 'password123',
+        turnstileToken: 'good-token',
+      })
+    );
+
+    expect(res.status).toBe(201);
+    expect(mockSendVerificationEmail).toHaveBeenCalledWith(
+      'test@example.com',
+      'secure-token',
+      undefined
     );
   });
 });
