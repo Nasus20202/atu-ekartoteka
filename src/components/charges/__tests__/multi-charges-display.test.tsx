@@ -3,12 +3,17 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { MultiChargesDisplay } from '@/components/charges/multi-charges-display';
 import type { ChargeDisplayDto } from '@/lib/types/dto/charge-dto';
+import { formatCurrency } from '@/lib/utils';
 
 vi.mock('@/components/charges/multi-apartment-period-card', () => ({
-  MultiApartmentPeriodCard: ({ totalAmount }: { totalAmount: unknown }) => (
-    <div data-testid="period-card">{String(totalAmount)}</div>
-  ),
+  MultiApartmentPeriodCard: () => <div data-testid="period-card" />,
 }));
+
+const monthTotalText = () =>
+  screen
+    .getAllByRole('button')
+    .map((button) => button.textContent)
+    .find((text) => text?.includes('2025-01'));
 
 vi.mock('@/components/ui/collapsible', () => ({
   Collapsible: ({
@@ -133,9 +138,8 @@ describe('MultiChargesDisplay', () => {
         />
       );
 
-      // The period card receives the total: 100 + 50 + 200 = 350
-      const card = screen.getByTestId('period-card');
-      expect(card.textContent).toBe('350');
+      // The month row shows the total: 100 + 50 + 200 = 350
+      expect(monthTotalText()).toContain(formatCurrency(350));
     });
 
     it('returns 0 for a period with no data', () => {
@@ -143,8 +147,7 @@ describe('MultiChargesDisplay', () => {
 
       render(<MultiChargesDisplay periods={periods} chargesByPeriod={{}} />);
 
-      const card = screen.getByTestId('period-card');
-      expect(card.textContent).toBe('0');
+      expect(monthTotalText()).toContain(formatCurrency(0));
     });
   });
 });

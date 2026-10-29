@@ -5,12 +5,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { ChargesDisplay } from '@/components/charges/charges-display';
 import type { ChargeDisplayDto } from '@/lib/types/dto/charge-dto';
 
-vi.mock('@/components/charges/period-card', () => ({
-  PeriodCard: ({ period }: { period: string }) => (
-    <div data-testid={`period-card-${period}`}>{period}</div>
-  ),
-}));
-
 vi.mock('@/components/pdf/download-charges-pdf-button', () => ({
   DownloadChargesPdfButton: () => <button>Download</button>,
 }));
@@ -24,9 +18,13 @@ vi.mock('@/components/ui/collapsible', () => ({
     open?: boolean;
     onOpenChange?: () => void;
   }) => <div onClick={onOpenChange}>{children}</div>,
-  CollapsibleTrigger: ({ children }: { children: React.ReactNode }) => (
-    <button>{children}</button>
-  ),
+  CollapsibleTrigger: ({
+    children,
+    className,
+  }: {
+    children: React.ReactNode;
+    className?: string;
+  }) => <button className={className}>{children}</button>,
   CollapsibleContent: ({ children }: { children: React.ReactNode }) => (
     <div>{children}</div>
   ),
@@ -73,13 +71,13 @@ describe('ChargesDisplay — groupByYear', () => {
     expect(container.firstChild).toBeEmptyDOMElement();
   });
 
-  it('renders period cards for periods within a year group', () => {
+  it('renders a month row for periods within a year group', () => {
     const periods = ['2025-01', '2025-02'];
 
     render(<ChargesDisplay {...baseProps} periods={periods} />);
 
-    expect(screen.getByTestId('period-card-2025-01')).toBeInTheDocument();
-    expect(screen.getByTestId('period-card-2025-02')).toBeInTheDocument();
+    expect(screen.getByText('2025-01')).toBeInTheDocument();
+    expect(screen.getByText('2025-02')).toBeInTheDocument();
   });
 });
 
@@ -96,8 +94,8 @@ describe('ChargesDisplay — toggleYear', () => {
     expect(yearButton).toBeDefined();
     await userEvent.click(yearButton!);
 
-    // Year toggle ran without error — period card still rendered
-    expect(screen.getByTestId('period-card-2025-01')).toBeInTheDocument();
+    // Year toggle ran without error — month row still rendered
+    expect(screen.getByText('2025-01')).toBeInTheDocument();
   });
 
   it('calls onOpenChange for the period collapsible when toggled', async () => {
@@ -114,7 +112,7 @@ describe('ChargesDisplay — toggleYear', () => {
     await userEvent.click(periodButton!);
 
     // Period toggle ran without error
-    expect(screen.getByTestId('period-card-2025-01')).toBeInTheDocument();
+    expect(screen.getByText('2025-01')).toBeInTheDocument();
   });
 });
 
@@ -145,8 +143,13 @@ describe('ChargesDisplay — activeMonth', () => {
       />
     );
 
-    // Active month period card is rendered
-    expect(screen.getByTestId('period-card-2025-01')).toBeInTheDocument();
+    expect(screen.getByText('2025-01').closest('button')).toHaveClass(
+      'text-primary'
+    );
+    expect(screen.getByText('2025-02').closest('button')).not.toHaveClass(
+      'text-primary'
+    );
+    expect(screen.getByText('Czynsz')).toBeInTheDocument();
   });
 
   it('opens the active month by default', () => {
@@ -156,8 +159,8 @@ describe('ChargesDisplay — activeMonth', () => {
       <ChargesDisplay {...baseProps} periods={periods} activeMonth="2025-01" />
     );
 
-    // Both period cards rendered (mock renders all content regardless of open state)
-    expect(screen.getByTestId('period-card-2025-01')).toBeInTheDocument();
-    expect(screen.getByTestId('period-card-2025-02')).toBeInTheDocument();
+    // Both month rows rendered (mock renders all content regardless of open state)
+    expect(screen.getByText('2025-01')).toBeInTheDocument();
+    expect(screen.getByText('2025-02')).toBeInTheDocument();
   });
 });

@@ -1,16 +1,14 @@
 'use client';
 
-import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
-import { MultiApartmentPeriodCard } from '@/components/charges/multi-apartment-period-card';
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+  MonthTrigger,
+  YearTrigger,
+} from '@/components/charges/charge-list-parts';
+import { MultiApartmentPeriodCard } from '@/components/charges/multi-apartment-period-card';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import type { ChargeDisplayDto } from '@/lib/types/dto/charge-dto';
-import { formatCurrency, formatPeriod } from '@/lib/utils';
 import { isPeriodAfterDate } from '@/lib/utils/payment-months';
 import { sumDecimals } from '@/lib/utils/sum';
 
@@ -89,20 +87,15 @@ export function MultiChargesDisplay({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {yearGroups.map(({ year, periods: yearPeriods }) => (
         <Collapsible
           key={year}
           open={openYears.has(year)}
           onOpenChange={() => toggleYear(year)}
         >
-          <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border bg-card px-4 py-3 text-left font-semibold transition-colors hover:bg-muted">
-            {year}
-            <ChevronDown
-              className={`h-4 w-4 transition-transform ${openYears.has(year) ? 'rotate-180' : ''}`}
-            />
-          </CollapsibleTrigger>
-          <CollapsibleContent className="mt-2 space-y-2">
+          <YearTrigger year={year} open={openYears.has(year)} />
+          <CollapsibleContent className="space-y-2">
             {yearPeriods.map((period) => {
               const periodData = chargesByPeriod[period] ?? [];
               const totalPeriodAmount = computePeriodTotal(periodData);
@@ -113,24 +106,17 @@ export function MultiChargesDisplay({
                   key={period}
                   open={isMonthOpen}
                   onOpenChange={() => toggleMonth(period)}
+                  className="overflow-hidden rounded-lg border bg-card"
                 >
-                  <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border bg-muted/40 px-4 py-2.5 text-left transition-colors hover:bg-muted">
-                    <span className="font-medium">{formatPeriod(period)}</span>
-                    <div className="flex items-center gap-3">
-                      <span className="font-bold">
-                        {formatCurrency(totalPeriodAmount)}
-                      </span>
-                      <ChevronDown
-                        className={`h-4 w-4 text-muted-foreground transition-transform ${isMonthOpen ? 'rotate-180' : ''}`}
-                      />
-                    </div>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="mt-2 pl-2">
+                  <MonthTrigger
+                    period={period}
+                    total={totalPeriodAmount}
+                    open={isMonthOpen}
+                  />
+                  <CollapsibleContent>
                     <MultiApartmentPeriodCard
                       period={period}
                       apartmentsData={periodData}
-                      totalAmount={totalPeriodAmount}
-                      hideHeader
                     />
                   </CollapsibleContent>
                 </Collapsible>

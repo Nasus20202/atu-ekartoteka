@@ -1,7 +1,8 @@
 /**
  * Seed tenants for visual snapshots with charges for every month of
  * VISUAL_YEAR; visual tests freeze the date at VISUAL_FIXED_NOW, at the end
- * of that year. One tenant has a single HOA, the other has two.
+ * of that year. One tenant has a single apartment, the other has two
+ * apartments in one HOA and one in another.
  */
 
 import * as bcrypt from 'bcryptjs';
@@ -133,6 +134,14 @@ export async function seedVisualTestData(client: pg.Client) {
       address: 'ul. Testowa',
       building: '2',
       number: '5',
+    },
+    {
+      hoaId,
+      externalOwnerId: 'WVIS04',
+      externalApartmentId: 'TESTVIS-TESTVIS-00000-00003M',
+      address: 'ul. Testowa',
+      building: '2',
+      number: '6',
     },
     {
       hoaId: secondHoaId,

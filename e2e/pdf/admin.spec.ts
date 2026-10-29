@@ -3,6 +3,19 @@
  */
 
 import { expect, test } from '../fixtures';
+import { CURRENT_MONTH_YEAR } from '../utils/date-utils';
+
+const CHARGES_PDF_BUTTON = { name: /Pobierz PDF naliczeń/i };
+const PAYMENT_PDF_BUTTON = { name: /Pobierz PDF wpłat/i };
+
+// Charges PDF buttons live inside the expanded month, like on tenant pages
+async function expandCurrentChargesMonth(
+  adminPage: import('@playwright/test').Page
+) {
+  await adminPage
+    .getByRole('button', { name: new RegExp(CURRENT_MONTH_YEAR) })
+    .click();
+}
 
 async function navigateToApartmentDetail(
   adminPage: import('@playwright/test').Page
@@ -35,10 +48,10 @@ test.describe('PDF Download - Admin', () => {
     adminPage,
   }) => {
     await navigateToApartmentDetail(adminPage);
+    await expandCurrentChargesMonth(adminPage);
 
-    // The Naliczenia card header contains the PDF button (second in DOM order)
     await expect(
-      adminPage.getByRole('button', { name: /Pobierz PDF/i }).nth(1)
+      adminPage.getByRole('button', CHARGES_PDF_BUTTON)
     ).toBeVisible();
   });
 
@@ -46,13 +59,10 @@ test.describe('PDF Download - Admin', () => {
     adminPage,
   }) => {
     await navigateToApartmentDetail(adminPage);
+    await expandCurrentChargesMonth(adminPage);
 
-    // Click the second PDF button (charges, in Naliczenia card header)
     const downloadPromise = adminPage.waitForEvent('download');
-    await adminPage
-      .getByRole('button', { name: /Pobierz PDF/i })
-      .nth(1)
-      .click();
+    await adminPage.getByRole('button', CHARGES_PDF_BUTTON).click();
     const download = await downloadPromise;
 
     expect(download.suggestedFilename()).toMatch(/^naliczenia-.+\.pdf$/);
@@ -63,9 +73,8 @@ test.describe('PDF Download - Admin', () => {
   }) => {
     await navigateToApartmentDetail(adminPage);
 
-    // The Historia wpłat section contains the PDF button (first in DOM order)
     await expect(
-      adminPage.getByRole('button', { name: /Pobierz PDF/i }).first()
+      adminPage.getByRole('button', PAYMENT_PDF_BUTTON)
     ).toBeVisible();
   });
 
@@ -74,12 +83,8 @@ test.describe('PDF Download - Admin', () => {
   }) => {
     await navigateToApartmentDetail(adminPage);
 
-    // Click the first PDF button (payment, in Historia wpłat section)
     const downloadPromise = adminPage.waitForEvent('download');
-    await adminPage
-      .getByRole('button', { name: /Pobierz PDF/i })
-      .first()
-      .click();
+    await adminPage.getByRole('button', PAYMENT_PDF_BUTTON).click();
     const download = await downloadPromise;
 
     expect(download.suggestedFilename()).toMatch(/^wplaty-.+\.pdf$/);
