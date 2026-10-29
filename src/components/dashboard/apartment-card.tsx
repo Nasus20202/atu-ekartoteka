@@ -2,6 +2,7 @@ import { FileText, Wallet } from 'lucide-react';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
+import { MarqueeText } from '@/components/ui/marquee-text';
 import { formatCurrency, formatSharePercent } from '@/lib/utils';
 import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
 
@@ -47,8 +48,10 @@ export function ApartmentCard({
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h3 className="truncate text-lg font-semibold">
-            {apartment.address} {apartment.building || ''}/{apartment.number}
+          <h3 className="text-lg font-semibold">
+            <MarqueeText>
+              {apartment.address} {apartment.building || ''}/{apartment.number}
+            </MarqueeText>
           </h3>
           <p className="text-sm text-muted-foreground">
             {apartment.postalCode} {apartment.city}

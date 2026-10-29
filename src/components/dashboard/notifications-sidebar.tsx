@@ -4,6 +4,10 @@ import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
 import {
+  ApartmentNotificationList,
+  type NotificationItem,
+} from '@/components/dashboard/apartment-notification-list';
+import {
   Card,
   CardContent,
   CardDescription,
@@ -16,22 +20,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { formatCurrency } from '@/lib/utils';
-import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
 import { sumDecimals } from '@/lib/utils/sum';
-
-type NotificationItem = {
-  id: string;
-  description: string;
-  quantity: DecimalLike;
-  unit: string;
-  unitPrice: DecimalLike;
-  totalAmount: DecimalLike;
-  apartmentNumber: string;
-  apartmentAddress: string;
-  hoaId?: string | null;
-  hoaName?: string | null;
-  hoaHeader?: string | null;
-};
 
 interface HoaNotificationGroup {
   hoaId: string | null;
@@ -68,37 +57,15 @@ function groupByHoa(notifications: NotificationItem[]): HoaNotificationGroup[] {
   return Array.from(groupMap.values());
 }
 
-function NotificationRow({ notification }: { notification: NotificationItem }) {
-  return (
-    <div className="rounded-lg border p-3 text-sm">
-      <div className="mb-1 flex items-center justify-between gap-2">
-        <span className="min-w-0 truncate font-medium">
-          {notification.apartmentAddress}
-        </span>
-        <span className="shrink-0 font-semibold">
-          {formatCurrency(notification.totalAmount)}
-        </span>
-      </div>
-      <div className="text-xs text-muted-foreground">
-        {notification.description}
-      </div>
-      {toDecimal(notification.quantity).greaterThan(0) && (
-        <div className="mt-1 text-xs text-muted-foreground">
-          {toDecimal(notification.quantity).toString()} {notification.unit} ×{' '}
-          {formatCurrency(notification.unitPrice)}
-        </div>
-      )}
-    </div>
-  );
-}
-
 function HoaGroup({ group }: { group: HoaNotificationGroup }) {
   const [open, setOpen] = useState(true);
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border p-3 text-sm transition-colors hover:bg-muted">
-        <span className="font-medium">{group.hoaName ?? 'Wspólnota'}</span>
+      <CollapsibleTrigger className="flex w-full items-center justify-between gap-3 rounded-lg border p-3 text-left text-sm transition-colors hover:bg-muted">
+        <span className="min-w-0 break-words font-medium">
+          {group.hoaName ?? 'Wspólnota'}
+        </span>
         <div className="flex items-center gap-2 shrink-0">
           <span className="font-semibold">
             {formatCurrency(group.subtotal)}
@@ -117,12 +84,7 @@ function HoaGroup({ group }: { group: HoaNotificationGroup }) {
               </p>
             </div>
           )}
-          {group.notifications.map((notification) => (
-            <NotificationRow
-              key={notification.id}
-              notification={notification}
-            />
-          ))}
+          <ApartmentNotificationList notifications={group.notifications} />
         </div>
       </CollapsibleContent>
     </Collapsible>
@@ -168,14 +130,9 @@ export const NotificationsSidebar = ({
                   </p>
                 </div>
               )}
-              <div className="space-y-2">
-                {hoaGroups[0].notifications.map((notification) => (
-                  <NotificationRow
-                    key={notification.id}
-                    notification={notification}
-                  />
-                ))}
-              </div>
+              <ApartmentNotificationList
+                notifications={hoaGroups[0].notifications}
+              />
             </>
           ) : (
             <>

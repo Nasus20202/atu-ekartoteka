@@ -110,7 +110,7 @@ export default async function DashboardPage() {
           </h1>
 
           <div
-            className={`grid gap-6 ${allNotifications.length > 0 && userData.status === AccountStatus.APPROVED ? 'lg:grid-cols-[1fr_350px] lg:items-start' : ''}`}
+            className={`grid grid-cols-1 gap-6 ${allNotifications.length > 0 && userData.status === AccountStatus.APPROVED ? 'lg:grid-cols-[minmax(0,1fr)_350px] lg:items-start' : ''}`}
           >
             {/* Sidebar - shows first on mobile, second on desktop */}
             {userData.status === AccountStatus.APPROVED &&
