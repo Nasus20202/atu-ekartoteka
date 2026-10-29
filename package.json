@@ -26,7 +26,7 @@
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:visual": "playwright test --project='visual-*'",
     "test:e2e:visual:update": "pnpm test:e2e:visual --update-snapshots=all",
-    "test:perf": "k6 run perf/load-test.js",
+    "test:perf": "mkdir -p perf-results && k6 run perf/load-test.js",
     "prepare": "husky"
   },
   "dependencies": {

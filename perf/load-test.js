@@ -15,6 +15,7 @@ export { publicScenario } from './scenarios/public.js';
 export { userScenario } from './scenarios/user.js';
 
 export const options = {
+  noCookiesReset: true,
   summaryTrendStats: ['avg', 'med', 'p(90)', 'p(95)', 'p(99)', 'max'],
   thresholds: THRESHOLDS,
   scenarios: {

@@ -9,6 +9,7 @@ export function login({ email, password }) {
   const csrf = http.get(`${BASE_URL}/api/auth/csrf`, {
     tags: { name: 'auth csrf' },
   });
+  if (!check(csrf, { 'csrf 200': (r) => r.status === 200 })) return false;
   const csrfToken = csrf.json('csrfToken');
 
   const res = http.post(
@@ -25,7 +26,7 @@ export function login({ email, password }) {
   });
 }
 
-// k6 keeps module state per VU, so each VU signs in once and reuses its cookie jar.
+// k6 keeps module state per VU and `noCookiesReset` keeps its cookie jar, so each VU signs in once.
 export function ensureLoggedIn(credentials) {
   if (loggedIn[credentials.email]) return;
   if (!login(credentials)) fail(`login failed for ${credentials.email}`);
