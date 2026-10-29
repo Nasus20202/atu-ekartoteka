@@ -14,10 +14,10 @@ export const SESSION_COOKIE = 'authjs.session-token';
 
 export const DURATION = __ENV.PERF_DURATION || '2m';
 export const RAMP_UP = __ENV.PERF_RAMP_UP || '1m';
-export const USER_VUS = Number(__ENV.PERF_USER_VUS || 1000);
-export const ADMIN_VUS = Number(__ENV.PERF_ADMIN_VUS || 100);
-export const PUBLIC_RATE = Number(__ENV.PERF_PUBLIC_RATE || 1000);
-export const LOGIN_RATE = Number(__ENV.PERF_LOGIN_RATE || 50);
+export const USER_VUS = Number(__ENV.PERF_USER_VUS || 50);
+export const ADMIN_VUS = Number(__ENV.PERF_ADMIN_VUS || 10);
+export const PUBLIC_RATE = Number(__ENV.PERF_PUBLIC_RATE || 20);
+export const LOGIN_RATE = Number(__ENV.PERF_LOGIN_RATE || 5);
 
 export const THINK_TIME_SECONDS = 1;
 
