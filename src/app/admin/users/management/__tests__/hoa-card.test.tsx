@@ -2,9 +2,9 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
-import { HoaCard, type HoaGroup } from '@/app/admin/users/management/HoaCard';
+import { HoaCard, type HoaGroup } from '@/app/admin/users/management/hoa-card';
 
-vi.mock('@/app/admin/users/management/ApartmentGroups', () => ({
+vi.mock('@/app/admin/users/management/apartment-groups', () => ({
   computeGroups: (apartments: { id: string }[]) => ({
     duplicateAddressGroups: [],
     occupiedTwins: [],
@@ -16,7 +16,7 @@ vi.mock('@/app/admin/users/management/ApartmentGroups', () => ({
   OccupiedTwinRow: () => null,
 }));
 
-vi.mock('@/app/admin/users/management/ApartmentRow', () => ({
+vi.mock('@/app/admin/users/management/apartment-row', () => ({
   ApartmentRow: ({
     apt,
     onInactiveClick,

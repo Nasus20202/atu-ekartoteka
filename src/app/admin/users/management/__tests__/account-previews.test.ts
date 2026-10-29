@@ -4,7 +4,7 @@ import { buildAccountPreviews } from '@/app/admin/users/management/account-previ
 import type {
   HoaGroup,
   UnassignedApartment,
-} from '@/app/admin/users/management/HoaCard';
+} from '@/app/admin/users/management/hoa-card';
 
 const apartment = (id: string, email: string): UnassignedApartment =>
   ({ id, email, owner: `Owner ${email}` }) as UnassignedApartment;

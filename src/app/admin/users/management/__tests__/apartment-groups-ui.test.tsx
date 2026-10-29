@@ -6,11 +6,11 @@ import {
   DuplicateAddressGroup,
   MultiApartmentEmailGroup,
   OccupiedTwinRow,
-} from '@/app/admin/users/management/ApartmentGroups';
+} from '@/app/admin/users/management/apartment-groups';
 import {
   ApartmentRow,
   type UnassignedApartment,
-} from '@/app/admin/users/management/ApartmentRow';
+} from '@/app/admin/users/management/apartment-row';
 
 function makeApt(
   overrides: Partial<UnassignedApartment> = {}

@@ -35,19 +35,12 @@ export async function parseFileToBuffer(file: File): Promise<Buffer> {
 
 /** Parses a YYYYMMDD date string from a WMB file buffer. Returns midnight UTC Date or undefined. */
 export async function parseWmbDate(buffer: Buffer): Promise<Date | undefined> {
-  try {
-    const content = await decodeBuffer(buffer);
-    const raw = content.trim();
-    if (!/^\d{8}$/.test(raw)) return undefined;
-    const year = parseInt(raw.slice(0, 4), 10);
-    const month = parseInt(raw.slice(4, 6), 10) - 1;
-    const day = parseInt(raw.slice(6, 8), 10);
-    const date = new Date(Date.UTC(year, month, day));
-    if (isNaN(date.getTime())) return undefined;
-    return date;
-  } catch {
-    return undefined;
-  }
+  const raw = (await decodeBuffer(buffer)).trim();
+  if (!/^\d{8}$/.test(raw)) return undefined;
+  const year = parseInt(raw.slice(0, 4), 10);
+  const month = parseInt(raw.slice(4, 6), 10) - 1;
+  const day = parseInt(raw.slice(6, 8), 10);
+  return new Date(Date.UTC(year, month, day));
 }
 
 export function groupFilesByHOA(

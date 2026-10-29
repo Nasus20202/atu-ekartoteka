@@ -22,11 +22,12 @@ export function isPeriodAfterDate(
 }
 
 export type PaymentMonthFieldsLike = Record<
-  (typeof PAYMENT_MONTH_KEYS)[number] | (typeof CHARGE_MONTH_KEYS)[number],
+  | (typeof PAYMENT_MONTH_FIELD_KEYS)[number]
+  | (typeof CHARGE_MONTH_FIELD_KEYS)[number],
   DecimalLike
 >;
 
-const PAYMENT_MONTH_KEYS = [
+export const PAYMENT_MONTH_FIELD_KEYS = [
   'januaryPayments',
   'februaryPayments',
   'marchPayments',
@@ -41,7 +42,7 @@ const PAYMENT_MONTH_KEYS = [
   'decemberPayments',
 ] as const;
 
-const CHARGE_MONTH_KEYS = [
+export const CHARGE_MONTH_FIELD_KEYS = [
   'januaryCharges',
   'februaryCharges',
   'marchCharges',
@@ -65,9 +66,9 @@ export function getNonEmptyMonths<T extends PaymentMonthFieldsLike>(
   payment: T,
   maxPeriod?: string | null
 ): NonEmptyMonth[] {
-  return PAYMENT_MONTH_KEYS.flatMap((paymentKey, monthIndex) => {
+  return PAYMENT_MONTH_FIELD_KEYS.flatMap((paymentKey, monthIndex) => {
     const payments = toDecimal(payment[paymentKey]);
-    const charges = toDecimal(payment[CHARGE_MONTH_KEYS[monthIndex]]);
+    const charges = toDecimal(payment[CHARGE_MONTH_FIELD_KEYS[monthIndex]]);
 
     if (payments.isZero() && charges.isZero()) {
       return [];
@@ -83,6 +84,3 @@ export function getNonEmptyMonths<T extends PaymentMonthFieldsLike>(
     return [{ monthIndex, charges, payments }];
   });
 }
-
-export const PAYMENT_MONTH_FIELD_KEYS = PAYMENT_MONTH_KEYS;
-export const CHARGE_MONTH_FIELD_KEYS = CHARGE_MONTH_KEYS;

@@ -12,5 +12,3 @@ export const createMockHOA = (
   updatedAt: new Date(),
   ...overrides,
 });
-
-export const mockHOA = createMockHOA();
