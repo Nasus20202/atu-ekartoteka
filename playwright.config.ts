@@ -16,6 +16,9 @@ const visualUse = {
   colorScheme: 'light' as const,
   locale: 'pl-PL',
   timezoneId: 'Europe/Warsaw',
+  // Subpixel (LCD) text antialiasing depends on the host font config, so
+  // grayscale antialiasing keeps snapshots identical across machines
+  launchOptions: { args: ['--disable-lcd-text'] },
 };
 const visualProject = {
   testMatch: VISUAL_TEST_MATCH,
