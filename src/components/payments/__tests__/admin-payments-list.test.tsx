@@ -1,10 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { createMockPayment } from '@/__tests__/fixtures';
 import { AdminPaymentsList } from '@/components/payments/admin-payments-list';
 import { Prisma } from '@/generated/prisma/browser';
 import type { Payment } from '@/lib/types';
-import type { PaymentDtoSource } from '@/lib/types/dto/payment-dto';
 import { formatCurrency } from '@/lib/utils';
 
 const withExactText =
@@ -47,47 +47,6 @@ vi.mock('@/components/ui/collapsible', () => ({
   ),
 }));
 
-function makePayment(overrides: Partial<PaymentDtoSource> = {}): Payment {
-  return {
-    id: 'pay-1',
-    apartmentId: 'apt-1',
-    year: 2024,
-    dateFrom: new Date('2024-01-01'),
-    dateTo: new Date('2024-12-31'),
-    openingBalance: new Prisma.Decimal(0),
-    closingBalance: new Prisma.Decimal(0),
-    openingDebt: new Prisma.Decimal(0),
-    openingSurplus: new Prisma.Decimal(0),
-    januaryPayments: new Prisma.Decimal(0),
-    februaryPayments: new Prisma.Decimal(0),
-    marchPayments: new Prisma.Decimal(0),
-    aprilPayments: new Prisma.Decimal(0),
-    mayPayments: new Prisma.Decimal(0),
-    junePayments: new Prisma.Decimal(0),
-    julyPayments: new Prisma.Decimal(0),
-    augustPayments: new Prisma.Decimal(0),
-    septemberPayments: new Prisma.Decimal(0),
-    octoberPayments: new Prisma.Decimal(0),
-    novemberPayments: new Prisma.Decimal(0),
-    decemberPayments: new Prisma.Decimal(0),
-    januaryCharges: new Prisma.Decimal(0),
-    februaryCharges: new Prisma.Decimal(0),
-    marchCharges: new Prisma.Decimal(0),
-    aprilCharges: new Prisma.Decimal(0),
-    mayCharges: new Prisma.Decimal(0),
-    juneCharges: new Prisma.Decimal(0),
-    julyCharges: new Prisma.Decimal(0),
-    augustCharges: new Prisma.Decimal(0),
-    septemberCharges: new Prisma.Decimal(0),
-    octoberCharges: new Prisma.Decimal(0),
-    novemberCharges: new Prisma.Decimal(0),
-    decemberCharges: new Prisma.Decimal(0),
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
-    ...overrides,
-  } as Payment;
-}
-
 const baseProps = {
   apartmentId: 'apt-1',
   apartmentLabel: 'A/101',
@@ -97,7 +56,7 @@ const baseProps = {
 describe('AdminPaymentsList', () => {
   describe('sumMonths', () => {
     it('displays correct total payments sum across all months', () => {
-      const payment = makePayment({
+      const payment = createMockPayment({
         year: 2024,
         januaryPayments: 100,
         februaryPayments: 200,
@@ -114,7 +73,7 @@ describe('AdminPaymentsList', () => {
     });
 
     it('displays correct total charges sum across all months', () => {
-      const payment = makePayment({
+      const payment = createMockPayment({
         year: 2024,
         januaryCharges: 300,
         julyCharges: 200,
@@ -133,7 +92,7 @@ describe('AdminPaymentsList', () => {
 
   describe('toSerializable', () => {
     it('renders payment without crashing when dates are Date objects', () => {
-      const payment = makePayment({
+      const payment = createMockPayment({
         dateFrom: new Date('2024-01-01'),
         dateTo: new Date('2024-12-31'),
         createdAt: new Date('2024-01-01'),
@@ -147,7 +106,7 @@ describe('AdminPaymentsList', () => {
     });
 
     it('renders payment without crashing when dates are strings', () => {
-      const payment = makePayment({
+      const payment = createMockPayment({
         // Prisma sometimes returns Date, but after JSON serialization they're strings
         dateFrom: '2024-01-01' as unknown as Date,
         dateTo: '2024-12-31' as unknown as Date,
@@ -163,9 +122,9 @@ describe('AdminPaymentsList', () => {
 
   it('renders a section per payment sorted by year descending', () => {
     const payments = [
-      makePayment({ id: 'p-2023', year: 2023 }),
-      makePayment({ id: 'p-2025', year: 2025 }),
-      makePayment({ id: 'p-2024', year: 2024 }),
+      createMockPayment({ id: 'p-2023', year: 2023 }),
+      createMockPayment({ id: 'p-2025', year: 2025 }),
+      createMockPayment({ id: 'p-2024', year: 2024 }),
     ];
 
     render(<AdminPaymentsList {...baseProps} payments={payments} />);
@@ -186,7 +145,9 @@ describe('AdminPaymentsList', () => {
   });
 
   it('renders closing balance with correct color class for negative balance', () => {
-    const payment = makePayment({ closingBalance: new Prisma.Decimal(-150) });
+    const payment = createMockPayment({
+      closingBalance: new Prisma.Decimal(-150),
+    });
 
     const { container } = render(
       <AdminPaymentsList {...baseProps} payments={[payment]} />
@@ -202,7 +163,7 @@ describe('AdminPaymentsList', () => {
   });
 
   it('renders monthly chart inside the payment year section', () => {
-    const payment = makePayment({
+    const payment = createMockPayment({
       januaryPayments: 100,
       januaryCharges: 50,
     });
@@ -221,13 +182,13 @@ describe('AdminPaymentsList', () => {
       <AdminPaymentsList
         {...baseProps}
         payments={[
-          makePayment({
+          createMockPayment({
             id: 'p-current',
             year: currentYear,
             openingBalance: new Prisma.Decimal(10),
             closingBalance: new Prisma.Decimal(5),
           }),
-          makePayment({
+          createMockPayment({
             id: 'p-previous',
             year: currentYear - 1,
             openingBalance: new Prisma.Decimal(-3),

@@ -1,48 +1,21 @@
 import { describe, expect, it } from 'vitest';
 
+import { createMockPayment } from '@/__tests__/fixtures';
 import { Prisma } from '@/generated/prisma/browser';
 import type { Payment } from '@/lib/types';
 import {
-  CHARGE_MONTH_FIELD_KEYS,
   dateToPeriod,
   getNonEmptyMonths,
   isPeriodAfterDate,
-  PAYMENT_MONTH_FIELD_KEYS,
 } from '@/lib/utils/payment-months';
-
-function makePayment(overrides: Partial<Payment> = {}): Payment {
-  const base = {
-    id: 'pay-1',
-    apartmentId: 'apt-1',
-    year: 2024,
-    dateFrom: new Date('2024-01-01'),
-    dateTo: new Date('2024-12-31'),
-    openingBalance: new Prisma.Decimal(0),
-    closingBalance: new Prisma.Decimal(0),
-    openingDebt: new Prisma.Decimal(0),
-    openingSurplus: new Prisma.Decimal(0),
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
-  } as Payment;
-
-  for (const key of PAYMENT_MONTH_FIELD_KEYS) {
-    base[key] = new Prisma.Decimal(0);
-  }
-
-  for (const key of CHARGE_MONTH_FIELD_KEYS) {
-    base[key] = new Prisma.Decimal(0);
-  }
-
-  return { ...base, ...overrides };
-}
 
 describe('getNonEmptyMonths', () => {
   it('returns empty array for all-zero year', () => {
-    expect(getNonEmptyMonths(makePayment())).toEqual([]);
+    expect(getNonEmptyMonths(createMockPayment())).toEqual([]);
   });
 
   it('returns only non-empty months in order', () => {
-    const payment = makePayment({
+    const payment = createMockPayment({
       januaryPayments: new Prisma.Decimal('100.0000'),
       marchCharges: new Prisma.Decimal('50.0000'),
     });
@@ -53,7 +26,7 @@ describe('getNonEmptyMonths', () => {
   });
 
   it('preserves sub-grosz values', () => {
-    const payment = makePayment({
+    const payment = createMockPayment({
       aprilCharges: new Prisma.Decimal('42.0725'),
     });
 
@@ -61,7 +34,7 @@ describe('getNonEmptyMonths', () => {
   });
 
   it('treats Decimal 0.0000 as zero', () => {
-    const payment = makePayment({
+    const payment = createMockPayment({
       januaryPayments: new Prisma.Decimal('0.0000'),
       januaryCharges: new Prisma.Decimal('0.0000'),
       februaryPayments: new Prisma.Decimal('0.0001'),
@@ -73,9 +46,10 @@ describe('getNonEmptyMonths', () => {
   });
 
   it('treats payments without a year as year 0 when filtering by period', () => {
-    const withoutYear: Omit<Payment, 'year'> & { year?: number } = makePayment({
-      januaryPayments: new Prisma.Decimal(1),
-    });
+    const withoutYear: Omit<Payment, 'year'> & { year?: number } =
+      createMockPayment({
+        januaryPayments: new Prisma.Decimal(1),
+      });
     delete withoutYear.year;
 
     expect(getNonEmptyMonths(withoutYear, '001')).toHaveLength(1);
@@ -84,7 +58,7 @@ describe('getNonEmptyMonths', () => {
 
   describe('with maxPeriod', () => {
     it('filters out months after maxPeriod', () => {
-      const payment = makePayment({
+      const payment = createMockPayment({
         year: 2024,
         marchPayments: new Prisma.Decimal('100'),
         junePayments: new Prisma.Decimal('200'),
@@ -97,7 +71,7 @@ describe('getNonEmptyMonths', () => {
     });
 
     it('shows all months when maxPeriod is null', () => {
-      const payment = makePayment({
+      const payment = createMockPayment({
         year: 2024,
         januaryPayments: new Prisma.Decimal('100'),
         junePayments: new Prisma.Decimal('200'),
@@ -109,7 +83,7 @@ describe('getNonEmptyMonths', () => {
     });
 
     it('shows all months when maxPeriod is undefined', () => {
-      const payment = makePayment({
+      const payment = createMockPayment({
         year: 2024,
         januaryPayments: new Prisma.Decimal('100'),
         junePayments: new Prisma.Decimal('200'),
@@ -121,7 +95,7 @@ describe('getNonEmptyMonths', () => {
     });
 
     it('includes the boundary month', () => {
-      const payment = makePayment({
+      const payment = createMockPayment({
         year: 2024,
         mayPayments: new Prisma.Decimal('100'),
         junePayments: new Prisma.Decimal('200'),

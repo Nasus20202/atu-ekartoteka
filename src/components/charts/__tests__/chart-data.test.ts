@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { createMockPayment } from '@/__tests__/fixtures';
 import {
   DEFAULT_CHARGE_TREND_PERIOD_LIMIT,
   DEFAULT_CHARGE_TREND_VIEWPORT_SIZE,
@@ -10,48 +11,8 @@ import {
 import { Prisma } from '@/generated/prisma/browser';
 import type { PaymentDtoSource } from '@/lib/types/dto/payment-dto';
 
-function makePayment(
-  overrides: Partial<PaymentDtoSource> = {}
-): PaymentDtoSource {
-  return {
-    id: 'pay-1',
-    apartmentId: 'apt-1',
-    year: 2024,
-    dateFrom: new Date('2024-01-01'),
-    dateTo: new Date('2024-12-31'),
-    openingBalance: new Prisma.Decimal('100.0000'),
-    closingBalance: new Prisma.Decimal('0.0000'),
-    openingDebt: new Prisma.Decimal('0.0000'),
-    openingSurplus: new Prisma.Decimal('0.0000'),
-    januaryPayments: new Prisma.Decimal('0.0000'),
-    februaryPayments: new Prisma.Decimal('0.0000'),
-    marchPayments: new Prisma.Decimal('0.0000'),
-    aprilPayments: new Prisma.Decimal('0.0000'),
-    mayPayments: new Prisma.Decimal('0.0000'),
-    junePayments: new Prisma.Decimal('0.0000'),
-    julyPayments: new Prisma.Decimal('0.0000'),
-    augustPayments: new Prisma.Decimal('0.0000'),
-    septemberPayments: new Prisma.Decimal('0.0000'),
-    octoberPayments: new Prisma.Decimal('0.0000'),
-    novemberPayments: new Prisma.Decimal('0.0000'),
-    decemberPayments: new Prisma.Decimal('0.0000'),
-    januaryCharges: new Prisma.Decimal('0.0000'),
-    februaryCharges: new Prisma.Decimal('0.0000'),
-    marchCharges: new Prisma.Decimal('0.0000'),
-    aprilCharges: new Prisma.Decimal('0.0000'),
-    mayCharges: new Prisma.Decimal('0.0000'),
-    juneCharges: new Prisma.Decimal('0.0000'),
-    julyCharges: new Prisma.Decimal('0.0000'),
-    augustCharges: new Prisma.Decimal('0.0000'),
-    septemberCharges: new Prisma.Decimal('0.0000'),
-    octoberCharges: new Prisma.Decimal('0.0000'),
-    novemberCharges: new Prisma.Decimal('0.0000'),
-    decemberCharges: new Prisma.Decimal('0.0000'),
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
-    ...overrides,
-  };
-}
+const makePayment = (overrides: Partial<PaymentDtoSource> = {}) =>
+  createMockPayment({ openingBalance: new Prisma.Decimal(100), ...overrides });
 
 describe('finance chart helpers', () => {
   beforeEach(() => {

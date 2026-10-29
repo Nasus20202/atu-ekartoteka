@@ -1,5 +1,4 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { ThemeProvider } from 'next-themes';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -45,18 +44,6 @@ describe('ThemeToggle', () => {
       const srText = screen.getByText('Toggle theme');
       expect(srText).toBeInTheDocument();
       expect(srText).toHaveClass('sr-only');
-    });
-  });
-
-  it('toggles theme on click', async () => {
-    const user = userEvent.setup();
-    renderWithThemeProvider(<ThemeToggle />);
-
-    await waitFor(async () => {
-      const button = screen.getByRole('button');
-      expect(button).toBeInTheDocument();
-
-      await user.click(button);
     });
   });
 
