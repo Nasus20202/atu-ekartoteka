@@ -8,6 +8,7 @@ Defines the testing strategy, tooling, and conventions for the application. All 
 
 - **Unit / integration tests**: Vitest + React Testing Library (`vitest.config.ts`)
 - **E2E tests**: Playwright (`playwright.config.ts`)
+- **Performance tests**: k6 (`perf/`), see `openspec/specs/performance-testing/spec.md`
 - **Coverage threshold**: 80% lines, branches, functions, and statements (enforced by Vitest)
 
 ---

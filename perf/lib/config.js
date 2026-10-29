@@ -12,20 +12,21 @@ export const USER = {
 
 export const SESSION_COOKIE = 'authjs.session-token';
 
-export const DURATION = __ENV.PERF_DURATION || '2m';
-export const RAMP_UP = __ENV.PERF_RAMP_UP || '1m';
+// Load rises in steps to the peak, holds there, then drains
+export const LOAD_STEPS = [0.25, 0.5, 0.75, 1];
+export const STEP_RAMP = __ENV.PERF_STEP_RAMP || '10s';
+export const STEP_HOLD = __ENV.PERF_STEP_HOLD || '30s';
+export const PEAK_HOLD = __ENV.PERF_PEAK_HOLD || '1m';
+export const RAMP_DOWN = __ENV.PERF_RAMP_DOWN || '20s';
+
+// Peak load per scenario. The app, Postgres and k6 share one CI runner, so
+// the peak stays well below its saturation point: near it, runner-to-runner
+// CPU differences tripled the measured latency and the run measured the
+// runner instead of the app.
 export const USER_VUS = Number(__ENV.PERF_USER_VUS || 50);
-export const ADMIN_VUS = Number(__ENV.PERF_ADMIN_VUS || 10);
+export const ADMIN_VUS = Number(__ENV.PERF_ADMIN_VUS || 5);
 export const PUBLIC_RATE = Number(__ENV.PERF_PUBLIC_RATE || 20);
+// Each login runs bcrypt (cost 10), the most CPU-heavy request
 export const LOGIN_RATE = Number(__ENV.PERF_LOGIN_RATE || 5);
 
 export const THINK_TIME_SECONDS = 1;
-
-export const THRESHOLDS = {
-  http_req_failed: ['rate<0.01'],
-  checks: ['rate>0.99'],
-  'http_req_duration{scenario:public}': ['p(95)<500'],
-  'http_req_duration{scenario:user_journey}': ['p(95)<1500'],
-  'http_req_duration{scenario:admin_journey}': ['p(95)<2000'],
-  'http_req_duration{scenario:login}': ['p(95)<2000'],
-};

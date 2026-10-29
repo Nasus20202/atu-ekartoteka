@@ -48,6 +48,7 @@ context: |
   - openspec/specs/email-notifications/spec.md — SMTP transport, templates, all email types, metrics
   - openspec/specs/hoa-management/spec.md — HOA listing and management
   - openspec/specs/observability/spec.md — structured logging, OTLP tracing, auth/email/DB metrics, resource attribution
+  - openspec/specs/performance-testing/spec.md — k6 load scenarios, stepped load profile, thresholds, reporting
   - openspec/specs/system-health/spec.md — health check endpoints
   - openspec/specs/testing/spec.md — test strategy, placement, infrastructure, coverage
   - openspec/specs/tooling/spec.md — pnpm, Next.js, Prettier, ESLint, Vite, Vitest, Playwright
