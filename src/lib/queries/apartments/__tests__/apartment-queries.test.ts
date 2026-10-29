@@ -63,11 +63,16 @@ describe('apartment queries', () => {
       { homeownersAssociationId: 'hoa-1', building: 'A', number: '1' },
     ]);
 
-    await expect(findAssignedApartmentAddressKeys()).resolves.toEqual([
+    await expect(findAssignedApartmentAddressKeys(['hoa-1'])).resolves.toEqual([
       { hoaId: 'hoa-1', building: 'A', number: '1' },
     ]);
     expect(mockFindMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { userId: { not: null } } })
+      expect.objectContaining({
+        where: {
+          userId: { not: null },
+          homeownersAssociationId: { in: ['hoa-1'] },
+        },
+      })
     );
   });
 });

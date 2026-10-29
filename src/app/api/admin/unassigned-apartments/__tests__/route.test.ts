@@ -7,6 +7,8 @@ const mockAuth = vi.fn();
 const mockApartmentFindMany = vi.fn();
 const mockUserFindMany = vi.fn();
 const mockFindAssignedKeys = vi.fn();
+const mockHoaFindMany = vi.fn();
+const mockHoaCount = vi.fn();
 
 vi.mock('@/auth', () => ({
   auth: mockAuth,
@@ -19,6 +21,10 @@ vi.mock('@/lib/database/prisma', () => ({
     },
     user: {
       findMany: mockUserFindMany,
+    },
+    homeownersAssociation: {
+      findMany: mockHoaFindMany,
+      count: mockHoaCount,
     },
   },
 }));
@@ -38,10 +44,11 @@ vi.mock('@/lib/logger', () => ({
   }),
 }));
 
-function makeRequest(mode?: string) {
+function makeRequest(mode?: string, query = '') {
+  const base = 'http://localhost/api/admin/unassigned-apartments';
   const url = mode
-    ? `http://localhost/api/admin/unassigned-apartments?mode=${mode}`
-    : 'http://localhost/api/admin/unassigned-apartments';
+    ? `${base}?mode=${mode}${query.replace('?', '&')}`
+    : `${base}${query}`;
   return new NextRequest(url);
 }
 
@@ -81,6 +88,8 @@ describe('GET /api/admin/unassigned-apartments', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUserFindMany.mockResolvedValue([]);
+    mockHoaFindMany.mockResolvedValue([{ id: 'hoa-1' }, { id: 'hoa-2' }]);
+    mockHoaCount.mockResolvedValue(2);
     // Default: no occupied address keys
     mockFindAssignedKeys.mockResolvedValue([]);
   });
@@ -176,9 +185,84 @@ describe('GET /api/admin/unassigned-apartments', () => {
         where: {
           userId: null,
           email: { not: null, notIn: ['existing@example.com'] },
+          homeownersAssociationId: { in: ['hoa-1', 'hoa-2'] },
         },
       })
     );
+  });
+
+  describe('pagination', () => {
+    it('pages over HOAs and returns the pagination metadata', async () => {
+      mockAuth.mockResolvedValueOnce(adminSession);
+      mockHoaFindMany.mockResolvedValueOnce([{ id: 'hoa-1' }]);
+      mockHoaCount.mockResolvedValueOnce(25);
+      mockApartmentFindMany.mockResolvedValueOnce([mockApartments[0]]);
+
+      const { GET } = await import('../route');
+      const response = await GET(makeRequest(undefined, '?page=3&limit=10'));
+      const data = await response.json();
+
+      expect(mockHoaFindMany).toHaveBeenCalledWith(
+        expect.objectContaining({ skip: 20, take: 10 })
+      );
+      expect(data.pagination).toEqual({
+        page: 3,
+        limit: 10,
+        total: 25,
+        totalPages: 3,
+      });
+    });
+
+    it('loads apartments and twin keys only for the HOAs on the page', async () => {
+      mockAuth.mockResolvedValueOnce(adminSession);
+      mockHoaFindMany.mockResolvedValueOnce([{ id: 'hoa-2' }]);
+      mockApartmentFindMany.mockResolvedValueOnce([mockApartments[2]]);
+
+      const { GET } = await import('../route');
+      await GET(makeRequest());
+
+      expect(mockApartmentFindMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            homeownersAssociationId: { in: ['hoa-2'] },
+          }),
+        })
+      );
+      expect(mockFindAssignedKeys).toHaveBeenCalledWith(['hoa-2']);
+    });
+
+    it('defaults to the first page of 10 HOAs', async () => {
+      mockAuth.mockResolvedValueOnce(adminSession);
+      mockApartmentFindMany.mockResolvedValueOnce([]);
+
+      const { GET } = await import('../route');
+      const response = await GET(makeRequest());
+      const data = await response.json();
+
+      expect(mockHoaFindMany).toHaveBeenCalledWith(
+        expect.objectContaining({ skip: 0, take: 10 })
+      );
+      expect(data.pagination.page).toBe(1);
+      expect(data.pagination.limit).toBe(10);
+    });
+
+    it('ignores invalid values and caps the page size', async () => {
+      mockAuth.mockResolvedValue(adminSession);
+      mockApartmentFindMany.mockResolvedValue([]);
+
+      const { GET } = await import('../route');
+      await GET(makeRequest(undefined, '?page=-2&limit=abc'));
+      await GET(makeRequest(undefined, '?limit=5000'));
+
+      expect(mockHoaFindMany).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({ skip: 0, take: 10 })
+      );
+      expect(mockHoaFindMany).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({ skip: 0, take: 100 })
+      );
+    });
   });
 
   it('should return empty hoas array when no unassigned apartments', async () => {

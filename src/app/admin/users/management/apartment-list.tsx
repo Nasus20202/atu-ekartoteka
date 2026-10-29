@@ -8,6 +8,9 @@ import { LoadingCard } from '@/components/ui/loading-card';
 interface ApartmentListProps {
   loading: boolean;
   hoas: HoaGroup[];
+  hasMore: boolean;
+  loadingMore: boolean;
+  onLoadMore: () => void;
   allIds: string[];
   selectedIds: Set<string>;
   submitting: boolean;
@@ -25,6 +28,9 @@ interface ApartmentListProps {
 export function ApartmentList({
   loading,
   hoas,
+  hasMore,
+  loadingMore,
+  onLoadMore,
   allIds,
   selectedIds,
   submitting,
@@ -82,6 +88,14 @@ export function ApartmentList({
           />
         ))}
       </div>
+
+      {hasMore && (
+        <div className="mt-4 flex justify-center">
+          <Button variant="outline" onClick={onLoadMore} disabled={loadingMore}>
+            {loadingMore ? 'Ładowanie...' : 'Pokaż więcej wspólnot'}
+          </Button>
+        </div>
+      )}
     </>
   );
 }

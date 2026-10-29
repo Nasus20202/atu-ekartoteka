@@ -110,7 +110,14 @@ The system SHALL expose an admin endpoint listing apartments that have no linked
 
 - **GIVEN** an authenticated admin
 - **WHEN** they call `GET /api/admin/unassigned-apartments`
-- **THEN** all apartments where `userId IS NULL` and `email IS NOT NULL` are returned, grouped by HOA, sorted by HOA name, then building, then apartment number
+- **THEN** the apartments where `userId IS NULL` and `email IS NOT NULL` are returned, grouped by HOA, sorted by HOA name, then building, then apartment number
+
+#### Scenario: Paginated by HOA
+
+- **GIVEN** more HOAs with unassigned apartments than fit on one page
+- **WHEN** the admin calls the endpoint with `page` and `limit` (default 10 HOAs per page, at most 100)
+- **THEN** only that page of HOAs is returned, each with all of its unassigned apartments, together with `pagination` (`page`, `limit`, `total` HOAs, `totalPages`)
+- **AND** apartments sharing an address or an owner email are never split across pages
 
 #### Scenario: Empty result
 

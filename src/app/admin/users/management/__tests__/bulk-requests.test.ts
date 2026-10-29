@@ -20,16 +20,19 @@ describe('bulk requests', () => {
   });
 
   it('fetches HOAs for the mode', async () => {
-    const fetchMock = stubResponse(true, { hoas: [{ hoaId: 'h1' }] });
+    const fetchMock = stubResponse(true, {
+      hoas: [{ hoaId: 'h1' }],
+      pagination: { page: 1, limit: 10, total: 25, totalPages: 3 },
+    });
 
     await expect(fetchUnassignedHoas('assign')).resolves.toEqual({
-      data: [{ hoaId: 'h1' }],
+      data: { hoas: [{ hoaId: 'h1' }], page: 1, totalPages: 3 },
     });
-    await fetchUnassignedHoas('create');
+    await fetchUnassignedHoas('create', 2);
 
     expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
-      '/api/admin/unassigned-apartments?mode=assignable',
-      '/api/admin/unassigned-apartments?mode=creatable',
+      '/api/admin/unassigned-apartments?mode=assignable&page=1',
+      '/api/admin/unassigned-apartments?mode=creatable&page=2',
     ]);
   });
 

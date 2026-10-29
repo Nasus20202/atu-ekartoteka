@@ -7,7 +7,6 @@ import {
   toApartmentSummaryDto,
   toHomeownersAssociationSummaryDto,
 } from '@/lib/types/dto/apartment-dto';
-import { compareApartmentsNaturally } from '@/lib/utils/apartment-sort';
 import { getErrorMessage } from '@/lib/utils/error-message';
 
 const logger = createLogger('api:admin:apartments');
@@ -87,14 +86,12 @@ export async function GET(req: NextRequest) {
       ],
     };
 
-    const [apartmentsData, total, hoa] = await findApartmentsPaginated({
+    const [apartments, total, hoa] = await findApartmentsPaginated({
       where,
+      skip,
+      limit,
       hoaId,
     });
-
-    const sortedApartments = apartmentsData.sort(compareApartmentsNaturally);
-
-    const apartments = sortedApartments.slice(skip, skip + limit);
 
     return NextResponse.json({
       apartments: apartments.map(toApartmentSummaryDto),

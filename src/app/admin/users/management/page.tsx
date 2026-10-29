@@ -2,7 +2,7 @@
 
 import { CheckCircle, UserCheck, UserPlus, XCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import {
   type AccountPreview,
@@ -11,13 +11,12 @@ import {
 import { ApartmentList } from '@/app/admin/users/management/apartment-list';
 import {
   type BulkMode,
-  fetchUnassignedHoas,
   formatBulkResult,
   runBulkOperation,
 } from '@/app/admin/users/management/bulk-requests';
 import { ConfirmCreateDialog } from '@/app/admin/users/management/confirm-create-dialog';
-import type { HoaGroup } from '@/app/admin/users/management/hoa-card';
 import { useHoaSelection } from '@/app/admin/users/management/use-hoa-selection';
+import { useUnassignedHoas } from '@/app/admin/users/management/use-unassigned-hoas';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -37,11 +36,19 @@ const EMPTY_MESSAGES = {
 
 export default function BulkCreateUsersPage() {
   const [mode, setMode] = useState<BulkMode>('create');
-  const [hoas, setHoas] = useState<HoaGroup[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    hoas,
+    hasMore,
+    loading,
+    loadingMore,
+    error: loadError,
+    reset,
+    reload,
+    loadMore,
+  } = useUnassignedHoas(mode);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [operationError, setOperationError] = useState<string | null>(null);
   const [confirmPreviews, setConfirmPreviews] = useState<
     AccountPreview[] | null
   >(null);
@@ -57,51 +64,25 @@ export default function BulkCreateUsersPage() {
     selectIds,
   } = useHoaSelection(hoas);
 
-  const applyHoas = (
-    loaded: Awaited<ReturnType<typeof fetchUnassignedHoas>>
-  ) => {
-    if (loaded.error === undefined) {
-      setHoas(loaded.data);
-    } else {
-      setError(loaded.error);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    let cancelled = false;
-
-    void fetchUnassignedHoas(mode).then((loaded) => {
-      if (!cancelled) applyHoas(loaded);
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [mode]);
-
   const handleModeChange = (nextMode: string) => {
-    setLoading(true);
-    setHoas([]);
+    reset();
     setSelectedIds(new Set());
     setResult(null);
-    setError(null);
+    setOperationError(null);
     setMode(nextMode as BulkMode);
   };
 
   const runOperation = async (operation: BulkMode) => {
     setSubmitting(true);
     setResult(null);
-    setError(null);
+    setOperationError(null);
     const outcome = await runBulkOperation(operation, Array.from(selectedIds));
     if (outcome.error === undefined) {
       setResult(formatBulkResult(operation, outcome.data));
       setSelectedIds(new Set());
-      setLoading(true);
-      setHoas([]);
-      applyHoas(await fetchUnassignedHoas(operation));
+      await reload(operation);
     } else {
-      setError(outcome.error);
+      setOperationError(outcome.error);
     }
     setSubmitting(false);
   };
@@ -114,6 +95,9 @@ export default function BulkCreateUsersPage() {
   const sharedProps = {
     loading,
     hoas,
+    hasMore,
+    loadingMore,
+    onLoadMore: () => void loadMore(),
     allIds,
     selectedIds,
     submitting,
@@ -156,10 +140,10 @@ export default function BulkCreateUsersPage() {
             <AlertDescription>{result}</AlertDescription>
           </Alert>
         )}
-        {error && (
+        {(operationError ?? loadError) && (
           <Alert variant="destructive">
             <XCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription>{operationError ?? loadError}</AlertDescription>
           </Alert>
         )}
 

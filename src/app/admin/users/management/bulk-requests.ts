@@ -39,16 +39,32 @@ async function requestJson<T>(
   }
 }
 
+export interface UnassignedHoasPage {
+  hoas: HoaGroup[];
+  page: number;
+  totalPages: number;
+}
+
 export async function fetchUnassignedHoas(
-  mode: BulkMode
-): Promise<RequestResult<HoaGroup[]>> {
+  mode: BulkMode,
+  page = 1
+): Promise<RequestResult<UnassignedHoasPage>> {
   const modeParam = mode === 'assign' ? 'assignable' : 'creatable';
-  const result = await requestJson<{ hoas: HoaGroup[] }>(
-    `/api/admin/unassigned-apartments?mode=${modeParam}`,
+  const result = await requestJson<{
+    hoas: HoaGroup[];
+    pagination: { page: number; totalPages: number };
+  }>(
+    `/api/admin/unassigned-apartments?mode=${modeParam}&page=${page}`,
     LOAD_APARTMENTS_FAILED
   );
   return result.error === undefined
-    ? { data: result.data.hoas }
+    ? {
+        data: {
+          hoas: result.data.hoas,
+          page: result.data.pagination.page,
+          totalPages: result.data.pagination.totalPages,
+        },
+      }
     : { error: result.error };
 }
 
