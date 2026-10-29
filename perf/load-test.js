@@ -14,43 +14,47 @@ export { loginScenario } from './scenarios/login.js';
 export { publicScenario } from './scenarios/public.js';
 export { userScenario } from './scenarios/user.js';
 
+// Every scenario follows the same profile: ramp up, plateau, ramp down.
+const profile = (target) => [
+  { duration: RAMP_UP, target },
+  { duration: DURATION, target },
+  { duration: RAMP_UP, target: 0 },
+];
+
 export const options = {
   noCookiesReset: true,
   summaryTrendStats: ['avg', 'med', 'p(90)', 'p(95)', 'p(99)', 'max'],
   thresholds: THRESHOLDS,
   scenarios: {
     public: {
-      executor: 'constant-arrival-rate',
+      executor: 'ramping-arrival-rate',
       exec: 'publicScenario',
-      rate: PUBLIC_RATE,
+      startRate: 0,
       timeUnit: '1s',
-      duration: DURATION,
+      stages: profile(PUBLIC_RATE),
       preAllocatedVUs: PUBLIC_RATE,
       maxVUs: PUBLIC_RATE * 2,
     },
     login: {
-      executor: 'constant-arrival-rate',
+      executor: 'ramping-arrival-rate',
       exec: 'loginScenario',
-      rate: LOGIN_RATE,
+      startRate: 0,
       timeUnit: '1s',
-      duration: DURATION,
+      stages: profile(LOGIN_RATE),
       preAllocatedVUs: LOGIN_RATE * 2,
       maxVUs: LOGIN_RATE * 5,
     },
     user_journey: {
       executor: 'ramping-vus',
       exec: 'userScenario',
-      stages: [
-        { duration: RAMP_UP, target: USER_VUS },
-        { duration: DURATION, target: USER_VUS },
-        { duration: RAMP_UP, target: 0 },
-      ],
+      startVUs: 0,
+      stages: profile(USER_VUS),
     },
     admin_journey: {
-      executor: 'constant-vus',
+      executor: 'ramping-vus',
       exec: 'adminScenario',
-      vus: ADMIN_VUS,
-      duration: DURATION,
+      startVUs: 0,
+      stages: profile(ADMIN_VUS),
     },
   },
 };
