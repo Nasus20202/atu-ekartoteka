@@ -9,7 +9,7 @@ Defines the testing strategy, tooling, and conventions for the application. All 
 - **Unit / integration tests**: Vitest + React Testing Library (`vitest.config.ts`)
 - **E2E tests**: Playwright (`playwright.config.ts`)
 - **Performance tests**: k6 (`perf/`), see `openspec/specs/performance-testing/spec.md`
-- **Coverage threshold**: 80% lines, branches, functions, and statements (enforced by Vitest)
+- **Coverage threshold**: 95% lines, branches, functions, and statements (enforced by Vitest)
 
 ---
 
@@ -59,7 +59,7 @@ The system SHALL have unit tests for all non-trivial business logic.
 
 - **GIVEN** the full test suite runs with coverage enabled
 - **WHEN** the coverage report is generated
-- **THEN** line, branch, function, and statement coverage must each be at or above 80%
+- **THEN** line, branch, function, and statement coverage must each be at or above 95%
 
 ---
 
