@@ -6,10 +6,11 @@ export const ADMIN = {
   password: 'AdminPassword123!',
 };
 
-// Must match perf/seed/perf-credentials.ts and the sizes in perf/seed/seed-perf-data.ts
+// Must match the password and sizes in perf/seed/seed-perf-data.ts
 export const TENANT_PASSWORD = 'PerfPassword123!';
 export const TENANT_COUNT = Number(__ENV.PERF_TENANTS || 1000);
 export const APARTMENT_COUNT = Number(__ENV.PERF_APARTMENTS || 10000);
+export const PAYMENT_YEARS = Number(__ENV.PERF_PAYMENT_YEARS || 3);
 export const HOA_COUNT = Number(__ENV.PERF_HOAS || 100);
 export const ADMIN_PAGE_SIZE = 20;
 export const UNASSIGNED_HOAS_PER_PAGE = 10;

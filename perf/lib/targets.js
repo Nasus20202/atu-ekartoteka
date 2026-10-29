@@ -4,6 +4,7 @@ import {
   ADMIN_PAGE_SIZE,
   APARTMENT_COUNT,
   HOA_COUNT,
+  PAYMENT_YEARS,
   TENANT_COUNT,
   TENANT_PASSWORD,
   UNASSIGNED_HOAS_PER_PAGE,
@@ -46,4 +47,24 @@ export function randomApartmentsPage() {
 
 export function randomUnassignedHoasPage() {
   return randomInt(1, Math.ceil(HOA_COUNT / UNASSIGNED_HOAS_PER_PAGE));
+}
+
+export function randomHoaId() {
+  return `perf-hoa-${randomInt(1, HOA_COUNT)}`;
+}
+
+// The seed spreads apartments evenly over the HOAs in order
+export function hoaIdOfApartment(apartmentId) {
+  const index = Number(apartmentId.replace('perf-apt-', ''));
+  const perHoa = Math.max(1, Math.floor(APARTMENT_COUNT / HOA_COUNT));
+  return `perf-hoa-${Math.floor((index - 1) / perHoa) + 1}`;
+}
+
+// The seed has payments for the current year and the ones before it
+export function randomPaymentYear() {
+  return new Date().getFullYear() - randomInt(0, PAYMENT_YEARS - 1);
+}
+
+export function randomOwnerSearch() {
+  return `Perf Owner ${randomInt(1, APARTMENT_COUNT)}`;
 }
