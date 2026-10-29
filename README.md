@@ -97,6 +97,7 @@ See [Docker Documentation](docs/DOCKER.md) for detailed setup and troubleshootin
 - `pnpm dev` - Start development server
 - `pnpm build` - Build for production
 - `pnpm test` - Run tests
+- `pnpm test:perf` - Run k6 performance tests (see [Performance Tests](#performance-tests))
 - `pnpm lint:fix` - Fix linting issues
 - `pnpm format` - Format code with Prettier
 - `pnpm db:migrate` - Run database migrations
@@ -109,6 +110,10 @@ See [Docker Documentation](docs/DOCKER.md) for detailed setup and troubleshootin
 
 Baselines in `e2e/visual/__screenshots__` are rendered on Linux, like CI. The
 app must run with `E2E_ALLOW_FIXED_NOW=true` (as in `docker-compose.e2e.yaml`).
+
+## Performance Tests
+
+[k6](https://grafana.com/docs/k6/latest/) scenarios in `perf/` (public pages, login, user and admin journeys) run in CI against the Docker image. Locally, start the E2E stack, seed it and run `pnpm test:perf`. Load and thresholds are set in `perf/lib/config.js` (overridable with `PERF_*` env vars).
 
 ## Health Checks
 
