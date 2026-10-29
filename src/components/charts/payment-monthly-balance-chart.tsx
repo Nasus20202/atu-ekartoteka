@@ -13,6 +13,10 @@ import {
 
 import { CHART_COLORS } from '@/components/charts/chart-colors';
 import type { PaymentMonthlyChartDatum } from '@/components/charts/chart-data';
+import {
+  formatTooltipAmount,
+  formatTooltipLabel,
+} from '@/components/charts/chart-formatters';
 import { MeasuredChart } from '@/components/charts/measured-chart';
 import { formatCurrency } from '@/lib/utils';
 
@@ -88,11 +92,8 @@ export function PaymentMonthlyBalanceChart({
             axisLine={false}
           />
           <Tooltip
-            formatter={(value, name) => [
-              formatCurrency(Number(value)),
-              String(name),
-            ]}
-            labelFormatter={(value) => String(value)}
+            formatter={formatTooltipAmount}
+            labelFormatter={formatTooltipLabel}
             contentStyle={{
               backgroundColor: CHART_COLORS.tooltip,
               border: `1px solid ${CHART_COLORS.tooltipBorder}`,
