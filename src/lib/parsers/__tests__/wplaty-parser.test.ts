@@ -76,4 +76,20 @@ W00163#hoa1-hoa1-00000-00002M#2025#01/01/2025#30/11/2025#0#300#0#0#318#310#318#3
     expect(result.entries[0].monthlyPayments[0].toNumber()).toBe(50.25);
     expect(result.entries[0].monthlyCharges[0].toNumber()).toBe(50.25);
   });
+
+  it('treats empty monthly fields as zero and skips invalid lines', async () => {
+    const months = Array(24).fill('').join('#');
+    const content = [
+      'no separators',
+      'W3#APT#too#few#fields',
+      `W1#APT#2025#01/01/2025#31/12/2025#0#0#0#0#${months}#10,00`,
+      `W2#APT#abcd#01/01/2025#31/12/2025#0#0#0#0#${months}#10,00`,
+    ].join('\n');
+
+    const result = await parseWplatyFile(iconv.encode(content, 'iso-8859-2'));
+
+    expect(result.entries).toHaveLength(1);
+    expect(result.entries[0].totalCharges.toNumber()).toBe(0);
+    expect(result.entries[0].closingBalance.toNumber()).toBe(10);
+  });
 });

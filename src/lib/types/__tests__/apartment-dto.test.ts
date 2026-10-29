@@ -43,7 +43,7 @@ describe('toApartmentSummaryDto', () => {
 });
 
 describe('toApartmentDetailDto', () => {
-  it('maps nested notifications to frontend-safe dates', () => {
+  it('maps nested notifications to frontend-safe dates, keeping ISO strings', () => {
     const dto = toApartmentDetailDto({
       id: 'apt-1',
       externalOwnerId: 'W1',
@@ -79,7 +79,7 @@ describe('toApartmentDetailDto', () => {
           unitPrice: toDecimal(10),
           totalAmount: toDecimal(10),
           createdAt: new Date('2024-01-01T00:00:00.000Z'),
-          updatedAt: new Date('2024-01-02T00:00:00.000Z'),
+          updatedAt: '2024-01-02T00:00:00.000Z',
         },
       ],
       payments: [],

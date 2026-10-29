@@ -278,6 +278,22 @@ describe('importPayments', () => {
     expect(stats.skipped).toBe(1);
   });
 
+  it('reports non-Error create failures as unknown errors', async () => {
+    const entries = [createPaymentEntry()];
+
+    (mockTx.payment.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+    (mockTx.payment.createMany as ReturnType<typeof vi.fn>).mockRejectedValue(
+      'DB error'
+    );
+
+    await importPayments(mockTx, apartmentMap, entries, stats, errors);
+
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toContain('Błąd tworzenia płatności');
+    expect(errors[0]).toContain('Nieznany błąd');
+    expect(stats.skipped).toBe(1);
+  });
+
   it('should handle update errors gracefully', async () => {
     const entries = [createPaymentEntry({ closingBalance: -500 })];
 
@@ -328,6 +344,60 @@ describe('importPayments', () => {
 
     expect(errors).toHaveLength(1);
     expect(errors[0]).toContain('Błąd aktualizacji płatności');
+    expect(stats.skipped).toBe(1);
+  });
+
+  it('reports non-Error update failures as unknown errors', async () => {
+    const entries = [createPaymentEntry({ closingBalance: -500 })];
+
+    const existingPayment = {
+      id: 'payment-1',
+      apartmentId: 'apt-1',
+      year: 2024,
+      dateFrom: new Date('2024-01-01'),
+      dateTo: new Date('2024-12-31'),
+      openingDebt: 0,
+      openingSurplus: 0,
+      openingBalance: 0,
+      closingBalance: -100,
+      januaryPayments: 100,
+      februaryPayments: 100,
+      marchPayments: 100,
+      aprilPayments: 100,
+      mayPayments: 100,
+      junePayments: 100,
+      julyPayments: 100,
+      augustPayments: 100,
+      septemberPayments: 100,
+      octoberPayments: 100,
+      novemberPayments: 100,
+      decemberPayments: 100,
+      januaryCharges: 200,
+      februaryCharges: 200,
+      marchCharges: 200,
+      aprilCharges: 200,
+      mayCharges: 200,
+      juneCharges: 200,
+      julyCharges: 200,
+      augustCharges: 200,
+      septemberCharges: 200,
+      octoberCharges: 200,
+      novemberCharges: 200,
+      decemberCharges: 200,
+    };
+
+    (mockTx.payment.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      existingPayment,
+    ]);
+    (mockTx.payment.update as ReturnType<typeof vi.fn>).mockRejectedValue(
+      'Update failed'
+    );
+
+    await importPayments(mockTx, apartmentMap, entries, stats, errors);
+
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toContain('Błąd aktualizacji płatności');
+    expect(errors[0]).toContain('Nieznany błąd');
     expect(stats.skipped).toBe(1);
   });
 
