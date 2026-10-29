@@ -46,12 +46,16 @@ describe('DashboardNavbar', () => {
 
     it('opens with the toggle and closes after choosing a link', async () => {
       render(<DashboardNavbar mode="dashboard" isAdmin />);
-      const toggle = screen.getByRole('button', { name: 'Toggle menu' });
+      const toggle = screen.getByRole('button', { name: 'Menu' });
 
       expect(mobileMenu()).toHaveClass('max-h-0');
+      expect(mobileMenu()).toHaveAttribute('inert');
+      expect(toggle).toHaveAttribute('aria-expanded', 'false');
 
       await userEvent.click(toggle);
       expect(mobileMenu()).toHaveClass('max-h-96');
+      expect(mobileMenu()).not.toHaveAttribute('inert');
+      expect(toggle).toHaveAttribute('aria-expanded', 'true');
 
       await userEvent.click(
         screen.getAllByRole('link', { name: /profil/i })[1]

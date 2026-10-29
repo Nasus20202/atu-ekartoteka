@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     // Deduplicate by email: one existing user may cover multiple apartments
     const emailMap = new Map<string, string[]>();
     for (const apt of apartments) {
-      const email = apt.email!;
+      const email = apt.email;
       if (!emailMap.has(email)) {
         emailMap.set(email, []);
       }

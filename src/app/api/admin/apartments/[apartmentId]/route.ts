@@ -5,11 +5,13 @@ import { createLogger } from '@/lib/logger';
 import { updateApartmentStatus } from '@/lib/mutations/apartments/update-apartment-status';
 import { findApartmentDetail } from '@/lib/queries/apartments/find-apartment-detail';
 import {
+  type ApartmentDetailResponseDto,
   toApartmentDetailDto,
   toApartmentSummaryDto,
 } from '@/lib/types/dto/apartment-dto';
 import { toChargePeriodItemDto } from '@/lib/types/dto/charge-dto';
 import { toPaymentPdfDto } from '@/lib/types/dto/payment-dto';
+import { getRequestNow } from '@/lib/utils/request-now';
 
 const logger = createLogger('api:admin:apartments:detail');
 
@@ -32,13 +34,16 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(
-      toApartmentDetailDto({
+    const body: ApartmentDetailResponseDto = {
+      ...toApartmentDetailDto({
         ...apartment,
         charges: apartment.charges.map(toChargePeriodItemDto),
         payments: apartment.payments.map(toPaymentPdfDto),
-      })
-    );
+      }),
+      currentYear: (await getRequestNow()).getFullYear(),
+    };
+
+    return NextResponse.json(body);
   } catch (error) {
     logger.error({ error }, 'Error fetching apartment details');
     return NextResponse.json(

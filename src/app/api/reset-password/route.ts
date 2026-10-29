@@ -39,6 +39,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Verify turnstile token
+    const valid = await verifyTurnstileToken(turnstileToken);
+    if (!valid) {
+      return NextResponse.json(
+        { error: 'Nieprawidłowe potwierdzenie turnstile' },
+        { status: 400 }
+      );
+    }
+
     // Hash the incoming token and find matching reset record
     const hashedToken = hashToken(token);
     const resetToken = await findPasswordResetByToken(hashedToken);
@@ -80,15 +89,6 @@ export async function POST(req: NextRequest) {
 
     // Hash new password
     const hashedPassword = await bcrypt.hash(password, BCRYPT_COST);
-
-    // Verify turnstile token
-    const valid = await verifyTurnstileToken(turnstileToken);
-    if (!valid) {
-      return NextResponse.json(
-        { error: 'Nieprawidłowe potwierdzenie turnstile' },
-        { status: 400 }
-      );
-    }
 
     // Update password and mark token as used
     await resetPasswordTransaction(

@@ -18,7 +18,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { LoadingCard } from '@/components/ui/loading-card';
-import type { ApartmentDetailDto } from '@/lib/types/dto/apartment-dto';
+import type { ApartmentDetailResponseDto } from '@/lib/types/dto/apartment-dto';
 import { formatCurrency, formatSharePercent } from '@/lib/utils';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 import { sumDecimals } from '@/lib/utils/sum';
@@ -28,7 +28,9 @@ export default function ApartmentDetailsPage() {
   const apartmentId = params.apartmentId as string;
   const confirm = useConfirm();
 
-  const [apartment, setApartment] = useState<ApartmentDetailDto | null>(null);
+  const [apartment, setApartment] = useState<ApartmentDetailResponseDto | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
 
@@ -284,6 +286,7 @@ export default function ApartmentDetailsPage() {
             apartmentId={apartmentId}
             apartmentLabel={formatApartmentLabel(apartment)}
             hoaName={apartment.homeownersAssociation.name}
+            currentYear={apartment.currentYear}
           />
         )}
 

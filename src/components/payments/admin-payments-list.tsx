@@ -36,6 +36,8 @@ interface AdminPaymentsListProps {
   apartmentId: string;
   apartmentLabel: string;
   hoaName: string;
+  /** Year opened by default; passed from the server request. */
+  currentYear: number;
 }
 
 function sumMonths(
@@ -146,8 +148,8 @@ export function AdminPaymentsList({
   apartmentId,
   apartmentLabel,
   hoaName,
+  currentYear,
 }: AdminPaymentsListProps) {
-  const currentYear = new Date().getFullYear();
   const sorted = [...payments].sort((a, b) => b.year - a.year);
 
   return (

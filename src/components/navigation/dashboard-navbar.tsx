@@ -18,6 +18,9 @@ import { LogoutButton } from '@/components/account/logout-button';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { Button } from '@/components/ui/button';
 
+const MOBILE_MENU_ID = 'mobile-navigation';
+const MOBILE_MENU_LABEL = 'Menu';
+
 type NavItem = {
   name: string;
   href: string;
@@ -107,7 +110,9 @@ export function DashboardNavbar({
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="md:hidden rounded-md p-2 hover:bg-accent"
-            aria-label="Toggle menu"
+            aria-label={MOBILE_MENU_LABEL}
+            aria-expanded={isOpen}
+            aria-controls={MOBILE_MENU_ID}
           >
             {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
@@ -115,6 +120,8 @@ export function DashboardNavbar({
 
         {/* Mobile Menu */}
         <div
+          id={MOBILE_MENU_ID}
+          inert={!isOpen}
           className={`overflow-hidden transition-all duration-300 ease-in-out md:hidden ${
             isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
           }`}

@@ -372,6 +372,7 @@ describe('POST /api/reset-password', () => {
     await expect(response.json()).resolves.toEqual({
       error: 'Nieprawidłowe potwierdzenie turnstile',
     });
+    expect(mockPasswordResetFindUnique).not.toHaveBeenCalled();
     expect(mockTransaction).not.toHaveBeenCalled();
   });
 });

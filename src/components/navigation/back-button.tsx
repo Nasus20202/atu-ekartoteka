@@ -14,6 +14,7 @@ export function BackButton() {
       size="icon"
       onClick={() => router.back()}
       className="h-12 w-12 [&_svg]:size-6!"
+      aria-label="Wróć"
     >
       <ArrowLeft />
     </Button>
