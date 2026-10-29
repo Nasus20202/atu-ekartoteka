@@ -5,7 +5,6 @@ import { UserRole } from '@/lib/types';
 
 const mockAuth = vi.fn();
 const mockApartmentFindMany = vi.fn();
-const mockApartmentCount = vi.fn();
 const mockHoaFindUnique = vi.fn();
 
 vi.mock('@/auth', () => ({
@@ -16,7 +15,6 @@ vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     apartment: {
       findMany: mockApartmentFindMany,
-      count: mockApartmentCount,
     },
     homeownersAssociation: {
       findUnique: mockHoaFindUnique,
@@ -31,6 +29,16 @@ vi.mock('@/lib/logger', () => ({
     error: vi.fn(),
   }),
 }));
+
+// The route first loads the sort keys of every match, then the rows of one page
+function mockApartmentRows(rows: Record<string, unknown>[]) {
+  mockApartmentFindMany.mockImplementation(
+    async ({ select, where }: { select?: object; where: any }) =>
+      select
+        ? rows
+        : rows.filter((row) => where.id.in.includes(row.id as string))
+  );
+}
 
 function createMockRequest(searchParams?: Record<string, string>): NextRequest {
   const url = new URL('http://localhost/api/admin/apartments');
@@ -125,8 +133,7 @@ describe('Admin Apartments API', () => {
         },
         expires: new Date().toISOString(),
       });
-      mockApartmentFindMany.mockResolvedValueOnce(mockApartments);
-      mockApartmentCount.mockResolvedValueOnce(2);
+      mockApartmentRows(mockApartments);
       mockHoaFindUnique.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
@@ -155,8 +162,7 @@ describe('Admin Apartments API', () => {
         },
         expires: new Date().toISOString(),
       });
-      mockApartmentFindMany.mockResolvedValueOnce([mockApartments[0]]);
-      mockApartmentCount.mockResolvedValueOnce(1);
+      mockApartmentRows([mockApartments[0]]);
       mockHoaFindUnique.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
@@ -180,8 +186,7 @@ describe('Admin Apartments API', () => {
         },
         expires: new Date().toISOString(),
       });
-      mockApartmentFindMany.mockResolvedValueOnce([mockApartments[0]]);
-      mockApartmentCount.mockResolvedValueOnce(1);
+      mockApartmentRows([mockApartments[0]]);
       mockHoaFindUnique.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
@@ -204,8 +209,7 @@ describe('Admin Apartments API', () => {
         },
         expires: new Date().toISOString(),
       });
-      mockApartmentFindMany.mockResolvedValueOnce(mockApartments);
-      mockApartmentCount.mockResolvedValueOnce(2);
+      mockApartmentRows(mockApartments);
       mockHoaFindUnique.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
@@ -234,8 +238,7 @@ describe('Admin Apartments API', () => {
         },
         expires: new Date().toISOString(),
       });
-      mockApartmentFindMany.mockResolvedValueOnce(mockApartments);
-      mockApartmentCount.mockResolvedValueOnce(2);
+      mockApartmentRows(mockApartments);
       mockHoaFindUnique.mockResolvedValueOnce(mockHOA);
 
       const { GET } = await import('../route');
@@ -268,8 +271,7 @@ describe('Admin Apartments API', () => {
         },
         expires: new Date().toISOString(),
       });
-      mockApartmentFindMany.mockResolvedValueOnce([mockApartments[0]]);
-      mockApartmentCount.mockResolvedValueOnce(1);
+      mockApartmentRows([mockApartments[0]]);
       mockHoaFindUnique.mockResolvedValueOnce(mockHOA);
 
       const { GET } = await import('../route');
@@ -305,8 +307,13 @@ describe('Admin Apartments API', () => {
         },
         expires: new Date().toISOString(),
       });
-      mockApartmentFindMany.mockResolvedValueOnce(mockApartments);
-      mockApartmentCount.mockResolvedValueOnce(45);
+      mockApartmentRows(
+        Array.from({ length: 45 }, (_, i) => ({
+          ...mockApartments[0],
+          id: `apt-${i}`,
+          number: String(i + 1),
+        }))
+      );
       mockHoaFindUnique.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
@@ -321,6 +328,9 @@ describe('Admin Apartments API', () => {
         total: 45,
         totalPages: 3,
       });
+      expect(data.apartments.map((a: { id: string }) => a.id)).toEqual(
+        Array.from({ length: 20 }, (_, i) => `apt-${i + 20}`)
+      );
     });
 
     it('should sort by building and number', async () => {
@@ -332,8 +342,7 @@ describe('Admin Apartments API', () => {
         },
         expires: new Date().toISOString(),
       });
-      mockApartmentFindMany.mockResolvedValueOnce(mockApartments);
-      mockApartmentCount.mockResolvedValueOnce(2);
+      mockApartmentRows(mockApartments);
       mockHoaFindUnique.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
@@ -357,8 +366,7 @@ describe('Admin Apartments API', () => {
         },
         expires: new Date().toISOString(),
       });
-      mockApartmentFindMany.mockResolvedValueOnce(mockApartments);
-      mockApartmentCount.mockResolvedValueOnce(2);
+      mockApartmentRows(mockApartments);
       mockHoaFindUnique.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
@@ -382,8 +390,7 @@ describe('Admin Apartments API', () => {
         },
         expires: new Date().toISOString(),
       });
-      mockApartmentFindMany.mockResolvedValueOnce(mockApartments);
-      mockApartmentCount.mockResolvedValueOnce(2);
+      mockApartmentRows(mockApartments);
       mockHoaFindUnique.mockResolvedValueOnce(mockHOA);
 
       const { GET } = await import('../route');
@@ -432,8 +439,7 @@ describe('Admin Apartments API', () => {
         },
         expires: new Date().toISOString(),
       });
-      mockApartmentFindMany.mockResolvedValueOnce([mockApartments[0]]);
-      mockApartmentCount.mockResolvedValueOnce(1);
+      mockApartmentRows([mockApartments[0]]);
       mockHoaFindUnique.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
@@ -456,8 +462,7 @@ describe('Admin Apartments API', () => {
         },
         expires: new Date().toISOString(),
       });
-      mockApartmentFindMany.mockResolvedValueOnce([mockApartments[1]]);
-      mockApartmentCount.mockResolvedValueOnce(1);
+      mockApartmentRows([mockApartments[1]]);
       mockHoaFindUnique.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
@@ -480,8 +485,7 @@ describe('Admin Apartments API', () => {
         },
         expires: new Date().toISOString(),
       });
-      mockApartmentFindMany.mockResolvedValueOnce(mockApartments);
-      mockApartmentCount.mockResolvedValueOnce(2);
+      mockApartmentRows(mockApartments);
       mockHoaFindUnique.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
@@ -504,8 +508,7 @@ describe('Admin Apartments API', () => {
         },
         expires: new Date().toISOString(),
       });
-      mockApartmentFindMany.mockResolvedValueOnce([mockApartments[0]]);
-      mockApartmentCount.mockResolvedValueOnce(1);
+      mockApartmentRows([mockApartments[0]]);
       mockHoaFindUnique.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
@@ -541,8 +544,7 @@ describe('Admin Apartments API', () => {
         },
         expires: new Date().toISOString(),
       });
-      mockApartmentFindMany.mockResolvedValueOnce(mockApartments);
-      mockApartmentCount.mockResolvedValueOnce(2);
+      mockApartmentRows(mockApartments);
       mockHoaFindUnique.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
@@ -568,11 +570,10 @@ describe('Admin Apartments API', () => {
         mockAuth.mockResolvedValueOnce({
           user: { id: 'admin-id', role: UserRole.ADMIN },
         });
-        mockApartmentCount.mockResolvedValueOnce(3);
       });
 
       it('handles slash-search with only the number part', async () => {
-        mockApartmentFindMany.mockResolvedValueOnce([]);
+        mockApartmentRows([]);
 
         const { GET } = await import('../route');
         await GET(createMockRequest({ search: '/12' }));
@@ -594,7 +595,7 @@ describe('Admin Apartments API', () => {
       });
 
       it('sorts by building first, treating a missing building as empty', async () => {
-        mockApartmentFindMany.mockResolvedValueOnce([
+        mockApartmentRows([
           { ...mockApartments[0], id: 'b', building: 'B', number: '1' },
           { ...mockApartments[0], id: 'none', building: null, number: '5' },
           { ...mockApartments[0], id: 'a', building: 'A', number: '2' },
@@ -613,7 +614,7 @@ describe('Admin Apartments API', () => {
       });
 
       it('returns the HOA summary for a hoaId filter', async () => {
-        mockApartmentFindMany.mockResolvedValueOnce([]);
+        mockApartmentRows([]);
         mockHoaFindUnique.mockReset();
         mockHoaFindUnique.mockResolvedValue(mockHOA);
 

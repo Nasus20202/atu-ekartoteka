@@ -181,13 +181,19 @@ The system SHALL allow admins to create multiple tenant accounts at once for apa
 
 - **GIVEN** an authenticated admin
 - **WHEN** they request the unassigned apartments list (default or `mode=creatable`)
-- **THEN** all apartments with `userId IS NULL` and a non-empty email that does NOT match any existing user are returned, grouped by HOA, sorted by HOA name then building then number
+- **THEN** the apartments with `userId IS NULL` and a non-empty email that does NOT match any existing user are returned, one page of HOAs at a time, grouped by HOA, sorted by HOA name then building then number
 
 #### Scenario: View apartments assignable to existing users
 
 - **GIVEN** an authenticated admin
 - **WHEN** they request the unassigned apartments list with `mode=assignable`
-- **THEN** all apartments with `userId IS NULL` and an email that matches an existing user account are returned, grouped by HOA, sorted by HOA name then building then number
+- **THEN** the apartments with `userId IS NULL` and an email that matches an existing user account are returned, one page of HOAs at a time, grouped by HOA, sorted by HOA name then building then number
+
+#### Scenario: Load more HOAs
+
+- **GIVEN** the list has more HOAs than the first page
+- **WHEN** the admin clicks "Pokaż więcej wspólnot"
+- **THEN** the next page of HOAs is appended to the list and the selection is kept
 
 #### Scenario: Bulk create accounts
 

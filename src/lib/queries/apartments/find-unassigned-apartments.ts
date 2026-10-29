@@ -1,12 +1,22 @@
 import { prisma } from '@/lib/database/prisma';
 
-type EmailWhere = { in: string[] } | { notIn: string[] };
+export type EmailWhere = { in: string[] } | { notIn: string[] };
 
-export function findUnassignedApartments(emailWhere: EmailWhere) {
+export function unassignedApartmentsWhere(emailWhere: EmailWhere) {
+  return {
+    userId: null,
+    email: { not: null, ...emailWhere },
+  };
+}
+
+export function findUnassignedApartments(
+  emailWhere: EmailWhere,
+  hoaIds: string[]
+) {
   return prisma.apartment.findMany({
     where: {
-      userId: null,
-      email: { not: null, ...emailWhere },
+      ...unassignedApartmentsWhere(emailWhere),
+      homeownersAssociationId: { in: hoaIds },
     },
     select: {
       id: true,

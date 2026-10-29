@@ -71,6 +71,8 @@ vi.mock('@/components/ui/alert-dialog', () => ({
 
 global.fetch = vi.fn();
 
+const SINGLE_PAGE = { page: 1, totalPages: 1 };
+
 const mockHoas = [
   {
     hoaId: 'hoa-1',
@@ -122,7 +124,7 @@ describe('BulkCreateUsersPage', () => {
     vi.clearAllMocks();
     vi.mocked(fetch).mockResolvedValue({
       ok: true,
-      json: async () => ({ hoas: mockHoas }),
+      json: async () => ({ hoas: mockHoas, pagination: SINGLE_PAGE }),
     } as Response);
   });
 
@@ -155,7 +157,7 @@ describe('BulkCreateUsersPage', () => {
   it('renders empty state when no unassigned apartments', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ hoas: [] }),
+      json: async () => ({ hoas: [], pagination: SINGLE_PAGE }),
     } as Response);
 
     render(<BulkCreateUsersPage />);
@@ -240,7 +242,7 @@ describe('BulkCreateUsersPage', () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ hoas: mockHoas }),
+        json: async () => ({ hoas: mockHoas, pagination: SINGLE_PAGE }),
       } as Response)
       .mockResolvedValueOnce({
         ok: true,
@@ -248,7 +250,7 @@ describe('BulkCreateUsersPage', () => {
       } as Response)
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ hoas: [] }),
+        json: async () => ({ hoas: [], pagination: SINGLE_PAGE }),
       } as Response);
 
     render(<BulkCreateUsersPage />);
@@ -289,7 +291,7 @@ describe('BulkCreateUsersPage', () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ hoas: mockHoas }),
+        json: async () => ({ hoas: mockHoas, pagination: SINGLE_PAGE }),
       } as Response)
       .mockResolvedValueOnce({
         ok: false,
@@ -326,6 +328,7 @@ describe('BulkCreateUsersPage', () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
+        pagination: SINGLE_PAGE,
         hoas: [
           {
             hoaId: 'hoa-1',
@@ -370,6 +373,7 @@ describe('BulkCreateUsersPage', () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
+        pagination: SINGLE_PAGE,
         hoas: [
           {
             hoaId: 'hoa-1',
@@ -407,6 +411,7 @@ describe('BulkCreateUsersPage', () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
+        pagination: SINGLE_PAGE,
         hoas: [
           {
             hoaId: 'hoa-1',
@@ -461,6 +466,7 @@ describe('BulkCreateUsersPage', () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
+        pagination: SINGLE_PAGE,
         hoas: [
           {
             hoaId: 'hoa-1',
@@ -510,6 +516,7 @@ describe('BulkCreateUsersPage', () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
+        pagination: SINGLE_PAGE,
         hoas: [
           {
             hoaId: 'hoa-1',
@@ -554,17 +561,83 @@ describe('BulkCreateUsersPage', () => {
     expect(infoBadges).toHaveLength(0);
   });
 
+  describe('pagination', () => {
+    const page = (hoas: typeof mockHoas, number: number, totalPages = 2) =>
+      ({
+        ok: true,
+        json: async () => ({
+          hoas,
+          pagination: { page: number, totalPages },
+        }),
+      }) as Response;
+
+    it('does not offer more HOAs when everything is loaded', async () => {
+      render(<BulkCreateUsersPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
+      });
+      expect(
+        screen.queryByRole('button', { name: /pokaż więcej wspólnot/i })
+      ).not.toBeInTheDocument();
+    });
+
+    it('appends the next page of HOAs and hides the button on the last page', async () => {
+      const user = userEvent.setup();
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(page([mockHoas[0]], 1))
+        .mockResolvedValueOnce(page([mockHoas[1]], 2));
+
+      render(<BulkCreateUsersPage />);
+
+      await user.click(
+        await screen.findByRole('button', { name: /pokaż więcej wspólnot/i })
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Wspólnota Beta')).toBeInTheDocument();
+      });
+      expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
+      expect(vi.mocked(fetch).mock.calls.map(([url]) => url)).toEqual([
+        '/api/admin/unassigned-apartments?mode=creatable&page=1',
+        '/api/admin/unassigned-apartments?mode=creatable&page=2',
+      ]);
+      expect(
+        screen.queryByRole('button', { name: /pokaż więcej wspólnot/i })
+      ).not.toBeInTheDocument();
+    });
+
+    it('keeps the loaded HOAs and shows the error when loading more fails', async () => {
+      const user = userEvent.setup();
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(page([mockHoas[0]], 1))
+        .mockResolvedValueOnce({
+          ok: false,
+          json: async () => ({ error: 'Brak uprawnień' }),
+        } as Response);
+
+      render(<BulkCreateUsersPage />);
+
+      await user.click(
+        await screen.findByRole('button', { name: /pokaż więcej wspólnot/i })
+      );
+
+      expect(await screen.findByText('Brak uprawnień')).toBeInTheDocument();
+      expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
+    });
+  });
+
   describe('Assign existing tab', () => {
     it('switches to assign tab and fetches with mode=assignable', async () => {
       const user = userEvent.setup();
       vi.mocked(fetch)
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ hoas: mockHoas }),
+          json: async () => ({ hoas: mockHoas, pagination: SINGLE_PAGE }),
         } as Response)
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ hoas: [mockHoas[0]] }),
+          json: async () => ({ hoas: [mockHoas[0]], pagination: SINGLE_PAGE }),
         } as Response);
 
       render(<BulkCreateUsersPage />);
@@ -592,11 +665,11 @@ describe('BulkCreateUsersPage', () => {
       vi.mocked(fetch)
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ hoas: mockHoas }),
+          json: async () => ({ hoas: mockHoas, pagination: SINGLE_PAGE }),
         } as Response)
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ hoas: [] }),
+          json: async () => ({ hoas: [], pagination: SINGLE_PAGE }),
         } as Response);
 
       render(<BulkCreateUsersPage />);
@@ -619,11 +692,11 @@ describe('BulkCreateUsersPage', () => {
       vi.mocked(fetch)
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ hoas: mockHoas }),
+          json: async () => ({ hoas: mockHoas, pagination: SINGLE_PAGE }),
         } as Response)
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ hoas: [mockHoas[0]] }),
+          json: async () => ({ hoas: [mockHoas[0]], pagination: SINGLE_PAGE }),
         } as Response)
         .mockResolvedValueOnce({
           ok: true,
@@ -631,7 +704,7 @@ describe('BulkCreateUsersPage', () => {
         } as Response)
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ hoas: [] }),
+          json: async () => ({ hoas: [], pagination: SINGLE_PAGE }),
         } as Response);
 
       render(<BulkCreateUsersPage />);

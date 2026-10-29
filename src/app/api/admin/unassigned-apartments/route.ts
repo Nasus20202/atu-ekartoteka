@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { createLogger } from '@/lib/logger';
 import { findAssignedApartmentAddressKeys } from '@/lib/queries/apartments/find-assigned-apartment-address-keys';
+import { findHoasWithUnassignedApartments } from '@/lib/queries/apartments/find-hoas-with-unassigned-apartments';
 import { findUnassignedApartments } from '@/lib/queries/apartments/find-unassigned-apartments';
 import { findAllUserEmails } from '@/lib/queries/users/find-all-user-emails';
 import { compareApartmentsNaturally } from '@/lib/utils/apartment-sort';
@@ -11,6 +12,13 @@ const logger = createLogger('api:admin:unassigned-apartments');
 
 const UNASSIGNED_MODE_CREATABLE = 'creatable';
 const UNASSIGNED_MODE_ASSIGNABLE = 'assignable';
+const DEFAULT_HOAS_PER_PAGE = 10;
+const MAX_HOAS_PER_PAGE = 100;
+
+function parsePositiveInt(value: string | null, fallback: number) {
+  const parsed = parseInt(value ?? '', 10);
+  return parsed > 0 ? parsed : fallback;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,6 +27,11 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = request.nextUrl;
     const mode = searchParams.get('mode') ?? UNASSIGNED_MODE_CREATABLE;
+    const page = parsePositiveInt(searchParams.get('page'), 1);
+    const limit = Math.min(
+      parsePositiveInt(searchParams.get('limit'), DEFAULT_HOAS_PER_PAGE),
+      MAX_HOAS_PER_PAGE
+    );
 
     const existingUsers = await findAllUserEmails();
     const existingEmails = existingUsers.map((u) => u.email);
@@ -30,9 +43,16 @@ export async function GET(request: NextRequest) {
         ? { in: existingEmails }
         : { notIn: existingEmails };
 
+    // Pages are made of whole HOAs, so twin and shared-email groups never split
+    const [hoaPage, totalHoas] = await findHoasWithUnassignedApartments(
+      emailWhere,
+      { skip: (page - 1) * limit, limit }
+    );
+    const hoaIds = hoaPage.map((hoa) => hoa.id);
+
     const [apartments, assignedKeys] = await Promise.all([
-      findUnassignedApartments(emailWhere),
-      findAssignedApartmentAddressKeys(),
+      findUnassignedApartments(emailWhere, hoaIds),
+      findAssignedApartmentAddressKeys(hoaIds),
     ]);
 
     // Build a set of "hoaId__building__number" keys for already-occupied apartments
@@ -71,11 +91,19 @@ export async function GET(request: NextRequest) {
     }
 
     logger.info(
-      { hoaCount: hoaMap.size, apartmentCount: apartments.length, mode },
+      { hoaCount: hoaMap.size, apartmentCount: apartments.length, mode, page },
       'Fetched unassigned apartments'
     );
 
-    return NextResponse.json({ hoas: Array.from(hoaMap.values()) });
+    return NextResponse.json({
+      hoas: Array.from(hoaMap.values()),
+      pagination: {
+        page,
+        limit,
+        total: totalHoas,
+        totalPages: Math.ceil(totalHoas / limit),
+      },
+    });
   } catch (error) {
     logger.error({ error }, 'Nie udało się pobrać nieprzypisanych mieszkań');
     return NextResponse.json(
