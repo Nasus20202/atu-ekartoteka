@@ -14,18 +14,18 @@ export const SESSION_COOKIE = 'authjs.session-token';
 
 export const DURATION = __ENV.PERF_DURATION || '2m';
 export const RAMP_UP = __ENV.PERF_RAMP_UP || '1m';
-export const USER_VUS = Number(__ENV.PERF_USER_VUS || 50);
+export const USER_VUS = Number(__ENV.PERF_USER_VUS || 200);
 export const ADMIN_VUS = Number(__ENV.PERF_ADMIN_VUS || 10);
-export const PUBLIC_RATE = Number(__ENV.PERF_PUBLIC_RATE || 20);
-export const LOGIN_RATE = Number(__ENV.PERF_LOGIN_RATE || 5);
+export const PUBLIC_RATE = Number(__ENV.PERF_PUBLIC_RATE || 50);
+export const LOGIN_RATE = Number(__ENV.PERF_LOGIN_RATE || 20);
 
 export const THINK_TIME_SECONDS = 1;
 
 export const THRESHOLDS = {
   http_req_failed: ['rate<0.01'],
-  checks: ['rate>0.99'],
-  'http_req_duration{scenario:public}': ['p(95)<500'],
-  'http_req_duration{scenario:user_journey}': ['p(95)<1500'],
-  'http_req_duration{scenario:admin_journey}': ['p(95)<2000'],
-  'http_req_duration{scenario:login}': ['p(95)<2000'],
+  checks: ['rate>0.999'],
+  'http_req_duration{scenario:public}': ['p(95)<50'],
+  'http_req_duration{scenario:user_journey}': ['p(95)<200'],
+  'http_req_duration{scenario:admin_journey}': ['p(95)<200'],
+  'http_req_duration{scenario:login}': ['p(95)<200'],
 };
