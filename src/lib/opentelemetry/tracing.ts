@@ -9,6 +9,12 @@
  * to allow instrumentations (Pino, Pg) to hook in properly.
  */
 import packageJson from '@/../package.json';
+import {
+  buildResourceAttributes,
+  mergeResourceAttributes,
+  normalizeSpanPath,
+  shouldIgnoreRequest,
+} from '@/lib/opentelemetry/tracing-utils';
 
 type Logger = ReturnType<typeof import('@/lib/logger').createLogger>;
 let logger: Logger | undefined;
@@ -44,35 +50,19 @@ export async function initTracing() {
   const { ATTR_SERVICE_VERSION } =
     await import('@opentelemetry/semantic-conventions');
 
-  const K8S_NAMESPACE_NAME = 'k8s.namespace.name';
-  const K8S_POD_NAME = 'k8s.pod.name';
-
   const serviceName = process.env.OTEL_SERVICE_NAME || 'atu-ekartoteka';
-  const k8sNamespace = process.env.K8S_NAMESPACE;
-  const k8sPodName = process.env.K8S_POD_NAME;
-
-  const resourceAttributes: Record<string, string> = {
-    [ATTR_SERVICE_VERSION]: packageJson.version,
-  };
-
-  if (k8sNamespace) {
-    resourceAttributes[K8S_NAMESPACE_NAME] = k8sNamespace;
-  }
-
-  if (k8sPodName) {
-    resourceAttributes[K8S_POD_NAME] = k8sPodName;
-  }
+  const resourceAttributes = buildResourceAttributes(
+    ATTR_SERVICE_VERSION,
+    packageJson.version,
+    process.env
+  );
 
   // sdk-node no longer re-exports `resources`, so the extra resource attributes
   // are passed through OTEL_RESOURCE_ATTRIBUTES, which the default env detector reads.
-  process.env.OTEL_RESOURCE_ATTRIBUTES = [
+  process.env.OTEL_RESOURCE_ATTRIBUTES = mergeResourceAttributes(
     process.env.OTEL_RESOURCE_ATTRIBUTES,
-    ...Object.entries(resourceAttributes).map(
-      ([key, value]) => `${key}=${value}`
-    ),
-  ]
-    .filter(Boolean)
-    .join(',');
+    resourceAttributes
+  );
 
   const sdk = new NodeSDK({
     serviceName,
@@ -97,26 +87,13 @@ export async function initTracing() {
     instrumentations: [
       new PinoInstrumentation(),
       new HttpInstrumentation({
-        ignoreIncomingRequestHook: (request) => {
-          // Ignore health check and Next.js internal endpoints
-          const url = request.url || '';
-          return url.includes('/api/health') || url.includes('/_next');
-        },
+        ignoreIncomingRequestHook: (request) =>
+          shouldIgnoreRequest(request.url),
         requestHook: (span, request) => {
-          // Customize span name to include method and normalized path
           const url = 'url' in request ? request.url : undefined;
           const method = 'method' in request ? request.method : 'HTTP';
           if (url) {
-            // Normalize dynamic segments (UUIDs, CUIDs, numeric IDs) to *
-            const normalizedPath = url
-              .split('?')[0] // Remove query string
-              .replace(
-                /\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/gi,
-                '/*'
-              ) // UUID
-              .replace(/\/c[a-z0-9]{20,}/gi, '/*') // CUID (like cmiqi2top0006x0ko...)
-              .replace(/\/\d+/g, '/*'); // Numeric IDs
-            span.updateName(`${method} ${normalizedPath}`);
+            span.updateName(`${method} ${normalizeSpanPath(url)}`);
           }
         },
       }),
