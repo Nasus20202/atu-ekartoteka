@@ -1,5 +1,11 @@
 import { notFound, redirect } from 'next/navigation';
 
+import {
+  getClosingBalanceClass,
+  getOpeningBalanceClass,
+  getPaymentSummary,
+  parsePaymentYear,
+} from '@/app/dashboard/payments/[apartmentId]/[year]/payment-summary';
 import { auth } from '@/auth';
 import { getPaymentMonthlyChartData } from '@/components/charts/chart-data';
 import { Page } from '@/components/layout/page';
@@ -18,12 +24,6 @@ import {
 import { findApartmentWithPaymentsByYearCached } from '@/lib/queries/apartments/find-apartment-with-payments-by-year';
 import { toPaymentPdfDto } from '@/lib/types/dto/payment-dto';
 import { formatCurrency } from '@/lib/utils';
-import { toDecimal } from '@/lib/utils/decimal';
-import {
-  CHARGE_MONTH_FIELD_KEYS,
-  PAYMENT_MONTH_FIELD_KEYS,
-} from '@/lib/utils/payment-months';
-import { sumDecimals } from '@/lib/utils/sum';
 
 interface PaymentDetailsPageProps {
   params: Promise<{
@@ -42,9 +42,8 @@ export default async function PaymentDetailsPage({
     redirect('/login');
   }
 
-  // Validate year parameter
-  const yearNumber = parseInt(year, 10);
-  if (isNaN(yearNumber) || yearNumber < 1900 || yearNumber > 2100) {
+  const yearNumber = parsePaymentYear(year);
+  if (yearNumber === null) {
     notFound();
   }
 
@@ -60,14 +59,8 @@ export default async function PaymentDetailsPage({
 
   const payment = apartment.payments[0];
 
-  const totalPayments = sumDecimals(
-    PAYMENT_MONTH_FIELD_KEYS.map((key) => payment[key])
-  );
-  const totalCharges = sumDecimals(
-    CHARGE_MONTH_FIELD_KEYS.map((key) => payment[key])
-  );
-  const openingBalance = toDecimal(payment.openingBalance);
-  const closingBalance = toDecimal(payment.closingBalance);
+  const { totalPayments, totalCharges, openingBalance, closingBalance } =
+    getPaymentSummary(payment);
   const monthlyChartData = getPaymentMonthlyChartData(payment);
 
   const apartmentLabel = `${apartment.address} ${apartment.building || ''}/${apartment.number}`;
@@ -109,13 +102,7 @@ export default async function PaymentDetailsPage({
                   Saldo początkowe
                 </div>
                 <div
-                  className={`text-2xl font-bold ${
-                    openingBalance.isNegative()
-                      ? 'text-red-600'
-                      : openingBalance.greaterThan(0)
-                        ? 'text-green-600'
-                        : ''
-                  }`}
+                  className={`text-2xl font-bold ${getOpeningBalanceClass(openingBalance)}`}
                 >
                   {formatCurrency(openingBalance)}
                 </div>
@@ -137,11 +124,7 @@ export default async function PaymentDetailsPage({
                   Saldo końcowe
                 </div>
                 <div
-                  className={`text-2xl font-bold ${
-                    closingBalance.greaterThanOrEqualTo(0)
-                      ? 'text-green-600'
-                      : 'text-red-600'
-                  }`}
+                  className={`text-2xl font-bold ${getClosingBalanceClass(closingBalance)}`}
                 >
                   {formatCurrency(closingBalance)}
                 </div>

@@ -5,6 +5,12 @@ import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
+import {
+  buildAddressKey,
+  computeDuplicateActiveAddresses,
+  getFoundApartmentsLabel,
+  getPageItems,
+} from '@/app/admin/apartments/[hoaId]/apartment-list-utils';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
@@ -32,26 +38,6 @@ interface HOA {
   id: string;
   externalId: string;
   name: string;
-}
-
-function buildAddressKey(apt: ApartmentSummaryDto): string {
-  return `${apt.address ?? ''}__${apt.building ?? ''}__${apt.number}`;
-}
-
-function computeDuplicateActiveAddresses(
-  apartments: ApartmentSummaryDto[]
-): Set<string> {
-  const counts = new Map<string, number>();
-  for (const apt of apartments) {
-    if (!apt.isActive) continue;
-    const key = buildAddressKey(apt);
-    counts.set(key, (counts.get(key) ?? 0) + 1);
-  }
-  const duplicates = new Set<string>();
-  for (const [key, count] of counts) {
-    if (count > 1) duplicates.add(key);
-  }
-  return duplicates;
 }
 
 function ApartmentSearchForm({
@@ -187,35 +173,26 @@ function ApartmentsPagination({
       </Button>
 
       <div className="flex items-center gap-1">
-        {Array.from({ length: pagination.totalPages }, (_, i) => {
-          const p = i + 1;
-          const isNearCurrent =
-            Math.abs(p - pagination.page) <= 2 ||
-            p === 1 ||
-            p === pagination.totalPages;
-
-          if (!isNearCurrent) {
-            if (p === pagination.page - 3 || p === pagination.page + 3) {
-              return (
-                <span key={p} className="px-2 text-muted-foreground">
-                  ...
-                </span>
-              );
-            }
-            return null;
-          }
-
-          return (
-            <Button
-              key={p}
-              variant={p === pagination.page ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => onPageChange(p)}
-            >
-              {p}
-            </Button>
-          );
-        })}
+        {getPageItems(pagination.page, pagination.totalPages).map(
+          (item, index) =>
+            item === 'ellipsis' ? (
+              <span
+                key={`ellipsis-${index}`}
+                className="px-2 text-muted-foreground"
+              >
+                ...
+              </span>
+            ) : (
+              <Button
+                key={item}
+                variant={item === pagination.page ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => onPageChange(item)}
+              >
+                {item}
+              </Button>
+            )
+        )}
       </div>
 
       <Button
@@ -369,11 +346,7 @@ export default function HOAApartmentsPage() {
         <>
           <div className="mb-4 text-sm text-muted-foreground">
             Znaleziono {pagination.total}{' '}
-            {pagination.total === 1
-              ? 'mieszkanie'
-              : pagination.total < 5 && pagination.total > 1
-                ? 'mieszkania'
-                : 'mieszkań'}
+            {getFoundApartmentsLabel(pagination.total)}
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">

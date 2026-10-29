@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 
+import { toPaymentYearEntries } from '@/app/dashboard/payments/payment-year-entries';
 import { auth } from '@/auth';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
@@ -13,7 +14,6 @@ import {
 } from '@/components/ui/card';
 import { findUserWithApartmentPaymentsCached } from '@/lib/queries/users/find-user-with-apartment-payments';
 import { AccountStatus } from '@/lib/types';
-import { toPaymentListItemDto } from '@/lib/types/dto/payment-dto';
 
 export default async function PaymentsPage() {
   const session = await auth();
@@ -38,17 +38,7 @@ export default async function PaymentsPage() {
       <div className="space-y-6">
         {userData.apartments.map(
           (apartment: (typeof userData.apartments)[number]) => {
-            const apartmentLabel = `${apartment.address} ${apartment.building || ''}/${apartment.number}`;
-            const entries = apartment.payments.map(
-              (payment: (typeof apartment.payments)[number]) => ({
-                payment: toPaymentListItemDto(payment),
-                apartmentId: apartment.id,
-                apartmentLabel,
-                hoaName: apartment.homeownersAssociation.name,
-                dateFromLabel: payment.dateFrom.toLocaleDateString('pl-PL'),
-                dateToLabel: payment.dateTo.toLocaleDateString('pl-PL'),
-              })
-            );
+            const entries = toPaymentYearEntries(apartment);
             return (
               <Card key={apartment.id}>
                 <CardHeader>

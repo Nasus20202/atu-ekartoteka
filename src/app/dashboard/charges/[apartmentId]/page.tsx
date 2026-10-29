@@ -1,6 +1,11 @@
 import { Building2 } from 'lucide-react';
 import { notFound, redirect } from 'next/navigation';
 
+import {
+  getSortedPeriods,
+  groupChargesByPeriod,
+  toActivePeriod,
+} from '@/app/dashboard/charges/charges-by-period';
 import { auth } from '@/auth';
 import { ChargesDisplay } from '@/components/charges/charges-display';
 import { Page } from '@/components/layout/page';
@@ -9,10 +14,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { findApartmentWithChargesCached } from '@/lib/queries/apartments/find-apartment-with-charges';
 import { findUserByIdCached } from '@/lib/queries/users/find-user-by-id';
 import { AccountStatus } from '@/lib/types';
-import {
-  type ChargeDisplayDto,
-  toChargeDisplayDto,
-} from '@/lib/types/dto/charge-dto';
 
 export default async function ApartmentChargesPage({
   params,
@@ -44,20 +45,10 @@ export default async function ApartmentChargesPage({
     notFound();
   }
 
-  const chargesByPeriod: Record<string, ChargeDisplayDto[]> = {};
-
-  apartment.charges.forEach((charge: (typeof apartment.charges)[number]) => {
-    if (!chargesByPeriod[charge.period]) {
-      chargesByPeriod[charge.period] = [];
-    }
-
-    chargesByPeriod[charge.period].push(toChargeDisplayDto(charge));
-  });
-
-  const periods = Object.keys(chargesByPeriod).sort().reverse();
+  const chargesByPeriod = groupChargesByPeriod(apartment.charges);
+  const periods = getSortedPeriods(chargesByPeriod);
   const apartmentLabel = `${apartment.address} ${apartment.building || ''}/${apartment.number}`;
-  // URL param is YYYY-MM, DB periods are YYYYMM — normalise by stripping the dash
-  const activeMonth = month ? month.replace('-', '') : null;
+  const activeMonth = toActivePeriod(month);
 
   return (
     <Page maxWidth="4xl">

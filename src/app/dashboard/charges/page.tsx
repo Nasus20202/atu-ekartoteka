@@ -1,6 +1,11 @@
 import { FileText } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
+import {
+  getCommonChargesDataDate,
+  getSortedPeriods,
+  groupApartmentChargesByPeriod,
+} from '@/app/dashboard/charges/charges-by-period';
 import { auth } from '@/auth';
 import { MultiChargesDisplay } from '@/components/charges/multi-charges-display';
 import { Page } from '@/components/layout/page';
@@ -8,17 +13,6 @@ import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { findUserWithApartmentChargesCached } from '@/lib/queries/users/find-user-with-apartment-charges';
 import { AccountStatus } from '@/lib/types';
-import {
-  type ChargeDisplayDto,
-  toChargeDisplayDto,
-} from '@/lib/types/dto/charge-dto';
-
-type ApartmentPeriodData = {
-  apartmentNumber: string;
-  apartmentAddress: string;
-  hoaName: string;
-  charges: ChargeDisplayDto[];
-};
 
 export default async function ChargesPage() {
   const session = await auth();
@@ -33,53 +27,9 @@ export default async function ChargesPage() {
     redirect('/dashboard');
   }
 
-  const chargesByPeriod: Record<string, ApartmentPeriodData[]> = {};
-
-  userData.apartments.forEach(
-    (apartment: (typeof userData.apartments)[number]) => {
-      const apartmentLabel =
-        `${apartment.address || ''} ${apartment.building || ''}/${apartment.number}`
-          .replace(/\s+\//g, ' /')
-          .trim();
-
-      apartment.charges.forEach(
-        (charge: (typeof apartment.charges)[number]) => {
-          if (!chargesByPeriod[charge.period]) {
-            chargesByPeriod[charge.period] = [];
-          }
-
-          const periodData = chargesByPeriod[charge.period];
-          let apartmentData = periodData.find(
-            (a) => a.apartmentNumber === apartment.number
-          );
-
-          if (!apartmentData) {
-            apartmentData = {
-              apartmentNumber: apartment.number,
-              apartmentAddress: apartmentLabel,
-              hoaName: apartment.homeownersAssociation.name,
-              charges: [],
-            };
-            periodData.push(apartmentData);
-          }
-
-          apartmentData.charges.push(toChargeDisplayDto(charge));
-        }
-      );
-    }
-  );
-
-  const periods = Object.keys(chargesByPeriod).sort().reverse();
-
-  const chargesDataDates = userData.apartments
-    .map((a) => a.homeownersAssociation.chargesDataDate)
-    .filter(Boolean) as Date[];
-  const chargesDataDate =
-    chargesDataDates.length === userData.apartments.length
-      ? new Date(
-          Math.max(...chargesDataDates.map((d) => d.getTime()))
-        ).toISOString()
-      : null;
+  const chargesByPeriod = groupApartmentChargesByPeriod(userData.apartments);
+  const periods = getSortedPeriods(chargesByPeriod);
+  const chargesDataDate = getCommonChargesDataDate(userData.apartments);
 
   return (
     <Page>

@@ -4,11 +4,12 @@ import { CheckCircle, UserCheck, UserPlus, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-import { ApartmentList } from '@/app/admin/users/management/ApartmentList';
 import {
-  HoaGroup,
-  type UnassignedApartment,
-} from '@/app/admin/users/management/HoaCard';
+  type AccountPreview,
+  buildAccountPreviews,
+} from '@/app/admin/users/management/account-previews';
+import { ApartmentList } from '@/app/admin/users/management/ApartmentList';
+import { HoaGroup } from '@/app/admin/users/management/HoaCard';
 import { useHoaSelection } from '@/app/admin/users/management/use-hoa-selection';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
@@ -33,32 +34,6 @@ interface BulkOperationResult {
   assigned?: number;
   skipped: number;
   errors: number;
-}
-
-interface AccountPreview {
-  email: string;
-  owner: string | null;
-  apartments: UnassignedApartment[];
-}
-
-function buildAccountPreviews(
-  hoas: HoaGroup[],
-  selectedIds: Set<string>
-): AccountPreview[] {
-  const allApartments = hoas.flatMap((h) => h.apartments);
-  const selected = allApartments.filter((a) => selectedIds.has(a.id));
-  const emailMap = new Map<string, AccountPreview>();
-  for (const apt of selected) {
-    if (!emailMap.has(apt.email)) {
-      emailMap.set(apt.email, {
-        email: apt.email,
-        owner: apt.owner,
-        apartments: [],
-      });
-    }
-    emailMap.get(apt.email)!.apartments.push(apt);
-  }
-  return Array.from(emailMap.values());
 }
 
 export default function BulkCreateUsersPage() {
