@@ -185,6 +185,42 @@
     animation: scale-in 0.2s ease-out;
   }
 
+  /* Scrolls overflowing text to its end and back, see MarqueeText */
+  @keyframes marquee-scroll {
+    0%,
+    20% {
+      transform: translateX(0);
+    }
+    45%,
+    70% {
+      transform: translateX(var(--marquee-distance));
+    }
+    95%,
+    100% {
+      transform: translateX(0);
+    }
+  }
+
+  .animate-marquee {
+    animation: marquee-scroll var(--marquee-duration) ease-in-out infinite;
+  }
+
+  .mask-fade-x {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      black var(--marquee-fade),
+      black calc(100% - var(--marquee-fade)),
+      transparent
+    );
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-marquee {
+      animation: none;
+    }
+  }
+
   /* Radix animate-in/out primitives — used by dropdown, dialog, alert-dialog */
   @keyframes enter {
     from {

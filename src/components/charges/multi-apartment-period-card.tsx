@@ -10,6 +10,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import { MarqueeText } from '@/components/ui/marquee-text';
 import {
   type ChargeDisplayDto,
   toChargePdfItemDto,
@@ -73,11 +74,11 @@ function ApartmentSection({ apartmentData, period }: ApartmentSectionProps) {
     <Collapsible open={open} onOpenChange={setOpen}>
       <div className="rounded-lg border">
         <div className="flex flex-wrap items-center gap-2 p-4">
-          <CollapsibleTrigger className="flex flex-1 min-w-0 items-center justify-between gap-2 hover:opacity-80 transition-opacity text-left">
+          <CollapsibleTrigger className="flex flex-1 min-w-56 items-center justify-between gap-2 hover:opacity-80 transition-opacity text-left">
             <div className="flex min-w-0 items-center gap-2">
               <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
-              <h3 className="truncate font-semibold">
-                {apartmentData.apartmentAddress}
+              <h3 className="min-w-0 font-semibold">
+                <MarqueeText>{apartmentData.apartmentAddress}</MarqueeText>
               </h3>
             </div>
             <div className="flex shrink-0 items-center gap-3">
