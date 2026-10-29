@@ -3,8 +3,9 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ApartmentSelectionDialog } from '@/app/admin/users/apartment-selection-dialog';
-import type { Apartment, User } from '@/app/admin/users/types';
 import { AccountStatus, UserRole } from '@/lib/types';
+import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
+import type { UserDto } from '@/lib/types/dto/user-dto';
 
 const confirmMock = vi.fn().mockResolvedValue(true);
 
@@ -31,7 +32,7 @@ vi.mock('@/components/ui/checkbox', () => ({
   ),
 }));
 
-const selectedUser: User = {
+const selectedUser: UserDto = {
   id: 'user-1',
   email: 'jan@example.com',
   name: 'Jan Kowalski',
@@ -44,7 +45,7 @@ const selectedUser: User = {
   apartments: [],
 };
 
-const apartment: Apartment = {
+const apartment: ApartmentSummaryDto = {
   id: 'apt-1',
   externalOwnerId: 'owner-1',
   externalApartmentId: 'ext-1',

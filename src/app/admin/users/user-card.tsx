@@ -1,6 +1,5 @@
 import { Edit, MoreVertical, UserCheck, UserX } from 'lucide-react';
 
-import type { User } from '@/app/admin/users/types';
 import { UserStatusBadge } from '@/app/admin/users/user-status-badge';
 import { getApartmentSharePercent } from '@/app/admin/users/utils';
 import { Button } from '@/components/ui/button';
@@ -18,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { AccountStatus } from '@/lib/types';
+import type { UserDto } from '@/lib/types/dto/user-dto';
 import { APP_LOCALE } from '@/lib/utils/locale';
 
 interface UserCardProps {
@@ -26,7 +26,7 @@ interface UserCardProps {
   onAssignApartment: () => void;
   onChangeStatus: () => void;
   onReject: () => void;
-  user: User;
+  user: UserDto;
 }
 
 export function UserCard({

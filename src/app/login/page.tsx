@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { TurnstileConfig } from '@/lib/types/turnstile';
+import { useTurnstileConfig } from '@/lib/hooks/use-turnstile-config';
 
 function LoginForm() {
   const [email, setEmail] = useState('');
@@ -21,8 +21,7 @@ function LoginForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const [turnstileConfig, setTurnstileConfig] =
-    useState<TurnstileConfig | null>(null);
+  const turnstileConfig = useTurnstileConfig();
   const [googleEnabled, setGoogleEnabled] = useState(false);
   const turnstileRef = useRef<TurnstileInstance>(null);
   const router = useRouter();
@@ -31,20 +30,8 @@ function LoginForm() {
 
   const resetSuccess = searchParams.get('reset') === 'success';
 
-  // Fetch turnstile configuration on mount
+  // Fetch Google sign-in configuration on mount
   useEffect(() => {
-    const fetchTurnstileConfig = async () => {
-      try {
-        const response = await fetch('/api/config/turnstile');
-        const config = await response.json();
-        setTurnstileConfig(config);
-      } catch (error) {
-        console.error('Failed to fetch turnstile config:', error);
-        // Default to disabled if fetch fails
-        setTurnstileConfig({ siteKey: null, enabled: false });
-      }
-    };
-
     const fetchGoogleConfig = async () => {
       try {
         const response = await fetch('/api/config/google');
@@ -55,7 +42,6 @@ function LoginForm() {
       }
     };
 
-    fetchTurnstileConfig();
     fetchGoogleConfig();
   }, []);
 

@@ -4,6 +4,7 @@ import { ImportResultCard } from '@/app/admin/import/import-result-card';
 import type { ImportResponse } from '@/app/admin/import/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { downloadTextFile } from '@/lib/utils/download-file';
 import { serialiseErrorsToTxt } from '@/lib/utils/export-errors';
 
 interface ImportResultsProps {
@@ -86,13 +87,7 @@ export function ImportResults({ response }: ImportResultsProps) {
                   })),
                 }));
               const content = serialiseErrorsToTxt(entries);
-              const blob = new Blob([content], { type: 'text/plain' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = 'bledy-import.txt';
-              a.click();
-              URL.revokeObjectURL(url);
+              downloadTextFile(content, 'bledy-import.txt');
             }}
           >
             <Download className="mr-2 h-4 w-4" />

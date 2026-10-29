@@ -10,6 +10,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import type { PaymentListItemDto } from '@/lib/types/dto/payment-dto';
+import { groupByYearDesc, type YearGroup } from '@/lib/utils/group-by-year';
 
 interface PaymentEntry {
   payment: PaymentListItemDto;
@@ -20,28 +21,13 @@ interface PaymentEntry {
   dateToLabel: string;
 }
 
-interface YearGroup {
-  year: number;
-  entries: PaymentEntry[];
-}
+type PaymentYearGroup = YearGroup<number, PaymentEntry>;
 
 interface PaymentsYearListProps {
   payments: PaymentEntry[];
 }
 
-function groupByYear(payments: PaymentEntry[]): YearGroup[] {
-  const yearMap = new Map<number, PaymentEntry[]>();
-  for (const entry of payments) {
-    const y = entry.payment.year;
-    if (!yearMap.has(y)) yearMap.set(y, []);
-    yearMap.get(y)!.push(entry);
-  }
-  return Array.from(yearMap.entries())
-    .sort(([a], [b]) => b - a)
-    .map(([year, entries]) => ({ year, entries }));
-}
-
-function YearSection({ group }: { group: YearGroup }) {
+function YearSection({ group }: { group: PaymentYearGroup }) {
   const currentYear = new Date().getFullYear();
   const [open, setOpen] = useState(group.year === currentYear);
 
@@ -55,7 +41,7 @@ function YearSection({ group }: { group: YearGroup }) {
       </CollapsibleTrigger>
       <CollapsibleContent>
         <div className="mt-2 space-y-2">
-          {group.entries.map((entry) => (
+          {group.items.map((entry) => (
             <PaymentYearRow
               key={entry.payment.id}
               apartmentId={entry.apartmentId}
@@ -73,7 +59,7 @@ function YearSection({ group }: { group: YearGroup }) {
 }
 
 export function PaymentsYearList({ payments }: PaymentsYearListProps) {
-  const yearGroups = groupByYear(payments);
+  const yearGroups = groupByYearDesc(payments, (entry) => entry.payment.year);
   return (
     <div className="space-y-2">
       {yearGroups.map((group) => (

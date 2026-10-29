@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { MarqueeText } from '@/components/ui/marquee-text';
 import { formatCurrency, formatSharePercent } from '@/lib/utils';
+import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
 
 interface ApartmentCardProps {
@@ -49,9 +50,7 @@ export function ApartmentCard({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <h3 className="text-lg font-semibold">
-            <MarqueeText>
-              {apartment.address} {apartment.building || ''}/{apartment.number}
-            </MarqueeText>
+            <MarqueeText>{formatApartmentLabel(apartment)}</MarqueeText>
           </h3>
           <p className="text-sm text-muted-foreground">
             {apartment.postalCode} {apartment.city}

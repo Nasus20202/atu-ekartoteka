@@ -17,6 +17,10 @@ import {
   toPaymentPdfDto,
 } from '@/lib/types/dto/payment-dto';
 import { formatCurrency } from '@/lib/utils';
+import {
+  getBalanceStatusClass,
+  getSignedBalanceClass,
+} from '@/lib/utils/balance-class';
 import { toDecimal } from '@/lib/utils/decimal';
 import {
   CHARGE_MONTH_FIELD_KEYS,
@@ -79,7 +83,7 @@ function PaymentYearSection({
           </span>
           <span className="flex items-center gap-3">
             <span
-              className={`font-semibold tabular-nums ${closingBalance.greaterThanOrEqualTo(0) ? 'text-green-600' : 'text-red-600'}`}
+              className={`font-semibold tabular-nums ${getBalanceStatusClass(closingBalance)}`}
             >
               {formatCurrency(closingBalance)}
             </span>
@@ -100,7 +104,7 @@ function PaymentYearSection({
           <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
             <div className="font-medium">Saldo początkowe:</div>
             <div
-              className={`text-right ${openingBalance.isNegative() ? 'text-red-600' : openingBalance.greaterThan(0) ? 'text-green-600' : ''}`}
+              className={`text-right ${getSignedBalanceClass(openingBalance)}`}
             >
               {formatCurrency(openingBalance)}
             </div>
@@ -110,7 +114,7 @@ function PaymentYearSection({
             <div className="text-right">{formatCurrency(totalPayments)}</div>
             <div className="border-t pt-2 font-bold">Saldo końcowe:</div>
             <div
-              className={`border-t pt-2 text-right font-bold ${closingBalance.isNegative() ? 'text-red-600' : closingBalance.greaterThan(0) ? 'text-green-600' : ''}`}
+              className={`border-t pt-2 text-right font-bold ${getSignedBalanceClass(closingBalance)}`}
             >
               {formatCurrency(closingBalance)}
             </div>

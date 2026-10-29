@@ -14,6 +14,7 @@ vi.mock('@/lib/queries/users/find-user-by-id', () => ({
   findUserById: mocks.findUserById,
 }));
 vi.mock('@/lib/queries/email-verification/find-recent-verification', () => ({
+  RATE_LIMIT_WINDOW_MS: 5 * 60 * 1000,
   findRecentVerification: mocks.findRecentVerification,
 }));
 vi.mock(

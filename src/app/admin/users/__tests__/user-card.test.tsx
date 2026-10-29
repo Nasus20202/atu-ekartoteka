@@ -2,9 +2,9 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
-import type { User } from '@/app/admin/users/types';
 import { UserCard } from '@/app/admin/users/user-card';
 import { AccountStatus, UserRole } from '@/lib/types';
+import type { UserDto } from '@/lib/types/dto/user-dto';
 
 vi.mock('@/components/ui/dropdown-menu', () => ({
   DropdownMenu: ({ children }: { children: React.ReactNode }) => (
@@ -27,7 +27,7 @@ vi.mock('@/components/ui/dropdown-menu', () => ({
 
 function createUser(
   status: (typeof AccountStatus)[keyof typeof AccountStatus]
-): User {
+): UserDto {
   return {
     id: `user-${status}`,
     email: `${status.toLowerCase()}@example.com`,

@@ -1,4 +1,5 @@
 import type { Payment } from '@/lib/types';
+import { toIsoString } from '@/lib/types/dto/iso-string';
 import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
 import {
   CHARGE_MONTH_FIELD_KEYS,
@@ -30,10 +31,6 @@ export type PaymentPdfDto = PaymentBaseFields &
   Record<PaymentDateFieldKey, string>;
 
 export type PaymentListItemDto = PaymentPdfDto;
-
-function toIsoString(value: Date | string): string {
-  return value instanceof Date ? value.toISOString() : String(value);
-}
 
 export function toPaymentPdfDto(payment: PaymentDtoSource): PaymentPdfDto {
   const dto = {

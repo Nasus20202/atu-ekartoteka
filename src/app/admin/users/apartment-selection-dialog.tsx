@@ -1,6 +1,6 @@
 import { Check, Search, X } from 'lucide-react';
 
-import type { Apartment, EditMode, User } from '@/app/admin/users/types';
+import type { EditMode } from '@/app/admin/users/types';
 import { UserStatusBadge } from '@/app/admin/users/user-status-badge';
 import {
   getApartmentSharePercent,
@@ -19,12 +19,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AccountStatus } from '@/lib/types';
+import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
+import type { UserDto } from '@/lib/types/dto/user-dto';
 
 interface ApartmentSelectionDialogProps {
   actionLoading: boolean;
   apartmentSearch: string;
   editMode: EditMode;
-  filteredApartments: Apartment[];
+  filteredApartments: ApartmentSummaryDto[];
   onApartmentSearchChange: (value: string) => void;
   onApproveOrAssign: () => void;
   onCancel: () => void;
@@ -33,7 +35,7 @@ interface ApartmentSelectionDialogProps {
   onSetApproved: () => void;
   open: boolean;
   selectedApartments: string[];
-  selectedUser: User | null;
+  selectedUser: UserDto | null;
 }
 
 export function ApartmentSelectionDialog({
@@ -61,7 +63,7 @@ export function ApartmentSelectionDialog({
     editMode === 'approve' || editMode === 'assign-apartment';
 
   async function handleApartmentCheckedChange(
-    apartment: Apartment,
+    apartment: ApartmentSummaryDto,
     checked: boolean
   ) {
     if (

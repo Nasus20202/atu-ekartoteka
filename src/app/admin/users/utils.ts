@@ -1,6 +1,7 @@
-import type { Apartment, User } from '@/app/admin/users/types';
 import type { UserFilter } from '@/app/admin/users/user-filters';
 import { AccountStatus } from '@/lib/types';
+import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
+import type { UserDto } from '@/lib/types/dto/user-dto';
 import { formatSharePercent } from '@/lib/utils';
 import { compareApartmentsNaturally } from '@/lib/utils/apartment-sort';
 
@@ -27,10 +28,10 @@ export function buildUsersQuery(
 }
 
 export function getAvailableApartments(
-  apartments: Apartment[],
-  allUsers: User[],
-  selectedUser: User | null
-): Apartment[] {
+  apartments: ApartmentSummaryDto[],
+  allUsers: UserDto[],
+  selectedUser: UserDto | null
+): ApartmentSummaryDto[] {
   if (selectedUser?.status === AccountStatus.PENDING) {
     return apartments.filter(
       (apt) =>
@@ -53,8 +54,8 @@ export function getAvailableApartments(
 }
 
 export function isApartmentMatchingUser(
-  apartment: Apartment,
-  user: User | null
+  apartment: ApartmentSummaryDto,
+  user: UserDto | null
 ): boolean {
   if (!user) {
     return false;
@@ -77,11 +78,11 @@ export function isApartmentMatchingUser(
 }
 
 export function filterAndSortApartments(
-  apartments: Apartment[],
+  apartments: ApartmentSummaryDto[],
   apartmentSearch: string,
   selectedApartmentIds: string[],
-  selectedUser: User | null
-): Apartment[] {
+  selectedUser: UserDto | null
+): ApartmentSummaryDto[] {
   return apartments
     .filter((apt) => {
       if (apartmentSearch === '') {
@@ -148,7 +149,9 @@ export function getPendingDescription(
   return `${pendingCount} kont oczekuje na zatwierdzenie`;
 }
 
-export function getApartmentSharePercent(apartment: Apartment): string | null {
+export function getApartmentSharePercent(
+  apartment: ApartmentSummaryDto
+): string | null {
   if (
     apartment.shareNumerator == null ||
     apartment.shareDenominator == null ||
