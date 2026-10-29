@@ -36,6 +36,8 @@ services:
       TURNSTILE_SITE_KEY: ''
       TURNSTILE_SECRET_KEY: ''
       SMTP_HOST: ''
+      # Lets visual tests freeze the date with the x-e2e-fixed-now header
+      E2E_ALLOW_FIXED_NOW: 'true'
     ports:
       - '3000:3000'
     healthcheck:

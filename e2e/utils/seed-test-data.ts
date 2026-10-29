@@ -6,11 +6,11 @@
  */
 
 import * as bcrypt from 'bcryptjs';
-import * as fs from 'fs';
-import * as path from 'path';
 import * as pg from 'pg';
 import { fileURLToPath } from 'url';
 
+import { loadSql } from './load-sql';
+import { seedVisualTestData } from './seed-visual-test-data';
 import {
   ADMIN_EMAIL,
   ADMIN_NAME,
@@ -19,12 +19,6 @@ import {
   USER_NAME,
   USER_PASSWORD,
 } from './test-credentials';
-
-const SQL_DIR = fileURLToPath(new URL('../test-data/seed', import.meta.url));
-
-function loadSql(filename: string): string {
-  return fs.readFileSync(path.join(SQL_DIR, filename), 'utf-8');
-}
 
 export async function seedTestData(connectionString?: string) {
   const dbUrl = connectionString || process.env.DATABASE_URL;
@@ -103,6 +97,9 @@ export async function seedTestData(connectionString?: string) {
       new Date(currentYear, 11, 31),
     ]);
     console.log('  - Created payments for year:', currentYear);
+
+    await seedVisualTestData(client);
+    console.log('  - Created visual regression users');
   } finally {
     await client.end();
   }

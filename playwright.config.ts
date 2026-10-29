@@ -10,6 +10,19 @@ const WEB_SERVER_TIMEOUT_MS = 120 * 1000;
 const TEST_TIMEOUT_MS = 60 * 1000;
 const EXPECT_TIMEOUT_MS = 10 * 1000;
 
+const VISUAL_TEST_MATCH = '**/visual/*.spec.ts';
+const VISUAL_MOBILE_ONLY_MATCH = '**/*.mobile.spec.ts';
+const visualUse = {
+  colorScheme: 'light' as const,
+  locale: 'pl-PL',
+  timezoneId: 'Europe/Warsaw',
+};
+const visualProject = {
+  testMatch: VISUAL_TEST_MATCH,
+  snapshotPathTemplate:
+    '{testDir}/visual/__screenshots__/{testFileName}/{arg}-{projectName}-{platform}{ext}',
+};
+
 /**
  * Playwright configuration for E2E tests.
  * @see https://playwright.dev/docs/test-configuration
@@ -46,13 +59,29 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-      testIgnore: '**/admin/**',
+      testIgnore: ['**/admin/**', VISUAL_TEST_MATCH],
+    },
+    {
+      name: 'chromium-mobile',
+      use: { ...devices['Pixel 7'] },
+      testIgnore: ['**/admin/**', VISUAL_TEST_MATCH],
     },
     {
       name: 'chromium-admin',
       use: { ...devices['Desktop Chrome'] },
       testMatch: '**/admin/**',
       fullyParallel: false,
+    },
+    {
+      ...visualProject,
+      name: 'visual-desktop',
+      testIgnore: VISUAL_MOBILE_ONLY_MATCH,
+      use: { ...devices['Desktop Chrome'], ...visualUse },
+    },
+    {
+      ...visualProject,
+      name: 'visual-mobile',
+      use: { ...devices['Pixel 7'], ...visualUse },
     },
   ],
 
@@ -70,6 +99,7 @@ export default defineConfig({
           TURNSTILE_SITE_KEY: '',
           TURNSTILE_SECRET_KEY: '',
           SMTP_HOST: '',
+          E2E_ALLOW_FIXED_NOW: 'true',
         },
       },
 
@@ -79,5 +109,12 @@ export default defineConfig({
   /* Expect timeout */
   expect: {
     timeout: EXPECT_TIMEOUT_MS,
+    toHaveScreenshot: {
+      animations: 'disabled',
+      maxDiffPixelRatio: 0.01,
+      caret: 'hide',
+      scale: 'css',
+      stylePath: './e2e/visual/screenshot.css',
+    },
   },
 });

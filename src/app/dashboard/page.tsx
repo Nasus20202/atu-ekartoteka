@@ -10,6 +10,7 @@ import { PaymentsSummaryCard } from '@/components/dashboard/payments-summary-car
 import { findUserWithApartmentsCached } from '@/lib/queries/users/find-user-with-apartments';
 import { AccountStatus } from '@/lib/types';
 import { toDecimal } from '@/lib/utils/decimal';
+import { getRequestNow } from '@/lib/utils/request-now';
 import { sumDecimals } from '@/lib/utils/sum';
 
 export default async function DashboardPage() {
@@ -26,7 +27,7 @@ export default async function DashboardPage() {
   }
 
   // Calculate current and previous month periods
-  const now = new Date();
+  const now = await getRequestNow();
   const currentPeriod = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
   const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1);
   const previousPeriod = `${prevMonth.getFullYear()}${String(prevMonth.getMonth() + 1).padStart(2, '0')}`;
@@ -53,7 +54,10 @@ export default async function DashboardPage() {
   const previousMonthTotal = sumDecimals(
     previousMonthCharges.map((charge) => charge.totalAmount)
   );
-  const recentChargeTrend = getRecentChargeTrendByHoa(userData.apartments);
+  const recentChargeTrend = getRecentChargeTrendByHoa(
+    userData.apartments,
+    currentPeriod
+  );
 
   // Prepare notifications grouped by HOA for sidebar
   const allNotifications = userData.apartments.flatMap(

@@ -3,10 +3,12 @@
  */
 
 import { expect, test } from '../fixtures';
+import { openNavigationMenu } from '../utils/navigation';
 
 test.describe('Logout', () => {
   test('user can logout', async ({ userPage }) => {
     await userPage.goto('/dashboard');
+    await openNavigationMenu(userPage);
 
     // Click logout button
     await userPage.getByRole('button', { name: /Wyloguj/i }).click();
@@ -17,6 +19,7 @@ test.describe('Logout', () => {
 
   test('admin can logout', async ({ adminPage }) => {
     await adminPage.goto('/dashboard');
+    await openNavigationMenu(adminPage);
 
     // Click logout button
     await adminPage.getByRole('button', { name: /Wyloguj/i }).click();
