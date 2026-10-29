@@ -5,10 +5,14 @@ export const ADMIN = {
   email: 'admin@e2e-test.com',
   password: 'AdminPassword123!',
 };
-export const USER = {
-  email: 'user@e2e-test.com',
-  password: 'UserPassword123!',
-};
+
+// Must match perf/seed/perf-credentials.ts and the sizes in perf/seed/seed-perf-data.ts
+export const TENANT_PASSWORD = 'PerfPassword123!';
+export const TENANT_COUNT = Number(__ENV.PERF_TENANTS || 1000);
+export const APARTMENT_COUNT = Number(__ENV.PERF_APARTMENTS || 10000);
+export const HOA_COUNT = Number(__ENV.PERF_HOAS || 100);
+export const ADMIN_PAGE_SIZE = 20;
+export const UNASSIGNED_HOAS_PER_PAGE = 10;
 
 export const SESSION_COOKIE = 'authjs.session-token';
 
