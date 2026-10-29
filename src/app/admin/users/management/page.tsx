@@ -8,8 +8,8 @@ import {
   type AccountPreview,
   buildAccountPreviews,
 } from '@/app/admin/users/management/account-previews';
-import { ApartmentList } from '@/app/admin/users/management/ApartmentList';
-import { HoaGroup } from '@/app/admin/users/management/HoaCard';
+import { ApartmentList } from '@/app/admin/users/management/apartment-list';
+import { HoaGroup } from '@/app/admin/users/management/hoa-card';
 import { useHoaSelection } from '@/app/admin/users/management/use-hoa-selection';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';

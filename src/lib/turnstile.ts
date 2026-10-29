@@ -70,5 +70,3 @@ export async function verifyTurnstileToken(
     return false;
   }
 }
-
-export default verifyTurnstileToken;

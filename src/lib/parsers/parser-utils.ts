@@ -13,10 +13,6 @@ export function parseDate(dateStr: string): Date {
   return new Date(year, month - 1, day);
 }
 
-export function parseDecimal(value: string): number {
-  return parseFloat(value.replace(',', '.'));
-}
-
 export function parseDecimalValue(value: string): Prisma.Decimal {
   return new Prisma.Decimal(value.replace(',', '.'));
 }

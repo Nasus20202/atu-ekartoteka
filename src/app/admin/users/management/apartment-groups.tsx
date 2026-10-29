@@ -7,7 +7,7 @@ import {
   ApartmentRow,
   aptLabel,
   UnassignedApartment,
-} from '@/app/admin/users/management/ApartmentRow';
+} from '@/app/admin/users/management/apartment-row';
 import { Checkbox } from '@/components/ui/checkbox';
 
 export interface ApartmentGroups {

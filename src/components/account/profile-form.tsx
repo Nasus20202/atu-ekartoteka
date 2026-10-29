@@ -27,10 +27,7 @@ export function ProfileForm({ initialName, authMethod }: ProfileFormProps) {
     newPassword: '',
     confirmPassword: '',
   });
-  const [errors, setErrors] = useState<{
-    name?: string;
-    password?: string;
-  }>({});
+  const [errors, setErrors] = useState<{ password?: string }>({});
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,9 +119,6 @@ export function ProfileForm({ initialName, authMethod }: ProfileFormProps) {
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           />
-          {errors.name && (
-            <p className="mt-1 text-sm text-red-600">{errors.name}</p>
-          )}
         </div>
       </div>
 

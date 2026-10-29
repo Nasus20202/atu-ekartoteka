@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { HoaGroup } from '@/app/admin/users/management/HoaCard';
+import { HoaGroup } from '@/app/admin/users/management/hoa-card';
 
 export function useHoaSelection(hoas: HoaGroup[]) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());

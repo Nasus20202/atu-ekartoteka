@@ -1,6 +1,6 @@
 import { CheckCircle } from 'lucide-react';
 
-import { HoaCard, HoaGroup } from '@/app/admin/users/management/HoaCard';
+import { HoaCard, HoaGroup } from '@/app/admin/users/management/hoa-card';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { LoadingCard } from '@/components/ui/loading-card';

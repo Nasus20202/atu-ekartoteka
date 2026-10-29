@@ -1,7 +1,7 @@
 import {
   type HoaGroup,
   type UnassignedApartment,
-} from '@/app/admin/users/management/HoaCard';
+} from '@/app/admin/users/management/hoa-card';
 
 export interface AccountPreview {
   email: string;

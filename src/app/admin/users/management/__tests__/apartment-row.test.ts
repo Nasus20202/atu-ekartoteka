@@ -4,7 +4,7 @@ import {
   addressKey,
   aptLabel,
   type UnassignedApartment,
-} from '@/app/admin/users/management/ApartmentRow';
+} from '@/app/admin/users/management/apartment-row';
 
 function makeApt(
   overrides: Partial<UnassignedApartment> = {}
