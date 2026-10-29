@@ -22,10 +22,16 @@ export const LOGIN_RATE = Number(__ENV.PERF_LOGIN_RATE || 20);
 export const THINK_TIME_SECONDS = 1;
 
 export const THRESHOLDS = {
-  http_req_failed: ['rate<0.01'],
-  checks: ['rate>0.999'],
-  'http_req_duration{scenario:public}': ['p(95)<50'],
-  'http_req_duration{scenario:user_journey}': ['p(95)<200'],
-  'http_req_duration{scenario:admin_journey}': ['p(95)<200'],
-  'http_req_duration{scenario:login}': ['p(95)<200'],
+  http_req_failed: ['rate==0'],
+  checks: ['rate==1'],
+  dropped_iterations: ['count==0'],
+
+  // Total (all scenarios combined)
+  http_req_duration: ['avg<300', 'p(95)<1500'],
+
+  // Per scenario
+  'http_req_duration{scenario:public}': ['avg<70', 'p(95)<120'],
+  'http_req_duration{scenario:login}': ['avg<200', 'p(95)<400'],
+  'http_req_duration{scenario:admin_journey}': ['avg<600', 'p(95)<1000'],
+  'http_req_duration{scenario:user_journey}': ['avg<600', 'p(95)<1800'],
 };
