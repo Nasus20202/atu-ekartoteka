@@ -7,7 +7,7 @@ Guards response times and error rates under concurrent load. k6 scenarios run in
 ## Stack
 
 - **Load tool**: k6 (`perf/load-test.js`), version pinned in `.github/workflows/test-and-build.yaml`
-- **Target**: the Docker image started with `docker-compose.e2e.yaml` and seeded with `e2e/utils/seed-test-data.ts`
+- **Target**: the Docker image started with `docker-compose.e2e.yaml` and seeded with `e2e/utils/seed-test-data.ts` (admin account) and `perf/seed/seed-perf-data.ts` (production-sized dataset)
 - **Configuration**: peak load and timing in `perf/lib/config.js`, latency limits in `perf/lib/thresholds.js`
 
 ---
@@ -26,21 +26,39 @@ The load test SHALL exercise the main traffic types at the same time.
 
 #### Scenario: Credential logins
 
-- **GIVEN** the seeded tenant account
+- **GIVEN** the seeded tenant accounts
 - **WHEN** the `login` scenario runs
-- **THEN** each iteration clears its cookies and signs in through the credentials provider, so every iteration pays for a full bcrypt comparison
+- **THEN** each iteration clears its cookies and signs in as a random tenant through the credentials provider, so every iteration pays for a full bcrypt comparison
 
 #### Scenario: Tenant journey
 
-- **GIVEN** a signed-in tenant (each virtual user signs in once)
+- **GIVEN** a signed-in tenant (each virtual user signs in once, as its own tenant)
 - **WHEN** the `user_journey` scenario runs
-- **THEN** it visits the dashboard, charges, payments and profile pages with think time between them
+- **THEN** it visits the dashboard, charges, the tenant's apartment charges, payments and profile pages with think time between them
 
 #### Scenario: Admin journey
 
 - **GIVEN** a signed-in admin
 - **WHEN** the `admin_journey` scenario runs
-- **THEN** it visits the admin apartments, users and import pages and calls the admin JSON APIs they use
+- **THEN** it visits the admin apartments, users and import pages and calls the admin JSON APIs they use, requesting a random apartments page, a random apartment and a random page of unassigned apartments each iteration
+
+---
+
+### Requirement: Production-Sized Dataset
+
+The load test SHALL run against a dataset of production scale, so query cost reflects table size and virtual users do not all read the same cached rows.
+
+#### Scenario: Seeded volume
+
+- **GIVEN** the default seed
+- **WHEN** `perf/seed/seed-perf-data.ts` runs
+- **THEN** it creates 100 HOAs with 100 apartments each, 1000 tenants owning evenly spaced apartments, and 200 charges, 3 notifications and 3 payment years per apartment
+
+#### Scenario: Overridable volume
+
+- **GIVEN** a developer who needs a smaller or larger dataset
+- **WHEN** they set `PERF_SEED_*` variables for the seed and `PERF_TENANTS` / `PERF_APARTMENTS` for k6
+- **THEN** both use the same sizes
 
 ---
 

@@ -257,6 +257,9 @@ jobs:
       - name: Seed test data
         run: pnpm exec tsx e2e/utils/seed-test-data.ts
 
+      - name: Seed performance data
+        run: pnpm exec tsx perf/seed/seed-perf-data.ts
+
       - name: Setup k6
         uses: grafana/setup-k6-action@43b9fc21641a76002687994433dd586f56e791b1 # v1.2.2
         with:
