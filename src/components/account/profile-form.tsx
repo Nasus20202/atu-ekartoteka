@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { MIN_PASSWORD_LENGTH } from '@/lib/auth/password-rules';
 import { logger } from '@/lib/logger';
 import { AuthMethod } from '@/lib/types';
 
@@ -46,8 +47,10 @@ export function ProfileForm({ initialName, authMethod }: ProfileFormProps) {
         setErrors({ password: 'Hasła nie są identyczne' });
         return;
       }
-      if (formData.newPassword.length < 8) {
-        setErrors({ password: 'Hasło musi mieć minimum 8 znaków' });
+      if (formData.newPassword.length < MIN_PASSWORD_LENGTH) {
+        setErrors({
+          password: `Hasło musi mieć minimum ${MIN_PASSWORD_LENGTH} znaków`,
+        });
         return;
       }
     }

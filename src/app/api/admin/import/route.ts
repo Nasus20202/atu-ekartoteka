@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { gunzipSync } from 'zlib';
 
-import { auth } from '@/auth';
+import { requireAdmin } from '@/lib/auth/require-admin';
 import { processBatchImport } from '@/lib/import/import-handler';
 import { createLogger } from '@/lib/logger';
-import { UserRole } from '@/lib/types';
+import { getErrorMessage } from '@/lib/utils/error-message';
 
 const logger = createLogger('api:admin:import');
 
@@ -13,15 +13,10 @@ export const runtime = 'nodejs';
 export async function POST(req: NextRequest) {
   try {
     // Check authentication first
-    const session = await auth();
-
-    if (!session || session.user.role !== UserRole.ADMIN) {
-      logger.warn(
-        { email: session?.user?.email || 'anonymous' },
-        'Unauthorized import attempt'
-      );
-      return NextResponse.json({ error: 'Brak uprawnień' }, { status: 401 });
-    }
+    const { session, response } = await requireAdmin(
+      'Unauthorized import attempt'
+    );
+    if (response) return response;
 
     const contentType = req.headers.get('content-type') || '';
     let files: File[];
@@ -95,7 +90,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         error: 'Import nie powiódł się',
-        message: error instanceof Error ? error.message : 'Nieznany błąd',
+        message: getErrorMessage(error),
       },
       { status: 500 }
     );

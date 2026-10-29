@@ -137,7 +137,7 @@ describe('Admin Apartment Detail API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(401);
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error).toBe('Brak uprawnień');
     });
 
     it('should return 401 when user is not admin', async () => {
@@ -157,7 +157,7 @@ describe('Admin Apartment Detail API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(401);
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error).toBe('Brak uprawnień');
     });
 
     it('should return apartment with all relations', async () => {
@@ -357,7 +357,7 @@ describe('Admin Apartment Detail API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(401);
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error).toBe('Brak uprawnień');
     });
 
     it('should return 401 when user is not admin', async () => {
@@ -378,7 +378,7 @@ describe('Admin Apartment Detail API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(401);
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error).toBe('Brak uprawnień');
     });
 
     it('should return 400 when isActive is not a boolean', async () => {

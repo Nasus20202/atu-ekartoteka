@@ -9,6 +9,14 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  MIN_PASSWORD_LENGTH,
+  PASSWORD_TOO_SHORT_MESSAGE,
+} from '@/lib/auth/password-rules';
+import {
+  GENERIC_ERROR_MESSAGE,
+  getErrorMessage,
+} from '@/lib/utils/error-message';
 
 export default function ChangePasswordPage() {
   const [newPassword, setNewPassword] = useState('');
@@ -20,8 +28,8 @@ export default function ChangePasswordPage() {
     e.preventDefault();
     setError('');
 
-    if (newPassword.length < 8) {
-      setError('Hasło musi mieć co najmniej 8 znaków');
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
+      setError(PASSWORD_TOO_SHORT_MESSAGE);
       return;
     }
 
@@ -48,7 +56,7 @@ export default function ChangePasswordPage() {
       await refreshSessionAndRedirect();
     } catch (err) {
       if (isRedirectError(err)) throw err;
-      setError(err instanceof Error ? err.message : 'Wystąpił błąd');
+      setError(getErrorMessage(err, GENERIC_ERROR_MESSAGE));
       setLoading(false);
     }
   };
@@ -64,12 +72,12 @@ export default function ChangePasswordPage() {
           <Input
             id="newPassword"
             type="password"
-            placeholder="Minimum 8 znaków"
+            placeholder={`Minimum ${MIN_PASSWORD_LENGTH} znaków`}
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             required
             disabled={loading}
-            minLength={8}
+            minLength={MIN_PASSWORD_LENGTH}
           />
         </div>
 
@@ -83,7 +91,7 @@ export default function ChangePasswordPage() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
             disabled={loading}
-            minLength={8}
+            minLength={MIN_PASSWORD_LENGTH}
           />
         </div>
 

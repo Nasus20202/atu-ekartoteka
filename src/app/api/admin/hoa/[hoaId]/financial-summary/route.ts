@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { auth } from '@/auth';
 import { Prisma } from '@/generated/prisma/client';
+import { requireAdmin } from '@/lib/auth/require-admin';
 import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
-import { UserRole } from '@/lib/types';
+import { getErrorMessage } from '@/lib/utils/error-message';
 
 const logger = createLogger('api:admin:hoa:financial-summary');
 
@@ -13,11 +13,8 @@ export async function GET(
   { params }: { params: Promise<{ hoaId: string }> }
 ) {
   try {
-    const session = await auth();
-
-    if (!session || session.user.role !== UserRole.ADMIN) {
-      return NextResponse.json({ error: 'Brak uprawnień' }, { status: 401 });
-    }
+    const { response } = await requireAdmin();
+    if (response) return response;
 
     const { hoaId } = await params;
 
@@ -70,7 +67,7 @@ export async function GET(
     return NextResponse.json(
       {
         error: 'Nie udało się pobrać podsumowania finansowego',
-        message: error instanceof Error ? error.message : 'Nieznany błąd',
+        message: getErrorMessage(error),
       },
       { status: 500 }
     );

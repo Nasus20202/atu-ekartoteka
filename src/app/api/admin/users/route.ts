@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { auth } from '@/auth';
+import { requireAdmin } from '@/lib/auth/require-admin';
 import { createLogger } from '@/lib/logger';
 import { updateUserStatus } from '@/lib/mutations/users/update-user-status';
 import { notifyAccountApproved } from '@/lib/notifications/account-status';
@@ -9,6 +9,7 @@ import { findTenantUsers } from '@/lib/queries/users/find-tenant-users';
 import { findUserById } from '@/lib/queries/users/find-user-by-id';
 import { AccountStatus, UserRole } from '@/lib/types';
 import { toUserDto } from '@/lib/types/dto/user-dto';
+import { getErrorMessage } from '@/lib/utils/error-message';
 
 const logger = createLogger('api:admin:users');
 
@@ -20,15 +21,10 @@ function parsePositiveInteger(value: string | null, fallback: number): number {
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await auth();
-
-    if (!session || session.user.role !== UserRole.ADMIN) {
-      logger.warn(
-        { email: session?.user?.email || 'anonymous' },
-        'Unauthorized user list access attempt'
-      );
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { response } = await requireAdmin(
+      'Unauthorized user list access attempt'
+    );
+    if (response) return response;
 
     const { searchParams } = new URL(req.url);
     const roleParam = searchParams.get('role');
@@ -85,7 +81,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       {
         error: 'Nie udało się pobrać użytkowników',
-        message: error instanceof Error ? error.message : 'Nieznany błąd',
+        message: getErrorMessage(error),
       },
       { status: 500 }
     );
@@ -94,15 +90,10 @@ export async function GET(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
-    const session = await auth();
-
-    if (!session || session.user.role !== UserRole.ADMIN) {
-      logger.warn(
-        { email: session?.user?.email || 'anonymous' },
-        'Unauthorized user update attempt'
-      );
-      return NextResponse.json({ error: 'Brak uprawnień' }, { status: 401 });
-    }
+    const { session, response } = await requireAdmin(
+      'Unauthorized user update attempt'
+    );
+    if (response) return response;
 
     const body = await req.json();
     const { userId, status, apartmentIds } = body;
@@ -209,7 +200,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json(
       {
         error: 'Nie udało się zaktualizować użytkownika',
-        message: error instanceof Error ? error.message : 'Nieznany błąd',
+        message: getErrorMessage(error),
       },
       { status: 500 }
     );

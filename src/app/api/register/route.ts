@@ -2,6 +2,10 @@ import bcrypt from 'bcrypt';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { BCRYPT_COST } from '@/lib/auth/bcrypt-cost';
+import {
+  MIN_PASSWORD_LENGTH,
+  PASSWORD_TOO_SHORT_MESSAGE,
+} from '@/lib/auth/password-rules';
 import { createRegistrationAutoLoginToken } from '@/lib/auth/registration-auto-login-token';
 import { getEmailService } from '@/lib/email/email-service';
 import {
@@ -45,9 +49,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Validate password length
-    if (password.length < 8) {
+    if (password.length < MIN_PASSWORD_LENGTH) {
       return NextResponse.json(
-        { error: 'Hasło musi mieć co najmniej 8 znaków' },
+        { error: PASSWORD_TOO_SHORT_MESSAGE },
         { status: 400 }
       );
     }

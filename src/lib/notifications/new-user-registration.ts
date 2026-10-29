@@ -1,6 +1,7 @@
 import { getEmailService } from '@/lib/email/email-service';
 import { createLogger } from '@/lib/logger';
 import { findAdminEmails } from '@/lib/queries/users/find-admin-emails';
+import { APP_LOCALE } from '@/lib/utils/locale';
 
 const logger = createLogger('notifications:new-user-registration');
 
@@ -22,7 +23,7 @@ export async function notifyAdminsOfNewUser(
     }
 
     const emailService = getEmailService();
-    const formattedDate = registrationDate.toLocaleString('pl-PL', {
+    const formattedDate = registrationDate.toLocaleString(APP_LOCALE, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',

@@ -11,7 +11,15 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  MIN_PASSWORD_LENGTH,
+  PASSWORD_TOO_SHORT_MESSAGE,
+} from '@/lib/auth/password-rules';
 import { TurnstileConfig } from '@/lib/types/turnstile';
+import {
+  GENERIC_ERROR_MESSAGE,
+  getErrorMessage,
+} from '@/lib/utils/error-message';
 
 function ResetPasswordContent() {
   const router = useRouter();
@@ -54,8 +62,8 @@ function ResetPasswordContent() {
       return;
     }
 
-    if (password.length < 8) {
-      setError('Hasło musi mieć co najmniej 8 znaków');
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setError(PASSWORD_TOO_SHORT_MESSAGE);
       return;
     }
 
@@ -84,7 +92,7 @@ function ResetPasswordContent() {
         router.push('/login?reset=success');
       }, 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Wystąpił błąd');
+      setError(getErrorMessage(err, GENERIC_ERROR_MESSAGE));
     } finally {
       setLoading(false);
       // Reset Turnstile token after any reset attempt (success or failure)
@@ -150,9 +158,11 @@ function ResetPasswordContent() {
             onChange={(e) => setPassword(e.target.value)}
             required
             disabled={loading}
-            minLength={8}
+            minLength={MIN_PASSWORD_LENGTH}
           />
-          <p className="text-xs text-muted-foreground">Minimum 8 znaków</p>
+          <p className="text-xs text-muted-foreground">
+            Minimum {MIN_PASSWORD_LENGTH} znaków
+          </p>
         </div>
 
         <div className="space-y-2">
@@ -165,7 +175,7 @@ function ResetPasswordContent() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
             disabled={loading}
-            minLength={8}
+            minLength={MIN_PASSWORD_LENGTH}
           />
         </div>
 

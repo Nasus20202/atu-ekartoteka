@@ -24,6 +24,7 @@ import {
 import { findApartmentWithPaymentsByYearCached } from '@/lib/queries/apartments/find-apartment-with-payments-by-year';
 import { toPaymentPdfDto } from '@/lib/types/dto/payment-dto';
 import { formatCurrency } from '@/lib/utils';
+import { APP_LOCALE } from '@/lib/utils/locale';
 
 interface PaymentDetailsPageProps {
   params: Promise<{
@@ -82,8 +83,8 @@ export default async function PaymentDetailsPage({
               <div>
                 <CardTitle>Podsumowanie roku {payment.year}</CardTitle>
                 <CardDescription>
-                  Okres: {payment.dateFrom.toLocaleDateString('pl-PL')} -{' '}
-                  {payment.dateTo.toLocaleDateString('pl-PL')}
+                  Okres: {payment.dateFrom.toLocaleDateString(APP_LOCALE)} -{' '}
+                  {payment.dateTo.toLocaleDateString(APP_LOCALE)}
                 </CardDescription>
               </div>
               <div className="shrink-0">

@@ -1,20 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { auth } from '@/auth';
+import { requireAdmin } from '@/lib/auth/require-admin';
 import { createLogger } from '@/lib/logger';
 import { updateHoaName } from '@/lib/mutations/hoa/update-hoa-name';
 import { findHoas } from '@/lib/queries/hoa/find-hoas';
-import { UserRole } from '@/lib/types';
+import { getErrorMessage } from '@/lib/utils/error-message';
 
 const logger = createLogger('api:admin:hoa');
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await auth();
-
-    if (!session || session.user.role !== UserRole.ADMIN) {
-      return NextResponse.json({ error: 'Brak uprawnień' }, { status: 401 });
-    }
+    const { response } = await requireAdmin();
+    if (response) return response;
 
     const { searchParams } = new URL(req.url);
     const search = searchParams.get('search') || '';
@@ -41,7 +38,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       {
         error: 'Nie udało się pobrać wspólnot',
-        message: error instanceof Error ? error.message : 'Nieznany błąd',
+        message: getErrorMessage(error),
       },
       { status: 500 }
     );
@@ -50,11 +47,8 @@ export async function GET(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
-    const session = await auth();
-
-    if (!session || session.user.role !== UserRole.ADMIN) {
-      return NextResponse.json({ error: 'Brak uprawnień' }, { status: 401 });
-    }
+    const { response } = await requireAdmin();
+    if (response) return response;
 
     const body = await req.json();
     const { id, name } = body;
@@ -76,7 +70,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json(
       {
         error: 'Nie udało się zaktualizować wspólnoty',
-        message: error instanceof Error ? error.message : 'Nieznany błąd',
+        message: getErrorMessage(error),
       },
       { status: 500 }
     );

@@ -7,6 +7,7 @@ import {
 } from '@/lib/import/types';
 import { processInBatches } from '@/lib/import/utils';
 import { ApartmentEntry } from '@/lib/parsers/apartment-parser';
+import { getErrorMessage } from '@/lib/utils/error-message';
 
 type ExistingApartment = {
   id: string;
@@ -164,9 +165,7 @@ export async function importApartments(
       );
       stats.created = toCreate.length;
     } catch (error) {
-      errors.push(
-        `Błąd tworzenia mieszkań: ${error instanceof Error ? error.message : 'Nieznany błąd'}`
-      );
+      errors.push(`Błąd tworzenia mieszkań: ${getErrorMessage(error)}`);
       stats.skipped += toCreate.length;
     }
   }
@@ -193,7 +192,7 @@ export async function importApartments(
       stats.updated++;
     } catch (error) {
       errors.push(
-        `Błąd aktualizacji mieszkania ${entry.externalOwnerId}#${entry.externalApartmentId}: ${error instanceof Error ? error.message : 'Nieznany błąd'}`
+        `Błąd aktualizacji mieszkania ${entry.externalOwnerId}#${entry.externalApartmentId}: ${getErrorMessage(error)}`
       );
       stats.skipped++;
     }

@@ -1,21 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { auth } from '@/auth';
+import { requireAdmin } from '@/lib/auth/require-admin';
 import { createLogger } from '@/lib/logger';
 import { assignApartmentsToUser } from '@/lib/mutations/apartments/assign-apartments-to-user';
 import { findUnassignedApartmentsForAssign } from '@/lib/queries/apartments/find-unassigned-apartments-for-assign';
 import { findUserByEmail } from '@/lib/queries/users/find-user-by-email';
-import { UserRole } from '@/lib/types';
 
 const logger = createLogger('api:admin:users:bulk-assign');
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-
-    if (!session || session.user.role !== UserRole.ADMIN) {
-      return NextResponse.json({ error: 'Brak uprawnień' }, { status: 401 });
-    }
+    const { response } = await requireAdmin();
+    if (response) return response;
 
     const body = await request.json();
     const { apartmentIds } = body as { apartmentIds: string[] };

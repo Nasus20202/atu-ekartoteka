@@ -8,6 +8,10 @@ import { Suspense, useEffect, useState } from 'react';
 import { AuthLayout } from '@/components/layout/auth-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import {
+  GENERIC_ERROR_MESSAGE,
+  getErrorMessage,
+} from '@/lib/utils/error-message';
 
 function VerifyEmailContent() {
   const router = useRouter();
@@ -45,7 +49,7 @@ function VerifyEmailContent() {
         }
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Wystąpił błąd');
+          setError(getErrorMessage(err, GENERIC_ERROR_MESSAGE));
         }
       } finally {
         if (!cancelled) {

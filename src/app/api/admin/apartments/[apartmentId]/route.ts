@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { auth } from '@/auth';
+import { requireAdmin } from '@/lib/auth/require-admin';
 import { createLogger } from '@/lib/logger';
 import { updateApartmentStatus } from '@/lib/mutations/apartments/update-apartment-status';
 import { findApartmentDetail } from '@/lib/queries/apartments/find-apartment-detail';
@@ -18,11 +18,8 @@ export async function GET(
   { params }: { params: Promise<{ apartmentId: string }> }
 ) {
   try {
-    const session = await auth();
-
-    if (!session?.user || session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { response } = await requireAdmin();
+    if (response) return response;
 
     const { apartmentId } = await params;
 
@@ -56,11 +53,8 @@ export async function PATCH(
   { params }: { params: Promise<{ apartmentId: string }> }
 ) {
   try {
-    const session = await auth();
-
-    if (!session?.user || session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { session, response } = await requireAdmin();
+    if (response) return response;
 
     const { apartmentId } = await params;
     const body = await request.json();

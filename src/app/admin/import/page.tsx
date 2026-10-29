@@ -22,6 +22,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { getErrorMessage } from '@/lib/utils/error-message';
 
 export { ImportWarnings } from '@/app/admin/import/import-warnings';
 
@@ -130,7 +131,7 @@ export default function AdminImportPage() {
         await fetchStats();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Import failed');
+      setError(getErrorMessage(err, 'Import failed'));
     } finally {
       setLoading(false);
     }

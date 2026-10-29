@@ -12,7 +12,15 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  MIN_PASSWORD_LENGTH,
+  PASSWORD_TOO_SHORT_MESSAGE,
+} from '@/lib/auth/password-rules';
 import { TurnstileConfig } from '@/lib/types/turnstile';
+import {
+  GENERIC_ERROR_MESSAGE,
+  getErrorMessage,
+} from '@/lib/utils/error-message';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -75,8 +83,8 @@ export default function RegisterPage() {
     }
 
     // Validate password length
-    if (formData.password.length < 8) {
-      setError('Hasło musi mieć co najmniej 8 znaków');
+    if (formData.password.length < MIN_PASSWORD_LENGTH) {
+      setError(PASSWORD_TOO_SHORT_MESSAGE);
       return;
     }
 
@@ -121,7 +129,7 @@ export default function RegisterPage() {
       router.refresh();
     } catch (err) {
       setSuccess(false);
-      setError(err instanceof Error ? err.message : 'Wystąpił błąd');
+      setError(getErrorMessage(err, GENERIC_ERROR_MESSAGE));
     } finally {
       setLoading(false);
       // Reset Turnstile token after any registration attempt (success or failure)
@@ -229,10 +237,10 @@ export default function RegisterPage() {
             }
             required
             disabled={loading}
-            minLength={8}
+            minLength={MIN_PASSWORD_LENGTH}
           />
           <p className="text-xs text-muted-foreground">
-            Hasło musi mieć co najmniej 8 znaków
+            {PASSWORD_TOO_SHORT_MESSAGE}
           </p>
         </div>
 
@@ -248,7 +256,7 @@ export default function RegisterPage() {
             }
             required
             disabled={loading}
-            minLength={8}
+            minLength={MIN_PASSWORD_LENGTH}
           />
         </div>
 
