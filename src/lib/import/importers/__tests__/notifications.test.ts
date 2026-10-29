@@ -262,6 +262,32 @@ describe('importNotifications', () => {
     expect(stats.skipped).toBe(1);
   });
 
+  it('reports non-Error create failures as unknown errors', async () => {
+    const entries = [createNotificationEntry()];
+
+    (mockTx.chargeNotification.findMany as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([]);
+
+    (
+      mockTx.chargeNotification.createMany as ReturnType<typeof vi.fn>
+    ).mockRejectedValue('DB error');
+
+    await importNotifications(
+      mockTx,
+      hoa,
+      apartmentMap,
+      makeParseResult(entries),
+      stats,
+      errors
+    );
+
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toContain('Błąd tworzenia powiadomień');
+    expect(errors[0]).toContain('Nieznany błąd');
+    expect(stats.skipped).toBe(1);
+  });
+
   it('should handle update errors gracefully', async () => {
     const entries = [createNotificationEntry({ description: 'Updated' })];
 
@@ -295,6 +321,43 @@ describe('importNotifications', () => {
 
     expect(errors).toHaveLength(1);
     expect(errors[0]).toContain('Błąd aktualizacji powiadomienia');
+    expect(stats.skipped).toBe(1);
+  });
+
+  it('reports non-Error update failures as unknown errors', async () => {
+    const entries = [createNotificationEntry({ description: 'Updated' })];
+
+    const existingNotification = {
+      id: 'notif-1',
+      apartmentId: 'apt-1',
+      lineNo: 1,
+      description: 'Old',
+      quantity: toDecimal(1),
+      unit: 'szt',
+      unitPrice: toDecimal(100),
+      totalAmount: toDecimal(100),
+    };
+
+    (mockTx.chargeNotification.findMany as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce([existingNotification])
+      .mockResolvedValueOnce([existingNotification]);
+
+    (
+      mockTx.chargeNotification.update as ReturnType<typeof vi.fn>
+    ).mockRejectedValue('Update failed');
+
+    await importNotifications(
+      mockTx,
+      hoa,
+      apartmentMap,
+      makeParseResult(entries),
+      stats,
+      errors
+    );
+
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toContain('Błąd aktualizacji powiadomienia');
+    expect(errors[0]).toContain('Nieznany błąd');
     expect(stats.skipped).toBe(1);
   });
 
@@ -522,5 +585,37 @@ describe('importNotifications', () => {
         footer: null,
       },
     });
+  });
+
+  it('deletes stale notifications alongside new ones', async () => {
+    (
+      mockTx.chargeNotification.findMany as ReturnType<typeof vi.fn>
+    ).mockResolvedValue([
+      {
+        id: 'stale',
+        apartmentId: 'apt-1',
+        lineNo: 99,
+        description: 'Stara',
+        quantity: toDecimal(1),
+        unit: 'szt',
+        unitPrice: toDecimal(1),
+        totalAmount: toDecimal(1),
+      },
+    ]);
+
+    await importNotifications(
+      mockTx,
+      hoa,
+      apartmentMap,
+      makeParseResult([createNotificationEntry()]),
+      stats,
+      errors
+    );
+
+    expect(mockTx.chargeNotification.deleteMany).toHaveBeenCalledWith({
+      where: { id: { in: ['stale'] } },
+    });
+    expect(stats.deleted).toBe(1);
+    expect(stats.created).toBe(1);
   });
 });

@@ -92,4 +92,25 @@ W00162#hoa1-hoa1-00000-00001M#1#Test#1#szt#100#100,00`;
     expect(result.header).toHaveLength(0);
     expect(result.footer).toHaveLength(0);
   });
+
+  it('skips blank lines, lines without fields and invalid entries', async () => {
+    const content = `Header
+
+#
+Footer
+
+#
+
+no separators here
+W00162#APT#1#Za mało pól
+W00162#APT#x#Zły numer#1#szt#100#100,00
+W00162#APT#2#Nieliczbowa ilość#NaN#szt#100#100,00
+W00162#APT#3#Poprawny#1#szt#100#100,00`;
+
+    const result = await parsePowCzynszFile(encode(content));
+
+    expect(result.header).toEqual(['Header']);
+    expect(result.footer).toEqual(['Footer']);
+    expect(result.entries.map((entry) => entry.lineNo)).toEqual([3]);
+  });
 });

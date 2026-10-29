@@ -4,6 +4,7 @@ import {
   generateSecureToken,
   generateVerificationCode,
   getVerificationExpiration,
+  isVerificationExpired,
 } from '@/lib/email/verification-utils';
 
 describe('verification-utils', () => {
@@ -93,6 +94,15 @@ describe('verification-utils', () => {
     it('should return Date object', () => {
       const expiration = getVerificationExpiration(24);
       expect(expiration).toBeInstanceOf(Date);
+    });
+  });
+
+  describe('isVerificationExpired', () => {
+    it('is expired only after the expiration date', () => {
+      const now = Date.now();
+
+      expect(isVerificationExpired(new Date(now - 1000))).toBe(true);
+      expect(isVerificationExpired(new Date(now + 60_000))).toBe(false);
     });
   });
 });

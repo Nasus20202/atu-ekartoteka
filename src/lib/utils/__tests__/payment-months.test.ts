@@ -72,6 +72,16 @@ describe('getNonEmptyMonths', () => {
     );
   });
 
+  it('treats payments without a year as year 0 when filtering by period', () => {
+    const withoutYear: Omit<Payment, 'year'> & { year?: number } = makePayment({
+      januaryPayments: new Prisma.Decimal(1),
+    });
+    delete withoutYear.year;
+
+    expect(getNonEmptyMonths(withoutYear, '001')).toHaveLength(1);
+    expect(getNonEmptyMonths(withoutYear, '000')).toEqual([]);
+  });
+
   describe('with maxPeriod', () => {
     it('filters out months after maxPeriod', () => {
       const payment = makePayment({

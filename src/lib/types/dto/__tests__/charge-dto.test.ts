@@ -25,6 +25,21 @@ describe('toChargeDisplayDto', () => {
     expect(dto.dateFrom).toBe('2025-01-01T00:00:00.000Z');
     expect(dto.dateTo).toBe('2025-01-31T00:00:00.000Z');
   });
+
+  it('keeps dates that are already strings', () => {
+    const dto = toChargeDisplayDto({
+      id: 'charge-1',
+      description: 'Czynsz',
+      quantity: 1,
+      unit: 'm2',
+      unitPrice: 1,
+      totalAmount: 1,
+      dateFrom: '2025-01-01T00:00:00.000Z',
+      dateTo: '2025-01-31T00:00:00.000Z',
+    });
+
+    expect(dto.dateFrom).toBe('2025-01-01T00:00:00.000Z');
+  });
 });
 
 describe('toChargePdfItemDto', () => {

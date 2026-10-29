@@ -42,4 +42,11 @@ describe('getRequestNow', () => {
 
     expect(await getRequestNow()).toEqual(REAL_NOW);
   });
+
+  it('falls back to the real date without the header', async () => {
+    vi.stubEnv(FIXED_NOW_ENV_FLAG, 'true');
+    mockHeaderGet.mockReturnValue(null);
+
+    expect(await getRequestNow()).toEqual(REAL_NOW);
+  });
 });

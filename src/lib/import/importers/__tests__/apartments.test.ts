@@ -695,4 +695,77 @@ describe('importApartments', () => {
       skipDuplicates: true,
     });
   });
+
+  it('treats empty optional fields as matching null values', async () => {
+    const apartments = [
+      createApartmentEntry({
+        owner: '',
+        email: '',
+        address: '',
+        building: '',
+        postalCode: '',
+        city: '',
+      }),
+    ];
+
+    (mockTx.apartment.findMany as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce([
+        {
+          id: 'apt-1',
+          externalOwnerId: 'W001',
+          externalApartmentId: 'APT001',
+          owner: null,
+          email: null,
+          address: null,
+          building: null,
+          number: '1',
+          postalCode: null,
+          city: null,
+          shareNumerator: 1,
+          shareDenominator: 100,
+          isActive: true,
+          homeownersAssociationId: 'hoa-1',
+        },
+      ])
+      .mockResolvedValueOnce([]);
+
+    await importApartments(mockTx, hoa, apartments, stats, errors);
+
+    expect(mockTx.apartment.update).not.toHaveBeenCalled();
+  });
+
+  it('reports non-Error failures as unknown errors', async () => {
+    (mockTx.apartment.findMany as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce([
+        {
+          id: 'apt-1',
+          externalOwnerId: 'W001',
+          externalApartmentId: 'APT001',
+          owner: 'Old Owner',
+        },
+      ])
+      .mockResolvedValueOnce([]);
+    (mockTx.apartment.createMany as ReturnType<typeof vi.fn>).mockRejectedValue(
+      'create failed'
+    );
+    (mockTx.apartment.update as ReturnType<typeof vi.fn>).mockRejectedValue(
+      'update failed'
+    );
+
+    await importApartments(
+      mockTx,
+      hoa,
+      [
+        createApartmentEntry({ email: '' }),
+        createApartmentEntry({ externalApartmentId: 'APT002', email: '' }),
+      ],
+      stats,
+      errors
+    );
+
+    expect(errors).toEqual([
+      'Błąd tworzenia mieszkań: Nieznany błąd',
+      'Błąd aktualizacji mieszkania W001#APT001: Nieznany błąd',
+    ]);
+  });
 });

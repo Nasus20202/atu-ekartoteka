@@ -215,6 +215,22 @@ describe('importCharges', () => {
     expect(stats.skipped).toBe(1);
   });
 
+  it('reports non-Error create failures as unknown errors', async () => {
+    const entries = [createChargeEntry()];
+
+    (mockTx.charge.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+    (mockTx.charge.createMany as ReturnType<typeof vi.fn>).mockRejectedValue(
+      'DB error'
+    );
+
+    await importCharges(mockTx, apartmentMap, entries, stats, errors);
+
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toContain('Błąd tworzenia naliczeń');
+    expect(errors[0]).toContain('Nieznany błąd');
+    expect(stats.skipped).toBe(1);
+  });
+
   it('should handle update errors gracefully', async () => {
     const entries = [createChargeEntry({ description: 'Updated' })];
 
@@ -243,6 +259,38 @@ describe('importCharges', () => {
 
     expect(errors).toHaveLength(1);
     expect(errors[0]).toContain('Błąd aktualizacji naliczenia');
+    expect(stats.skipped).toBe(1);
+  });
+
+  it('reports non-Error update failures as unknown errors', async () => {
+    const entries = [createChargeEntry({ description: 'Updated' })];
+
+    const existingCharge = {
+      id: 'charge-1',
+      apartmentId: 'apt-1',
+      period: '2024-01',
+      externalLineNo: 1,
+      dateFrom: new Date('2024-01-01'),
+      dateTo: new Date('2024-01-31'),
+      description: 'Old',
+      quantity: 1,
+      unit: 'szt',
+      unitPrice: 100,
+      totalAmount: 100,
+    };
+
+    (mockTx.charge.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      existingCharge,
+    ]);
+    (mockTx.charge.update as ReturnType<typeof vi.fn>).mockRejectedValue(
+      'Update failed'
+    );
+
+    await importCharges(mockTx, apartmentMap, entries, stats, errors);
+
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toContain('Błąd aktualizacji naliczenia');
+    expect(errors[0]).toContain('Nieznany błąd');
     expect(stats.skipped).toBe(1);
   });
 

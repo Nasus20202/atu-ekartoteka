@@ -80,6 +80,24 @@ describe('apartment-parser', () => {
       expect(entries[0].city).toBe('Kraków');
     });
 
+    it('skips lines with too few fields', async () => {
+      const buffer = iconv.encode('W1#Jan#EXT001\n', 'iso-8859-2');
+
+      await expect(parseApartmentBuffer(buffer)).resolves.toEqual([]);
+    });
+
+    it('defaults a missing apartment id and invalid shares', async () => {
+      const mockData =
+        'W1#Jan Kowalski###ul. Testowa#1#1#00-001#Warszawa#jan@example.com###abc#\n';
+      const [entry] = await parseApartmentBuffer(
+        iconv.encode(mockData, 'iso-8859-2')
+      );
+
+      expect(entry.externalApartmentId).toBe('');
+      expect(entry.shareNumerator).toBe(0);
+      expect(entry.shareDenominator).toBe(0);
+    });
+
     it('should handle owner names with one hashtag', async () => {
       const mockData =
         'W1#Jan#Kowalski##EXT001#ul. Testowa#1#1#00-001#Warszawa#jan@example.com###50.5#250\n';

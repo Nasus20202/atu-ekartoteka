@@ -128,6 +128,27 @@ describe('notifyAdminsOfNewUser', () => {
     ).toHaveBeenCalledTimes(2);
   });
 
+  it('should continue if sending to one admin throws', async () => {
+    mockUserFindMany.mockResolvedValue([
+      { email: 'admin1@example.com', name: 'Admin One' },
+      { email: 'admin2@example.com', name: 'Admin Two' },
+    ]);
+    const mockEmailService = {
+      sendNewUserNotificationToAdmin: vi
+        .fn()
+        .mockRejectedValueOnce(new Error('smtp'))
+        .mockResolvedValueOnce(true),
+    };
+    vi.mocked(getEmailService).mockReturnValue(mockEmailService as never);
+
+    await expect(
+      notifyAdminsOfNewUser('newuser@example.com', 'New User', new Date())
+    ).resolves.toBeUndefined();
+    expect(
+      mockEmailService.sendNewUserNotificationToAdmin
+    ).toHaveBeenCalledTimes(2);
+  });
+
   it('should handle database errors gracefully', async () => {
     mockUserFindMany.mockRejectedValue(new Error('Database error'));
 

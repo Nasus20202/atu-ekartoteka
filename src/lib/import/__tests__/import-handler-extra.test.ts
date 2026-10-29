@@ -489,4 +489,42 @@ describe('import-handler additional coverage', () => {
       expect(result.results[0].errors[0]).toContain('2024');
     });
   });
+
+  describe('WMB data dates', () => {
+    it('reports an HOA that only has WMB files', async () => {
+      const result = await processBatchImport([
+        makeFile('hoa1/lokal_ost_wys.wmb', '20250131'),
+      ]);
+
+      expect(result.results[0].errors).toEqual([
+        'Brak plików do importu dla wspólnoty hoa1.',
+      ]);
+      expect(mockTransaction).not.toHaveBeenCalled();
+    });
+
+    it('stores every WMB date on the HOA', async () => {
+      mockParseNalCzynszBuffer.mockResolvedValue([]);
+      const tx = makeTx();
+      mockTransaction.mockImplementation(async (fn: unknown) =>
+        (fn as (tx: ReturnType<typeof makeTx>) => Promise<void>)(tx)
+      );
+
+      await processBatchImport([
+        makeFile('hoa1/nal_czynsz.txt'),
+        makeFile('hoa1/lokal_ost_wys.wmb', '20250101'),
+        makeFile('hoa1/nalicz_ost_wys.wmb', '20250201'),
+        makeFile('hoa1/pow_czynsz_ost_wys.wmb', '20250301'),
+      ]);
+
+      expect(tx.homeownersAssociation.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          update: {
+            apartmentsDataDate: new Date('2025-01-01T00:00:00.000Z'),
+            chargesDataDate: new Date('2025-02-01T00:00:00.000Z'),
+            notificationsDataDate: new Date('2025-03-01T00:00:00.000Z'),
+          },
+        })
+      );
+    });
+  });
 });

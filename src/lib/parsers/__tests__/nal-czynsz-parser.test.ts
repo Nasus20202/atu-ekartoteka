@@ -111,6 +111,16 @@ describe('nal-czynsz-parser', () => {
       expect(entries.length).toBe(0);
     });
 
+    it('skips lines with unparsable amounts', async () => {
+      const mockData =
+        'W00162#APT#01/01/2025#31/01/2025#202501#1#Opłata#abc#szt#1#1\n';
+      const entries = await parseNalCzynszBuffer(
+        iconv.encode(mockData, 'iso-8859-2')
+      );
+
+      expect(entries).toEqual([]);
+    });
+
     it('should parse multiple entries', async () => {
       const mockData =
         'W00162#hoa1-hoa1-00000-00001M#01/01/2025#31/01/2025#202501#1#Test1#1#szt#73#73,00\n' +

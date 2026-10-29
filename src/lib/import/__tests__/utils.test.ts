@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
+import type { ImportError } from '@/lib/import/types';
 import {
   createEmptyStats,
   groupFilesByHOA,
   isKnownFile,
+  mapWithConcurrency,
   parseWmbDate,
 } from '@/lib/import/utils';
 
@@ -180,4 +182,43 @@ describe('groupFilesByHOA - WMB routing', () => {
     expect(errors).toHaveLength(1);
     expect(errors[0].file).toBe('lokal_ost_wys.wmb');
   });
+});
+
+describe('groupFilesByHOA - other files', () => {
+  it('ignores other WMB files', () => {
+    const errors: ImportError[] = [];
+    const result = groupFilesByHOA(
+      [makeFile('HOA001/inny_plik.wmb', '20240101')],
+      errors
+    );
+
+    expect(errors).toHaveLength(0);
+    expect(result.get('HOA001')).toEqual({});
+  });
+
+  it('reports unknown files', () => {
+    const errors: ImportError[] = [];
+    groupFilesByHOA([makeFile('HOA001/notatki.txt', '')], errors);
+
+    expect(errors).toEqual([
+      { file: 'HOA001/notatki.txt', error: 'Nieznany plik: notatki.txt' },
+    ]);
+  });
+});
+
+describe('mapWithConcurrency', () => {
+  const double = async (value: number) => value * 2;
+
+  it('returns an empty list for no items', async () => {
+    await expect(mapWithConcurrency([], 2, double)).resolves.toEqual([]);
+  });
+
+  it.each([0, Number.NaN, 2.7, 10])(
+    'keeps the input order with concurrency %s',
+    async (concurrency) => {
+      await expect(
+        mapWithConcurrency([1, 2, 3], concurrency, double)
+      ).resolves.toEqual([2, 4, 6]);
+    }
+  );
 });

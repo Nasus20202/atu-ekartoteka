@@ -128,6 +128,31 @@ describe('credentialsAuthorize', () => {
       );
       expect(verifyTurnstileToken).toHaveBeenCalledWith('turnstile-token');
     });
+    it.each([
+      ['missing', undefined, 'missing_turnstile'],
+      ['invalid', 'bad-token', 'invalid_turnstile'],
+    ])('rejects a %s Turnstile token', async (_, turnstileToken, reason) => {
+      const { isTurnstileEnabled, verifyTurnstileToken } =
+        await import('@/lib/turnstile');
+      const { authMetrics } = await import('@/lib/opentelemetry/auth-metrics');
+
+      vi.mocked(isTurnstileEnabled).mockReturnValue(true);
+      vi.mocked(verifyTurnstileToken).mockResolvedValue(false as never);
+
+      const result = await credentialsAuthorize({
+        email: 'test@example.com',
+        password: 'correct',
+        turnstileToken,
+      });
+
+      expect(result).toBeNull();
+      expect(prisma.user.findUnique).not.toHaveBeenCalled();
+      expect(authMetrics.recordLogin).toHaveBeenCalledWith(
+        'credentials',
+        'failure',
+        reason
+      );
+    });
   });
 
   describe('user lookup', () => {

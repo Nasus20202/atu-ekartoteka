@@ -99,6 +99,21 @@ describe('callbacks.jwt', () => {
     expect(result!.mustChangePassword).toBe(false);
   });
 
+  it('keeps token data when the user no longer exists on update', async () => {
+    const token = makeToken({ id: 'user-123', role: UserRole.ADMIN });
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
+
+    const result = await callbacks!.jwt!({
+      token,
+      user: undefined as never,
+      trigger: 'update',
+      account: null,
+      session: undefined,
+    });
+
+    expect(result!.role).toBe(UserRole.ADMIN);
+  });
+
   it('does not fetch DB on signIn trigger', async () => {
     const token = makeToken({ id: 'user-123' });
 
@@ -215,6 +230,33 @@ describe('callbacks.signIn', () => {
       })
     );
     expect(googleUser.id).toBe('new-user-id');
+  });
+
+  it('still signs in a new Google user when notifying admins fails', async () => {
+    const { notifyAdminsOfNewUser } =
+      await import('@/lib/notifications/new-user-registration');
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.user.create).mockResolvedValue({
+      ...createMockUser({ id: 'new-user-id' }),
+      name: null,
+      createdAt: new Date(),
+    } as never);
+    vi.mocked(notifyAdminsOfNewUser).mockRejectedValue(new Error('smtp'));
+
+    const result = await callbacks!.signIn!({
+      user: { email: 'new@gmail.com' } as never,
+      account: { provider: 'google' } as never,
+      profile: undefined,
+      email: undefined,
+      credentials: undefined,
+    });
+
+    expect(result).toBe(true);
+    expect(notifyAdminsOfNewUser).toHaveBeenCalledWith(
+      'test@example.com',
+      'Nie podano imienia',
+      expect.any(Date)
+    );
   });
 
   it('populates user fields from existing user on subsequent Google sign-in', async () => {
