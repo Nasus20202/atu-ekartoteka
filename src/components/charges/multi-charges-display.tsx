@@ -9,6 +9,7 @@ import {
 import { MultiApartmentPeriodCard } from '@/components/charges/multi-apartment-period-card';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import type { ChargeDisplayDto } from '@/lib/types/dto/charge-dto';
+import { getPeriodYear, groupByYearDesc } from '@/lib/utils/group-by-year';
 import { isPeriodAfterDate } from '@/lib/utils/payment-months';
 import { sumDecimals } from '@/lib/utils/sum';
 
@@ -23,20 +24,6 @@ interface MultiChargesDisplayProps {
   periods: string[];
   chargesByPeriod: Record<string, ApartmentPeriodData[]>;
   chargesDataDate?: string | null;
-}
-
-function groupByYear(
-  periods: string[]
-): Array<{ year: string; periods: string[] }> {
-  const yearMap = new Map<string, string[]>();
-  for (const period of periods) {
-    const year = period.slice(0, 4);
-    if (!yearMap.has(year)) yearMap.set(year, []);
-    yearMap.get(year)!.push(period);
-  }
-  return Array.from(yearMap.entries())
-    .sort(([a], [b]) => b.localeCompare(a))
-    .map(([year, ps]) => ({ year, periods: ps }));
 }
 
 function computePeriodTotal(periodData: ApartmentPeriodData[]) {
@@ -55,7 +42,7 @@ export function MultiChargesDisplay({
   const filteredPeriods = chargesDataDate
     ? periods.filter((p) => !isPeriodAfterDate(p, chargesDataDate))
     : periods;
-  const yearGroups = groupByYear(filteredPeriods);
+  const yearGroups = groupByYearDesc(filteredPeriods, getPeriodYear);
   const mostRecentPeriod = periods[0] ?? null;
 
   const [openYears, setOpenYears] = useState<Set<string>>(
@@ -88,7 +75,7 @@ export function MultiChargesDisplay({
 
   return (
     <div className="space-y-2">
-      {yearGroups.map(({ year, periods: yearPeriods }) => (
+      {yearGroups.map(({ year, items: yearPeriods }) => (
         <Collapsible
           key={year}
           open={openYears.has(year)}

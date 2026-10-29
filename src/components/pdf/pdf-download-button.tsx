@@ -5,6 +5,7 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { downloadBlob } from '@/lib/utils/download-file';
 
 const BUTTON_TEXT = 'Pobierz PDF';
 const LOADING_TEXT = 'Generowanie...';
@@ -22,17 +23,6 @@ export interface PdfDownloadButtonProps {
   createPdf: () => Promise<PdfFile>;
 }
 
-function saveFile({ blob, fileName }: PdfFile) {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-}
-
 export function PdfDownloadButton({
   label,
   compact = false,
@@ -43,7 +33,8 @@ export function PdfDownloadButton({
   const handleDownload = async () => {
     setLoading(true);
     try {
-      saveFile(await createPdf());
+      const { blob, fileName } = await createPdf();
+      downloadBlob(blob, fileName);
     } finally {
       setLoading(false);
     }

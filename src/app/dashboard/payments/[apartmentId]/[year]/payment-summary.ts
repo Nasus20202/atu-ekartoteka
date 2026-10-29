@@ -7,8 +7,6 @@ import { sumDecimals } from '@/lib/utils/sum';
 
 const MIN_PAYMENT_YEAR = 1900;
 const MAX_PAYMENT_YEAR = 2100;
-const POSITIVE_BALANCE_CLASS = 'text-green-600';
-const NEGATIVE_BALANCE_CLASS = 'text-red-600';
 
 type PaymentAmounts = Record<
   | (typeof PAYMENT_MONTH_FIELD_KEYS)[number]
@@ -41,16 +39,4 @@ export function getPaymentSummary(payment: PaymentAmounts) {
     openingBalance: toDecimal(payment.openingBalance),
     closingBalance: toDecimal(payment.closingBalance),
   };
-}
-
-export function getOpeningBalanceClass(balance: DecimalLike): string {
-  const value = toDecimal(balance);
-  if (value.isNegative()) return NEGATIVE_BALANCE_CLASS;
-  return value.greaterThan(0) ? POSITIVE_BALANCE_CLASS : '';
-}
-
-export function getClosingBalanceClass(balance: DecimalLike): string {
-  return toDecimal(balance).greaterThanOrEqualTo(0)
-    ? POSITIVE_BALANCE_CLASS
-    : NEGATIVE_BALANCE_CLASS;
 }

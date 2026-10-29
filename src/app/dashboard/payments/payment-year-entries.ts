@@ -1,5 +1,6 @@
 import type { findUserWithApartmentPayments } from '@/lib/queries/users/find-user-with-apartment-payments';
 import { toPaymentListItemDto } from '@/lib/types/dto/payment-dto';
+import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 import { APP_LOCALE } from '@/lib/utils/locale';
 
 type PaymentsUser = NonNullable<
@@ -8,7 +9,7 @@ type PaymentsUser = NonNullable<
 type PaymentsApartment = PaymentsUser['apartments'][number];
 
 export function toPaymentYearEntries(apartment: PaymentsApartment) {
-  const apartmentLabel = `${apartment.address} ${apartment.building || ''}/${apartment.number}`;
+  const apartmentLabel = formatApartmentLabel(apartment);
 
   return apartment.payments.map((payment) => ({
     payment: toPaymentListItemDto(payment),

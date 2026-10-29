@@ -15,13 +15,9 @@ import {
   toChargePdfItemDto,
 } from '@/lib/types/dto/charge-dto';
 import { cn } from '@/lib/utils';
+import { getPeriodYear, groupByYearDesc } from '@/lib/utils/group-by-year';
 import { isPeriodAfterDate } from '@/lib/utils/payment-months';
 import { sumDecimals } from '@/lib/utils/sum';
-
-interface YearGroup {
-  year: string;
-  periods: string[];
-}
 
 interface ChargesDisplayProps {
   periods: string[];
@@ -30,18 +26,6 @@ interface ChargesDisplayProps {
   apartmentLabel: string;
   hoaName: string;
   chargesDataDate?: string | null;
-}
-
-function groupByYear(periods: string[]): YearGroup[] {
-  const yearMap = new Map<string, string[]>();
-  for (const period of periods) {
-    const year = period.slice(0, 4);
-    if (!yearMap.has(year)) yearMap.set(year, []);
-    yearMap.get(year)!.push(period);
-  }
-  return Array.from(yearMap.entries())
-    .sort(([a], [b]) => b.localeCompare(a))
-    .map(([year, ps]) => ({ year, periods: ps }));
 }
 
 export function ChargesDisplay({
@@ -55,8 +39,8 @@ export function ChargesDisplay({
   const filteredPeriods = chargesDataDate
     ? periods.filter((p) => !isPeriodAfterDate(p, chargesDataDate))
     : periods;
-  const activeYear = activeMonth ? activeMonth.slice(0, 4) : null;
-  const yearGroups = groupByYear(filteredPeriods);
+  const activeYear = activeMonth ? getPeriodYear(activeMonth) : null;
+  const yearGroups = groupByYearDesc(filteredPeriods, getPeriodYear);
   const mostRecentPeriod = periods[0] ?? null;
 
   // All years open by default; if activeMonth given, ensure its year is included
@@ -106,7 +90,7 @@ export function ChargesDisplay({
 
   return (
     <div className="space-y-2">
-      {yearGroups.map(({ year, periods: yearPeriods }) => (
+      {yearGroups.map(({ year, items: yearPeriods }) => (
         <Collapsible
           key={year}
           open={openYears.has(year)}

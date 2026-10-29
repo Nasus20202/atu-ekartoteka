@@ -1,8 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 
 import {
-  getClosingBalanceClass,
-  getOpeningBalanceClass,
   getPaymentSummary,
   parsePaymentYear,
 } from '@/app/dashboard/payments/[apartmentId]/[year]/payment-summary';
@@ -24,6 +22,11 @@ import {
 import { findApartmentWithPaymentsByYearCached } from '@/lib/queries/apartments/find-apartment-with-payments-by-year';
 import { toPaymentPdfDto } from '@/lib/types/dto/payment-dto';
 import { formatCurrency } from '@/lib/utils';
+import { formatApartmentLabel } from '@/lib/utils/apartment-label';
+import {
+  getBalanceStatusClass,
+  getSignedBalanceClass,
+} from '@/lib/utils/balance-class';
 import { APP_LOCALE } from '@/lib/utils/locale';
 
 interface PaymentDetailsPageProps {
@@ -64,7 +67,7 @@ export default async function PaymentDetailsPage({
     getPaymentSummary(payment);
   const monthlyChartData = getPaymentMonthlyChartData(payment);
 
-  const apartmentLabel = `${apartment.address} ${apartment.building || ''}/${apartment.number}`;
+  const apartmentLabel = formatApartmentLabel(apartment);
 
   const paymentPdfDto = toPaymentPdfDto(payment);
 
@@ -103,7 +106,7 @@ export default async function PaymentDetailsPage({
                   Saldo początkowe
                 </div>
                 <div
-                  className={`text-2xl font-bold ${getOpeningBalanceClass(openingBalance)}`}
+                  className={`text-2xl font-bold ${getSignedBalanceClass(openingBalance)}`}
                 >
                   {formatCurrency(openingBalance)}
                 </div>
@@ -125,7 +128,7 @@ export default async function PaymentDetailsPage({
                   Saldo końcowe
                 </div>
                 <div
-                  className={`text-2xl font-bold ${getClosingBalanceClass(closingBalance)}`}
+                  className={`text-2xl font-bold ${getBalanceStatusClass(closingBalance)}`}
                 >
                   {formatCurrency(closingBalance)}
                 </div>

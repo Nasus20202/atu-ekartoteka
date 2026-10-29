@@ -10,12 +10,13 @@ import {
 import { createLogger } from '@/lib/logger';
 import { createEmailVerification } from '@/lib/mutations/email-verification/create-verification';
 import { deleteVerificationsForUser } from '@/lib/mutations/email-verification/delete-verifications-for-user';
-import { findRecentVerification } from '@/lib/queries/email-verification/find-recent-verification';
+import {
+  findRecentVerification,
+  RATE_LIMIT_WINDOW_MS,
+} from '@/lib/queries/email-verification/find-recent-verification';
 import { findUserById } from '@/lib/queries/users/find-user-by-id';
 
 const logger = createLogger('api:resend-verification');
-
-const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000;
 
 /**
  * Resend email verification code

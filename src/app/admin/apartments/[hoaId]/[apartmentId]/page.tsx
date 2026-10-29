@@ -20,6 +20,7 @@ import {
 import { LoadingCard } from '@/components/ui/loading-card';
 import type { ApartmentDetailDto } from '@/lib/types/dto/apartment-dto';
 import { formatCurrency, formatSharePercent } from '@/lib/utils';
+import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 import { sumDecimals } from '@/lib/utils/sum';
 
 export default function ApartmentDetailsPage() {
@@ -106,7 +107,7 @@ export default function ApartmentDetailsPage() {
     <Page maxWidth="6xl">
       <PageHeader
         title={`Lokal ${apartment.number} - ${apartment.homeownersAssociation.name}`}
-        description={`${apartment.address} ${apartment.building}/${apartment.number}, ${apartment.postalCode} ${apartment.city}`}
+        description={`${formatApartmentLabel(apartment)}, ${apartment.postalCode} ${apartment.city}`}
         showBackButton={true}
       />
 
@@ -281,7 +282,7 @@ export default function ApartmentDetailsPage() {
           <ApartmentPaymentsSection
             payments={apartment.payments}
             apartmentId={apartmentId}
-            apartmentLabel={`${apartment.address} ${apartment.building}/${apartment.number}`}
+            apartmentLabel={formatApartmentLabel(apartment)}
             hoaName={apartment.homeownersAssociation.name}
           />
         )}
@@ -298,7 +299,7 @@ export default function ApartmentDetailsPage() {
             <CardContent>
               <AdminChargesList
                 charges={apartment.charges}
-                apartmentLabel={`${apartment.address} ${apartment.building}/${apartment.number}`}
+                apartmentLabel={formatApartmentLabel(apartment)}
                 hoaName={apartment.homeownersAssociation.name}
               />
             </CardContent>

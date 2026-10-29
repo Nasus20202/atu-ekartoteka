@@ -1,4 +1,5 @@
 import type { findUserWithApartments } from '@/lib/queries/users/find-user-with-apartments';
+import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 import { toDecimal } from '@/lib/utils/decimal';
 import { sumDecimals } from '@/lib/utils/sum';
 
@@ -42,7 +43,7 @@ export function buildDashboardNotifications(apartments: DashboardApartment[]) {
       unitPrice: toDecimal(n.unitPrice).toString(),
       totalAmount: toDecimal(n.totalAmount).toString(),
       apartmentNumber: apt.number,
-      apartmentAddress: `${apt.address} ${apt.building || ''}/${apt.number}`
+      apartmentAddress: formatApartmentLabel(apt)
         .replace(/\s+\//g, ' /')
         .trim(),
       hoaId: apt.homeownersAssociation?.id ?? null,

@@ -4,6 +4,7 @@ import {
   type ApartmentSummaryDtoSource,
   toApartmentSummaryDto,
 } from '@/lib/types/dto/apartment-dto';
+import { toIsoString } from '@/lib/types/dto/iso-string';
 
 type UserDateKey = 'createdAt' | 'updatedAt';
 
@@ -34,10 +35,6 @@ export type UserDto = Pick<
   Record<UserDateKey, string> & {
     apartments?: ApartmentSummaryDto[];
   };
-
-function toIsoString(value: Date | string): string {
-  return value instanceof Date ? value.toISOString() : String(value);
-}
 
 export function toUserDto(user: UserDtoSource): UserDto {
   return {

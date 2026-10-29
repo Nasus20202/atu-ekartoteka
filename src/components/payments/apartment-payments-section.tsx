@@ -1,5 +1,3 @@
-'use client';
-
 import { AdminPaymentsList } from '@/components/payments/admin-payments-list';
 import {
   Card,

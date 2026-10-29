@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { computeGroups } from '@/app/admin/users/management/apartment-groups';
+import { computeGroups } from '@/app/admin/users/management/apartment-grouping';
 import type { UnassignedApartment } from '@/app/admin/users/management/apartment-row';
 
 function makeApt(

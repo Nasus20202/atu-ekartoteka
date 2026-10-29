@@ -3,6 +3,7 @@ import type { Session } from 'next-auth';
 
 import { auth } from '@/auth';
 import { handleMustChangePassword } from '@/lib/auth/proxy-handler';
+import { STATIC_SECURITY_HEADERS } from '@/lib/security-headers';
 
 function applySecurityHeaders(response: NextResponse): NextResponse {
   const trackingOrigins = process.env.TRACKING_ORIGINS ?? '';
@@ -25,13 +26,9 @@ function applySecurityHeaders(response: NextResponse): NextResponse {
     'Strict-Transport-Security',
     'max-age=63072000; includeSubDomains; preload'
   );
-  response.headers.set('X-Frame-Options', 'DENY');
-  response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  response.headers.set(
-    'Permissions-Policy',
-    'camera=(), microphone=(), geolocation=()'
-  );
+  for (const { key, value } of STATIC_SECURITY_HEADERS) {
+    response.headers.set(key, value);
+  }
 
   return response;
 }

@@ -17,26 +17,15 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { LoadingCard } from '@/components/ui/loading-card';
+import type { HoaListItemDto } from '@/lib/types/dto/hoa-dto';
 import {
   APARTMENT_FORMS,
   HOA_ACCUSATIVE_FORMS,
   pluralizePl,
 } from '@/lib/utils/pluralize';
 
-interface HOA {
-  id: string;
-  externalId: string;
-  name: string;
-  apartmentCount: number;
-  apartmentsDataDate: string | null;
-  chargesDataDate: string | null;
-  notificationsDataDate: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export default function ApartmentsPage() {
-  const [hoas, setHoas] = useState<HOA[]>([]);
+  const [hoas, setHoas] = useState<HoaListItemDto[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -90,7 +79,7 @@ export default function ApartmentsPage() {
     void fetchHOAs(search);
   };
 
-  const startEditing = (hoa: HOA) => {
+  const startEditing = (hoa: HoaListItemDto) => {
     setEditingId(hoa.id);
     setEditingName(hoa.name);
   };

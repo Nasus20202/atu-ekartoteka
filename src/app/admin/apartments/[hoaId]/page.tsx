@@ -23,8 +23,12 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { LoadingCard } from '@/components/ui/loading-card';
-import { type ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
+import {
+  type ApartmentSummaryDto,
+  type HomeownersAssociationSummaryDto,
+} from '@/lib/types/dto/apartment-dto';
 import { formatSharePercent } from '@/lib/utils';
+import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 import { APARTMENT_FORMS, pluralizePl } from '@/lib/utils/pluralize';
 
 interface PaginationData {
@@ -32,12 +36,6 @@ interface PaginationData {
   limit: number;
   total: number;
   totalPages: number;
-}
-
-interface HOA {
-  id: string;
-  externalId: string;
-  name: string;
 }
 
 function ApartmentSearchForm({
@@ -87,7 +85,7 @@ function ApartmentCard({
         <div className="flex items-start justify-between">
           <div>
             <CardTitle className="text-lg">
-              {apartment.address} {apartment.building}/{apartment.number}
+              {formatApartmentLabel(apartment)}
             </CardTitle>
             <CardDescription>
               {apartment.postalCode} {apartment.city}
@@ -219,7 +217,7 @@ export default function HOAApartmentsPage() {
   const activeOnly = searchParams.get('activeOnly') === 'true';
 
   const [apartments, setApartments] = useState<ApartmentSummaryDto[]>([]);
-  const [hoa, setHoa] = useState<HOA | null>(null);
+  const [hoa, setHoa] = useState<HomeownersAssociationSummaryDto | null>(null);
   const [pagination, setPagination] = useState<PaginationData>({
     page: 1,
     limit: 20,

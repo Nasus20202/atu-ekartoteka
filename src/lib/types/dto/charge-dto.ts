@@ -1,4 +1,5 @@
 import type { ChargeDisplay } from '@/lib/types';
+import { toIsoString } from '@/lib/types/dto/iso-string';
 import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
 
 type ChargeAmountFieldKey = 'quantity' | 'unitPrice' | 'totalAmount';
@@ -21,10 +22,6 @@ export type ChargeDisplayDto = ChargePdfItemDto &
 export type ChargePeriodItemDto = ChargeDisplayDto & {
   period: string;
 };
-
-function toIsoString(value: Date | string): string {
-  return value instanceof Date ? value.toISOString() : String(value);
-}
 
 export function toChargeDisplayDto(charge: ChargeDtoSource): ChargeDisplayDto {
   return {

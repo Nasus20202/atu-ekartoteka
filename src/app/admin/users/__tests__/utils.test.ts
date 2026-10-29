@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { createEmptyNewUserData } from '@/app/admin/users/constants';
-import type { Apartment, User } from '@/app/admin/users/types';
 import {
   buildUsersQuery,
   filterAndSortApartments,
@@ -11,8 +10,10 @@ import {
   isApartmentMatchingUser,
 } from '@/app/admin/users/utils';
 import { AccountStatus, UserRole } from '@/lib/types';
+import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
+import type { UserDto } from '@/lib/types/dto/user-dto';
 
-const apartmentA: Apartment = {
+const apartmentA: ApartmentSummaryDto = {
   id: 'apt-a',
   externalOwnerId: 'owner-a',
   externalApartmentId: 'ext-a',
@@ -28,7 +29,7 @@ const apartmentA: Apartment = {
   isActive: true,
 };
 
-const apartmentB: Apartment = {
+const apartmentB: ApartmentSummaryDto = {
   ...apartmentA,
   id: 'apt-b',
   externalOwnerId: 'owner-b',
@@ -39,7 +40,7 @@ const apartmentB: Apartment = {
   number: '10',
 };
 
-const apartmentC: Apartment = {
+const apartmentC: ApartmentSummaryDto = {
   ...apartmentA,
   id: 'apt-c',
   externalOwnerId: 'owner-c',
@@ -52,7 +53,7 @@ const apartmentC: Apartment = {
   shareDenominator: null,
 };
 
-const approvedUser: User = {
+const approvedUser: UserDto = {
   id: 'user-1',
   email: 'jan@example.com',
   name: 'Jan Kowalski',
@@ -213,7 +214,7 @@ describe('admin users utils', () => {
           address: null,
           building: null,
           number: null,
-        } as unknown as Apartment,
+        } as unknown as ApartmentSummaryDto,
       ],
       search,
       [],
@@ -237,7 +238,7 @@ describe('admin users utils', () => {
           owner: 'Zenon',
           email: null,
         },
-      ] as unknown as Apartment[],
+      ] as unknown as ApartmentSummaryDto[],
       '',
       [],
       { ...user, apartments: [] }
@@ -279,7 +280,7 @@ describe('admin users utils', () => {
       ...apartmentA,
       id: 'without-number',
       number: null,
-    } as unknown as Apartment;
+    } as unknown as ApartmentSummaryDto;
 
     for (const input of [
       [withNumber, withoutNumber],

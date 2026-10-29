@@ -4,7 +4,7 @@ import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
 import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useRef, useState } from 'react';
+import { Suspense, useRef, useState } from 'react';
 
 import { AuthLayout } from '@/components/layout/auth-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -15,7 +15,7 @@ import {
   MIN_PASSWORD_LENGTH,
   PASSWORD_TOO_SHORT_MESSAGE,
 } from '@/lib/auth/password-rules';
-import { TurnstileConfig } from '@/lib/types/turnstile';
+import { useTurnstileConfig } from '@/lib/hooks/use-turnstile-config';
 import {
   GENERIC_ERROR_MESSAGE,
   getErrorMessage,
@@ -32,26 +32,10 @@ function ResetPasswordContent() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const [turnstileConfig, setTurnstileConfig] =
-    useState<TurnstileConfig | null>(null);
+  const turnstileConfig = useTurnstileConfig();
   const turnstileRef = useRef<TurnstileInstance>(null);
 
   // Fetch turnstile configuration on mount
-  useEffect(() => {
-    const fetchTurnstileConfig = async () => {
-      try {
-        const response = await fetch('/api/config/turnstile');
-        const config = await response.json();
-        setTurnstileConfig(config);
-      } catch (error) {
-        console.error('Failed to fetch turnstile config:', error);
-        // Default to disabled if fetch fails
-        setTurnstileConfig({ siteKey: null, enabled: false });
-      }
-    };
-
-    fetchTurnstileConfig();
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

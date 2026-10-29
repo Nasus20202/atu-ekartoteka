@@ -4,6 +4,7 @@ import { ImportWarnings } from '@/app/admin/import/import-warnings';
 import type { EntityStats, ImportResult } from '@/app/admin/import/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { downloadTextFile } from '@/lib/utils/download-file';
 import { serialiseErrorsToTxt } from '@/lib/utils/export-errors';
 import { APP_LOCALE } from '@/lib/utils/locale';
 
@@ -169,13 +170,7 @@ export function ImportResultCard({ result }: ImportResultCardProps) {
                     })),
                   },
                 ]);
-                const blob = new Blob([content], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `bledy-${result.hoaId}.txt`;
-                a.click();
-                URL.revokeObjectURL(url);
+                downloadTextFile(content, `bledy-${result.hoaId}.txt`);
               }}
             >
               <Download className="mr-2 h-4 w-4" />

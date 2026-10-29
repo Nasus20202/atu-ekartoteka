@@ -4,6 +4,7 @@ import { requireAdmin } from '@/lib/auth/require-admin';
 import { createLogger } from '@/lib/logger';
 import { updateHoaName } from '@/lib/mutations/hoa/update-hoa-name';
 import { findHoas } from '@/lib/queries/hoa/find-hoas';
+import { toHoaListItemDto } from '@/lib/types/dto/hoa-dto';
 import { getErrorMessage } from '@/lib/utils/error-message';
 
 const logger = createLogger('api:admin:hoa');
@@ -19,19 +20,7 @@ export async function GET(req: NextRequest) {
     const homeownersAssociations = await findHoas(search);
 
     return NextResponse.json({
-      homeownersAssociations: homeownersAssociations.map(
-        (hoa: (typeof homeownersAssociations)[number]) => ({
-          id: hoa.id,
-          externalId: hoa.externalId,
-          name: hoa.name,
-          apartmentCount: hoa._count.apartments,
-          apartmentsDataDate: hoa.apartmentsDataDate,
-          chargesDataDate: hoa.chargesDataDate,
-          notificationsDataDate: hoa.notificationsDataDate,
-          createdAt: hoa.createdAt,
-          updatedAt: hoa.updatedAt,
-        })
-      ),
+      homeownersAssociations: homeownersAssociations.map(toHoaListItemDto),
     });
   } catch (error) {
     logger.error({ error }, 'HOA fetch error');

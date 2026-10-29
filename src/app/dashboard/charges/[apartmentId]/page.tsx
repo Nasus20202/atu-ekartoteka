@@ -14,6 +14,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { findApartmentWithChargesCached } from '@/lib/queries/apartments/find-apartment-with-charges';
 import { findUserByIdCached } from '@/lib/queries/users/find-user-by-id';
 import { AccountStatus } from '@/lib/types';
+import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 
 export default async function ApartmentChargesPage({
   params,
@@ -47,13 +48,13 @@ export default async function ApartmentChargesPage({
 
   const chargesByPeriod = groupChargesByPeriod(apartment.charges);
   const periods = getSortedPeriods(chargesByPeriod);
-  const apartmentLabel = `${apartment.address} ${apartment.building || ''}/${apartment.number}`;
+  const apartmentLabel = formatApartmentLabel(apartment);
   const activeMonth = toActivePeriod(month);
 
   return (
     <Page maxWidth="4xl">
       <PageHeader
-        title={`${apartment.address} ${apartment.building || ''}/${apartment.number}`}
+        title={formatApartmentLabel(apartment)}
         description={`${apartment.postalCode} ${apartment.city}`}
       />
 

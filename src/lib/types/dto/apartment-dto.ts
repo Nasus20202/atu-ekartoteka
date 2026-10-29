@@ -5,6 +5,7 @@ import type {
   User,
 } from '@/lib/types';
 import type { ChargePeriodItemDto } from '@/lib/types/dto/charge-dto';
+import { toIsoString } from '@/lib/types/dto/iso-string';
 import type { PaymentPdfDto } from '@/lib/types/dto/payment-dto';
 import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
 
@@ -73,10 +74,6 @@ export type ApartmentDetailDto = ApartmentSummaryDto & {
   chargeNotifications: ChargeNotificationDto[];
   payments: PaymentPdfDto[];
 };
-
-function toIsoString(value: Date | string): string {
-  return value instanceof Date ? value.toISOString() : String(value);
-}
 
 export function toApartmentSummaryDto(
   apartment: ApartmentSummaryDtoSource

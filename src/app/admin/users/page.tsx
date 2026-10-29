@@ -7,12 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ApartmentSelectionDialog } from '@/app/admin/users/apartment-selection-dialog';
 import { createEmptyNewUserData } from '@/app/admin/users/constants';
 import { CreateUserDialog } from '@/app/admin/users/create-user-dialog';
-import type {
-  Apartment,
-  EditMode,
-  NewUserFormData,
-  User,
-} from '@/app/admin/users/types';
+import type { EditMode, NewUserFormData } from '@/app/admin/users/types';
 import { UserCard } from '@/app/admin/users/user-card';
 import { type UserFilter, UserFilters } from '@/app/admin/users/user-filters';
 import {
@@ -35,21 +30,23 @@ import {
 import { Input } from '@/components/ui/input';
 import { LoadingCard } from '@/components/ui/loading-card';
 import { AccountStatus } from '@/lib/types';
+import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
+import type { UserDto } from '@/lib/types/dto/user-dto';
 
 const APARTMENT_FETCH_LIMIT = 100000;
 
 export default function AdminUsersPage() {
   const confirm = useConfirm();
   const latestUsersRequestId = useRef(0);
-  const [users, setUsers] = useState<User[]>([]);
-  const [apartments, setApartments] = useState<Apartment[]>([]);
+  const [users, setUsers] = useState<UserDto[]>([]);
+  const [apartments, setApartments] = useState<ApartmentSummaryDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<UserFilter>(AccountStatus.PENDING);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [userSearch, setUserSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserDto | null>(null);
   const [selectedApartments, setSelectedApartments] = useState<string[]>([]);
   const [apartmentSearch, setApartmentSearch] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
@@ -65,7 +62,7 @@ export default function AdminUsersPage() {
     setEditMode(null);
   }, []);
 
-  const openUserDialog = useCallback((user: User, mode: EditMode) => {
+  const openUserDialog = useCallback((user: UserDto, mode: EditMode) => {
     setSelectedUser(user);
     setSelectedApartments(
       user.apartments?.map((apartment) => apartment.id) || []

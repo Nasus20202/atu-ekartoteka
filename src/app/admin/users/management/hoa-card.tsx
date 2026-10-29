@@ -3,8 +3,8 @@
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 
+import { computeGroups } from '@/app/admin/users/management/apartment-grouping';
 import {
-  computeGroups,
   DuplicateAddressGroup,
   MultiApartmentEmailGroup,
   OccupiedTwinRow,
