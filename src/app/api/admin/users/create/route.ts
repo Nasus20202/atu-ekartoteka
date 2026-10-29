@@ -2,6 +2,10 @@ import bcrypt from 'bcrypt';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { BCRYPT_COST } from '@/lib/auth/bcrypt-cost';
+import {
+  EMAIL_TAKEN_MESSAGE,
+  validateCredentials,
+} from '@/lib/auth/credential-validation';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { createLogger } from '@/lib/logger';
 import { createAdminUser } from '@/lib/mutations/users/create-admin-user';
@@ -25,22 +29,25 @@ export async function POST(request: NextRequest) {
       'Admin creating new user'
     );
 
-    // Validate required fields
-    if (!email || !password) {
-      return NextResponse.json(
-        { error: 'Email and password are required' },
-        { status: 400 }
-      );
+    const validationError = validateCredentials(email, password);
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
     // Validate role
     if (role && !Object.values(UserRole).includes(role)) {
-      return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Nieprawidłowa rola' },
+        { status: 400 }
+      );
     }
 
     // Validate status
     if (status && !Object.values(AccountStatus).includes(status)) {
-      return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Nieprawidłowy status konta' },
+        { status: 400 }
+      );
     }
 
     // Check if user already exists
@@ -51,10 +58,7 @@ export async function POST(request: NextRequest) {
         { email },
         `User creation failed: ${email} already exists (attempted by ${session.user.email})`
       );
-      return NextResponse.json(
-        { error: 'User with this email already exists' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: EMAIL_TAKEN_MESSAGE }, { status: 400 });
     }
 
     // Hash password
@@ -73,7 +77,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     logger.error({ error }, 'Failed to create user');
     return NextResponse.json(
-      { error: 'Failed to create user' },
+      { error: 'Nie udało się utworzyć użytkownika' },
       { status: 500 }
     );
   }

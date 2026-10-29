@@ -204,7 +204,7 @@ describe('Admin Apartment Detail API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(404);
-      expect(data.error).toBe('Apartment not found');
+      expect(data.error).toBe('Nie znaleziono mieszkania');
     });
 
     it('should include homeownersAssociation details', async () => {
@@ -328,7 +328,7 @@ describe('Admin Apartment Detail API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(500);
-      expect(data.error).toBe('Internal server error');
+      expect(data.error).toBe('Wewnętrzny błąd serwera');
     });
   });
 
@@ -399,7 +399,7 @@ describe('Admin Apartment Detail API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toBe('Invalid request body');
+      expect(data.error).toBe('Nieprawidłowe dane żądania');
     });
 
     it('should update apartment isActive and return updated apartment', async () => {
@@ -448,7 +448,7 @@ describe('Admin Apartment Detail API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(500);
-      expect(data.error).toBe('Internal server error');
+      expect(data.error).toBe('Wewnętrzny błąd serwera');
     });
   });
 });

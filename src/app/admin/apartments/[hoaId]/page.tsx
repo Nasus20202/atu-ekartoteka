@@ -8,7 +8,6 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   buildAddressKey,
   computeDuplicateActiveAddresses,
-  getFoundApartmentsLabel,
   getPageItems,
 } from '@/app/admin/apartments/[hoaId]/apartment-list-utils';
 import { Page } from '@/components/layout/page';
@@ -26,6 +25,7 @@ import { Input } from '@/components/ui/input';
 import { LoadingCard } from '@/components/ui/loading-card';
 import { type ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
 import { formatSharePercent } from '@/lib/utils';
+import { APARTMENT_FORMS, pluralizePl } from '@/lib/utils/pluralize';
 
 interface PaginationData {
   page: number;
@@ -346,7 +346,7 @@ export default function HOAApartmentsPage() {
         <>
           <div className="mb-4 text-sm text-muted-foreground">
             Znaleziono {pagination.total}{' '}
-            {getFoundApartmentsLabel(pagination.total)}
+            {pluralizePl(pagination.total, APARTMENT_FORMS)}
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">

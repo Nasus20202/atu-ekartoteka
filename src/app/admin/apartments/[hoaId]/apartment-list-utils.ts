@@ -1,7 +1,6 @@
 import { type ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
 
 const PAGE_WINDOW = 2;
-const FEW_UPPER_BOUND = 5;
 
 export type PageItem = number | 'ellipsis';
 
@@ -42,9 +41,4 @@ export function getPageItems(page: number, totalPages: number): PageItem[] {
     }
   }
   return items;
-}
-
-export function getFoundApartmentsLabel(total: number): string {
-  if (total === 1) return 'mieszkanie';
-  return total < FEW_UPPER_BOUND && total > 1 ? 'mieszkania' : 'mieszkań';
 }

@@ -82,7 +82,7 @@ describe('Setup Check Endpoint', () => {
       const data = await response.json();
 
       expect(response.status).toBe(500);
-      expect(data.error).toBe('Failed to check setup status');
+      expect(data.error).toBe('Nie udało się sprawdzić stanu konfiguracji');
     });
 
     it('should return correct response schema with both required fields', async () => {
@@ -265,7 +265,7 @@ describe('Setup Check Endpoint', () => {
         const data = await response.json();
 
         expect(response.status).toBe(500);
-        expect(data.error).toBe('Failed to check setup status');
+        expect(data.error).toBe('Nie udało się sprawdzić stanu konfiguracji');
       }
     });
 

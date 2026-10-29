@@ -5,6 +5,7 @@ import { createLogger } from '@/lib/logger';
 import { findAssignedApartmentAddressKeys } from '@/lib/queries/apartments/find-assigned-apartment-address-keys';
 import { findUnassignedApartments } from '@/lib/queries/apartments/find-unassigned-apartments';
 import { findAllUserEmails } from '@/lib/queries/users/find-all-user-emails';
+import { compareApartmentsNaturally } from '@/lib/utils/apartment-sort';
 
 const logger = createLogger('api:admin:unassigned-apartments');
 
@@ -65,14 +66,8 @@ export async function GET(request: NextRequest) {
       hoaMap.get(hoaId)!.apartments.push(apt);
     }
 
-    // Sort apartments within each HOA numerically by building then number
     for (const group of hoaMap.values()) {
-      group.apartments.sort((a, b) => {
-        const buildingA = parseInt(a.building ?? '0', 10);
-        const buildingB = parseInt(b.building ?? '0', 10);
-        if (buildingA !== buildingB) return buildingA - buildingB;
-        return parseInt(a.number, 10) - parseInt(b.number, 10);
-      });
+      group.apartments.sort(compareApartmentsNaturally);
     }
 
     logger.info(
@@ -82,9 +77,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ hoas: Array.from(hoaMap.values()) });
   } catch (error) {
-    logger.error({ error }, 'Failed to fetch unassigned apartments');
+    logger.error({ error }, 'Nie udało się pobrać nieprzypisanych mieszkań');
     return NextResponse.json(
-      { error: 'Failed to fetch unassigned apartments' },
+      { error: 'Nie udało się pobrać nieprzypisanych mieszkań' },
       { status: 500 }
     );
   }

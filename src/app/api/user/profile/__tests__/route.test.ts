@@ -66,7 +66,7 @@ describe('User Profile API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(401);
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error).toBe('Musisz być zalogowany');
     });
 
     it('should return 404 when user not found', async () => {
@@ -87,7 +87,7 @@ describe('User Profile API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(404);
-      expect(data.error).toBe('User not found');
+      expect(data.error).toBe('Nie znaleziono użytkownika');
     });
 
     it('should update user name successfully', async () => {
@@ -192,9 +192,7 @@ describe('User Profile API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toBe(
-        'Current password is required to change password'
-      );
+      expect(data.error).toBe('Obecne hasło jest wymagane aby zmienić hasło');
     });
 
     it('should reject incorrect current password', async () => {
@@ -218,7 +216,7 @@ describe('User Profile API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toBe('Current password is incorrect');
+      expect(data.error).toBe('Obecne hasło jest nieprawidłowe');
     });
 
     it('should reject a new password shorter than 8 characters', async () => {
@@ -247,7 +245,7 @@ describe('User Profile API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toBe('Current password is incorrect');
+      expect(data.error).toBe('Obecne hasło jest nieprawidłowe');
       expect(mockUserUpdate).not.toHaveBeenCalled();
     });
 
@@ -333,7 +331,7 @@ describe('User Profile API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(500);
-      expect(data.error).toBe('Failed to update profile');
+      expect(data.error).toBe('Nie udało się zaktualizować profilu');
     });
 
     it('should not return password in response', async () => {

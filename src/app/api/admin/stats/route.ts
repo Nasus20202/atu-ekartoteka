@@ -15,9 +15,9 @@ export async function GET() {
 
     return NextResponse.json(stats);
   } catch (error) {
-    logger.error({ error }, 'Failed to fetch stats');
+    logger.error({ error }, 'Nie udało się pobrać statystyk');
     return NextResponse.json(
-      { error: 'Failed to fetch stats' },
+      { error: 'Nie udało się pobrać statystyk' },
       { status: 500 }
     );
   }

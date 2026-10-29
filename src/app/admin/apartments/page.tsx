@@ -4,11 +4,7 @@ import { Building2, Edit2, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-import {
-  formatImportDate,
-  getApartmentCountLabel,
-  getHoaCountLabel,
-} from '@/app/admin/apartments/hoa-labels';
+import { formatImportDate } from '@/app/admin/apartments/hoa-labels';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
@@ -21,6 +17,11 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { LoadingCard } from '@/components/ui/loading-card';
+import {
+  APARTMENT_FORMS,
+  HOA_ACCUSATIVE_FORMS,
+  pluralizePl,
+} from '@/lib/utils/pluralize';
 
 interface HOA {
   id: string;
@@ -150,7 +151,8 @@ export default function ApartmentsPage() {
       ) : (
         <>
           <div className="mb-4 text-sm text-muted-foreground">
-            Znaleziono {hoas.length} {getHoaCountLabel(hoas.length)}
+            Znaleziono {hoas.length}{' '}
+            {pluralizePl(hoas.length, HOA_ACCUSATIVE_FORMS)}
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -226,7 +228,7 @@ export default function ApartmentsPage() {
                           {hoa.apartmentCount}
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          {getApartmentCountLabel(hoa.apartmentCount)}
+                          {pluralizePl(hoa.apartmentCount, APARTMENT_FORMS)}
                         </p>
                       </div>
                       {hasImportDates && (

@@ -19,7 +19,10 @@ export async function PATCH(request: NextRequest) {
     const session = await auth();
 
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Musisz być zalogowany' },
+        { status: 401 }
+      );
     }
 
     const body = await request.json();
@@ -38,7 +41,10 @@ export async function PATCH(request: NextRequest) {
     const user = await findUserById(session.user.id);
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Nie znaleziono użytkownika' },
+        { status: 404 }
+      );
     }
 
     const updateData: {
@@ -71,7 +77,7 @@ export async function PATCH(request: NextRequest) {
       if (!mustChangePassword) {
         if (!currentPassword) {
           return NextResponse.json(
-            { error: 'Current password is required to change password' },
+            { error: 'Obecne hasło jest wymagane aby zmienić hasło' },
             { status: 400 }
           );
         }
@@ -79,7 +85,7 @@ export async function PATCH(request: NextRequest) {
         // Verify current password
         if (!user.password) {
           return NextResponse.json(
-            { error: 'Current password is incorrect' },
+            { error: 'Obecne hasło jest nieprawidłowe' },
             { status: 400 }
           );
         }
@@ -95,7 +101,7 @@ export async function PATCH(request: NextRequest) {
             'Failed password change attempt: incorrect current password'
           );
           return NextResponse.json(
-            { error: 'Current password is incorrect' },
+            { error: 'Obecne hasło jest nieprawidłowe' },
             { status: 400 }
           );
         }
@@ -120,9 +126,9 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json(toUserDto(updatedUser));
   } catch (error) {
-    logger.error({ error }, 'Failed to update profile');
+    logger.error({ error }, 'Nie udało się zaktualizować profilu');
     return NextResponse.json(
-      { error: 'Failed to update profile' },
+      { error: 'Nie udało się zaktualizować profilu' },
       { status: 500 }
     );
   }
