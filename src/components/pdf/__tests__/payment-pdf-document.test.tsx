@@ -1,9 +1,15 @@
+import { render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { createMockPayment } from '@/__tests__/fixtures';
 import type { PaymentPdfDocumentProps } from '@/components/pdf/payment-pdf-document';
 import { Prisma } from '@/generated/prisma/browser';
 import type { Payment } from '@/lib/types';
-import type { PaymentDtoSource } from '@/lib/types/dto/payment-dto';
+import { formatCurrency } from '@/lib/utils';
+import {
+  CHARGE_MONTH_FIELD_KEYS,
+  PAYMENT_MONTH_FIELD_KEYS,
+} from '@/lib/utils/payment-months';
 
 vi.mock('@react-pdf/renderer', () => ({
   Document: ({ children }: { children: React.ReactNode }) => children,
@@ -17,45 +23,25 @@ vi.mock('@react-pdf/renderer', () => ({
 
 vi.mock('@/lib/pdf/register-fonts', () => ({ registerPdfFonts: vi.fn() }));
 
-function makePayment(overrides: Partial<PaymentDtoSource> = {}): Payment {
-  return {
-    id: 'pay-1',
-    apartmentId: 'apt-1',
-    year: 2024,
-    dateFrom: new Date('2024-01-01'),
-    dateTo: new Date('2024-12-31'),
-    openingBalance: new Prisma.Decimal(0),
+const MONTHLY_PAYMENT = 500;
+const MONTHLY_CHARGE = 600;
+
+function monthlyAmounts(payment: number, charge: number): Partial<Payment> {
+  return Object.fromEntries([
+    ...PAYMENT_MONTH_FIELD_KEYS.map((key) => [
+      key,
+      new Prisma.Decimal(payment),
+    ]),
+    ...CHARGE_MONTH_FIELD_KEYS.map((key) => [key, new Prisma.Decimal(charge)]),
+  ]);
+}
+
+function makePayment(overrides: Partial<Payment> = {}): Payment {
+  return createMockPayment({
+    ...monthlyAmounts(MONTHLY_PAYMENT, MONTHLY_CHARGE),
     closingBalance: new Prisma.Decimal(-100),
-    openingDebt: new Prisma.Decimal(0),
-    openingSurplus: new Prisma.Decimal(0),
-    januaryPayments: new Prisma.Decimal(500),
-    februaryPayments: new Prisma.Decimal(500),
-    marchPayments: new Prisma.Decimal(500),
-    aprilPayments: new Prisma.Decimal(500),
-    mayPayments: new Prisma.Decimal(500),
-    junePayments: new Prisma.Decimal(500),
-    julyPayments: new Prisma.Decimal(500),
-    augustPayments: new Prisma.Decimal(500),
-    septemberPayments: new Prisma.Decimal(500),
-    octoberPayments: new Prisma.Decimal(500),
-    novemberPayments: new Prisma.Decimal(500),
-    decemberPayments: new Prisma.Decimal(500),
-    januaryCharges: new Prisma.Decimal(600),
-    februaryCharges: new Prisma.Decimal(600),
-    marchCharges: new Prisma.Decimal(600),
-    aprilCharges: new Prisma.Decimal(600),
-    mayCharges: new Prisma.Decimal(600),
-    juneCharges: new Prisma.Decimal(600),
-    julyCharges: new Prisma.Decimal(600),
-    augustCharges: new Prisma.Decimal(600),
-    septemberCharges: new Prisma.Decimal(600),
-    octoberCharges: new Prisma.Decimal(600),
-    novemberCharges: new Prisma.Decimal(600),
-    decemberCharges: new Prisma.Decimal(600),
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
     ...overrides,
-  } as Payment;
+  });
 }
 
 const SAMPLE_PROPS: PaymentPdfDocumentProps = {
@@ -65,81 +51,67 @@ const SAMPLE_PROPS: PaymentPdfDocumentProps = {
   payment: makePayment(),
 };
 
+async function renderText(props: PaymentPdfDocumentProps) {
+  const { PaymentPdfDocument } =
+    await import('@/components/pdf/payment-pdf-document');
+  return render(<PaymentPdfDocument {...props} />).container.textContent;
+}
+
 describe('PaymentPdfDocument', () => {
-  it('renders without errors with valid props', async () => {
-    const { PaymentPdfDocument } =
-      await import('@/components/pdf/payment-pdf-document');
-    expect(() => PaymentPdfDocument(SAMPLE_PROPS)).not.toThrow();
+  it('renders the title, summary and monthly rows', async () => {
+    const text = await renderText(SAMPLE_PROPS);
+
+    expect(text).toContain('Wpłaty 2024 - ul. Testowa 1/2');
+    expect(text).toContain(
+      'Wspólnota Mieszkaniowa Testowa | Wygenerowano: 2024-12-31'
+    );
+    expect(text).toContain('Podsumowanie roku 2024');
+    expect(text).toContain(formatCurrency(MONTHLY_PAYMENT * 12));
+    expect(text).toContain(formatCurrency(MONTHLY_CHARGE * 12));
+    expect(text).toContain(formatCurrency(-100));
   });
 
-  it('renders without errors when closing balance is positive', async () => {
-    const { PaymentPdfDocument } =
-      await import('@/components/pdf/payment-pdf-document');
-    const props: PaymentPdfDocumentProps = {
+  it('renders a positive closing balance', async () => {
+    const text = await renderText({
       ...SAMPLE_PROPS,
       payment: makePayment({
         openingBalance: new Prisma.Decimal(100),
         closingBalance: new Prisma.Decimal(500),
       }),
-    };
-    expect(() => PaymentPdfDocument(props)).not.toThrow();
+    });
+
+    expect(text).toContain(formatCurrency(100));
+    expect(text).toContain(formatCurrency(500));
   });
 
-  it('renders without errors when the opening balance is negative', async () => {
-    const { PaymentPdfDocument } =
-      await import('@/components/pdf/payment-pdf-document');
-    const props: PaymentPdfDocumentProps = {
+  it('renders a negative opening balance', async () => {
+    const text = await renderText({
       ...SAMPLE_PROPS,
-      payment: makePayment({ openingBalance: new Prisma.Decimal(-100) }),
-    };
-    expect(() => PaymentPdfDocument(props)).not.toThrow();
+      payment: makePayment({ openingBalance: new Prisma.Decimal(-250) }),
+    });
+
+    expect(text).toContain(formatCurrency(-250));
   });
 
-  it('renders without errors when all monthly values are zero', async () => {
-    const { PaymentPdfDocument } =
-      await import('@/components/pdf/payment-pdf-document');
-    const props: PaymentPdfDocumentProps = {
+  it('renders zero totals when every month is empty', async () => {
+    const text = await renderText({
       ...SAMPLE_PROPS,
-      payment: makePayment({
-        openingBalance: 0,
-        closingBalance: 0,
-        januaryPayments: 0,
-        februaryPayments: 0,
-        marchPayments: 0,
-        aprilPayments: 0,
-        mayPayments: 0,
-        junePayments: 0,
-        julyPayments: 0,
-        augustPayments: 0,
-        septemberPayments: 0,
-        octoberPayments: 0,
-        novemberPayments: 0,
-        decemberPayments: 0,
-        januaryCharges: 0,
-        februaryCharges: 0,
-        marchCharges: 0,
-        aprilCharges: 0,
-        mayCharges: 0,
-        juneCharges: 0,
-        julyCharges: 0,
-        augustCharges: 0,
-        septemberCharges: 0,
-        octoberCharges: 0,
-        novemberCharges: 0,
-        decemberCharges: 0,
-      }),
-    };
-    expect(() => PaymentPdfDocument(props)).not.toThrow();
+      payment: createMockPayment(),
+    });
+
+    expect(text).toContain('Saldo końcowe');
+    expect(text).toContain(formatCurrency(0));
+    expect(text).not.toContain(formatCurrency(MONTHLY_PAYMENT));
   });
 
-  it('includes Polish characters in props without errors', async () => {
-    const { PaymentPdfDocument } =
-      await import('@/components/pdf/payment-pdf-document');
-    const props: PaymentPdfDocumentProps = {
+  it('keeps Polish characters', async () => {
+    const text = await renderText({
       ...SAMPLE_PROPS,
       hoaName: 'Wspólnota Śródmiejska',
       apartmentLabel: 'ul. Żółkiewskiego 5/3',
-    };
-    expect(() => PaymentPdfDocument(props)).not.toThrow();
+    });
+
+    expect(text).toContain('Wspólnota Śródmiejska');
+    expect(text).toContain('ul. Żółkiewskiego 5/3');
   });
 });

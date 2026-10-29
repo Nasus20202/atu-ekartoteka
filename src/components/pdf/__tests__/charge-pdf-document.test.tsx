@@ -1,3 +1,4 @@
+import { render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { ChargePdfDocumentProps } from '@/components/pdf/charge-pdf-document';
@@ -50,20 +51,27 @@ const SAMPLE_PROPS: ChargePdfDocumentProps = {
 };
 
 describe('ChargePdfDocument', () => {
-  it('renders without errors with valid props', async () => {
+  it('renders the HOA, apartment and charges', async () => {
     const { ChargePdfDocument } =
       await import('@/components/pdf/charge-pdf-document');
-    expect(() => ChargePdfDocument(SAMPLE_PROPS)).not.toThrow();
+    const text = render(<ChargePdfDocument {...SAMPLE_PROPS} />).container
+      .textContent;
+    expect(text).toContain('Wspólnota Mieszkaniowa Testowa');
+    expect(text).toContain('ul. Testowa 1/2');
+    expect(text).toContain('Styczeń 2024');
+    expect(text).toContain('Fundusz remontowy');
   });
 
-  it('renders without errors with empty period groups', async () => {
+  it('renders the header without period groups', async () => {
     const { ChargePdfDocument } =
       await import('@/components/pdf/charge-pdf-document');
     const props: ChargePdfDocumentProps = { ...SAMPLE_PROPS, periodGroups: [] };
-    expect(() => ChargePdfDocument(props)).not.toThrow();
+    const text = render(<ChargePdfDocument {...props} />).container.textContent;
+    expect(text).toContain('Wspólnota Mieszkaniowa Testowa');
+    expect(text).not.toContain('Czynsz');
   });
 
-  it('renders without errors with multiple period groups', async () => {
+  it('renders every period group', async () => {
     const { ChargePdfDocument } =
       await import('@/components/pdf/charge-pdf-document');
     const props: ChargePdfDocumentProps = {
@@ -89,10 +97,13 @@ describe('ChargePdfDocument', () => {
         },
       ],
     };
-    expect(() => ChargePdfDocument(props)).not.toThrow();
+    const text = render(<ChargePdfDocument {...props} />).container.textContent;
+    expect(text).toContain('Styczeń 2024');
+    expect(text).toContain('Luty 2024');
+    expect(text).toContain('Ogrzewanie');
   });
 
-  it('includes Polish characters in props without errors', async () => {
+  it('keeps Polish characters', async () => {
     const { ChargePdfDocument } =
       await import('@/components/pdf/charge-pdf-document');
     const props: ChargePdfDocumentProps = {
@@ -118,6 +129,8 @@ describe('ChargePdfDocument', () => {
         },
       ],
     };
-    expect(() => ChargePdfDocument(props)).not.toThrow();
+    const text = render(<ChargePdfDocument {...props} />).container.textContent;
+    expect(text).toContain('Wspólnota Mieszkaniowa Śródmieście');
+    expect(text).toContain('Czynsz za lokal mieszkalny');
   });
 });

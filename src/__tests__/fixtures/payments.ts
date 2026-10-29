@@ -1,5 +1,6 @@
 import { Prisma } from '@/generated/prisma/browser';
 import type { Payment } from '@/lib/types';
+import type { PaymentDtoSource } from '@/lib/types/dto/payment-dto';
 import {
   CHARGE_MONTH_FIELD_KEYS,
   PAYMENT_MONTH_FIELD_KEYS,
@@ -8,7 +9,7 @@ import {
 const zero = () => new Prisma.Decimal(0);
 
 export const createMockPayment = (
-  overrides: Partial<Payment> = {}
+  overrides: Partial<PaymentDtoSource> = {}
 ): Payment => {
   const monthAmounts = Object.fromEntries(
     [...PAYMENT_MONTH_FIELD_KEYS, ...CHARGE_MONTH_FIELD_KEYS].map((key) => [
