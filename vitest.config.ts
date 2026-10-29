@@ -13,12 +13,20 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'json-summary', 'html', 'lcov'],
       reportsDirectory: './coverage',
+      include: ['src/**/*.{ts,tsx}'],
       exclude: [
-        'node_modules/**',
-        'e2e/**',
-        '.next/**',
         '**/*.d.ts',
-        '**/*.config.*',
+        // Generated Prisma client
+        'src/generated/**',
+        // Type-only modules without runtime code
+        'src/lib/types/*.ts',
+        '**/types.ts',
+        // Test setup and shared fixtures
+        'src/__tests__/**',
+        // Next.js route shells, covered by E2E tests
+        'src/app/**/{page,layout,not-found,error,loading}.tsx',
+        // OpenTelemetry SDK bootstrap; its logic lives in tracing-utils.ts
+        'src/lib/opentelemetry/tracing.ts',
       ],
       thresholds: {
         lines: 80,
