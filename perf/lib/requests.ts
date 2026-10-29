@@ -1,9 +1,9 @@
 import { check } from 'k6';
 import http from 'k6/http';
 
-import { BASE_URL } from './config.js';
+import { BASE_URL } from './config.ts';
 
-export function getPage(path, name = path) {
+export function getPage(path: string, name = path) {
   const res = http.get(`${BASE_URL}${path}`, {
     redirects: 0,
     tags: { name },
@@ -12,7 +12,7 @@ export function getPage(path, name = path) {
   return res;
 }
 
-export function getJson(path, name = path) {
+export function getJson(path: string, name = path) {
   const res = getPage(path, name);
   check(res, {
     [`${name} is JSON`]: (r) =>

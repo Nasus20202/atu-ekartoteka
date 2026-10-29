@@ -1,13 +1,23 @@
 import { textSummary } from 'https://jslib.k6.io/k6-summary/0.1.0/index.js';
 
+interface Metric {
+  type: string;
+  values: Record<string, number | undefined>;
+  thresholds?: Record<string, { ok: boolean }>;
+}
+
+export interface SummaryData {
+  metrics: Record<string, Metric>;
+}
+
 const RESULTS_DIR = __ENV.PERF_RESULTS_DIR || 'perf-results';
 const BYTES_PER_MB = 1024 * 1024;
 
-function formatMs(value) {
+function formatMs(value: number | undefined) {
   return value === undefined ? '-' : `${value.toFixed(1)} ms`;
 }
 
-function observed(metric) {
+function observed(metric: Metric) {
   const v = metric.values;
   if (metric.type === 'trend') {
     return `avg ${formatMs(v.avg)}, p95 ${formatMs(v['p(95)'])}, p99 ${formatMs(v['p(99)'])}, max ${formatMs(v.max)}`;
@@ -16,7 +26,7 @@ function observed(metric) {
   return `${v.count ?? 0}`;
 }
 
-function thresholdRows(metrics) {
+function thresholdRows(metrics: SummaryData['metrics']) {
   return Object.entries(metrics).flatMap(([name, metric]) =>
     Object.entries(metric.thresholds || {}).map(
       ([expr, { ok }]) =>
@@ -25,11 +35,14 @@ function thresholdRows(metrics) {
   );
 }
 
-function value(metrics, name, key) {
+function value(metrics: SummaryData['metrics'], name: string, key: string) {
   return metrics[name]?.values?.[key] ?? 0;
 }
 
-function overviewRows(metrics, load) {
+function overviewRows(
+  metrics: SummaryData['metrics'],
+  load: Record<string, number>
+) {
   return [
     ...Object.entries(load).map(
       ([label, peak]) => `| Peak ${label} | ${peak} |`
@@ -43,7 +56,7 @@ function overviewRows(metrics, load) {
   ];
 }
 
-function markdownSummary(data, load) {
+function markdownSummary(data: SummaryData, load: Record<string, number>) {
   const { metrics } = data;
   return [
     '## Performance test results',
@@ -59,7 +72,7 @@ function markdownSummary(data, load) {
   ].join('\n');
 }
 
-export function buildSummary(data, load) {
+export function buildSummary(data: SummaryData, load: Record<string, number>) {
   return {
     stdout: textSummary(data, { indent: ' ', enableColors: true }),
     [`${RESULTS_DIR}/summary.json`]: JSON.stringify(data, null, 2),

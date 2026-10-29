@@ -1,4 +1,4 @@
-import { getJson, getPage } from '../lib/requests.js';
+import { getJson, getPage } from '../lib/requests.ts';
 
 const PUBLIC_PAGES = ['/login', '/register', '/forgot-password'];
 

@@ -1,7 +1,12 @@
+export interface Credentials {
+  email: string;
+  password: string;
+}
+
 export const BASE_URL = __ENV.PERF_BASE_URL || 'http://localhost:3000';
 
 // Must match e2e/utils/test-credentials.ts (seeded by e2e/utils/seed-test-data.ts)
-export const ADMIN = {
+export const ADMIN: Credentials = {
   email: 'admin@e2e-test.com',
   password: 'AdminPassword123!',
 };

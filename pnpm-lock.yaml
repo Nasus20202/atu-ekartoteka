@@ -278,6 +278,9 @@ importers:
       '@types/bcrypt':
         specifier: 6.0.0
         version: 6.0.0
+      '@types/k6':
+        specifier: 2.3.1
+        version: 2.3.1
       '@types/node':
         specifier: 26.6.5
         version: 26.6.5
@@ -2251,6 +2254,9 @@ packages:
 
   '@types/json5@0.0.29':
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
+
+  '@types/k6@2.3.1':
+    resolution: {integrity: sha512-3zbIAfQXvSDsA3ZaKC7+eczsvx1hGtL8o68iYEssOmTEmg0MuoCwZ45aAI3jDm0JtlhJZaQAszrie+M1xaqK7g==}
 
   '@types/lodash@4.17.27':
     resolution: {integrity: sha512-VenMRv/eKNrspX9v3H4dbmjsrnCOYdYBG3kxXKk3dG6X+urBGcj2Prww3xw1U5K4FV/mE4h5GbWd0szEKf+9ew==}
@@ -6897,6 +6903,8 @@ snapshots:
   '@types/json-schema@7.0.15': {}
 
   '@types/json5@0.0.29': {}
+
+  '@types/k6@2.3.1': {}
 
   '@types/lodash@4.17.27': {}
 

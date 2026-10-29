@@ -16,7 +16,7 @@ import { seedCharges } from './seed-charges';
 
 const SQL_DIR = fileURLToPath(new URL('./sql', import.meta.url));
 const BCRYPT_COST = 10;
-// Must match TENANT_PASSWORD in perf/lib/config.js
+// Must match TENANT_PASSWORD in perf/lib/config.ts
 const PERF_PASSWORD = 'PerfPassword123!';
 
 const HOAS = Number(process.env.PERF_SEED_HOAS || 100);

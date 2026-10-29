@@ -1,8 +1,8 @@
 import { sleep } from 'k6';
 
-import { ensureLoggedIn } from '../lib/auth.js';
-import { ADMIN, THINK_TIME_SECONDS } from '../lib/config.js';
-import { getJson, getPage } from '../lib/requests.js';
+import { ensureLoggedIn } from '../lib/auth.ts';
+import { ADMIN, THINK_TIME_SECONDS } from '../lib/config.ts';
+import { getJson, getPage } from '../lib/requests.ts';
 import {
   hoaIdOfApartment,
   randomApartmentId,
@@ -10,7 +10,7 @@ import {
   randomHoaId,
   randomOwnerSearch,
   randomUnassignedHoasPage,
-} from '../lib/targets.js';
+} from '../lib/targets.ts';
 
 const ADMIN_PAGES = ['/admin/apartments', '/admin/users', '/admin/import'];
 

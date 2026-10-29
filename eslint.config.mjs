@@ -89,10 +89,7 @@ const eslintConfig = defineConfig([
   },
   // Performance tests - k6 scripts and their seed run outside the @ alias
   {
-    files: ['perf/**/*.{js,ts}'],
-    languageOptions: {
-      globals: { __ENV: 'readonly' },
-    },
+    files: ['perf/**/*.ts'],
     rules: {
       'no-restricted-imports': 'off',
     },

@@ -1,8 +1,10 @@
+import type { Options } from 'k6/options';
+
 // Limits sit at roughly 1.5 times the slowest p95 seen in CI at peak load on the
 // production-sized dataset (see perf/seed). Hosted runners vary in CPU speed by
 // more than 2x between runs, so a regression such as an endpoint loading every
 // row fails the run while a slow runner does not.
-const SCENARIO_LIMITS = {
+const SCENARIO_LIMITS: Record<string, { avg: number; p95: number }> = {
   public: { avg: 20, p95: 70 },
   login: { avg: 130, p95: 300 },
   user_journey: { avg: 230, p95: 540 },
@@ -11,7 +13,7 @@ const SCENARIO_LIMITS = {
 
 // Slowest endpoints, tracked on their own so one regression is not hidden
 // by the scenario average
-const ENDPOINT_P95_LIMITS = {
+const ENDPOINT_P95_LIMITS: Record<string, number> = {
   '/dashboard': 540,
   '/dashboard/charges': 560,
   '/dashboard/payments': 520,
@@ -28,7 +30,7 @@ const ENDPOINT_P95_LIMITS = {
   'auth login': 300,
 };
 
-export const THRESHOLDS = {
+export const THRESHOLDS: Options['thresholds'] = {
   http_req_failed: ['rate<0.001'],
   checks: ['rate>0.999'],
   // Arrival-rate scenarios must keep their schedule

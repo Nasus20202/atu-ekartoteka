@@ -267,7 +267,7 @@ jobs:
           k6-version: '2.3.0'
 
       - name: Run performance tests
-        run: mkdir -p perf-results && k6 run perf/load-test.js
+        run: mkdir -p perf-results && k6 run perf/load-test.ts
         env:
           PERF_BASE_URL: http://localhost:3000
 
