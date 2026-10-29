@@ -254,4 +254,59 @@ describe('PaymentTable', () => {
       expect(screen.getByText('Luty')).toBeInTheDocument();
     });
   });
+
+  it('colours opening and closing balances by their sign', () => {
+    const { rerender } = render(
+      <PaymentTable
+        payment={makePayment({ openingBalance: -5, closingBalance: 7 })}
+        apartmentId="apt-1"
+        disableLinks
+      />
+    );
+
+    expect(
+      screen.getByText('Bilans otwarcia').parentElement?.lastChild
+    ).toHaveClass('text-red-600');
+    expect(screen.getByText(withExactText(formatCurrency(7)))).toHaveClass(
+      'text-green-600'
+    );
+
+    rerender(
+      <PaymentTable
+        payment={makePayment({
+          openingBalance: 3,
+          closingBalance: -2,
+          januaryPayments: 3,
+          januaryCharges: 3,
+        })}
+        apartmentId="apt-1"
+        disableLinks
+      />
+    );
+
+    expect(
+      screen.getByText('Bilans otwarcia').parentElement?.lastChild
+    ).toHaveClass('text-green-600');
+    expect(screen.getByText(withExactText(formatCurrency(-2)))).toHaveClass(
+      'text-red-600'
+    );
+  });
+
+  it('hides months after the charges data date', () => {
+    render(
+      <PaymentTable
+        payment={makePayment({
+          januaryPayments: 10,
+          januaryCharges: 10,
+          februaryCharges: 20,
+        })}
+        apartmentId="apt-1"
+        disableLinks
+        chargesDataDate="2024-01-31T00:00:00.000Z"
+      />
+    );
+
+    expect(screen.getByText('Styczeń')).toBeInTheDocument();
+    expect(screen.queryByText('Luty')).not.toBeInTheDocument();
+  });
 });

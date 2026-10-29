@@ -214,4 +214,39 @@ describe('AdminPaymentsList', () => {
     ).toBeInTheDocument();
     expect(screen.getByTestId('payment-monthly-chart')).toBeInTheDocument();
   });
+
+  it('colours balances by sign and opens the current year', () => {
+    const currentYear = new Date().getFullYear();
+    render(
+      <AdminPaymentsList
+        {...baseProps}
+        payments={[
+          makePayment({
+            id: 'p-current',
+            year: currentYear,
+            openingBalance: new Prisma.Decimal(10),
+            closingBalance: new Prisma.Decimal(5),
+          }),
+          makePayment({
+            id: 'p-previous',
+            year: currentYear - 1,
+            openingBalance: new Prisma.Decimal(-3),
+            closingBalance: new Prisma.Decimal(0),
+          }),
+        ]}
+      />
+    );
+
+    const value = (label: string, index: number) =>
+      screen.getAllByText(label)[index].nextElementSibling;
+
+    expect(value('Saldo początkowe:', 0)).toHaveClass('text-green-600');
+    expect(value('Saldo końcowe:', 0)).toHaveClass('text-green-600');
+    expect(value('Saldo początkowe:', 1)).toHaveClass('text-red-600');
+    expect(value('Saldo końcowe:', 1)).not.toHaveClass(
+      'text-red-600',
+      'text-green-600'
+    );
+    expect(document.querySelectorAll('.rotate-180')).toHaveLength(1);
+  });
 });

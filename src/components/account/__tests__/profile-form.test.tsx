@@ -290,6 +290,20 @@ describe('ProfileForm', () => {
     });
   });
 
+  it('should show a default message when the API returns no error', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({}),
+    } as Response);
+
+    render(<ProfileForm initialName="" authMethod={AuthMethod.CREDENTIALS} />);
+    fireEvent.click(screen.getByRole('button', { name: /zapisz zmiany/i }));
+
+    expect(
+      await screen.findByText('Nie udało się zaktualizować profilu')
+    ).toBeInTheDocument();
+  });
+
   it('should disable submit button while loading', async () => {
     render(<ProfileForm initialName="" authMethod={AuthMethod.CREDENTIALS} />);
 

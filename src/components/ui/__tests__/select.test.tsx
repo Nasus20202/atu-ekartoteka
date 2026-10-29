@@ -79,4 +79,20 @@ describe('Select', () => {
       'data-[state=open]:[&_svg]:rotate-180'
     );
   });
+
+  it('shows the placeholder without a selected option', () => {
+    render(
+      <Select
+        aria-label="Status"
+        value={'NONE' as string}
+        options={OPTIONS}
+        placeholder="Wybierz"
+        onValueChange={() => {}}
+      />
+    );
+
+    const trigger = screen.getByRole('button', { name: 'Status' });
+    expect(trigger).toHaveTextContent('Wybierz');
+    expect(trigger).toHaveClass('text-muted-foreground');
+  });
 });

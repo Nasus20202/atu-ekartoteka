@@ -70,4 +70,10 @@ describe('PageHeader', () => {
     const description = screen.getByText('Description');
     expect(description).toHaveClass('text-muted-foreground');
   });
+
+  it('renders an action when provided', () => {
+    render(<PageHeader title="Tytuł" action={<button>Akcja</button>} />);
+
+    expect(screen.getByRole('button', { name: 'Akcja' })).toBeInTheDocument();
+  });
 });

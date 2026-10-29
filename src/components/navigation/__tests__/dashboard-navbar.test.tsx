@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
 import { DashboardNavbar } from '@/components/navigation/dashboard-navbar';
@@ -34,6 +35,34 @@ describe('DashboardNavbar', () => {
       expect(screen.getByText('ATU Ekartoteka')).toBeInTheDocument();
       expect(screen.getAllByText('Panel klienta').length).toBe(2);
       expect(screen.getAllByText('Mieszkania').length).toBe(2);
+    });
+  });
+
+  describe('Mobile menu', () => {
+    const mobileMenu = () =>
+      screen
+        .getAllByRole('link', { name: /profil/i })[1]
+        .closest('.overflow-hidden');
+
+    it('opens with the toggle and closes after choosing a link', async () => {
+      render(<DashboardNavbar mode="dashboard" isAdmin />);
+      const toggle = screen.getByRole('button', { name: 'Toggle menu' });
+
+      expect(mobileMenu()).toHaveClass('max-h-0');
+
+      await userEvent.click(toggle);
+      expect(mobileMenu()).toHaveClass('max-h-96');
+
+      await userEvent.click(
+        screen.getAllByRole('link', { name: /profil/i })[1]
+      );
+      expect(mobileMenu()).toHaveClass('max-h-0');
+
+      await userEvent.click(toggle);
+      await userEvent.click(
+        screen.getAllByRole('link', { name: /panel administratora/i })[1]
+      );
+      expect(mobileMenu()).toHaveClass('max-h-0');
     });
   });
 });

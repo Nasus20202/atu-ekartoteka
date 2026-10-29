@@ -65,4 +65,15 @@ describe('PdfDownloadButton', () => {
       await screen.findByRole('button', { name: LABEL })
     ).not.toBeDisabled();
   });
+
+  it('shows the generation text in the default variant', async () => {
+    const createPdf = vi.fn(() => new Promise<typeof FILE>(() => {}));
+
+    render(<PdfDownloadButton label={LABEL} createPdf={createPdf} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Pobierz PDF' }));
+
+    expect(
+      screen.getByRole('button', { name: 'Generowanie...' })
+    ).toBeDisabled();
+  });
 });

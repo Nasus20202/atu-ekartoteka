@@ -85,6 +85,16 @@ describe('PaymentPdfDocument', () => {
     expect(() => PaymentPdfDocument(props)).not.toThrow();
   });
 
+  it('renders without errors when the opening balance is negative', async () => {
+    const { PaymentPdfDocument } =
+      await import('@/components/pdf/payment-pdf-document');
+    const props: PaymentPdfDocumentProps = {
+      ...SAMPLE_PROPS,
+      payment: makePayment({ openingBalance: new Prisma.Decimal(-100) }),
+    };
+    expect(() => PaymentPdfDocument(props)).not.toThrow();
+  });
+
   it('renders without errors when all monthly values are zero', async () => {
     const { PaymentPdfDocument } =
       await import('@/components/pdf/payment-pdf-document');
