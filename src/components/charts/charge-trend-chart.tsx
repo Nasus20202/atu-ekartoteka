@@ -17,15 +17,15 @@ import type {
   ChargeTrendDatum,
   ChargeTrendSeries,
 } from '@/components/charts/chart-data';
+import {
+  formatCompactAmount,
+  formatSeriesTooltipAmount,
+  formatTooltipLabel,
+} from '@/components/charts/chart-formatters';
 import { MeasuredChart } from '@/components/charts/measured-chart';
 import { Button } from '@/components/ui/button';
-import { formatCurrency } from '@/lib/utils';
 
 const VIEWPORT_SIZE = 12;
-const yAxisTickFormatter = new Intl.NumberFormat('pl-PL', {
-  notation: 'compact',
-  maximumFractionDigits: 1,
-});
 
 interface ChargeTrendChartProps {
   data: ChargeTrendDatum[];
@@ -130,19 +130,14 @@ export function ChargeTrendChart({ data, series }: ChargeTrendChartProps) {
             <YAxis
               domain={[0, 'dataMax']}
               width={44}
-              tickFormatter={(value: number) =>
-                yAxisTickFormatter.format(value)
-              }
+              tickFormatter={formatCompactAmount}
               tick={{ fill: CHART_COLORS.muted, fontSize: 11 }}
               tickLine={false}
               axisLine={false}
             />
             <Tooltip
-              formatter={(value, _name, item) => [
-                formatCurrency(Number(value)),
-                String(item.name),
-              ]}
-              labelFormatter={(value) => String(value)}
+              formatter={formatSeriesTooltipAmount}
+              labelFormatter={formatTooltipLabel}
               contentStyle={{
                 backgroundColor: CHART_COLORS.tooltip,
                 border: `1px solid ${CHART_COLORS.tooltipBorder}`,
