@@ -62,7 +62,9 @@ describe('ProfileForm', () => {
     const currentPasswordInput = screen.getByLabelText(/obecne hasło/i);
     expect(currentPasswordInput).toHaveAttribute('type', 'password');
 
-    const toggleButtons = screen.getAllByRole('button', { name: '' });
+    const toggleButtons = screen.getAllByRole('button', {
+      name: 'Pokaż hasło',
+    });
     fireEvent.click(toggleButtons[0]);
 
     expect(currentPasswordInput).toHaveAttribute('type', 'text');
@@ -78,7 +80,9 @@ describe('ProfileForm', () => {
     ) as HTMLInputElement;
     expect(newPasswordField).toHaveAttribute('type', 'password');
 
-    const toggleButtons = screen.getAllByRole('button', { name: '' });
+    const toggleButtons = screen.getAllByRole('button', {
+      name: 'Pokaż hasło',
+    });
     fireEvent.click(toggleButtons[1]);
 
     expect(newPasswordField).toHaveAttribute('type', 'text');

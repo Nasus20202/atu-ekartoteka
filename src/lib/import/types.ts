@@ -2,6 +2,11 @@ import { Prisma } from '@prisma/client/extension';
 
 export type TransactionClient = Prisma.TransactionClient;
 
+export interface ImportOptions {
+  cleanImport?: boolean;
+  skipValidation?: boolean;
+}
+
 export interface ImportFileGroup {
   lokFile?: File;
   chargesFile?: File;

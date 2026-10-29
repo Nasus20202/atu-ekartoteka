@@ -1,39 +1,24 @@
 import nodemailer, { type Transporter } from 'nodemailer';
 
-import { renderEmailTemplate } from '@/lib/email/template-loader';
+import { readEmailConfig } from '@/lib/email/email-config';
+import {
+  accountActivationMessage,
+  accountApprovedMessage,
+  newUserAdminMessage,
+  passwordResetMessage,
+  verificationMessage,
+} from '@/lib/email/email-messages';
+import type {
+  EmailOptions,
+  EmailServiceConfig,
+  EmailType,
+} from '@/lib/email/email-types';
 import { hashToken } from '@/lib/email/verification-utils';
 import { createLogger } from '@/lib/logger';
 import { emailMetrics } from '@/lib/opentelemetry/email-metrics';
 
 const logger = createLogger('email-service');
 const isDev = process.env.NODE_ENV === 'development';
-
-export type EmailType =
-  | 'verification'
-  | 'password_reset'
-  | 'account_approved'
-  | 'account_activation'
-  | 'admin_notification'
-  | 'other';
-
-export interface EmailOptions {
-  to: string;
-  subject: string;
-  html: string;
-  text?: string;
-}
-
-export interface EmailServiceConfig {
-  from: string;
-  fromName?: string;
-  host: string;
-  port: number;
-  secure: boolean;
-  auth: {
-    user: string;
-    pass: string;
-  };
-}
 
 /**
  * Email service for sending emails via SMTP
@@ -152,16 +137,11 @@ export class EmailService {
     }
   }
 
-  /**
-   * Send verification email with token
-   */
   async sendVerificationEmail(
     to: string,
     token: string,
     name?: string
   ): Promise<boolean> {
-    const verificationUrl = `${process.env.APP_URL || 'http://localhost:3000'}/verify-email?token=${token}`;
-
     logger.info(
       {
         to,
@@ -172,21 +152,8 @@ export class EmailService {
       'Sending verification email'
     );
 
-    const variables = {
-      NAME: name ? ` ${name}` : '',
-      VERIFICATION_URL: verificationUrl,
-    };
-
-    const html = renderEmailTemplate('verification-email', 'html', variables);
-    const text = renderEmailTemplate('verification-email', 'txt', variables);
-
     const result = await this.sendEmail(
-      {
-        to,
-        subject: 'Potwierdź swój adres email',
-        html,
-        text,
-      },
+      { to, ...verificationMessage(token, name) },
       'verification'
     );
 
@@ -199,125 +166,45 @@ export class EmailService {
     return result;
   }
 
-  /**
-   * Send password reset email
-   */
-  async sendPasswordResetEmail(
+  sendPasswordResetEmail(
     to: string,
     resetToken: string,
     name?: string
   ): Promise<boolean> {
-    const resetUrl = `${process.env.APP_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
-
-    const variables = {
-      NAME: name ? ` ${name}` : '',
-      RESET_URL: resetUrl,
-    };
-
-    const html = renderEmailTemplate('password-reset', 'html', variables);
-    const text = renderEmailTemplate('password-reset', 'txt', variables);
-
     return this.sendEmail(
-      {
-        to,
-        subject: 'Resetowanie hasła',
-        html,
-        text,
-      },
+      { to, ...passwordResetMessage(resetToken, name) },
       'password_reset'
     );
   }
 
-  /**
-   * Send account approval notification
-   */
-  async sendAccountApprovedEmail(to: string, name?: string): Promise<boolean> {
-    const loginUrl = `${process.env.APP_URL || 'http://localhost:3000'}/login`;
-
-    const variables = {
-      NAME: name ? ` ${name}` : '',
-      LOGIN_URL: loginUrl,
-    };
-
-    const html = renderEmailTemplate('account-approved', 'html', variables);
-    const text = renderEmailTemplate('account-approved', 'txt', variables);
-
+  sendAccountApprovedEmail(to: string, name?: string): Promise<boolean> {
     return this.sendEmail(
-      {
-        to,
-        subject: 'Twoje konto zostało zatwierdzone',
-        html,
-        text,
-      },
+      { to, ...accountApprovedMessage(name) },
       'account_approved'
     );
   }
 
-  /**
-   * Send account activation email with temporary password
-   */
-  async sendAccountActivationEmail(
+  sendAccountActivationEmail(
     to: string,
     tempPassword: string,
     name?: string
   ): Promise<boolean> {
-    const loginUrl = `${process.env.APP_URL || 'http://localhost:3000'}/login`;
-
-    const variables = {
-      NAME: name ? ` ${name}` : '',
-      TEMP_PASSWORD: tempPassword,
-      LOGIN_URL: loginUrl,
-    };
-
-    const html = renderEmailTemplate('account-activation', 'html', variables);
-    const text = renderEmailTemplate('account-activation', 'txt', variables);
-
     return this.sendEmail(
-      {
-        to,
-        subject: 'Twoje konto zostało utworzone – ustaw nowe hasło',
-        html,
-        text,
-      },
+      { to, ...accountActivationMessage(tempPassword, name) },
       'account_activation'
     );
   }
 
-  /**
-   * Send new user registration notification to admin
-   */
-  async sendNewUserNotificationToAdmin(
+  sendNewUserNotificationToAdmin(
     adminEmail: string,
     userEmail: string,
     userName: string,
     registrationDate: string
   ): Promise<boolean> {
-    const adminUrl = `${process.env.APP_URL || 'http://localhost:3000'}/admin/users`;
-
-    const variables = {
-      USER_NAME: userName,
-      USER_EMAIL: userEmail,
-      REGISTRATION_DATE: registrationDate,
-      ADMIN_URL: adminUrl,
-    };
-
-    const html = renderEmailTemplate(
-      'new-user-registration-admin',
-      'html',
-      variables
-    );
-    const text = renderEmailTemplate(
-      'new-user-registration-admin',
-      'txt',
-      variables
-    );
-
     return this.sendEmail(
       {
         to: adminEmail,
-        subject: 'Nowa rejestracja użytkownika - wymaga zatwierdzenia',
-        html,
-        text,
+        ...newUserAdminMessage(userEmail, userName, registrationDate),
       },
       'admin_notification'
     );
@@ -328,17 +215,5 @@ export class EmailService {
  * Get configured email service instance
  */
 export function getEmailService(): EmailService {
-  const config: EmailServiceConfig = {
-    from: process.env.EMAIL_FROM || 'noreply@example.com',
-    fromName: process.env.EMAIL_FROM_NAME,
-    host: process.env.SMTP_HOST || 'localhost',
-    port: parseInt(process.env.SMTP_PORT || '465', 10),
-    secure: process.env.SMTP_SECURE?.toLowerCase() === 'true' || true,
-    auth: {
-      user: process.env.SMTP_USER || '',
-      pass: process.env.SMTP_PASS || '',
-    },
-  };
-
-  return new EmailService(config);
+  return new EmailService(readEmailConfig());
 }

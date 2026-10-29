@@ -1,16 +1,16 @@
 'use client';
 
-import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
 import { Mail } from 'lucide-react';
 import Link from 'next/link';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 
+import { TurnstileField } from '@/components/auth/turnstile-field';
 import { AuthLayout } from '@/components/layout/auth-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useTurnstileConfig } from '@/lib/hooks/use-turnstile-config';
+import { useTurnstile } from '@/lib/hooks/use-turnstile';
 import {
   GENERIC_ERROR_MESSAGE,
   getErrorMessage,
@@ -21,9 +21,7 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const turnstileConfig = useTurnstileConfig();
-  const turnstileRef = useRef<TurnstileInstance>(null);
+  const turnstile = useTurnstile();
 
   // Fetch turnstile configuration on mount
 
@@ -36,7 +34,7 @@ export default function ForgotPasswordPage() {
       const response = await fetch('/api/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, turnstileToken }),
+        body: JSON.stringify({ email, turnstileToken: turnstile.token }),
       });
 
       const data = await response.json();
@@ -51,15 +49,11 @@ export default function ForgotPasswordPage() {
     } finally {
       setLoading(false);
       // Reset Turnstile token after any request attempt (success or failure)
-      setTurnstileToken(null);
-      if (turnstileRef.current) {
-        turnstileRef.current.reset();
-      }
+      turnstile.reset();
     }
   };
 
-  const isFormDisabled =
-    loading || (turnstileConfig?.enabled && !turnstileToken);
+  const isFormDisabled = loading || turnstile.isPending;
 
   if (success) {
     return (
@@ -104,17 +98,7 @@ export default function ForgotPasswordPage() {
           </Alert>
         )}
 
-        {turnstileConfig?.enabled && (
-          <div className="pt-2 flex items-center justify-center">
-            <Turnstile
-              ref={turnstileRef}
-              siteKey={turnstileConfig.siteKey!}
-              onSuccess={(token: string) => setTurnstileToken(token)}
-              onExpire={() => setTurnstileToken(null)}
-              onError={() => setTurnstileToken(null)}
-            />
-          </div>
-        )}
+        <TurnstileField turnstile={turnstile} />
 
         <Button type="submit" className="w-full" disabled={isFormDisabled}>
           {loading ? 'Wysyłanie...' : 'Wyślij link resetowania'}

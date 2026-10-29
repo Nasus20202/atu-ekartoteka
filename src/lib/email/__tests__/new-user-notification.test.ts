@@ -1,9 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  EmailService,
-  type EmailServiceConfig,
-} from '@/lib/email/email-service';
+import { EmailService } from '@/lib/email/email-service';
+import type { EmailServiceConfig } from '@/lib/email/email-types';
 
 // Create mock transport
 const mockSendMail = vi.fn().mockResolvedValue({ messageId: 'test-123' });

@@ -1,10 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  EmailService,
-  type EmailServiceConfig,
-  getEmailService,
-} from '@/lib/email/email-service';
+import { EmailService, getEmailService } from '@/lib/email/email-service';
+import type { EmailServiceConfig } from '@/lib/email/email-types';
 
 const {
   mockSendMail,

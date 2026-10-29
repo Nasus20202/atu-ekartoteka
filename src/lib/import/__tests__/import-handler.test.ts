@@ -1,9 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  processBatchImport,
-  validateCrossYearBalances,
-} from '@/lib/import/import-handler';
+import { validateCrossYearBalances } from '@/lib/import/cross-year-validation';
+import { processBatchImport } from '@/lib/import/import-handler';
 
 const {
   mockTransaction,

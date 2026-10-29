@@ -1,13 +1,14 @@
 'use client';
 
-import { Eye, EyeOff, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { getPasswordChangeError } from '@/components/account/password-change';
+import { PasswordInput } from '@/components/account/password-input';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MIN_PASSWORD_LENGTH } from '@/lib/auth/password-rules';
 import { logger } from '@/lib/logger';
 import { AuthMethod } from '@/lib/types';
 
@@ -19,8 +20,6 @@ type ProfileFormProps = {
 export function ProfileForm({ initialName, authMethod }: ProfileFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
   const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState({
     name: initialName || '',
@@ -35,24 +34,10 @@ export function ProfileForm({ initialName, authMethod }: ProfileFormProps) {
     setErrors({});
     setSuccess(false);
 
-    // Validate password if provided
-    if (formData.newPassword) {
-      if (!formData.currentPassword) {
-        setErrors({
-          password: 'Obecne hasło jest wymagane aby zmienić hasło',
-        });
-        return;
-      }
-      if (formData.newPassword !== formData.confirmPassword) {
-        setErrors({ password: 'Hasła nie są identyczne' });
-        return;
-      }
-      if (formData.newPassword.length < MIN_PASSWORD_LENGTH) {
-        setErrors({
-          password: `Hasło musi mieć minimum ${MIN_PASSWORD_LENGTH} znaków`,
-        });
-        return;
-      }
+    const passwordError = getPasswordChangeError(formData);
+    if (passwordError) {
+      setErrors({ password: passwordError });
+      return;
     }
 
     setLoading(true);
@@ -130,60 +115,26 @@ export function ProfileForm({ initialName, authMethod }: ProfileFormProps) {
         <div className="space-y-4">
           <div>
             <Label htmlFor="currentPassword">Obecne hasło</Label>
-            <div className="relative">
-              <Input
-                id="currentPassword"
-                type={showCurrentPassword ? 'text' : 'password'}
-                placeholder="Hasło"
-                value={formData.currentPassword}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    currentPassword: e.target.value,
-                  })
-                }
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-              >
-                {showCurrentPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </button>
-            </div>
+            <PasswordInput
+              id="currentPassword"
+              placeholder="Hasło"
+              value={formData.currentPassword}
+              onChange={(currentPassword) =>
+                setFormData({ ...formData, currentPassword })
+              }
+            />
           </div>
 
           <div>
             <Label htmlFor="newPassword">Nowe hasło</Label>
-            <div className="relative">
-              <Input
-                id="newPassword"
-                type={showNewPassword ? 'text' : 'password'}
-                placeholder="Nowe hasło"
-                value={formData.newPassword}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    newPassword: e.target.value,
-                  })
-                }
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                onClick={() => setShowNewPassword(!showNewPassword)}
-              >
-                {showNewPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </button>
-            </div>
+            <PasswordInput
+              id="newPassword"
+              placeholder="Nowe hasło"
+              value={formData.newPassword}
+              onChange={(newPassword) =>
+                setFormData({ ...formData, newPassword })
+              }
+            />
           </div>
 
           <div>

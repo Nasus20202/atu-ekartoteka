@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-interface ConfirmOptions {
+export interface ConfirmOptions {
   title?: string;
   description: string;
   confirmText?: string;

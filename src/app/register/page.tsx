@@ -1,12 +1,15 @@
 'use client';
 
-import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
-import { CheckCircle, Loader2, Shield } from 'lucide-react';
+import { Loader2, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
+import { RegisterSuccess } from '@/app/register/register-success';
+import { useSetupStatus } from '@/app/register/use-setup-status';
+import { AuthLoading } from '@/components/auth/auth-loading';
+import { TurnstileField } from '@/components/auth/turnstile-field';
 import { AuthLayout } from '@/components/layout/auth-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -16,7 +19,7 @@ import {
   MIN_PASSWORD_LENGTH,
   PASSWORD_TOO_SHORT_MESSAGE,
 } from '@/lib/auth/password-rules';
-import { useTurnstileConfig } from '@/lib/hooks/use-turnstile-config';
+import { useTurnstile } from '@/lib/hooks/use-turnstile';
 import {
   GENERIC_ERROR_MESSAGE,
   getErrorMessage,
@@ -33,28 +36,8 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [isFirstAdmin, setIsFirstAdmin] = useState(false);
-  const [checkingSetup, setCheckingSetup] = useState(true);
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const turnstileConfig = useTurnstileConfig();
-  const turnstileRef = useRef<TurnstileInstance>(null);
-
-  useEffect(() => {
-    // Check if this is first run (no admin exists)
-    const checkSetupStatus = async () => {
-      try {
-        const response = await fetch('/api/setup/check');
-        const data = await response.json();
-        setIsFirstAdmin(data.needsSetup);
-      } catch (error) {
-        console.error('Failed to check setup status:', error);
-      } finally {
-        setCheckingSetup(false);
-      }
-    };
-
-    checkSetupStatus();
-  }, []);
+  const { isFirstAdmin, checkingSetup } = useSetupStatus();
+  const turnstile = useTurnstile();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,7 +69,7 @@ export default function RegisterPage() {
           password: formData.password,
           name: formData.name || undefined,
           isFirstAdmin,
-          turnstileToken,
+          turnstileToken: turnstile.token,
         }),
       });
 
@@ -118,52 +101,18 @@ export default function RegisterPage() {
     } finally {
       setLoading(false);
       // Reset Turnstile token after any registration attempt (success or failure)
-      setTurnstileToken(null);
-      if (turnstileRef.current) {
-        turnstileRef.current.reset();
-      }
+      turnstile.reset();
     }
   };
 
-  const isFormDisabled =
-    loading || (turnstileConfig?.enabled && !turnstileToken);
+  const isFormDisabled = loading || turnstile.isPending;
 
   if (success) {
-    return (
-      <AuthLayout
-        title={
-          isFirstAdmin ? 'Konto administratora utworzone!' : 'Konto utworzone!'
-        }
-        description={
-          isFirstAdmin
-            ? 'Twoje konto administratora zostało pomyślnie utworzone. Masz pełny dostęp do systemu.'
-            : 'Twoje konto zostało pomyślnie utworzone i oczekuje na zatwierdzenie przez administratora.'
-        }
-        icon={
-          <div className="rounded-full bg-green-100 p-3 dark:bg-green-950/50">
-            {isFirstAdmin ? (
-              <Shield className="h-8 w-8 text-green-600 dark:text-green-400" />
-            ) : (
-              <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
-            )}
-          </div>
-        }
-      >
-        <p className="text-center text-sm text-muted-foreground">
-          Trwa automatyczne logowanie...
-        </p>
-      </AuthLayout>
-    );
+    return <RegisterSuccess isFirstAdmin={isFirstAdmin} />;
   }
 
   if (checkingSetup) {
-    return (
-      <AuthLayout>
-        <div className="flex justify-center py-4">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      </AuthLayout>
-    );
+    return <AuthLoading />;
   }
 
   return (
@@ -245,17 +194,7 @@ export default function RegisterPage() {
           />
         </div>
 
-        {turnstileConfig?.enabled && (
-          <div className="pt-2 flex items-center justify-center">
-            <Turnstile
-              ref={turnstileRef}
-              siteKey={turnstileConfig.siteKey!}
-              onSuccess={(token: string) => setTurnstileToken(token)}
-              onExpire={() => setTurnstileToken(null)}
-              onError={() => setTurnstileToken(null)}
-            />
-          </div>
-        )}
+        <TurnstileField turnstile={turnstile} />
 
         {error && (
           <Alert variant="destructive">

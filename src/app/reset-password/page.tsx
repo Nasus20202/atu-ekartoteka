@@ -1,11 +1,12 @@
 'use client';
 
-import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
-import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useRef, useState } from 'react';
+import { Suspense, useState } from 'react';
 
+import { AuthLoading } from '@/components/auth/auth-loading';
+import { TurnstileField } from '@/components/auth/turnstile-field';
 import { AuthLayout } from '@/components/layout/auth-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,7 @@ import {
   MIN_PASSWORD_LENGTH,
   PASSWORD_TOO_SHORT_MESSAGE,
 } from '@/lib/auth/password-rules';
-import { useTurnstileConfig } from '@/lib/hooks/use-turnstile-config';
+import { useTurnstile } from '@/lib/hooks/use-turnstile';
 import {
   GENERIC_ERROR_MESSAGE,
   getErrorMessage,
@@ -31,9 +32,7 @@ function ResetPasswordContent() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const turnstileConfig = useTurnstileConfig();
-  const turnstileRef = useRef<TurnstileInstance>(null);
+  const turnstile = useTurnstile();
 
   // Fetch turnstile configuration on mount
 
@@ -62,7 +61,11 @@ function ResetPasswordContent() {
       const response = await fetch('/api/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, password, turnstileToken }),
+        body: JSON.stringify({
+          token,
+          password,
+          turnstileToken: turnstile.token,
+        }),
       });
 
       const data = await response.json();
@@ -80,15 +83,11 @@ function ResetPasswordContent() {
     } finally {
       setLoading(false);
       // Reset Turnstile token after any reset attempt (success or failure)
-      setTurnstileToken(null);
-      if (turnstileRef.current) {
-        turnstileRef.current.reset();
-      }
+      turnstile.reset();
     }
   };
 
-  const isFormDisabled =
-    loading || (turnstileConfig?.enabled && !turnstileToken);
+  const isFormDisabled = loading || turnstile.isPending;
 
   if (!token) {
     return (
@@ -169,17 +168,7 @@ function ResetPasswordContent() {
           </Alert>
         )}
 
-        {turnstileConfig?.enabled && (
-          <div className="pt-2 flex items-center justify-center">
-            <Turnstile
-              ref={turnstileRef}
-              siteKey={turnstileConfig.siteKey!}
-              onSuccess={(token: string) => setTurnstileToken(token)}
-              onExpire={() => setTurnstileToken(null)}
-              onError={() => setTurnstileToken(null)}
-            />
-          </div>
-        )}
+        <TurnstileField turnstile={turnstile} />
 
         <Button type="submit" className="w-full" disabled={isFormDisabled}>
           {loading ? 'Resetowanie...' : 'Zresetuj hasło'}
@@ -200,15 +189,7 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense
-      fallback={
-        <AuthLayout>
-          <div className="flex justify-center py-4">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
-        </AuthLayout>
-      }
-    >
+    <Suspense fallback={<AuthLoading />}>
       <ResetPasswordContent />
     </Suspense>
   );

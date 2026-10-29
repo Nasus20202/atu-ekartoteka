@@ -73,7 +73,10 @@ function mockFetch({
     }
     return Promise.resolve({
       ok: true,
-      json: async () => ({ enabled: turnstileEnabled, siteKey: null }),
+      json: async () => ({
+        enabled: turnstileEnabled,
+        siteKey: turnstileEnabled ? 'site-key' : null,
+      }),
     } as Response);
   });
 }
