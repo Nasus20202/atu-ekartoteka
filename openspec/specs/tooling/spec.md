@@ -200,7 +200,7 @@ Unit and integration tests SHALL be run with Vitest.
 
 - **GIVEN** the coverage configuration in `vitest.config.ts`
 - **WHEN** coverage is collected
-- **THEN** lines, branches, functions, and statements must each reach 80%; Vitest fails if any threshold is not met
+- **THEN** lines, branches, functions, and statements must each reach 95%; Vitest fails if any threshold is not met
 
 ---
 
