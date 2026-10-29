@@ -11,7 +11,7 @@ const TEMPLATE_NAMES = [
 
 const FORMATS = ['html', 'txt'] as const;
 
-type TemplateName = (typeof TEMPLATE_NAMES)[number];
+export type TemplateName = (typeof TEMPLATE_NAMES)[number];
 type Format = (typeof FORMATS)[number];
 
 type TemplateMap = Record<TemplateName, Record<Format, string>>;

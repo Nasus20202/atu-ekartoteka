@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { parseUsersQuery } from '@/app/api/admin/users/users-query';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { createLogger } from '@/lib/logger';
 import { updateUserStatus } from '@/lib/mutations/users/update-user-status';
@@ -13,12 +14,6 @@ import { getErrorMessage } from '@/lib/utils/error-message';
 
 const logger = createLogger('api:admin:users');
 
-function parsePositiveInteger(value: string | null, fallback: number): number {
-  const parsed = Number.parseInt(value ?? '', 10);
-
-  return Number.isNaN(parsed) || parsed < 1 ? fallback : parsed;
-}
-
 export async function GET(req: NextRequest) {
   try {
     const { response } = await requireAdmin(
@@ -26,42 +21,11 @@ export async function GET(req: NextRequest) {
     );
     if (response) return response;
 
-    const { searchParams } = new URL(req.url);
-    const roleParam = searchParams.get('role');
-    if (
-      roleParam &&
-      roleParam !== UserRole.ADMIN &&
-      roleParam !== UserRole.TENANT
-    ) {
-      return NextResponse.json(
-        { error: 'Nieprawidłowa rola' },
-        { status: 400 }
-      );
+    const parsed = parseUsersQuery(new URL(req.url).searchParams);
+    if (parsed.error !== undefined) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
-
-    const role =
-      roleParam === UserRole.ADMIN ? UserRole.ADMIN : UserRole.TENANT;
-    const statusParam = searchParams.get('status');
-
-    if (
-      role !== UserRole.ADMIN &&
-      statusParam &&
-      !Object.values(AccountStatus).includes(statusParam as AccountStatus)
-    ) {
-      return NextResponse.json(
-        { error: 'Nieprawidłowy status' },
-        { status: 400 }
-      );
-    }
-
-    const status =
-      role === UserRole.ADMIN ? null : (statusParam as AccountStatus | null);
-    const page = parsePositiveInteger(searchParams.get('page'), 1);
-    const limit = Math.min(
-      200,
-      parsePositiveInteger(searchParams.get('limit'), 50)
-    );
-    const search = searchParams.get('search')?.trim() || null;
+    const { role, status, page, limit, search } = parsed.query;
 
     const { users, total } = await findTenantUsers(
       status,

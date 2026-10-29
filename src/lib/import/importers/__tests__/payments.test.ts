@@ -1,9 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  buildPaymentData,
-  importPayments,
-} from '@/lib/import/importers/payments';
+import { buildPaymentData } from '@/lib/import/importers/payment-data';
+import { importPayments } from '@/lib/import/importers/payments';
 import { EntityStats, TransactionClient } from '@/lib/import/types';
 import { PaymentEntry } from '@/lib/parsers/wplaty-parser';
 import type { DecimalLike } from '@/lib/utils/decimal';

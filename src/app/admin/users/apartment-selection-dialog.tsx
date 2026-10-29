@@ -1,11 +1,9 @@
-import { Check, Search, X } from 'lucide-react';
+import { Check, Search } from 'lucide-react';
 
+import { ApartmentOption } from '@/app/admin/users/apartment-option';
+import { StatusChangePanel } from '@/app/admin/users/status-change-panel';
 import type { EditMode } from '@/app/admin/users/types';
-import { UserStatusBadge } from '@/app/admin/users/user-status-badge';
-import {
-  getApartmentSharePercent,
-  isApartmentMatchingUser,
-} from '@/app/admin/users/utils';
+import { isApartmentMatchingUser } from '@/app/admin/users/utils';
 import { useConfirm } from '@/components/providers/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,10 +13,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AccountStatus } from '@/lib/types';
 import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
 import type { UserDto } from '@/lib/types/dto/user-dto';
 
@@ -123,74 +119,17 @@ export function ApartmentSelectionDialog({
               </div>
 
               <div className="max-h-60 space-y-2 overflow-y-auto rounded-lg border p-2">
-                {filteredApartments.map((apartment) => {
-                  const isMatching = isApartmentMatchingUser(
-                    apartment,
-                    selectedUser
-                  );
-                  const sharePercent = getApartmentSharePercent(apartment);
-
-                  return (
-                    <label
-                      key={apartment.id}
-                      htmlFor={`apt-${apartment.id}`}
-                      className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-all duration-200 hover:bg-muted hover:scale-[1.02] ${
-                        selectedApartments.includes(apartment.id)
-                          ? 'border-primary bg-primary/5'
-                          : isMatching
-                            ? 'border-green-500 bg-green-50 dark:bg-green-950/20'
-                            : !apartment.isActive
-                              ? 'opacity-60'
-                              : ''
-                      }`}
-                    >
-                      <Checkbox
-                        id={`apt-${apartment.id}`}
-                        checked={selectedApartments.includes(apartment.id)}
-                        onCheckedChange={(checked) => {
-                          void handleApartmentCheckedChange(
-                            apartment,
-                            checked === true
-                          );
-                        }}
-                        className="mt-1"
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-medium">
-                            {apartment.address} {apartment.building}/
-                            {apartment.number}
-                          </p>
-                          {!apartment.isActive && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                              Nieaktywny
-                            </span>
-                          )}
-                          {isMatching && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-200">
-                              <Check className="h-3 w-3" />
-                              Dopasowanie
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          {apartment.postalCode} {apartment.city} • Budynek:{' '}
-                          {apartment.building} • Właściciel: {apartment.owner}
-                        </p>
-                        {apartment.email && (
-                          <p className="text-xs text-muted-foreground">
-                            Email: {apartment.email}
-                          </p>
-                        )}
-                        <p className="text-xs text-muted-foreground">
-                          Procent: {sharePercent ?? '-'} • ID:{' '}
-                          {apartment.externalApartmentId} /{' '}
-                          {apartment.externalOwnerId}
-                        </p>
-                      </div>
-                    </label>
-                  );
-                })}
+                {filteredApartments.map((apartment) => (
+                  <ApartmentOption
+                    key={apartment.id}
+                    apartment={apartment}
+                    selected={selectedApartments.includes(apartment.id)}
+                    matching={isApartmentMatchingUser(apartment, selectedUser)}
+                    onCheckedChange={(checked) => {
+                      void handleApartmentCheckedChange(apartment, checked);
+                    }}
+                  />
+                ))}
 
                 {filteredApartments.length === 0 && apartmentSearch && (
                   <p className="py-4 text-center text-sm text-muted-foreground">
@@ -222,59 +161,13 @@ export function ApartmentSelectionDialog({
           )}
 
           {editMode === 'change-status' && (
-            <>
-              <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  Obecny status:{' '}
-                  <UserStatusBadge status={selectedUser.status} />
-                </p>
-                <div className="space-y-2">
-                  <Button
-                    variant={
-                      selectedUser.status === AccountStatus.APPROVED
-                        ? 'default'
-                        : 'outline'
-                    }
-                    className="w-full justify-start"
-                    onClick={onSetApproved}
-                    disabled={
-                      actionLoading ||
-                      selectedUser.status === AccountStatus.APPROVED
-                    }
-                  >
-                    <Check className="mr-2 h-4 w-4" />
-                    Zatwierdzony
-                  </Button>
-                  <Button
-                    variant={
-                      selectedUser.status === AccountStatus.REJECTED
-                        ? 'destructive'
-                        : 'outline'
-                    }
-                    className="w-full justify-start"
-                    onClick={onReject}
-                    disabled={
-                      actionLoading ||
-                      selectedUser.status === AccountStatus.REJECTED
-                    }
-                  >
-                    <X className="mr-2 h-4 w-4" />
-                    Odrzucony
-                  </Button>
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={onCancel}
-                  disabled={actionLoading}
-                  className="flex-1"
-                >
-                  Anuluj
-                </Button>
-              </div>
-            </>
+            <StatusChangePanel
+              status={selectedUser.status}
+              actionLoading={actionLoading}
+              onSetApproved={onSetApproved}
+              onReject={onReject}
+              onCancel={onCancel}
+            />
           )}
         </CardContent>
       </Card>

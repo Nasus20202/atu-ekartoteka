@@ -1,12 +1,18 @@
 'use client';
 
 import { ShieldOff, Trash2, Upload, XCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { DatabaseStatsCard } from '@/app/admin/import/database-stats-card';
+import {
+  CLEAN_IMPORT_CONFIRMATION,
+  SKIP_VALIDATION_CONFIRMATION,
+  SKIP_VALIDATION_FINAL_CONFIRMATION,
+} from '@/app/admin/import/import-confirmations';
 import { ImportResults } from '@/app/admin/import/import-results';
 import { prepareImportFiles } from '@/app/admin/import/prepare-import-files';
-import type { DatabaseStats, ImportResponse } from '@/app/admin/import/types';
+import type { ImportResponse } from '@/app/admin/import/types';
+import { useDatabaseStats } from '@/app/admin/import/use-database-stats';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import { useConfirm } from '@/components/providers/confirm-dialog';
@@ -26,6 +32,8 @@ import { getErrorMessage } from '@/lib/utils/error-message';
 
 export { ImportWarnings } from '@/app/admin/import/import-warnings';
 
+const IMPORT_FAILED_MESSAGE = 'Import nie powiódł się';
+
 const directoryInputProps = {
   webkitdirectory: '',
   directory: '',
@@ -37,46 +45,9 @@ export default function AdminImportPage() {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<ImportResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [dbStats, setDbStats] = useState<DatabaseStats | null>(null);
-  const [statsLoading, setStatsLoading] = useState(true);
+  const { dbStats, statsLoading, fetchStats } = useDatabaseStats();
   const [cleanImport, setCleanImport] = useState(false);
   const [skipValidation, setSkipValidation] = useState(false);
-
-  async function fetchStats(
-    options: { isCancelled?: () => boolean; skipLoading?: boolean } = {}
-  ) {
-    try {
-      if (!options.skipLoading) {
-        setStatsLoading(true);
-      }
-      const res = await fetch('/api/admin/stats');
-
-      if (res.ok && !options.isCancelled?.()) {
-        const data = await res.json();
-        setDbStats(data);
-      }
-    } catch {
-      // Ignore stats errors
-    } finally {
-      if (!options.isCancelled?.()) {
-        setStatsLoading(false);
-      }
-    }
-  }
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadStats() {
-      await fetchStats({ isCancelled: () => cancelled, skipLoading: true });
-    }
-
-    void loadStats();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     if (event.target.files && event.target.files.length > 0) {
@@ -92,14 +63,7 @@ export default function AdminImportPage() {
     }
 
     if (cleanImport) {
-      const confirmed = await confirm({
-        title: 'Potwierdzenie czystego importu',
-        description:
-          'Czy na pewno chcesz wykonać czysty import? Ta operacja usunie wszystkie istniejące naliczenia, powiadomienia o opłatach i wpłaty. Mieszkania i użytkownicy nie zostaną usunięci.',
-        confirmText: 'Tak, usuń i importuj',
-        cancelText: 'Anuluj',
-        variant: 'destructive',
-      });
+      const confirmed = await confirm(CLEAN_IMPORT_CONFIRMATION);
 
       if (!confirmed) {
         return;
@@ -123,7 +87,7 @@ export default function AdminImportPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Import failed');
+        throw new Error(data.error || IMPORT_FAILED_MESSAGE);
       }
 
       setResponse(data);
@@ -131,7 +95,7 @@ export default function AdminImportPage() {
         await fetchStats();
       }
     } catch (err) {
-      setError(getErrorMessage(err, 'Import nie powiódł się'));
+      setError(getErrorMessage(err, IMPORT_FAILED_MESSAGE));
     } finally {
       setLoading(false);
     }
@@ -139,27 +103,13 @@ export default function AdminImportPage() {
 
   async function handleSkipValidationChange(checked: boolean) {
     if (checked) {
-      const first = await confirm({
-        title: 'Pominięcie walidacji',
-        description:
-          'Czy na pewno chcesz pominąć walidację danych? Import może zawierać błędne lub niespójne dane.',
-        confirmText: 'Tak, pomiń walidację',
-        cancelText: 'Anuluj',
-        variant: 'destructive',
-      });
+      const first = await confirm(SKIP_VALIDATION_CONFIRMATION);
 
       if (!first) {
         return;
       }
 
-      const second = await confirm({
-        title: 'Potwierdzenie – pominięcie walidacji',
-        description:
-          'To jest ostateczne potwierdzenie. Importowane dane nie zostaną sprawdzone pod kątem poprawności sum i sald. Czy kontynuować?',
-        confirmText: 'Potwierdzam – pomiń walidację',
-        cancelText: 'Anuluj',
-        variant: 'destructive',
-      });
+      const second = await confirm(SKIP_VALIDATION_FINAL_CONFIRMATION);
 
       if (!second) {
         return;

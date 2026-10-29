@@ -1,10 +1,9 @@
 'use client';
 
-import { Building2, Edit2, Search } from 'lucide-react';
-import Link from 'next/link';
+import { Building2, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { formatImportDate } from '@/app/admin/apartments/hoa-labels';
+import { HoaListCard } from '@/app/admin/apartments/hoa-list-card';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
@@ -18,11 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { LoadingCard } from '@/components/ui/loading-card';
 import type { HoaListItemDto } from '@/lib/types/dto/hoa-dto';
-import {
-  APARTMENT_FORMS,
-  HOA_ACCUSATIVE_FORMS,
-  pluralizePl,
-} from '@/lib/utils/pluralize';
+import { HOA_ACCUSATIVE_FORMS, pluralizePl } from '@/lib/utils/pluralize';
 
 export default function ApartmentsPage() {
   const [hoas, setHoas] = useState<HoaListItemDto[]>([]);
@@ -145,97 +140,18 @@ export default function ApartmentsPage() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {hoas.map((hoa) => {
-              const aptDate = formatImportDate(hoa.apartmentsDataDate);
-              const chgDate = formatImportDate(hoa.chargesDataDate);
-              const notDate = formatImportDate(hoa.notificationsDataDate);
-              const hasImportDates = aptDate || chgDate || notDate;
-
-              return (
-                <Card
-                  key={hoa.id}
-                  className="hover:shadow-lg transition-all duration-300"
-                >
-                  <CardHeader>
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        {editingId === hoa.id ? (
-                          <Input
-                            value={editingName}
-                            onChange={(e) => setEditingName(e.target.value)}
-                            className="h-8 mb-2"
-                            autoFocus
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') saveEdit(hoa.id);
-                              else if (e.key === 'Escape') cancelEditing();
-                            }}
-                          />
-                        ) : (
-                          <CardTitle className="text-lg flex items-center gap-2">
-                            <Building2 className="h-5 w-5 text-muted-foreground shrink-0" />
-                            <span className="truncate">{hoa.name}</span>
-                          </CardTitle>
-                        )}
-                        <CardDescription className="font-mono text-xs">
-                          {hoa.externalId}
-                        </CardDescription>
-                      </div>
-                      {editingId === hoa.id ? (
-                        <div className="flex gap-1 shrink-0">
-                          <Button
-                            size="sm"
-                            onClick={() => saveEdit(hoa.id)}
-                            className="h-8"
-                          >
-                            Zapisz
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={cancelEditing}
-                            className="h-8"
-                          >
-                            Anuluj
-                          </Button>
-                        </div>
-                      ) : (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => startEditing(hoa)}
-                          className="h-8 shrink-0"
-                          aria-label={`Zmień nazwę wspólnoty ${hoa.name}`}
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="mb-4 flex items-start justify-between gap-4">
-                      <div>
-                        <div className="text-3xl font-bold text-primary">
-                          {hoa.apartmentCount}
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {pluralizePl(hoa.apartmentCount, APARTMENT_FORMS)}
-                        </p>
-                      </div>
-                      {hasImportDates && (
-                        <div className="text-right space-y-0.5 text-xs text-muted-foreground">
-                          {aptDate && <p>Mieszkania: {aptDate}</p>}
-                          {chgDate && <p>Naliczenia: {chgDate}</p>}
-                          {notDate && <p>Powiadomienia: {notDate}</p>}
-                        </div>
-                      )}
-                    </div>
-                    <Link href={`/admin/apartments/${hoa.id}`}>
-                      <Button className="w-full">Zobacz mieszkania</Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              );
-            })}
+            {hoas.map((hoa) => (
+              <HoaListCard
+                key={hoa.id}
+                hoa={hoa}
+                editing={editingId === hoa.id}
+                editingName={editingName}
+                onEditingNameChange={setEditingName}
+                onStartEdit={() => startEditing(hoa)}
+                onSave={() => saveEdit(hoa.id)}
+                onCancel={cancelEditing}
+              />
+            ))}
           </div>
 
           {hoas.length === 0 && (

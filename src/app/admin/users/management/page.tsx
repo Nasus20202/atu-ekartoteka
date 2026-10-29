@@ -9,44 +9,38 @@ import {
   buildAccountPreviews,
 } from '@/app/admin/users/management/account-previews';
 import { ApartmentList } from '@/app/admin/users/management/apartment-list';
-import { HoaGroup } from '@/app/admin/users/management/hoa-card';
+import {
+  type BulkMode,
+  fetchUnassignedHoas,
+  formatBulkResult,
+  runBulkOperation,
+} from '@/app/admin/users/management/bulk-requests';
+import { ConfirmCreateDialog } from '@/app/admin/users/management/confirm-create-dialog';
+import type { HoaGroup } from '@/app/admin/users/management/hoa-card';
 import { useHoaSelection } from '@/app/admin/users/management/use-hoa-selection';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-type BulkMode = 'create' | 'assign';
-
-interface BulkOperationResult {
-  created?: number;
-  assigned?: number;
-  skipped: number;
-  errors: number;
-}
+const EMPTY_MESSAGES = {
+  assign: {
+    text: 'Brak mieszkań do przypisania',
+    sub: 'Wszystkie mieszkania z istniejącymi kontami są już przypisane.',
+  },
+  create: {
+    text: 'Brak mieszkań bez kont',
+    sub: 'Wszystkie mieszkania mają już przypisane konta użytkowników.',
+  },
+} as const;
 
 export default function BulkCreateUsersPage() {
   const [mode, setMode] = useState<BulkMode>('create');
   const [hoas, setHoas] = useState<HoaGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [createResult, setCreateResult] = useState<BulkOperationResult | null>(
-    null
-  );
-  const [assignResult, setAssignResult] = useState<BulkOperationResult | null>(
-    null
-  );
+  const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [confirmPreviews, setConfirmPreviews] = useState<
     AccountPreview[] | null
@@ -63,59 +57,23 @@ export default function BulkCreateUsersPage() {
     selectIds,
   } = useHoaSelection(hoas);
 
-  const fetchApartments = async (currentMode: BulkMode) => {
-    setLoading(true);
-    setHoas([]);
-    try {
-      const modeParam = currentMode === 'assign' ? 'assignable' : 'creatable';
-      const res = await fetch(
-        `/api/admin/unassigned-apartments?mode=${modeParam}`
-      );
-      const data = await res.json();
-      if (res.ok) {
-        setHoas(data.hoas);
-      } else {
-        setError(data.error || 'Nie udało się pobrać listy mieszkań');
-      }
-    } catch {
-      setError('Nie udało się pobrać listy mieszkań');
-    } finally {
-      setLoading(false);
+  const applyHoas = (
+    loaded: Awaited<ReturnType<typeof fetchUnassignedHoas>>
+  ) => {
+    if (loaded.error === undefined) {
+      setHoas(loaded.data);
+    } else {
+      setError(loaded.error);
     }
+    setLoading(false);
   };
 
   useEffect(() => {
     let cancelled = false;
 
-    async function loadApartments() {
-      try {
-        const modeParam = mode === 'assign' ? 'assignable' : 'creatable';
-        const res = await fetch(
-          `/api/admin/unassigned-apartments?mode=${modeParam}`
-        );
-        const data = await res.json();
-
-        if (cancelled) {
-          return;
-        }
-
-        if (res.ok) {
-          setHoas(data.hoas);
-        } else {
-          setError(data.error || 'Nie udało się pobrać listy mieszkań');
-        }
-      } catch {
-        if (!cancelled) {
-          setError('Nie udało się pobrać listy mieszkań');
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    void loadApartments();
+    void fetchUnassignedHoas(mode).then((loaded) => {
+      if (!cancelled) applyHoas(loaded);
+    });
 
     return () => {
       cancelled = true;
@@ -126,82 +84,32 @@ export default function BulkCreateUsersPage() {
     setLoading(true);
     setHoas([]);
     setSelectedIds(new Set());
-    setCreateResult(null);
-    setAssignResult(null);
+    setResult(null);
     setError(null);
     setMode(nextMode as BulkMode);
   };
 
-  const doCreate = async () => {
+  const runOperation = async (operation: BulkMode) => {
     setSubmitting(true);
-    setCreateResult(null);
+    setResult(null);
     setError(null);
-    try {
-      const res = await fetch('/api/admin/users/bulk-create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ apartmentIds: Array.from(selectedIds) }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setCreateResult(data);
-        setSelectedIds(new Set());
-        await fetchApartments('create');
-      } else {
-        setError(data.error || 'Wystąpił błąd podczas tworzenia kont');
-      }
-    } catch {
-      setError('Wystąpił błąd podczas tworzenia kont');
-    } finally {
-      setSubmitting(false);
+    const outcome = await runBulkOperation(operation, Array.from(selectedIds));
+    if (outcome.error === undefined) {
+      setResult(formatBulkResult(operation, outcome.data));
+      setSelectedIds(new Set());
+      setLoading(true);
+      setHoas([]);
+      applyHoas(await fetchUnassignedHoas(operation));
+    } else {
+      setError(outcome.error);
     }
-  };
-
-  const handleCreate = () => {
-    const previews = buildAccountPreviews(hoas, selectedIds);
-    setConfirmPreviews(previews);
+    setSubmitting(false);
   };
 
   const handleConfirmCreate = async () => {
     setConfirmPreviews(null);
-    await doCreate();
+    await runOperation('create');
   };
-
-  const handleAssign = async () => {
-    setSubmitting(true);
-    setAssignResult(null);
-    setError(null);
-    try {
-      const res = await fetch('/api/admin/users/bulk-assign', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ apartmentIds: Array.from(selectedIds) }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setAssignResult(data);
-        setSelectedIds(new Set());
-        await fetchApartments('assign');
-      } else {
-        setError(data.error || 'Wystąpił błąd podczas przypisywania kont');
-      }
-    } catch {
-      setError('Wystąpił błąd podczas przypisywania kont');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const emptyMsg =
-    mode === 'assign'
-      ? {
-          text: 'Brak mieszkań do przypisania',
-          sub: 'Wszystkie mieszkania z istniejącymi kontami są już przypisane.',
-        }
-      : {
-          text: 'Brak mieszkań bez kont',
-          sub: 'Wszystkie mieszkania mają już przypisane konta użytkowników.',
-        };
 
   const sharedProps = {
     loading,
@@ -214,7 +122,7 @@ export default function BulkCreateUsersPage() {
     onToggleHoa: toggleHoa,
     onToggleApartment: toggleApartment,
     onSelectIds: selectIds,
-    emptyMessage: emptyMsg,
+    emptyMessage: EMPTY_MESSAGES[mode],
   };
 
   return (
@@ -242,15 +150,11 @@ export default function BulkCreateUsersPage() {
           </TabsTrigger>
         </TabsList>
 
-        {createResult && (
-          <BulkSuccessAlert
-            message={`Utworzono ${createResult.created ?? 0} kont. Pominięto ${createResult.skipped}.${createResult.errors > 0 ? ` Błędy: ${createResult.errors}.` : ''}`}
-          />
-        )}
-        {assignResult && (
-          <BulkSuccessAlert
-            message={`Przypisano ${assignResult.assigned ?? 0} mieszkań. Pominięto ${assignResult.skipped}.${assignResult.errors > 0 ? ` Błędy: ${assignResult.errors}.` : ''}`}
-          />
+        {result && (
+          <Alert className="border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
+            <CheckCircle className="h-4 w-4" />
+            <AlertDescription>{result}</AlertDescription>
+          </Alert>
         )}
         {error && (
           <Alert variant="destructive">
@@ -263,7 +167,9 @@ export default function BulkCreateUsersPage() {
           <ApartmentList
             {...sharedProps}
             submitLabel={submitting ? 'Tworzenie...' : 'Utwórz konta'}
-            onSubmit={handleCreate}
+            onSubmit={() =>
+              setConfirmPreviews(buildAccountPreviews(hoas, selectedIds))
+            }
             submitIcon={<UserPlus className="mr-2 h-4 w-4" />}
           />
         </TabsContent>
@@ -272,67 +178,17 @@ export default function BulkCreateUsersPage() {
           <ApartmentList
             {...sharedProps}
             submitLabel={submitting ? 'Przypisywanie...' : 'Przypisz konta'}
-            onSubmit={handleAssign}
+            onSubmit={() => void runOperation('assign')}
             submitIcon={<UserCheck className="mr-2 h-4 w-4" />}
           />
         </TabsContent>
       </Tabs>
 
-      <AlertDialog
-        open={confirmPreviews !== null}
-        onOpenChange={(open) => {
-          if (!open) setConfirmPreviews(null);
-        }}
-      >
-        <AlertDialogContent className="max-w-lg">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Potwierdź tworzenie kont</AlertDialogTitle>
-            <AlertDialogDescription>
-              Zostanie utworzonych{' '}
-              <strong>{confirmPreviews?.length ?? 0}</strong> nowych kont. Każde
-              konto otrzyma e-mail z tymczasowym hasłem.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="max-h-64 overflow-y-auto rounded-md border text-sm">
-            {confirmPreviews?.map((preview) => (
-              <div key={preview.email} className="border-b p-3 last:border-0">
-                <p className="font-medium">{preview.email}</p>
-                {preview.owner && (
-                  <p className="text-muted-foreground">{preview.owner}</p>
-                )}
-                <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground">
-                  {preview.apartments.map((apt) => (
-                    <li key={apt.id}>
-                      {apt.building ? `Bud. ${apt.building}, ` : ''}Mieszkanie{' '}
-                      {apt.number}
-                      {!apt.isActive && (
-                        <span className="ml-1 text-amber-600 dark:text-amber-400">
-                          (nieaktywne)
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Anuluj</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmCreate}>
-              Potwierdź i utwórz
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmCreateDialog
+        previews={confirmPreviews}
+        onCancel={() => setConfirmPreviews(null)}
+        onConfirm={handleConfirmCreate}
+      />
     </Page>
-  );
-}
-
-function BulkSuccessAlert({ message }: { message: string }) {
-  return (
-    <Alert className="border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
-      <CheckCircle className="h-4 w-4" />
-      <AlertDescription>{message}</AlertDescription>
-    </Alert>
   );
 }

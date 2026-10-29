@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 
+import { AuthLoading } from '@/components/auth/auth-loading';
 import { AuthLayout } from '@/components/layout/auth-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -124,15 +125,7 @@ function VerifyEmailContent() {
 
 export default function VerifyEmailPage() {
   return (
-    <Suspense
-      fallback={
-        <AuthLayout>
-          <div className="flex justify-center py-4">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
-        </AuthLayout>
-      }
-    >
+    <Suspense fallback={<AuthLoading />}>
       <VerifyEmailContent />
     </Suspense>
   );

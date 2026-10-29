@@ -1,15 +1,16 @@
 'use client';
 
-import { Power, PowerOff } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { ApartmentInfoCard } from '@/app/admin/apartments/[hoaId]/[apartmentId]/apartment-info-card';
+import { AssignedUserCard } from '@/app/admin/apartments/[hoaId]/[apartmentId]/assigned-user-card';
+import { ChargeNotificationsCard } from '@/app/admin/apartments/[hoaId]/[apartmentId]/charge-notifications-card';
 import { AdminChargesList } from '@/components/charges/admin-charges-list';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import { ApartmentPaymentsSection } from '@/components/payments/apartment-payments-section';
 import { useConfirm } from '@/components/providers/confirm-dialog';
-import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -19,9 +20,7 @@ import {
 } from '@/components/ui/card';
 import { LoadingCard } from '@/components/ui/loading-card';
 import type { ApartmentDetailResponseDto } from '@/lib/types/dto/apartment-dto';
-import { formatCurrency, formatSharePercent } from '@/lib/utils';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
-import { sumDecimals } from '@/lib/utils/sum';
 
 export default function ApartmentDetailsPage() {
   const params = useParams();
@@ -114,170 +113,16 @@ export default function ApartmentDetailsPage() {
       />
 
       <div className="space-y-6">
-        {/* Basic Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Informacje podstawowe</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <p className="text-sm text-muted-foreground">ID zewnętrzne</p>
-                <p className="font-medium">
-                  {apartment.externalApartmentId} / {apartment.externalOwnerId}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Numer lokalu</p>
-                <p className="font-medium">{apartment.number}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Właściciel</p>
-                <p className="font-medium">
-                  {apartment.owner || 'Brak'} ({apartment.email || 'Brak'})
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Status</p>
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                      apartment.isActive
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                    }`}
-                  >
-                    {apartment.isActive ? 'Aktywny' : 'Nieaktywny'}
-                  </span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-6 px-2 text-xs"
-                    onClick={handleToggleStatus}
-                    disabled={updating}
-                  >
-                    {apartment.isActive ? (
-                      <>
-                        <PowerOff className="mr-1 h-3 w-3" />
-                        Dezaktywuj
-                      </>
-                    ) : (
-                      <>
-                        <Power className="mr-1 h-3 w-3" />
-                        Aktywuj
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Adres</p>
-                <p className="font-medium">
-                  {apartment.address
-                    ? `${apartment.address} ${apartment.building || ''}/${apartment.number || ''}`
-                    : 'Brak'}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  Kod pocztowy / Miasto
-                </p>
-                <p className="font-medium">
-                  {apartment.postalCode && apartment.city
-                    ? `${apartment.postalCode} ${apartment.city}`
-                    : 'Brak'}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Procent udziału</p>
-                <p className="font-medium">
-                  {apartment.shareNumerator &&
-                  apartment.shareDenominator &&
-                  apartment.shareDenominator > 0
-                    ? formatSharePercent(
-                        apartment.shareNumerator,
-                        apartment.shareDenominator
-                      )
-                    : 'Brak'}
-                  %
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* User Assignment */}
-        {apartment.user && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Przypisany użytkownik</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    Imię i nazwisko
-                  </p>
-                  <p className="font-medium">{apartment.user.name || 'Brak'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Email</p>
-                  <p className="font-medium">{apartment.user.email}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Charge Notifications */}
+        <ApartmentInfoCard
+          apartment={apartment}
+          updating={updating}
+          onToggleStatus={handleToggleStatus}
+        />
+        {apartment.user && <AssignedUserCard user={apartment.user} />}
         {apartment.chargeNotifications.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Powiadomienia czynszowe</CardTitle>
-              <CardDescription>
-                Aktywne pozycje opłat ({apartment.chargeNotifications.length})
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {apartment.chargeNotifications.map((notification) => (
-                  <div
-                    key={notification.id}
-                    className="flex items-center justify-between border-b pb-2 last:border-0"
-                  >
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">
-                        {notification.description}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {notification.quantity} {notification.unit} ×{' '}
-                        {formatCurrency(notification.unitPrice)}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold">
-                        {formatCurrency(notification.totalAmount)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-                <div className="border-t pt-2 font-bold">
-                  <div className="flex justify-between">
-                    <span>Razem:</span>
-                    <span>
-                      {formatCurrency(
-                        sumDecimals(
-                          apartment.chargeNotifications.map(
-                            (notification) => notification.totalAmount
-                          )
-                        )
-                      )}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <ChargeNotificationsCard
+            notifications={apartment.chargeNotifications}
+          />
         )}
 
         {apartment.payments.length > 0 && (

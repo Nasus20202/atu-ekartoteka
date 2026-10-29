@@ -1,52 +1,52 @@
 'use client';
 
-import { AlertCircle, Search, UserPlus, Users } from 'lucide-react';
-import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Search } from 'lucide-react';
+import { useCallback, useState } from 'react';
 
 import { ApartmentSelectionDialog } from '@/app/admin/users/apartment-selection-dialog';
 import { createEmptyNewUserData } from '@/app/admin/users/constants';
 import { CreateUserDialog } from '@/app/admin/users/create-user-dialog';
 import type { EditMode, NewUserFormData } from '@/app/admin/users/types';
+import { useAdminUsers } from '@/app/admin/users/use-admin-users';
+import { useAvailableApartments } from '@/app/admin/users/use-available-apartments';
+import { UserActionsMenu } from '@/app/admin/users/user-actions-menu';
 import { UserCard } from '@/app/admin/users/user-card';
-import { type UserFilter, UserFilters } from '@/app/admin/users/user-filters';
+import { UserFilters } from '@/app/admin/users/user-filters';
 import {
-  buildUsersQuery,
+  createUserRequest,
+  updateUserRequest,
+} from '@/app/admin/users/user-requests';
+import { UsersEmptyState } from '@/app/admin/users/users-empty-state';
+import { UsersPagination } from '@/app/admin/users/users-pagination';
+import {
   filterAndSortApartments,
-  getAvailableApartments,
   getPendingDescription,
 } from '@/app/admin/users/utils';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import { useConfirm } from '@/components/providers/confirm-dialog';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { LoadingCard } from '@/components/ui/loading-card';
+import { CREDENTIALS_REQUIRED_MESSAGE } from '@/lib/auth/credential-validation';
 import { AccountStatus } from '@/lib/types';
-import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
 import type { UserDto } from '@/lib/types/dto/user-dto';
-
-const APARTMENT_FETCH_LIMIT = 100000;
 
 export default function AdminUsersPage() {
   const confirm = useConfirm();
-  const latestUsersRequestId = useRef(0);
-  const [users, setUsers] = useState<UserDto[]>([]);
-  const [apartments, setApartments] = useState<ApartmentSummaryDto[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<UserFilter>(AccountStatus.PENDING);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [userSearch, setUserSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const {
+    users,
+    loading,
+    filter,
+    setFilter,
+    page,
+    setPage,
+    totalPages,
+    userSearch,
+    setUserSearch,
+    fetchUsers,
+  } = useAdminUsers();
   const [selectedUser, setSelectedUser] = useState<UserDto | null>(null);
+  const apartments = useAvailableApartments(selectedUser);
   const [selectedApartments, setSelectedApartments] = useState<string[]>([]);
   const [apartmentSearch, setApartmentSearch] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
@@ -70,167 +70,37 @@ export default function AdminUsersPage() {
     setEditMode(mode);
   }, []);
 
-  const fetchUsers = useCallback(async () => {
-    const requestId = ++latestUsersRequestId.current;
-    setLoading(true);
-
-    try {
-      const query = buildUsersQuery(filter, page, debouncedSearch);
-      const response = await fetch(`/api/admin/users?${query}`);
-      const data = await response.json();
-
-      if (response.ok && requestId === latestUsersRequestId.current) {
-        setUsers(data.users);
-        setTotalPages(data.pagination?.totalPages ?? 1);
-      }
-    } catch (error) {
-      console.error('Failed to fetch users:', error);
-    } finally {
-      if (requestId === latestUsersRequestId.current) {
-        setLoading(false);
-      }
-    }
-  }, [debouncedSearch, filter, page]);
-
-  useEffect(() => {
-    async function loadUsers() {
-      await fetchUsers();
-    }
-
-    void loadUsers();
-  }, [fetchUsers]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(userSearch);
-      setPage(1);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [userSearch]);
-
-  useEffect(() => {
-    if (!selectedUser) {
-      return;
-    }
-
-    let cancelled = false;
-
-    async function loadApartments() {
-      try {
-        const apartmentParams = new URLSearchParams({
-          page: '1',
-          limit: String(APARTMENT_FETCH_LIMIT),
-          activeOnly: 'false',
-        });
-
-        const response = await fetch(
-          `/api/admin/apartments?${apartmentParams}`
-        );
-        const data = await response.json();
-
-        if (!response.ok) {
-          return;
-        }
-
-        const [tenantUsersResponse, adminUsersResponse] = await Promise.all([
-          fetch('/api/admin/users?limit=1000'),
-          fetch('/api/admin/users?role=ADMIN&limit=1000'),
-        ]);
-        const [tenantUsersData, adminUsersData] = await Promise.all([
-          tenantUsersResponse.json(),
-          adminUsersResponse.json(),
-        ]);
-
-        if (cancelled) {
-          return;
-        }
-
-        const allUsers = [
-          ...(tenantUsersData.users || []),
-          ...(adminUsersData.users || []),
-        ];
-
-        setApartments(
-          getAvailableApartments(data.apartments, allUsers, selectedUser)
-        );
-      } catch (error) {
-        console.error('Failed to fetch apartments:', error);
-      }
-    }
-
-    void loadApartments();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedUser]);
-
   const handleUpdateUser = useCallback(
     async (userId: string, status: AccountStatus, apartmentIds?: string[]) => {
       setActionLoading(true);
-
-      try {
-        const response = await fetch('/api/admin/users', {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userId,
-            status,
-            apartmentIds,
-          }),
-        });
-
-        if (response.ok) {
-          await fetchUsers();
-          closeDialog();
-        } else {
-          const data = await response.json();
-          alert(data.error || 'Failed to update user');
-        }
-      } catch (error) {
-        console.error('Failed to update user:', error);
-        alert('Failed to update user');
-      } finally {
-        setActionLoading(false);
+      const error = await updateUserRequest({ userId, status, apartmentIds });
+      if (error) {
+        alert(error);
+      } else {
+        await fetchUsers();
+        closeDialog();
       }
+      setActionLoading(false);
     },
     [closeDialog, fetchUsers]
   );
 
   const handleCreateUser = useCallback(async () => {
     if (!newUserData.email || !newUserData.password) {
-      alert('Email i hasło są wymagane');
+      alert(CREDENTIALS_REQUIRED_MESSAGE);
       return;
     }
 
     setActionLoading(true);
-
-    try {
-      const response = await fetch('/api/admin/users/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newUserData),
-      });
-
-      if (response.ok) {
-        await fetchUsers();
-        setEditMode(null);
-        setNewUserData(createEmptyNewUserData());
-      } else {
-        const data = await response.json();
-        alert(data.error || 'Failed to create user');
-      }
-    } catch (error) {
-      console.error('Failed to create user:', error);
-      alert('Failed to create user');
-    } finally {
-      setActionLoading(false);
+    const error = await createUserRequest(newUserData);
+    if (error) {
+      alert(error);
+    } else {
+      await fetchUsers();
+      setEditMode(null);
+      setNewUserData(createEmptyNewUserData());
     }
+    setActionLoading(false);
   }, [fetchUsers, newUserData]);
 
   const handleRejectFromStatusDialog = useCallback(async () => {
@@ -275,31 +145,12 @@ export default function AdminUsersPage() {
         description={pendingDescription}
         showBackButton={false}
         action={
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button>
-                <UserPlus className="mr-2 h-4 w-4" />
-                Akcje
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onSelect={() => {
-                  setNewUserData(createEmptyNewUserData());
-                  setEditMode('create-user');
-                }}
-              >
-                <UserPlus className="mr-2 h-4 w-4" />
-                Dodaj użytkownika
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/admin/users/management">
-                  <Users className="mr-2 h-4 w-4" />
-                  Zarządzanie kontami
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <UserActionsMenu
+            onCreateUser={() => {
+              setNewUserData(createEmptyNewUserData());
+              setEditMode('create-user');
+            }}
+          />
         }
       />
 
@@ -327,19 +178,7 @@ export default function AdminUsersPage() {
       {loading ? (
         <LoadingCard />
       ) : users.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <AlertCircle className="mb-4 h-12 w-12 text-muted-foreground" />
-            <p className="text-lg font-medium">Brak użytkowników</p>
-            <p className="text-sm text-muted-foreground">
-              {userSearch
-                ? 'Nie znaleziono użytkowników pasujących do wyszukiwania'
-                : filter === AccountStatus.PENDING
-                  ? 'Brak kont oczekujących na zatwierdzenie'
-                  : 'Nie znaleziono użytkowników'}
-            </p>
-          </CardContent>
-        </Card>
+        <UsersEmptyState search={userSearch} filter={filter} />
       ) : (
         <div className="grid gap-4">
           {users.map((user) => (
@@ -356,33 +195,12 @@ export default function AdminUsersPage() {
         </div>
       )}
 
-      {totalPages > 1 && (
-        <div className="mt-4 flex items-center justify-center gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              setPage((currentPage) => Math.max(1, currentPage - 1))
-            }
-            disabled={page <= 1 || loading}
-          >
-            Poprzednia
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            Strona {page} z {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              setPage((currentPage) => Math.min(totalPages, currentPage + 1))
-            }
-            disabled={page >= totalPages || loading}
-          >
-            Następna
-          </Button>
-        </div>
-      )}
+      <UsersPagination
+        page={page}
+        totalPages={totalPages}
+        disabled={loading}
+        onPageChange={setPage}
+      />
 
       <ApartmentSelectionDialog
         actionLoading={actionLoading}
