@@ -117,4 +117,21 @@ describe('HoaNotificationCard', () => {
 
     expect(screen.queryByRole('note')).not.toBeInTheDocument();
   });
+
+  it('uses a default heading for several apartments without an HOA name', () => {
+    render(
+      <HoaNotificationCard
+        hoaName={null}
+        hoaHeader={null}
+        notifications={[
+          makeNotification('n1', '100', ADDRESS_A),
+          makeNotification('n2', '200', ADDRESS_B),
+        ]}
+      />
+    );
+
+    expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent(
+      /^Wspólnota$/
+    );
+  });
 });

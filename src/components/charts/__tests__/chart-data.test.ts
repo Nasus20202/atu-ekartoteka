@@ -180,6 +180,20 @@ describe('finance chart helpers', () => {
     });
   });
 
+  it('skips apartments without an HOA and returns no data without charges', () => {
+    expect(
+      getChargeTrendByHoaHistory(
+        [
+          {
+            homeownersAssociation: null,
+            charges: [{ period: '202603', totalAmount: '12.0000' }],
+          },
+        ],
+        '202603'
+      )
+    ).toEqual({ data: [], series: [] });
+  });
+
   it('keeps the default viewport size at 12 months', () => {
     expect(DEFAULT_CHARGE_TREND_VIEWPORT_SIZE).toBe(12);
     expect(DEFAULT_CHARGE_TREND_PERIOD_LIMIT).toBe(12);

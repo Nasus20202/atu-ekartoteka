@@ -127,4 +127,19 @@ describe('PaymentsYearList — groupByYear', () => {
     const { container } = render(<PaymentsYearList payments={[]} />);
     expect(container.firstChild).toBeEmptyDOMElement();
   });
+
+  it('opens only the current year by default', () => {
+    const currentYear = new Date().getFullYear();
+
+    render(
+      <PaymentsYearList
+        payments={[
+          makePaymentEntry(currentYear),
+          makePaymentEntry(currentYear - 1),
+        ]}
+      />
+    );
+
+    expect(document.querySelectorAll('.rotate-180')).toHaveLength(1);
+  });
 });

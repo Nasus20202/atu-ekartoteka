@@ -20,6 +20,12 @@ describe('PaymentApartmentDetailsCard', () => {
     expect(screen.getByText('ul. Testowa 1 A/10')).toBeInTheDocument();
   });
 
+  it('renders the address without a building', () => {
+    render(<PaymentApartmentDetailsCard {...defaultProps} building={null} />);
+
+    expect(screen.getByText(/^ul\. Testowa 1\s+\/10$/)).toBeInTheDocument();
+  });
+
   it('renders share percentage without trailing zeros', () => {
     render(<PaymentApartmentDetailsCard {...defaultProps} />);
 

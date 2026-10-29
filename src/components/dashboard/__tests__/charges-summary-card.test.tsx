@@ -212,4 +212,26 @@ describe('ChargesSummaryCard', () => {
 
     expect(screen.getByTestId('charge-trend-fallback')).toBeInTheDocument();
   });
+
+  it.each([
+    [2, '2 naliczenia'],
+    [5, '5 naliczeń'],
+  ])('pluralises %i previous month charges', (count, label) => {
+    render(
+      <ChargesSummaryCard
+        currentPeriod="202501"
+        previousPeriod="202412"
+        currentMonthCharges={[]}
+        previousMonthCharges={Array.from({ length: count }, () => ({
+          totalAmount: new Prisma.Decimal(1),
+        }))}
+        currentMonthTotal={0}
+        previousMonthTotal={count}
+        trendData={trendData}
+        trendSeries={trendSeries}
+      />
+    );
+
+    expect(screen.getByText(label)).toBeInTheDocument();
+  });
 });

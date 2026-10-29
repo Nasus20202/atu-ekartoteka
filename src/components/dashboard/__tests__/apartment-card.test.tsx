@@ -158,4 +158,29 @@ describe('ApartmentCard', () => {
     const card = container.firstChild as HTMLElement;
     expect(card).toHaveStyle({ animationDelay: '200ms' });
   });
+
+  it.each([
+    [150, 'text-green-600'],
+    [-20, 'text-red-600'],
+  ])('colours a payment balance of %s', (balance, colour) => {
+    render(
+      <ApartmentCard
+        apartment={{ ...mockApartment, owner: null, shareDenominator: 0 }}
+        latestPaymentBalance={balance}
+        index={0}
+      />
+    );
+
+    const value = screen.getByText('Saldo wpłat').nextElementSibling;
+    expect(value).toHaveClass(colour);
+    expect(screen.getAllByText('—')).toHaveLength(2);
+  });
+
+  it('shows a dash without a payment balance', () => {
+    render(<ApartmentCard apartment={mockApartment} index={0} />);
+
+    const value = screen.getByText('Saldo wpłat').nextElementSibling;
+    expect(value).toHaveClass('text-muted-foreground');
+    expect(value).toHaveTextContent('—');
+  });
 });

@@ -61,6 +61,14 @@ describe('ChargeTrendChart', () => {
     expect(
       screen.getByText('Pokazano Miesiąc 1 - Miesiąc 12')
     ).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Pokaż nowsze miesiące' })
+    );
+
+    expect(
+      screen.getByText('Pokazano Miesiąc 2 - Miesiąc 13')
+    ).toBeInTheDocument();
   });
 
   it('renders fallback when there are no HOA series', () => {
