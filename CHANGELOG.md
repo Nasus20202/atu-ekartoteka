@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.2] - 2026-10-29
+
+- test: raise coverage thresholds to 95%
+- test(perf): ramp every scenario through load steps
+- refactor: split long pages, modules and e2e specs
+- fix: label icon buttons, check turnstile first and use the server year
+- test: replace mock-only tests and share payment fixtures
+- refactor: share UI helpers and DTO types across the app
+- fix: correct polish plurals, admin credential checks and apartment sort
+- refactor: share error message, admin check and app constants
+- refactor: remove dead code and rename management components to kebab-case
+- chore(deps): update dependency grafana/k6 to v2
+- test(ui): cover remaining component branches
+- refactor(charts): extract tooltip and axis formatters
+- test(admin): cover users, management and import components
+- test(api): cover validation, sorting and failure branches of routes
+- test(lib): cover parser, importer, auth and utility edge cases
+- test: measure coverage of all source files
+- test(ui): cover verification banner, payments summary, layout and providers
+- test: cover proxy, auth wiring, cron jobs, prisma client and fonts
+- test(api): cover stats, turnstile config, verification and auth routes
+- test(db): cover email verification, apartment and user queries
+- test(otel): cover metrics, instrumentation and tracing helpers
+- refactor: move page data shaping into tested modules
+- test(perf): add k6 performance tests and CI job (#806)
+- test: cover charges lists, payment year row and PDF buttons
+- test(e2e): render visual snapshots with grayscale text antialiasing
+- feat(ui): simplify charges lists and notifications card
+- test(e2e): add visual regression tests and run E2E on mobile
+- fix(dashboard): prevent horizontal overflow of long addresses on mobile
+
 ## [0.8.1] - 2026-10-28
 
 - ci: bump version to v0.8.0
