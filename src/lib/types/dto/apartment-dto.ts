@@ -75,6 +75,11 @@ export type ApartmentDetailDto = ApartmentSummaryDto & {
   payments: PaymentPdfDto[];
 };
 
+/** Admin detail response; the year comes from the request so pages agree. */
+export type ApartmentDetailResponseDto = ApartmentDetailDto & {
+  currentYear: number;
+};
+
 export function toApartmentSummaryDto(
   apartment: ApartmentSummaryDtoSource
 ): ApartmentSummaryDto {

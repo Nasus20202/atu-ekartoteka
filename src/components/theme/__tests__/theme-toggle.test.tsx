@@ -41,7 +41,7 @@ describe('ThemeToggle', () => {
     renderWithThemeProvider(<ThemeToggle />);
 
     await waitFor(() => {
-      const srText = screen.getByText('Toggle theme');
+      const srText = screen.getByText('Przełącz motyw');
       expect(srText).toBeInTheDocument();
       expect(srText).toHaveClass('sr-only');
     });

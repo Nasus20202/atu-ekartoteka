@@ -13,6 +13,7 @@ describe('ApartmentPaymentsSection', () => {
   it('renders payment history list without a yearly trend block', () => {
     render(
       <ApartmentPaymentsSection
+        currentYear={2025}
         payments={[
           createMockPayment({
             year: 2024,

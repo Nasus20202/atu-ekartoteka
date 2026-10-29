@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       { email: string; owner: string | null; aptIds: string[] }
     >();
     for (const apt of apartments) {
-      const email = apt.email!;
+      const email = apt.email;
       if (emailMap.has(email)) {
         emailMap.get(email)!.aptIds.push(apt.id);
       } else {

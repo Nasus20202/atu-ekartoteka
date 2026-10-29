@@ -204,6 +204,7 @@ export default function ApartmentsPage() {
                           variant="ghost"
                           onClick={() => startEditing(hoa)}
                           className="h-8 shrink-0"
+                          aria-label={`Zmień nazwę wspólnoty ${hoa.name}`}
                         >
                           <Edit2 className="h-4 w-4" />
                         </Button>

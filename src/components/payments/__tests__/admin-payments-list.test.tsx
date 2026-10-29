@@ -47,7 +47,10 @@ vi.mock('@/components/ui/collapsible', () => ({
   ),
 }));
 
+const CURRENT_YEAR = 2025;
+
 const baseProps = {
+  currentYear: CURRENT_YEAR,
   apartmentId: 'apt-1',
   apartmentLabel: 'A/101',
   hoaName: 'Wspólnota Testowa',
@@ -177,7 +180,7 @@ describe('AdminPaymentsList', () => {
   });
 
   it('colours balances by sign and opens the current year', () => {
-    const currentYear = new Date().getFullYear();
+    const currentYear = CURRENT_YEAR;
     render(
       <AdminPaymentsList
         {...baseProps}

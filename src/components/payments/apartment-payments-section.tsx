@@ -13,6 +13,7 @@ interface ApartmentPaymentsSectionProps {
   apartmentId: string;
   apartmentLabel: string;
   hoaName: string;
+  currentYear: number;
 }
 
 export function ApartmentPaymentsSection({
@@ -20,6 +21,7 @@ export function ApartmentPaymentsSection({
   apartmentId,
   apartmentLabel,
   hoaName,
+  currentYear,
 }: ApartmentPaymentsSectionProps) {
   return (
     <Card>
@@ -35,6 +37,7 @@ export function ApartmentPaymentsSection({
           apartmentId={apartmentId}
           apartmentLabel={apartmentLabel}
           hoaName={hoaName}
+          currentYear={currentYear}
         />
       </CardContent>
     </Card>
