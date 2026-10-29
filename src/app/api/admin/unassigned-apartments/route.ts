@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { auth } from '@/auth';
+import { requireAdmin } from '@/lib/auth/require-admin';
 import { createLogger } from '@/lib/logger';
 import { findAssignedApartmentAddressKeys } from '@/lib/queries/apartments/find-assigned-apartment-address-keys';
 import { findUnassignedApartments } from '@/lib/queries/apartments/find-unassigned-apartments';
 import { findAllUserEmails } from '@/lib/queries/users/find-all-user-emails';
-import { UserRole } from '@/lib/types';
 
 const logger = createLogger('api:admin:unassigned-apartments');
 
@@ -14,11 +13,8 @@ const UNASSIGNED_MODE_ASSIGNABLE = 'assignable';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
-
-    if (!session || session.user.role !== UserRole.ADMIN) {
-      return NextResponse.json({ error: 'Brak uprawnień' }, { status: 401 });
-    }
+    const { response } = await requireAdmin();
+    if (response) return response;
 
     const { searchParams } = request.nextUrl;
     const mode = searchParams.get('mode') ?? UNASSIGNED_MODE_CREATABLE;

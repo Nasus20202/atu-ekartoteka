@@ -1,9 +1,9 @@
-const DATE_LOCALE = 'pl-PL';
+import { APP_LOCALE } from '@/lib/utils/locale';
 const FEW_UPPER_BOUND = 5;
 
 export function formatImportDate(dateStr: string | null): string | null {
   if (!dateStr) return null;
-  return new Date(dateStr).toLocaleDateString(DATE_LOCALE);
+  return new Date(dateStr).toLocaleDateString(APP_LOCALE);
 }
 
 export function getHoaCountLabel(count: number): string {

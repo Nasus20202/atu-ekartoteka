@@ -38,6 +38,7 @@ import { parseNalCzynszBuffer } from '@/lib/parsers/nal-czynsz-parser';
 import { parsePowCzynszFile } from '@/lib/parsers/pow-czynsz-parser';
 import { parseWplatyFile } from '@/lib/parsers/wplaty-parser';
 import { DecimalLike, toDecimal } from '@/lib/utils/decimal';
+import { getErrorMessage } from '@/lib/utils/error-message';
 
 const logger = createLogger('import:handler');
 
@@ -305,7 +306,7 @@ async function importSingleHOA(
       'Import completed for HOA'
     );
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : 'Nieznany błąd';
+    const errorMsg = getErrorMessage(error);
     logger.error({ hoaId, error: errorMsg }, 'Transaction failed for HOA');
     result.errors.push(`Błąd transakcji: ${errorMsg}`);
   }
@@ -329,8 +330,7 @@ export async function processBatchImport(
       try {
         return await importSingleHOA(hoaId, fileGroup, options);
       } catch (error) {
-        const errorMsg =
-          error instanceof Error ? error.message : 'Nieznany błąd';
+        const errorMsg = getErrorMessage(error);
         logger.error(
           { hoaId, error: errorMsg },
           'Unexpected error during import'

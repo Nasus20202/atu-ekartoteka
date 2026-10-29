@@ -1,8 +1,8 @@
 import bcrypt from 'bcrypt';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { auth } from '@/auth';
 import { BCRYPT_COST } from '@/lib/auth/bcrypt-cost';
+import { requireAdmin } from '@/lib/auth/require-admin';
 import { createLogger } from '@/lib/logger';
 import { createAdminUser } from '@/lib/mutations/users/create-admin-user';
 import { findUserByEmail } from '@/lib/queries/users/find-user-by-email';
@@ -12,15 +12,10 @@ const logger = createLogger('api:admin:users:create');
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-
-    if (!session || session.user.role !== UserRole.ADMIN) {
-      logger.warn(
-        { email: session?.user?.email || 'anonymous' },
-        'Unauthorized user creation attempt'
-      );
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { session, response } = await requireAdmin(
+      'Unauthorized user creation attempt'
+    );
+    if (response) return response;
 
     const body = await request.json();
     const { email, password, name, role, status } = body;

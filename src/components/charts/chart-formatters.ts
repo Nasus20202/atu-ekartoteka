@@ -4,8 +4,9 @@ import type {
 } from 'recharts/types/component/DefaultTooltipContent';
 
 import { formatCurrency } from '@/lib/utils';
+import { APP_LOCALE } from '@/lib/utils/locale';
 
-const compactAmountFormatter = new Intl.NumberFormat('pl-PL', {
+const compactAmountFormatter = new Intl.NumberFormat(APP_LOCALE, {
   notation: 'compact',
   maximumFractionDigits: 1,
 });

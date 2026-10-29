@@ -4,6 +4,7 @@ import { EntityStats, TransactionClient } from '@/lib/import/types';
 import { processInBatches } from '@/lib/import/utils';
 import { NalCzynszEntry } from '@/lib/parsers/nal-czynsz-parser';
 import { toDecimal } from '@/lib/utils/decimal';
+import { getErrorMessage } from '@/lib/utils/error-message';
 
 type ChargeKey = {
   apartmentId: string;
@@ -145,9 +146,7 @@ export async function importCharges(
       );
       stats.created = toCreate.length;
     } catch (error) {
-      errors.push(
-        `Błąd tworzenia naliczeń: ${error instanceof Error ? error.message : 'Nieznany błąd'}`
-      );
+      errors.push(`Błąd tworzenia naliczeń: ${getErrorMessage(error)}`);
       stats.skipped += toCreate.length;
     }
   }
@@ -170,7 +169,7 @@ export async function importCharges(
       stats.updated++;
     } catch (error) {
       errors.push(
-        `Błąd aktualizacji naliczenia ${entry.id}: ${error instanceof Error ? error.message : 'Nieznany błąd'}`
+        `Błąd aktualizacji naliczenia ${entry.id}: ${getErrorMessage(error)}`
       );
       stats.skipped++;
     }

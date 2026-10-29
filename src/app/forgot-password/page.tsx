@@ -11,6 +11,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { TurnstileConfig } from '@/lib/types/turnstile';
+import {
+  GENERIC_ERROR_MESSAGE,
+  getErrorMessage,
+} from '@/lib/utils/error-message';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -59,7 +63,7 @@ export default function ForgotPasswordPage() {
 
       setSuccess(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Wystąpił błąd');
+      setError(getErrorMessage(err, GENERIC_ERROR_MESSAGE));
     } finally {
       setLoading(false);
       // Reset Turnstile token after any request attempt (success or failure)

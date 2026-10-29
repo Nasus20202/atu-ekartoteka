@@ -1,23 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { auth } from '@/auth';
+import { requireAdmin } from '@/lib/auth/require-admin';
 import { createLogger } from '@/lib/logger';
 import { findApartmentsPaginated } from '@/lib/queries/apartments/find-apartments-paginated';
-import { Apartment, UserRole } from '@/lib/types';
+import { Apartment } from '@/lib/types';
 import {
   toApartmentSummaryDto,
   toHomeownersAssociationSummaryDto,
 } from '@/lib/types/dto/apartment-dto';
+import { getErrorMessage } from '@/lib/utils/error-message';
 
 const logger = createLogger('api:admin:apartments');
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await auth();
-
-    if (!session || session.user.role !== UserRole.ADMIN) {
-      return NextResponse.json({ error: 'Brak uprawnień' }, { status: 401 });
-    }
+    const { response } = await requireAdmin();
+    if (response) return response;
 
     const { searchParams } = new URL(req.url);
     const page = Math.max(1, parseInt(searchParams.get('page') || '1') || 1);
@@ -127,7 +125,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       {
         error: 'Nie udało się pobrać mieszkań',
-        message: error instanceof Error ? error.message : 'Nieznany błąd',
+        message: getErrorMessage(error),
       },
       { status: 500 }
     );

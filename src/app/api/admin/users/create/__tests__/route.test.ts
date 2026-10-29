@@ -60,7 +60,7 @@ describe('Admin Users Create API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(401);
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error).toBe('Brak uprawnień');
     });
 
     it('should return 401 when user is not admin', async () => {
@@ -83,7 +83,7 @@ describe('Admin Users Create API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(401);
-      expect(data.error).toBe('Unauthorized');
+      expect(data.error).toBe('Brak uprawnień');
     });
 
     it('should return 400 when email is missing', async () => {

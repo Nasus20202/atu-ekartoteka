@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { AccountStatus } from '@/lib/types';
+import { APP_LOCALE } from '@/lib/utils/locale';
 
 interface UserCardProps {
   actionLoading: boolean;
@@ -45,7 +46,7 @@ export function UserCard({
             <CardDescription className="mt-1">{user.email}</CardDescription>
             <div className="mt-2 text-xs text-muted-foreground">
               Zarejestrowano:{' '}
-              {new Date(user.createdAt).toLocaleDateString('pl-PL', {
+              {new Date(user.createdAt).toLocaleDateString(APP_LOCALE, {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',

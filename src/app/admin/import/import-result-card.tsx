@@ -5,13 +5,14 @@ import type { EntityStats, ImportResult } from '@/app/admin/import/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { serialiseErrorsToTxt } from '@/lib/utils/export-errors';
+import { APP_LOCALE } from '@/lib/utils/locale';
 
 interface ImportResultCardProps {
   result: ImportResult;
 }
 
 function formatDate(date: string): string {
-  return new Date(date).toLocaleDateString('pl-PL');
+  return new Date(date).toLocaleDateString(APP_LOCALE);
 }
 
 function EntityStatsSection({

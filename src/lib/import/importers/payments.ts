@@ -4,6 +4,7 @@ import { EntityStats, TransactionClient } from '@/lib/import/types';
 import { processInBatches } from '@/lib/import/utils';
 import { PaymentEntry } from '@/lib/parsers/wplaty-parser';
 import { toDecimal } from '@/lib/utils/decimal';
+import { getErrorMessage } from '@/lib/utils/error-message';
 
 type PaymentKey = {
   apartmentId: string;
@@ -264,9 +265,7 @@ export async function importPayments(
       );
       stats.created = toCreate.length;
     } catch (error) {
-      errors.push(
-        `Błąd tworzenia płatności: ${error instanceof Error ? error.message : 'Nieznany błąd'}`
-      );
+      errors.push(`Błąd tworzenia płatności: ${getErrorMessage(error)}`);
       stats.skipped += toCreate.length;
     }
   }
@@ -281,7 +280,7 @@ export async function importPayments(
       stats.updated++;
     } catch (error) {
       errors.push(
-        `Błąd aktualizacji płatności ${entry.externalId}/${entry.year}: ${error instanceof Error ? error.message : 'Nieznany błąd'}`
+        `Błąd aktualizacji płatności ${entry.externalId}/${entry.year}: ${getErrorMessage(error)}`
       );
       stats.skipped++;
     }

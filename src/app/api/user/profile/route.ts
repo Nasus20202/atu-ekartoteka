@@ -3,6 +3,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
 import { BCRYPT_COST } from '@/lib/auth/bcrypt-cost';
+import {
+  MIN_PASSWORD_LENGTH,
+  PASSWORD_TOO_SHORT_MESSAGE,
+} from '@/lib/auth/password-rules';
 import { createLogger } from '@/lib/logger';
 import { updateUserProfile } from '@/lib/mutations/users/update-user-profile';
 import { findUserById } from '@/lib/queries/users/find-user-by-id';
@@ -52,10 +56,10 @@ export async function PATCH(request: NextRequest) {
     if (
       newPassword &&
       typeof newPassword === 'string' &&
-      newPassword.length < 8
+      newPassword.length < MIN_PASSWORD_LENGTH
     ) {
       return NextResponse.json(
-        { error: 'Hasło musi mieć co najmniej 8 znaków' },
+        { error: PASSWORD_TOO_SHORT_MESSAGE },
         { status: 400 }
       );
     }

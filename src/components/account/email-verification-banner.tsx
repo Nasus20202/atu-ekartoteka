@@ -3,6 +3,11 @@
 import { Mail, X } from 'lucide-react';
 import { useState } from 'react';
 
+import {
+  GENERIC_ERROR_MESSAGE,
+  getErrorMessage,
+} from '@/lib/utils/error-message';
+
 interface Props {
   emailVerified: boolean;
 }
@@ -29,7 +34,7 @@ export function EmailVerificationBanner({ emailVerified }: Props) {
       }
       setMessage('Email weryfikacyjny został wysłany');
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Wystąpił błąd');
+      setMessage(getErrorMessage(error, GENERIC_ERROR_MESSAGE));
     } finally {
       setLoading(false);
     }

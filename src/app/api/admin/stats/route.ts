@@ -1,19 +1,15 @@
 import { NextResponse } from 'next/server';
 
-import { auth } from '@/auth';
+import { requireAdmin } from '@/lib/auth/require-admin';
 import { createLogger } from '@/lib/logger';
 import { getDashboardStats } from '@/lib/queries/admin/get-dashboard-stats';
-import { UserRole } from '@/lib/types';
 
 const logger = createLogger('api:admin:stats');
 
 export async function GET() {
   try {
-    const session = await auth();
-
-    if (!session?.user || session.user.role !== UserRole.ADMIN) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { response } = await requireAdmin();
+    if (response) return response;
 
     const stats = await getDashboardStats();
 

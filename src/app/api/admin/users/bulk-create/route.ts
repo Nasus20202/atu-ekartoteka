@@ -2,14 +2,13 @@ import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { auth } from '@/auth';
 import { BCRYPT_COST } from '@/lib/auth/bcrypt-cost';
+import { requireAdmin } from '@/lib/auth/require-admin';
 import { getEmailService } from '@/lib/email/email-service';
 import { createLogger } from '@/lib/logger';
 import { createUserWithApartments } from '@/lib/mutations/users/create-user-with-apartments';
 import { findUnassignedApartmentsByIds } from '@/lib/queries/apartments/find-unassigned-apartments-by-ids';
 import { findUserByEmail } from '@/lib/queries/users/find-user-by-email';
-import { UserRole } from '@/lib/types';
 
 const logger = createLogger('api:admin:users:bulk-create');
 
@@ -25,11 +24,8 @@ function generateTempPassword(): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-
-    if (!session || session.user.role !== UserRole.ADMIN) {
-      return NextResponse.json({ error: 'Brak uprawnień' }, { status: 401 });
-    }
+    const { response } = await requireAdmin();
+    if (response) return response;
 
     const body = await request.json();
     const { apartmentIds } = body as { apartmentIds: string[] };

@@ -1,5 +1,6 @@
 import { EntityStats, ImportError, ImportFileGroup } from '@/lib/import/types';
 import { decodeBuffer } from '@/lib/parsers/parser-utils';
+import { getErrorMessage } from '@/lib/utils/error-message';
 
 export const KNOWN_FILE_NAMES = [
   'lok.txt',
@@ -91,7 +92,7 @@ export function groupFilesByHOA(
     } catch (error) {
       errors.push({
         file: file.name,
-        error: error instanceof Error ? error.message : 'Nieznany błąd',
+        error: getErrorMessage(error),
       });
     }
   }

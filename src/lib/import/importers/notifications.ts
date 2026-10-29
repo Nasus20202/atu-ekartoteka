@@ -5,6 +5,7 @@ import { processInBatches } from '@/lib/import/utils';
 import { ParseResult } from '@/lib/parsers/parser-utils';
 import { ChargeNotificationEntry } from '@/lib/parsers/pow-czynsz-parser';
 import { toDecimal } from '@/lib/utils/decimal';
+import { getErrorMessage } from '@/lib/utils/error-message';
 
 type NotificationKey = {
   apartmentId: string;
@@ -164,9 +165,7 @@ export async function importNotifications(
       );
       stats.created = toCreate.length;
     } catch (error) {
-      errors.push(
-        `Błąd tworzenia powiadomień: ${error instanceof Error ? error.message : 'Nieznany błąd'}`
-      );
+      errors.push(`Błąd tworzenia powiadomień: ${getErrorMessage(error)}`);
       stats.skipped += toCreate.length;
     }
   }
@@ -187,7 +186,7 @@ export async function importNotifications(
       stats.updated++;
     } catch (error) {
       errors.push(
-        `Błąd aktualizacji powiadomienia ${entry.externalId}: ${error instanceof Error ? error.message : 'Nieznany błąd'}`
+        `Błąd aktualizacji powiadomienia ${entry.externalId}: ${getErrorMessage(error)}`
       );
       stats.skipped++;
     }
