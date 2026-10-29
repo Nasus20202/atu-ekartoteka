@@ -2,7 +2,7 @@
  * Create an unverified user and verification code for E2E testing.
  */
 
-import * as bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import * as pg from 'pg';
 

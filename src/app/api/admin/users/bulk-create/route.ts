@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
+import { BCRYPT_COST } from '@/lib/auth/bcrypt-cost';
 import { getEmailService } from '@/lib/email/email-service';
 import { createLogger } from '@/lib/logger';
 import { createUserWithApartments } from '@/lib/mutations/users/create-user-with-apartments';
@@ -13,7 +14,6 @@ import { UserRole } from '@/lib/types';
 const logger = createLogger('api:admin:users:bulk-create');
 
 const TEMP_PASSWORD_LENGTH = 12;
-const BCRYPT_COST = 10;
 
 function generateTempPassword(): string {
   const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';

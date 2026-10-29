@@ -6,7 +6,7 @@
  * Returns ids so callers can clean up if needed.
  */
 
-import * as bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import * as pg from 'pg';
 
 import { UNVERIFIED_PASSWORD } from './test-credentials';

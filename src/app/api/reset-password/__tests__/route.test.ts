@@ -16,7 +16,7 @@ const {
 }));
 
 // Mock dependencies
-vi.mock('bcryptjs', () => ({
+vi.mock('bcrypt', () => ({
   default: {
     hash: vi.fn(() => Promise.resolve('hashed-password')),
   },

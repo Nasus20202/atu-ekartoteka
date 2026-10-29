@@ -5,7 +5,7 @@
  * apartments in one HOA and one in another.
  */
 
-import * as bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import type * as pg from 'pg';
 
 import { loadSql } from './load-sql';

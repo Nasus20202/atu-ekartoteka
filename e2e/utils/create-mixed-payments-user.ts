@@ -3,7 +3,7 @@
  * zero and non-zero months. Used to verify empty-month filtering in E2E.
  */
 
-import * as bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import * as pg from 'pg';
 
 import { USER_PASSWORD } from './test-credentials';
