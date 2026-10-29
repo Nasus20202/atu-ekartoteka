@@ -58,3 +58,6 @@ prisma/*.db-journal
 
 # CI lint caches
 .cache/
+
+# k6 performance test results
+/perf-results

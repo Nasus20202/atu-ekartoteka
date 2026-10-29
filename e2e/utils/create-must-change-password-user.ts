@@ -5,7 +5,7 @@
  * before each test so the flow can be repeated without side-effects.
  */
 
-import * as bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import * as pg from 'pg';
 
 import {

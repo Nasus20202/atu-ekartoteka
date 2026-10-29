@@ -13,3 +13,4 @@ e2e/fixtures/test-data
 playwright-report
 test-results
 .opencode
+perf-results

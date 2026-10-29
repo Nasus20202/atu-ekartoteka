@@ -1,7 +1,8 @@
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
+import { BCRYPT_COST } from '@/lib/auth/bcrypt-cost';
 import { createLogger } from '@/lib/logger';
 import { updateUserProfile } from '@/lib/mutations/users/update-user-profile';
 import { findUserById } from '@/lib/queries/users/find-user-by-id';
@@ -97,7 +98,7 @@ export async function PATCH(request: NextRequest) {
       }
 
       // Hash new password
-      updateData.password = await bcrypt.hash(newPassword, 10);
+      updateData.password = await bcrypt.hash(newPassword, BCRYPT_COST);
       // Clear the forced change flag whenever a password is successfully changed
       updateData.mustChangePassword = false;
     }

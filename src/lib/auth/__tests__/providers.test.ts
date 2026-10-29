@@ -1,4 +1,4 @@
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createMockUser, mockUsers } from '@/__tests__/fixtures';
@@ -14,7 +14,7 @@ vi.mock('@/lib/database/prisma', () => ({
   },
 }));
 
-vi.mock('bcryptjs', () => ({
+vi.mock('bcrypt', () => ({
   default: {
     compare: vi.fn(),
     hash: vi.fn(),

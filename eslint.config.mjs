@@ -87,6 +87,16 @@ const eslintConfig = defineConfig([
       'playwright/no-force-option': 'warn',
     },
   },
+  // Performance tests - k6 scripts run outside Node.js and the @ alias
+  {
+    files: ['perf/**/*.js'],
+    languageOptions: {
+      globals: { __ENV: 'readonly' },
+    },
+    rules: {
+      'no-restricted-imports': 'off',
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

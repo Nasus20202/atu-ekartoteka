@@ -1,6 +1,7 @@
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { BCRYPT_COST } from '@/lib/auth/bcrypt-cost';
 import { hashToken } from '@/lib/email/verification-utils';
 import { createLogger } from '@/lib/logger';
 import { resetPasswordTransaction } from '@/lib/mutations/password-reset/reset-password-transaction';
@@ -74,7 +75,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Hash new password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, BCRYPT_COST);
 
     // Verify turnstile token
     const valid = await verifyTurnstileToken(turnstileToken);

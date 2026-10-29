@@ -26,6 +26,7 @@
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:visual": "playwright test --project='visual-*'",
     "test:e2e:visual:update": "pnpm test:e2e:visual --update-snapshots=all",
+    "test:perf": "mkdir -p perf-results && k6 run perf/load-test.js",
     "prepare": "husky"
   },
   "dependencies": {
@@ -78,7 +79,6 @@
     "@vitest/coverage-v8": "5.0.5",
     "@vitest/ui": "5.0.5",
     "bcrypt": "6.0.0",
-    "bcryptjs": "3.0.3",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "dotenv": "18.0.9",

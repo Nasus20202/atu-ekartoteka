@@ -1,4 +1,4 @@
-import { hash } from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AccountStatus, AuthMethod, UserRole } from '@/lib/types';
@@ -43,7 +43,7 @@ describe('Registration API', () => {
       mockUserCreate.mockResolvedValue({
         id: '1',
         email: userData.email,
-        password: await hash(userData.password, 10),
+        password: await bcrypt.hash(userData.password, 10),
         name: userData.name,
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
@@ -57,7 +57,7 @@ describe('Registration API', () => {
       const result = await mockUserCreate({
         data: {
           email: userData.email,
-          password: await hash(userData.password, 10),
+          password: await bcrypt.hash(userData.password, 10),
           name: userData.name,
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
@@ -100,7 +100,7 @@ describe('Registration API', () => {
       const existingUser = {
         id: '1',
         email: 'existing@example.com',
-        password: await hash('password123', 10),
+        password: await bcrypt.hash('password123', 10),
         name: 'Existing User',
         role: UserRole.TENANT,
         status: AccountStatus.APPROVED,
@@ -122,7 +122,7 @@ describe('Registration API', () => {
 
     it('should hash password before storing', async () => {
       const password = 'mypassword123';
-      const hashedPassword = await hash(password, 10);
+      const hashedPassword = await bcrypt.hash(password, 10);
 
       expect(hashedPassword).not.toBe(password);
       expect(hashedPassword.length).toBeGreaterThan(password.length);
@@ -140,7 +140,7 @@ describe('Registration API', () => {
       mockUserCreate.mockResolvedValue({
         id: '1',
         email: userData.email,
-        password: await hash(userData.password, 10),
+        password: await bcrypt.hash(userData.password, 10),
         name: userData.name,
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
@@ -153,7 +153,7 @@ describe('Registration API', () => {
       const result = await mockUserCreate({
         data: {
           email: userData.email,
-          password: await hash(userData.password, 10),
+          password: await bcrypt.hash(userData.password, 10),
           name: userData.name,
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
@@ -176,7 +176,7 @@ describe('Registration API', () => {
       mockUserCreate.mockResolvedValue({
         id: '1',
         email: userData.email,
-        password: await hash(userData.password, 10),
+        password: await bcrypt.hash(userData.password, 10),
         name: userData.name,
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
@@ -189,7 +189,7 @@ describe('Registration API', () => {
       const result = await mockUserCreate({
         data: {
           email: userData.email,
-          password: await hash(userData.password, 10),
+          password: await bcrypt.hash(userData.password, 10),
           name: userData.name,
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
@@ -211,7 +211,7 @@ describe('Registration API', () => {
       mockUserCreate.mockResolvedValue({
         id: '1',
         email: userData.email,
-        password: await hash(userData.password, 10),
+        password: await bcrypt.hash(userData.password, 10),
         name: null,
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
@@ -224,7 +224,7 @@ describe('Registration API', () => {
       const result = await mockUserCreate({
         data: {
           email: userData.email,
-          password: await hash(userData.password, 10),
+          password: await bcrypt.hash(userData.password, 10),
           name: null,
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
@@ -253,7 +253,7 @@ describe('Registration API', () => {
       mockUserCreate.mockResolvedValue({
         id: '1',
         email: adminData.email,
-        password: await hash(adminData.password, 10),
+        password: await bcrypt.hash(adminData.password, 10),
         name: adminData.name,
         role: UserRole.ADMIN,
         status: AccountStatus.APPROVED,
@@ -266,7 +266,7 @@ describe('Registration API', () => {
       const result = await mockUserCreate({
         data: {
           email: adminData.email,
-          password: await hash(adminData.password, 10),
+          password: await bcrypt.hash(adminData.password, 10),
           name: adminData.name,
           role: UserRole.ADMIN,
           status: AccountStatus.APPROVED,
@@ -284,7 +284,7 @@ describe('Registration API', () => {
       const existingAdmin = {
         id: '1',
         email: 'existing-admin@example.com',
-        password: await hash('password123', 10),
+        password: await bcrypt.hash('password123', 10),
         name: 'Existing Admin',
         role: UserRole.ADMIN,
         status: AccountStatus.APPROVED,
@@ -317,7 +317,7 @@ describe('Registration API', () => {
       mockUserCreate.mockResolvedValue({
         id: '2',
         email: userData.email,
-        password: await hash(userData.password, 10),
+        password: await bcrypt.hash(userData.password, 10),
         name: userData.name,
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,
@@ -330,7 +330,7 @@ describe('Registration API', () => {
       const result = await mockUserCreate({
         data: {
           email: userData.email,
-          password: await hash(userData.password, 10),
+          password: await bcrypt.hash(userData.password, 10),
           name: userData.name,
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
@@ -361,7 +361,7 @@ describe('Registration API', () => {
       const firstAdmin = {
         id: '1',
         email: 'first-admin@example.com',
-        password: await hash('adminpass123', 10),
+        password: await bcrypt.hash('adminpass123', 10),
         name: 'First Admin',
         role: UserRole.ADMIN,
         status: AccountStatus.APPROVED,
@@ -394,7 +394,7 @@ describe('Registration API', () => {
       const regularUser = {
         id: '2',
         email: 'user@example.com',
-        password: await hash('userpass123', 10),
+        password: await bcrypt.hash('userpass123', 10),
         name: 'Regular User',
         role: UserRole.TENANT,
         status: AccountStatus.PENDING,

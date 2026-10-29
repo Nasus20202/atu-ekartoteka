@@ -18,8 +18,10 @@ const {
 }));
 
 // Mock dependencies
-vi.mock('bcryptjs', () => ({
-  hash: vi.fn(() => Promise.resolve('hashed-password')),
+vi.mock('bcrypt', () => ({
+  default: {
+    hash: vi.fn(() => Promise.resolve('hashed-password')),
+  },
 }));
 
 vi.mock('@/lib/database/prisma', () => ({

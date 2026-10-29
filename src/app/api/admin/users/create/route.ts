@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
+import { BCRYPT_COST } from '@/lib/auth/bcrypt-cost';
 import { createLogger } from '@/lib/logger';
 import { createAdminUser } from '@/lib/mutations/users/create-admin-user';
 import { findUserByEmail } from '@/lib/queries/users/find-user-by-email';
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, BCRYPT_COST);
 
     // Create user
     const user = await createAdminUser({

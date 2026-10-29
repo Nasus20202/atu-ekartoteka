@@ -5,10 +5,10 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "Track the corepack version pinned in Dockerfile ARG via a renovate annotation",
-      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
+      "description": "Track any version pinned on the line after a renovate annotation comment",
+      "managerFilePatterns": ["/.*/"],
       "matchStrings": [
-        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\s*\\n\\s*ARG\\s+\\w+=(?<currentValue>[^\\s]+)"
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)(\\s+packageName=(?<packageName>\\S+))?(\\s+versioning=(?<versioning>\\S+))?(\\s+extractVersion=(?<extractVersion>\\S+))?(\\s+registryUrl=(?<registryUrl>\\S+))?\\s*\\n[^\\n]*?[:=]\\s*['\\\"]?(?<currentValue>[^'\\\"\\s]+)"
       ]
     }
   ]
