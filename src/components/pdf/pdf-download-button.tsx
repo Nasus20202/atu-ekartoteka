@@ -14,7 +14,7 @@ export interface PdfFile {
   fileName: string;
 }
 
-interface PdfDownloadButtonProps {
+export interface PdfDownloadButtonProps {
   /** Accessible name of the icon-only button, e.g. what the PDF covers */
   label: string;
   /** Icon-only button for list rows */
