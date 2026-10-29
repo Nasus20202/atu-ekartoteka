@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { NotificationsSidebar } from '@/components/dashboard/notifications-sidebar';
 import { formatCurrency } from '@/lib/utils';
@@ -15,18 +15,6 @@ const withExactText =
       Array.from(element.children).every((child) => child.textContent !== value)
     );
   };
-
-vi.mock('@/components/ui/collapsible', () => ({
-  Collapsible: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
-  CollapsibleTrigger: ({ children }: { children: React.ReactNode }) => (
-    <button>{children}</button>
-  ),
-  CollapsibleContent: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
-}));
 
 function makeNotification(
   id: string,
@@ -61,7 +49,7 @@ describe('NotificationsSidebar', () => {
   });
 
   describe('groupByHoa — single HOA', () => {
-    it('renders total amount and flat list when all notifications belong to one HOA', () => {
+    it('renders total amount and one HOA card', () => {
       const notifications = [
         makeNotification('n1', '100', 'hoa-1', 'Wspólnota Alpha'),
         makeNotification('n2', '200', 'hoa-1', 'Wspólnota Alpha'),
@@ -69,18 +57,16 @@ describe('NotificationsSidebar', () => {
 
       render(<NotificationsSidebar notifications={notifications} />);
 
-      // Total displayed
+      expect(screen.getByText('Łączna kwota do zapłaty')).toBeInTheDocument();
       expect(
-        screen.getByText(withExactText(formatCurrency(300)))
-      ).toBeInTheDocument();
-      // Both notification descriptions visible
+        screen.getAllByText(withExactText(formatCurrency(300)))
+      ).toHaveLength(2);
+      expect(screen.getAllByRole('article')).toHaveLength(1);
       expect(screen.getByText('Naliczenie n1')).toBeInTheDocument();
       expect(screen.getByText('Naliczenie n2')).toBeInTheDocument();
-      // No collapsible HOA group triggers
-      expect(screen.queryByText('Wspólnota Alpha')).not.toBeInTheDocument();
     });
 
-    it('shows hoaHeader when present in single-HOA mode', () => {
+    it('shows hoaHeader as the HOA notice', () => {
       const notification = {
         ...makeNotification('n1', '100', 'hoa-1', 'Wspólnota Alpha'),
         hoaHeader: 'Numer konta: 12 3456 7890',
@@ -93,7 +79,7 @@ describe('NotificationsSidebar', () => {
   });
 
   describe('groupByHoa — multiple HOAs', () => {
-    it('renders a collapsible group per HOA when notifications span multiple HOAs', () => {
+    it('renders a card per HOA when notifications span multiple HOAs', () => {
       const notifications = [
         makeNotification('n1', '100', 'hoa-1', 'Wspólnota Alpha'),
         makeNotification('n2', '200', 'hoa-2', 'Wspólnota Beta'),
@@ -101,7 +87,7 @@ describe('NotificationsSidebar', () => {
 
       render(<NotificationsSidebar notifications={notifications} />);
 
-      // Both HOA names appear as group triggers
+      expect(screen.getAllByRole('article')).toHaveLength(2);
       expect(screen.getByText('Wspólnota Alpha')).toBeInTheDocument();
       expect(screen.getByText('Wspólnota Beta')).toBeInTheDocument();
     });
@@ -148,10 +134,10 @@ describe('NotificationsSidebar', () => {
 
       render(<NotificationsSidebar notifications={notifications} />);
 
-      // Single group, rendered as flat list (isSingle = true)
+      expect(screen.getAllByRole('article')).toHaveLength(1);
       expect(
-        screen.getByText(withExactText(formatCurrency(150)))
-      ).toBeInTheDocument();
+        screen.getAllByText(withExactText(formatCurrency(150)))
+      ).toHaveLength(2);
     });
   });
 });

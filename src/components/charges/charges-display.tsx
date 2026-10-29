@@ -1,21 +1,20 @@
 'use client';
 
-import { ChevronDown } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-import { PeriodCard } from '@/components/charges/period-card';
-import { DownloadChargesPdfButton } from '@/components/pdf/download-charges-pdf-button';
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+  ChargeRows,
+  MonthTrigger,
+  PeriodRange,
+  YearTrigger,
+} from '@/components/charges/charge-list-parts';
+import { DownloadChargesPdfButton } from '@/components/pdf/download-charges-pdf-button';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import {
   type ChargeDisplayDto,
   toChargePdfItemDto,
 } from '@/lib/types/dto/charge-dto';
-import { formatCurrency, formatPeriod } from '@/lib/utils';
-import type { DecimalLike } from '@/lib/utils/decimal';
+import { cn } from '@/lib/utils';
 import { isPeriodAfterDate } from '@/lib/utils/payment-months';
 import { sumDecimals } from '@/lib/utils/sum';
 
@@ -106,20 +105,15 @@ export function ChargesDisplay({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {yearGroups.map(({ year, periods: yearPeriods }) => (
         <Collapsible
           key={year}
           open={openYears.has(year)}
           onOpenChange={() => toggleYear(year)}
         >
-          <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border bg-card px-4 py-3 text-left font-semibold transition-colors hover:bg-muted">
-            {year}
-            <ChevronDown
-              className={`h-4 w-4 transition-transform ${openYears.has(year) ? 'rotate-180' : ''}`}
-            />
-          </CollapsibleTrigger>
-          <CollapsibleContent className="mt-2 space-y-2">
+          <YearTrigger year={year} open={openYears.has(year)} />
+          <CollapsibleContent className="space-y-2">
             {yearPeriods.map((period) => {
               const charges = chargesByPeriod[period] ?? [];
               const totalAmount = sumDecimals(
@@ -136,42 +130,29 @@ export function ChargesDisplay({
                 >
                   <div
                     ref={isActive ? activeRef : null}
-                    className={
-                      isActive
-                        ? 'rounded-lg border-2 border-primary bg-primary/5'
-                        : ''
-                    }
+                    className={cn(
+                      'overflow-hidden rounded-lg border bg-card',
+                      isActive && 'border-primary bg-primary/5'
+                    )}
                   >
-                    <CollapsibleTrigger
-                      className={`flex w-full items-center justify-between rounded-lg border px-4 py-2.5 text-left text-sm font-medium transition-colors hover:bg-muted ${
-                        isActive
-                          ? 'border-primary bg-primary/10 text-primary hover:bg-primary/15'
-                          : 'bg-card'
-                      }`}
-                    >
-                      <PeriodTriggerLabel
-                        period={period}
-                        totalAmount={totalAmount}
-                        isActive={isActive}
-                      />
-                      <ChevronDown
-                        className={`ml-2 h-4 w-4 shrink-0 transition-transform ${isPeriodOpen ? 'rotate-180' : ''}`}
-                      />
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="mt-1">
-                      <PeriodCard
-                        period={period}
-                        charges={charges}
-                        totalAmount={totalAmount}
-                        action={
-                          <DownloadChargesPdfButton
-                            apartmentLabel={apartmentLabel}
-                            hoaName={hoaName}
-                            period={period}
-                            charges={charges.map(toChargePdfItemDto)}
-                          />
-                        }
-                      />
+                    <MonthTrigger
+                      period={period}
+                      total={totalAmount}
+                      open={isPeriodOpen}
+                      active={isActive}
+                    />
+                    <CollapsibleContent className="px-4">
+                      <div className="flex items-center justify-between gap-2 py-1">
+                        <PeriodRange charges={charges} />
+                        <DownloadChargesPdfButton
+                          apartmentLabel={apartmentLabel}
+                          hoaName={hoaName}
+                          period={period}
+                          charges={charges.map(toChargePdfItemDto)}
+                          compact
+                        />
+                      </div>
+                      <ChargeRows charges={charges} />
                     </CollapsibleContent>
                   </div>
                 </Collapsible>
@@ -181,28 +162,5 @@ export function ChargesDisplay({
         </Collapsible>
       ))}
     </div>
-  );
-}
-
-function PeriodTriggerLabel({
-  period,
-  totalAmount,
-  isActive,
-}: {
-  period: string;
-  totalAmount: DecimalLike;
-  isActive: boolean;
-}) {
-  return (
-    <span className="flex items-center gap-3">
-      <span className={isActive ? 'font-semibold' : ''}>
-        {formatPeriod(period)}
-      </span>
-      <span
-        className={`font-normal ${isActive ? 'text-primary/80' : 'text-muted-foreground'}`}
-      >
-        {formatCurrency(totalAmount)}
-      </span>
-    </span>
   );
 }

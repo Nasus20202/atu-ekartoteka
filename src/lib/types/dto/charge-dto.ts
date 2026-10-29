@@ -18,7 +18,7 @@ export type ChargePdfItemDto = ChargeBaseFields &
 export type ChargeDisplayDto = ChargePdfItemDto &
   Record<ChargeDateFieldKey, string>;
 
-export type ChargePeriodItemDto = ChargePdfItemDto & {
+export type ChargePeriodItemDto = ChargeDisplayDto & {
   period: string;
 };
 
@@ -58,6 +58,8 @@ export function toChargePeriodItemDto(
     unit: charge.unit,
     unitPrice: toDecimal(charge.unitPrice).toString(),
     totalAmount: toDecimal(charge.totalAmount).toString(),
+    dateFrom: toIsoString(charge.dateFrom),
+    dateTo: toIsoString(charge.dateTo),
     period: charge.period,
   };
 }

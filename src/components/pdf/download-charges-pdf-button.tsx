@@ -1,10 +1,7 @@
 'use client';
 
-import { FileDown } from 'lucide-react';
-import { useState } from 'react';
-
 import type { ChargePeriodGroup } from '@/components/pdf/charge-pdf-document';
-import { Button } from '@/components/ui/button';
+import { PdfDownloadButton } from '@/components/pdf/pdf-download-button';
 import type { ChargePdfItemDto } from '@/lib/types/dto/charge-dto';
 import { formatPeriod } from '@/lib/utils';
 import { sumDecimals } from '@/lib/utils/sum';
@@ -14,6 +11,7 @@ interface DownloadChargesPdfButtonProps {
   hoaName: string;
   period: string;
   charges: ChargePdfItemDto[];
+  compact?: boolean;
 }
 
 export type { ChargePdfItemDto };
@@ -23,59 +21,42 @@ export function DownloadChargesPdfButton({
   hoaName,
   period,
   charges,
+  compact,
 }: DownloadChargesPdfButtonProps) {
-  const [loading, setLoading] = useState(false);
+  const createPdf = async () => {
+    const { pdf } = await import('@react-pdf/renderer');
+    const { ChargePdfDocument } =
+      await import('@/components/pdf/charge-pdf-document');
 
-  const handleDownload = async () => {
-    setLoading(true);
-    try {
-      const { pdf } = await import('@react-pdf/renderer');
-      const { ChargePdfDocument } =
-        await import('@/components/pdf/charge-pdf-document');
+    const periodGroup: ChargePeriodGroup = {
+      period,
+      periodLabel: formatPeriod(period),
+      charges: charges.map((c) => ({
+        ...c,
+        dateFrom: new Date(0),
+        dateTo: new Date(0),
+      })),
+      total: sumDecimals(charges.map((charge) => charge.totalAmount)),
+    };
 
-      const periodGroup: ChargePeriodGroup = {
-        period,
-        periodLabel: formatPeriod(period),
-        charges: charges.map((c) => ({
-          ...c,
-          dateFrom: new Date(0),
-          dateTo: new Date(0),
-        })),
-        total: sumDecimals(charges.map((charge) => charge.totalAmount)),
-      };
+    const generatedDate = new Date().toISOString().slice(0, 10);
+    const blob = await pdf(
+      <ChargePdfDocument
+        apartmentLabel={apartmentLabel}
+        hoaName={hoaName}
+        periodGroups={[periodGroup]}
+        generatedDate={generatedDate}
+      />
+    ).toBlob();
 
-      const generatedDate = new Date().toISOString().slice(0, 10);
-      const blob = await pdf(
-        <ChargePdfDocument
-          apartmentLabel={apartmentLabel}
-          hoaName={hoaName}
-          periodGroups={[periodGroup]}
-          generatedDate={generatedDate}
-        />
-      ).toBlob();
-
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `naliczenia-${apartmentLabel}-${period}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } finally {
-      setLoading(false);
-    }
+    return { blob, fileName: `naliczenia-${apartmentLabel}-${period}.pdf` };
   };
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={handleDownload}
-      disabled={loading}
-    >
-      <FileDown className="mr-2 h-4 w-4" />
-      {loading ? 'Generowanie...' : 'Pobierz PDF'}
-    </Button>
+    <PdfDownloadButton
+      label={`Pobierz PDF naliczeń: ${formatPeriod(period)}`}
+      compact={compact}
+      createPdf={createPdf}
+    />
   );
 }

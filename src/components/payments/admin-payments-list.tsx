@@ -72,24 +72,27 @@ function PaymentYearSection({
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <div className="flex items-center gap-2">
-        <CollapsibleTrigger className="flex flex-1 items-center justify-between rounded-lg border p-3 text-sm font-medium hover:bg-muted transition-colors">
-          <div className="flex items-center gap-4">
-            <span>Rok {payment.year}</span>
+      <div className="flex items-center overflow-hidden rounded-lg border bg-card pr-4">
+        <CollapsibleTrigger className="flex min-h-12 min-w-0 flex-1 items-center justify-between gap-3 px-4 text-left transition-colors hover:bg-muted">
+          <span className="whitespace-nowrap font-medium">
+            Rok {payment.year}
+          </span>
+          <span className="flex items-center gap-3">
             <span
-              className={`text-base font-bold ${closingBalance.greaterThanOrEqualTo(0) ? 'text-green-600' : 'text-red-600'}`}
+              className={`font-semibold tabular-nums ${closingBalance.greaterThanOrEqualTo(0) ? 'text-green-600' : 'text-red-600'}`}
             >
               {formatCurrency(closingBalance)}
             </span>
-          </div>
-          <ChevronDown
-            className={`h-4 w-4 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`}
-          />
+            <ChevronDown
+              className={`h-4 w-4 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`}
+            />
+          </span>
         </CollapsibleTrigger>
         <DownloadPaymentPdfButton
           apartmentLabel={apartmentLabel}
           hoaName={hoaName}
           payment={paymentPdfDto}
+          compact
         />
       </div>
       <CollapsibleContent>
