@@ -152,4 +152,142 @@ describe('admin users utils', () => {
       status: AccountStatus.PENDING,
     });
   });
+
+  it('treats a missing selected user as having no apartments', () => {
+    const otherUser = {
+      ...approvedUser,
+      id: 'user-2',
+      apartments: [apartmentA],
+    };
+
+    expect(
+      getAvailableApartments([apartmentA, apartmentB], [otherUser], null).map(
+        (apartment) => apartment.id
+      )
+    ).toEqual(['apt-b']);
+  });
+
+  it('matches by email only when names are missing', () => {
+    const userWithoutName = { ...approvedUser, name: null };
+    const apartmentWithoutOwner = { ...apartmentA, owner: null };
+
+    expect(
+      isApartmentMatchingUser(apartmentWithoutOwner, userWithoutName)
+    ).toBe(true);
+    expect(
+      isApartmentMatchingUser(
+        { ...apartmentWithoutOwner, email: null },
+        { ...userWithoutName, email: '' }
+      )
+    ).toBe(false);
+  });
+
+  it('matches when the user name contains the apartment owner', () => {
+    expect(
+      isApartmentMatchingUser(
+        { ...apartmentA, owner: 'Kowalski', email: null },
+        { ...approvedUser, email: '' }
+      )
+    ).toBe(true);
+  });
+
+  it.each([
+    ['2', ['apt-a']],
+    ['ext-', ['apt-b', 'apt-a']],
+    ['nowak', ['apt-b']],
+    ['anna@', ['apt-b']],
+    ['owner-a', ['apt-a']],
+    ['ext-b', ['apt-b']],
+    ['lipowa 10/2', ['apt-a']],
+  ])('searches apartments by %s', (search, expected) => {
+    const result = filterAndSortApartments(
+      [
+        { ...apartmentA, address: 'Lipowa', building: '10', number: '2' },
+        { ...apartmentB, address: null, building: null, number: '7' },
+        {
+          ...apartmentC,
+          externalOwnerId: null,
+          externalApartmentId: null,
+          owner: null,
+          email: null,
+          address: null,
+          building: null,
+          number: null,
+        } as unknown as Apartment,
+      ],
+      search,
+      [],
+      null
+    );
+
+    expect(result.map((apartment) => apartment.id)).toEqual(expected);
+  });
+
+  it('sorts matching apartments first, then by building and number', () => {
+    const user = { ...approvedUser, name: 'Zenon', email: 'zenon@example.com' };
+    const result = filterAndSortApartments(
+      [
+        { ...apartmentA, id: 'no-building', building: null, number: null },
+        { ...apartmentA, id: 'b1-n10', building: '1', number: '10' },
+        { ...apartmentA, id: 'b1-n9', building: '1', number: '9' },
+        {
+          ...apartmentA,
+          id: 'match',
+          building: '9',
+          owner: 'Zenon',
+          email: null,
+        },
+      ] as unknown as Apartment[],
+      '',
+      [],
+      { ...user, apartments: [] }
+    );
+
+    expect(result.map((apartment) => apartment.id)).toEqual([
+      'match',
+      'no-building',
+      'b1-n9',
+      'b1-n10',
+    ]);
+  });
+
+  it('builds an empty filter query for all users', () => {
+    expect(buildUsersQuery('ALL', 1, '')).toBe('page=1');
+  });
+
+  it.each([
+    ['first', ['match', 'other']],
+    ['last', ['other', 'match']],
+  ])('keeps a matching apartment first when it starts %s', (_, order) => {
+    const apartments = {
+      match: { ...apartmentA, id: 'match', owner: 'Zenon', email: null },
+      other: { ...apartmentA, id: 'other', owner: 'Inny', email: null },
+    };
+    const result = filterAndSortApartments(
+      order.map((id) => apartments[id as keyof typeof apartments]),
+      '',
+      [],
+      { ...approvedUser, name: 'Zenon', email: '', apartments: [] }
+    );
+
+    expect(result[0].id).toBe('match');
+  });
+
+  it('sorts apartments without a number first in either order', () => {
+    const withNumber = { ...apartmentA, id: 'with-number', number: '1' };
+    const withoutNumber = {
+      ...apartmentA,
+      id: 'without-number',
+      number: null,
+    } as unknown as Apartment;
+
+    for (const input of [
+      [withNumber, withoutNumber],
+      [withoutNumber, withNumber],
+    ]) {
+      expect(
+        filterAndSortApartments(input, '', [], null).map((a) => a.id)
+      ).toEqual(['without-number', 'with-number']);
+    }
+  });
 });

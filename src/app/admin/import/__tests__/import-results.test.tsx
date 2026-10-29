@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ImportResultCard } from '@/app/admin/import/import-result-card';
 import { ImportResults } from '@/app/admin/import/import-results';
@@ -186,5 +187,73 @@ describe('ImportResultCard', () => {
     expect(
       screen.queryByRole('button', { name: /pobierz błędy/i })
     ).not.toBeInTheDocument();
+  });
+});
+
+describe('error downloads', () => {
+  let downloads: { href: string; download: string }[];
+
+  beforeEach(() => {
+    downloads = [];
+    vi.stubGlobal('URL', {
+      ...URL,
+      createObjectURL: vi.fn(() => 'blob:errors'),
+      revokeObjectURL: vi.fn(),
+    });
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+      this: HTMLAnchorElement
+    ) {
+      downloads.push({ href: this.href, download: this.download });
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('downloads the errors of every HOA with problems', async () => {
+    render(
+      <ImportResults
+        response={{
+          ...response,
+          results: [...response.results, ...successResponseOnly.results],
+        }}
+      />
+    );
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /pobierz wszystkie błędy/i })
+    );
+
+    expect(downloads).toEqual([
+      { href: 'blob:errors', download: 'bledy-import.txt' },
+    ]);
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:errors');
+  });
+
+  it('downloads the errors of a single HOA', async () => {
+    render(<ImportResultCard result={resultWithWarnings} />);
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /pobierz błędy/i })
+    );
+
+    expect(downloads).toEqual([
+      { href: 'blob:errors', download: 'bledy-HOA-WARN.txt' },
+    ]);
+  });
+
+  it('labels file errors by HOA when the file is unknown', () => {
+    render(
+      <ImportResults
+        response={{
+          ...successResponseOnly,
+          errors: [{ hoaId: 'HOA-9', error: 'Brak plików' }],
+        }}
+      />
+    );
+
+    expect(screen.getByText(/HOA-9: Brak plików/)).toBeInTheDocument();
   });
 });
