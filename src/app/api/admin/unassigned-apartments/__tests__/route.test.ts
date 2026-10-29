@@ -132,6 +132,37 @@ describe('GET /api/admin/unassigned-apartments', () => {
     expect(hoa2.apartments).toHaveLength(1);
   });
 
+  it('sorts apartments numerically by building, then number', async () => {
+    const apartment = (
+      id: string,
+      building: string | null,
+      number: string
+    ) => ({
+      ...mockApartments[0],
+      id,
+      building,
+      number,
+    });
+    mockAuth.mockResolvedValueOnce(adminSession);
+    mockApartmentFindMany.mockResolvedValueOnce([
+      apartment('b2-10', '2', '10'),
+      apartment('b2-9', '2', '9'),
+      apartment('none-5', null, '5'),
+      apartment('b1-3', '1', '3'),
+    ]);
+
+    const { GET } = await import('../route');
+    const response = await GET(makeRequest());
+    const data = await response.json();
+
+    expect(data.hoas[0].apartments.map((a: { id: string }) => a.id)).toEqual([
+      'none-5',
+      'b1-3',
+      'b2-9',
+      'b2-10',
+    ]);
+  });
+
   it('should query with notIn filter for creatable mode', async () => {
     mockAuth.mockResolvedValueOnce(adminSession);
     mockUserFindMany.mockResolvedValueOnce([{ email: 'existing@example.com' }]);

@@ -345,4 +345,33 @@ describe('POST /api/reset-password', () => {
     expect(response.status).toBe(500);
     expect(data.error).toBe('Nie udało się zresetować hasła');
   });
+
+  it('should return 400 when the Turnstile check fails', async () => {
+    const { verifyTurnstileToken } = await import('@/lib/turnstile');
+    vi.mocked(verifyTurnstileToken).mockResolvedValueOnce(false);
+    mockPasswordResetFindUnique.mockResolvedValue({
+      id: 'reset-123',
+      userId: 'user-123',
+      expiresAt: new Date(Date.now() + 3600000),
+      used: false,
+      user: { id: 'user-123', authMethod: AuthMethod.CREDENTIALS },
+    });
+
+    const req = new NextRequest('http://localhost:3000/api/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({
+        token: 'valid-token',
+        password: 'newpass123',
+        turnstileToken: 'bad-token',
+      }),
+    });
+
+    const response = await POST(req);
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: 'Nieprawidłowe potwierdzenie turnstile',
+    });
+    expect(mockTransaction).not.toHaveBeenCalled();
+  });
 });

@@ -221,6 +221,36 @@ describe('User Profile API', () => {
       expect(data.error).toBe('Current password is incorrect');
     });
 
+    it('should reject a new password shorter than 8 characters', async () => {
+      mockAuth.mockResolvedValueOnce({ user: { id: 'user-id' } });
+      mockUserFindUnique.mockResolvedValueOnce(mockUser);
+
+      const { PATCH } = await import('../route');
+      const response = await PATCH(createMockRequest({ newPassword: 'short' }));
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe('Hasło musi mieć co najmniej 8 znaków');
+    });
+
+    it('should reject a password change for a user without a password', async () => {
+      mockAuth.mockResolvedValueOnce({ user: { id: 'user-id' } });
+      mockUserFindUnique.mockResolvedValueOnce({ ...mockUser, password: null });
+
+      const { PATCH } = await import('../route');
+      const response = await PATCH(
+        createMockRequest({
+          currentPassword: 'anything',
+          newPassword: 'newPassword123',
+        })
+      );
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe('Current password is incorrect');
+      expect(mockUserUpdate).not.toHaveBeenCalled();
+    });
+
     it('should update password with correct current password', async () => {
       mockAuth.mockResolvedValueOnce({
         user: {

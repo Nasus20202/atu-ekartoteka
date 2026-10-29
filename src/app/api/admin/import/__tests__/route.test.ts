@@ -244,6 +244,32 @@ describe('Admin Import API', () => {
       expect(data.message).toBe('Invalid file format');
     });
 
+    it('reports non-Error import failures as unknown errors', async () => {
+      vi.mocked(auth).mockResolvedValueOnce({
+        user: {
+          id: 'admin-id',
+          email: 'admin@example.com',
+          role: UserRole.ADMIN,
+        },
+        expires: new Date().toISOString(),
+      } as any);
+      vi.mocked(processBatchImport).mockRejectedValueOnce(
+        'Invalid file format'
+      );
+
+      const { POST } = await import('../route');
+      const file = new File(['content'], 'test.txt', { type: 'text/plain' });
+      const formData = createMockFormData([file]);
+      const request = createMockRequest(formData);
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe('Import nie powiódł się');
+      expect(data.message).toBe('Nieznany błąd');
+    });
+
     it('should return import results with correct structure', async () => {
       vi.mocked(auth).mockResolvedValueOnce({
         user: {
@@ -397,6 +423,22 @@ describe('Admin Import API', () => {
       expect(data.results).toHaveLength(2);
       expect(data.results[0].success).toBe(true);
       expect(data.results[1].success).toBe(false);
+    });
+
+    it('treats a request without content type as form data', async () => {
+      vi.mocked(auth).mockResolvedValueOnce({
+        user: { id: 'admin-id', role: UserRole.ADMIN },
+      } as any);
+
+      const { POST } = await import('../route');
+      const request = {
+        formData: async () => createMockFormData([]),
+        headers: { get: () => null },
+      } as unknown as NextRequest;
+
+      const response = await POST(request);
+
+      expect(response.status).toBe(400);
     });
   });
 });

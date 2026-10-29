@@ -220,4 +220,40 @@ describe('POST /api/admin/users/bulk-create', () => {
     expect(response.status).toBe(200);
     expect(data).toEqual({ created: 2, skipped: 0, errors: 0 });
   });
+
+  it('still creates the account when the activation email fails', async () => {
+    mockAuth.mockResolvedValueOnce(adminSession());
+    mockApartmentFindMany.mockResolvedValueOnce([
+      { id: 'apt-1', email: 'owner@example.com', owner: null },
+    ]);
+    mockUserFindUnique.mockResolvedValueOnce(null);
+    mockUserCreate.mockResolvedValueOnce({ id: 'new-user-id' });
+    mockSendAccountActivationEmail.mockRejectedValueOnce(new Error('smtp'));
+
+    const { POST } = await import('../route');
+    const response = await POST(makeRequest({ apartmentIds: ['apt-1'] }));
+
+    await expect(response.json()).resolves.toEqual({
+      created: 1,
+      skipped: 0,
+      errors: 0,
+    });
+    expect(mockSendAccountActivationEmail).toHaveBeenCalledWith(
+      'owner@example.com',
+      expect.any(String),
+      undefined
+    );
+  });
+
+  it('returns 500 when the request body cannot be read', async () => {
+    mockAuth.mockResolvedValueOnce(adminSession());
+    const request = {
+      json: vi.fn().mockRejectedValue(new Error('bad json')),
+    } as unknown as NextRequest;
+
+    const { POST } = await import('../route');
+    const response = await POST(request);
+
+    expect(response.status).toBe(500);
+  });
 });
