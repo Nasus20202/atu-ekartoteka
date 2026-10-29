@@ -4,6 +4,7 @@
 
 import { expect, test } from '../fixtures';
 import { CURRENT_MONTH_YEAR } from '../utils/date-utils';
+import { openNavigationMenu } from '../utils/navigation';
 import { USER_NAME } from '../utils/test-credentials';
 
 test.describe('Dashboard Home', () => {
@@ -173,6 +174,7 @@ test.describe('Dashboard Home', () => {
   test.describe('Navigation', () => {
     test('user can navigate to profile from header', async ({ userPage }) => {
       await userPage.goto('/dashboard');
+      await openNavigationMenu(userPage);
 
       await userPage.getByRole('link', { name: /Profil/i }).click();
 
@@ -181,9 +183,12 @@ test.describe('Dashboard Home', () => {
 
     test('header shows logout option', async ({ userPage }) => {
       await userPage.goto('/dashboard');
+      await openNavigationMenu(userPage);
 
-      // Should see logout text/button in header
-      await expect(userPage.getByText(/Wyloguj/i).first()).toBeVisible();
+      // Should see logout button in header
+      await expect(
+        userPage.getByRole('button', { name: /Wyloguj/i })
+      ).toBeVisible();
     });
   });
 });

@@ -101,6 +101,14 @@ See [Docker Documentation](docs/DOCKER.md) for detailed setup and troubleshootin
 - `pnpm format` - Format code with Prettier
 - `pnpm db:migrate` - Run database migrations
 - `pnpm db:deploy` - Deploy migrations (production)
+- `pnpm test:e2e` - Run E2E tests
+- `pnpm test:e2e:visual` - Run visual regression tests
+- `pnpm test:e2e:visual:update` - Regenerate visual baselines after an intended UI change
+
+### Visual regression tests
+
+Baselines in `e2e/visual/__screenshots__` are rendered on Linux, like CI. The
+app must run with `E2E_ALLOW_FIXED_NOW=true` (as in `docker-compose.e2e.yaml`).
 
 ## Health Checks
 

@@ -1,0 +1,14 @@
+/* Applied only while taking visual snapshots */
+nextjs-portal {
+  display: none !important;
+}
+
+/* App version in the bottom-left corner changes with every release */
+.fixed.bottom-4.left-4 > p.text-xs {
+  visibility: hidden !important;
+}
+
+/* Tall element screenshots scroll, which would draw the sticky navbar over them */
+nav.sticky {
+  position: static !important;
+}
