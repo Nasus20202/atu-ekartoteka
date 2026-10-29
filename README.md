@@ -113,7 +113,7 @@ app must run with `E2E_ALLOW_FIXED_NOW=true` (as in `docker-compose.e2e.yaml`).
 
 ## Performance Tests
 
-[k6](https://grafana.com/docs/k6/latest/) scenarios in `perf/` (public pages, login, user and admin journeys) run in CI against the Docker image. Locally, start the E2E stack, seed it and run `pnpm test:perf`. Load and thresholds are set in `perf/lib/config.js` (overridable with `PERF_*` env vars).
+[k6](https://grafana.com/docs/k6/latest/) scenarios in `perf/` (public pages, login, user and admin journeys) run in CI against the Docker image. Locally, start the E2E stack, seed it and run `pnpm test:perf`. Every scenario climbs to its peak load in four steps, holds it, then drains. Peak load and step timing are set in `perf/lib/config.js` (overridable with `PERF_*` env vars); latency limits per scenario and per endpoint are in `perf/lib/thresholds.js`. The run writes `perf-results/summary.md`, which CI adds to the job summary.
 
 ## Health Checks
 
