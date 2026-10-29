@@ -3,11 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { createLogger } from '@/lib/logger';
 import { findApartmentsPaginated } from '@/lib/queries/apartments/find-apartments-paginated';
-import { Apartment } from '@/lib/types';
 import {
   toApartmentSummaryDto,
   toHomeownersAssociationSummaryDto,
 } from '@/lib/types/dto/apartment-dto';
+import { compareApartmentsNaturally } from '@/lib/utils/apartment-sort';
 import { getErrorMessage } from '@/lib/utils/error-message';
 
 const logger = createLogger('api:admin:apartments');
@@ -92,21 +92,7 @@ export async function GET(req: NextRequest) {
       hoaId,
     });
 
-    // Sort apartments: natural sort by building, then by number
-    const sortedApartments = apartmentsData.sort(
-      (a: Apartment, b: Apartment) => {
-        const buildingCmp = (a.building || '').localeCompare(
-          b.building || '',
-          undefined,
-          { numeric: true, sensitivity: 'base' }
-        );
-        if (buildingCmp !== 0) return buildingCmp;
-        return a.number.localeCompare(b.number, undefined, {
-          numeric: true,
-          sensitivity: 'base',
-        });
-      }
-    );
+    const sortedApartments = apartmentsData.sort(compareApartmentsNaturally);
 
     const apartments = sortedApartments.slice(skip, skip + limit);
 

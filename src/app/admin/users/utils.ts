@@ -2,6 +2,7 @@ import type { Apartment, User } from '@/app/admin/users/types';
 import type { UserFilter } from '@/app/admin/users/user-filters';
 import { AccountStatus } from '@/lib/types';
 import { formatSharePercent } from '@/lib/utils';
+import { compareApartmentsNaturally } from '@/lib/utils/apartment-sort';
 
 export function buildUsersQuery(
   filter: UserFilter,
@@ -125,20 +126,7 @@ export function filterAndSortApartments(
         return 1;
       }
 
-      const buildingCompare = (left.building || '').localeCompare(
-        right.building || '',
-        undefined,
-        { numeric: true, sensitivity: 'base' }
-      );
-
-      if (buildingCompare !== 0) {
-        return buildingCompare;
-      }
-
-      return (left.number || '').localeCompare(right.number || '', undefined, {
-        numeric: true,
-        sensitivity: 'base',
-      });
+      return compareApartmentsNaturally(left, right);
     });
 }
 

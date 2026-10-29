@@ -1,21 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-/** Natural sort comparator for apartment building+number, matching the logic in the API route and admin users page. */
-function compareApartments(
-  a: { building?: string | null; number: string },
-  b: { building?: string | null; number: string }
-): number {
-  const buildingCmp = (a.building || '').localeCompare(
-    b.building || '',
-    undefined,
-    { numeric: true, sensitivity: 'base' }
-  );
-  if (buildingCmp !== 0) return buildingCmp;
-  return a.number.localeCompare(b.number, undefined, {
-    numeric: true,
-    sensitivity: 'base',
-  });
-}
+import { compareApartmentsNaturally as compareApartments } from '@/lib/utils/apartment-sort';
 
 function apt(building: string | null, number: string) {
   return { building, number };
@@ -92,6 +77,17 @@ describe('apartment natural sort comparator', () => {
       '17/3',
       '17/12',
       '17/100',
+    ]);
+  });
+});
+
+describe('compareApartmentsNaturally with letter buildings', () => {
+  it('orders letter buildings without relying on numeric parsing', () => {
+    const apts = [apt('B', '2'), apt('A', '10'), apt('A', '9')];
+    expect([...apts].sort(compareApartments)).toEqual([
+      apt('A', '9'),
+      apt('A', '10'),
+      apt('B', '2'),
     ]);
   });
 });

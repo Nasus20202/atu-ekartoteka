@@ -102,7 +102,7 @@ describe('POST /api/admin/users/bulk-create', () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toMatch(/apartmentIds/);
+    expect(data.error).toBe('Wybierz co najmniej jedno mieszkanie');
   });
 
   it('should return 400 when apartmentIds is missing', async () => {

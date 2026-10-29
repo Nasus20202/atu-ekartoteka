@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
 
     if (!Array.isArray(apartmentIds) || apartmentIds.length === 0) {
       return NextResponse.json(
-        { error: 'apartmentIds must be a non-empty array' },
+        { error: 'Wybierz co najmniej jedno mieszkanie' },
         { status: 400 }
       );
     }
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     logger.error({ error }, 'Bulk create failed');
     return NextResponse.json(
-      { error: 'Failed to process bulk create' },
+      { error: 'Nie udało się utworzyć kont' },
       { status: 500 }
     );
   }

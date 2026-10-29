@@ -1,3 +1,21 @@
+import { formatCountPl, type PolishPluralForms } from '@/lib/utils/pluralize';
+
+const HOA_FORMS: PolishPluralForms = {
+  one: 'wspólnota',
+  few: 'wspólnoty',
+  many: 'wspólnot',
+};
+const ERROR_FORMS: PolishPluralForms = {
+  one: 'błąd',
+  few: 'błędy',
+  many: 'błędów',
+};
+const WARNING_FORMS: PolishPluralForms = {
+  one: 'ostrzeżenie',
+  few: 'ostrzeżenia',
+  many: 'ostrzeżeń',
+};
+
 export interface ErrorExportEntry {
   hoaId: string;
   errors: string[];
@@ -6,17 +24,6 @@ export interface ErrorExportEntry {
     period?: string;
     message: string;
   }[];
-}
-
-function pluralise(
-  count: number,
-  singular: string,
-  plural: string,
-  genitive: string
-): string {
-  if (count === 1) return `${count} ${singular}`;
-  if (count >= 2 && count <= 4) return `${count} ${plural}`;
-  return `${count} ${genitive}`;
 }
 
 export function serialiseErrorsToTxt(entries: ErrorExportEntry[]): string {
@@ -49,7 +56,7 @@ export function serialiseErrorsToTxt(entries: ErrorExportEntry[]): string {
 
   parts.push('---');
   parts.push(
-    `Łącznie: ${pluralise(entries.length, 'wspólnota', 'wspólnoty', 'wspólnot')}, ${pluralise(totalErrors, 'błąd', 'błędy', 'błędów')}, ${pluralise(totalWarnings, 'ostrzeżenie', 'ostrzeżenia', 'ostrzeżeń')}`
+    `Łącznie: ${formatCountPl(entries.length, HOA_FORMS)}, ${formatCountPl(totalErrors, ERROR_FORMS)}, ${formatCountPl(totalWarnings, WARNING_FORMS)}`
   );
 
   return parts.join('\n');

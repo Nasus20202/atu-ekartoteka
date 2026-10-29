@@ -52,7 +52,7 @@ describe('GET /api/admin/stats', () => {
 
     expect(response.status).toBe(500);
     await expect(response.json()).resolves.toEqual({
-      error: 'Failed to fetch stats',
+      error: 'Nie udało się pobrać statystyk',
     });
   });
 });

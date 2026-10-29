@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { BCRYPT_COST } from '@/lib/auth/bcrypt-cost';
 import {
-  MIN_PASSWORD_LENGTH,
-  PASSWORD_TOO_SHORT_MESSAGE,
-} from '@/lib/auth/password-rules';
+  EMAIL_TAKEN_MESSAGE,
+  validateCredentials,
+} from '@/lib/auth/credential-validation';
 import { createRegistrationAutoLoginToken } from '@/lib/auth/registration-auto-login-token';
 import { getEmailService } from '@/lib/email/email-service';
 import {
@@ -32,28 +32,9 @@ export async function POST(req: NextRequest) {
 
     logger.info({ email, isFirstAdmin }, 'Registration attempt');
 
-    if (!email || !password) {
-      return NextResponse.json(
-        { error: 'Email i hasło są wymagane' },
-        { status: 400 }
-      );
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: 'Nieprawidłowy format email' },
-        { status: 400 }
-      );
-    }
-
-    // Validate password length
-    if (password.length < MIN_PASSWORD_LENGTH) {
-      return NextResponse.json(
-        { error: PASSWORD_TOO_SHORT_MESSAGE },
-        { status: 400 }
-      );
+    const validationError = validateCredentials(email, password);
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
     // Verify Turnstile token only if enabled
@@ -73,10 +54,7 @@ export async function POST(req: NextRequest) {
 
     if (existingUser) {
       logger.warn({ email }, 'Registration failed: user already exists');
-      return NextResponse.json(
-        { error: 'Użytkownik z tym adresem email już istnieje' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: EMAIL_TAKEN_MESSAGE }, { status: 400 });
     }
 
     // Check if this is first admin registration

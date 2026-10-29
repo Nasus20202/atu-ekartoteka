@@ -27,7 +27,7 @@ export async function GET(
 
     if (!apartment) {
       return NextResponse.json(
-        { error: 'Apartment not found' },
+        { error: 'Nie znaleziono mieszkania' },
         { status: 404 }
       );
     }
@@ -42,7 +42,7 @@ export async function GET(
   } catch (error) {
     logger.error({ error }, 'Error fetching apartment details');
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Wewnętrzny błąd serwera' },
       { status: 500 }
     );
   }
@@ -62,7 +62,7 @@ export async function PATCH(
     // Validate request body
     if (typeof body.isActive !== 'boolean') {
       return NextResponse.json(
-        { error: 'Invalid request body' },
+        { error: 'Nieprawidłowe dane żądania' },
         { status: 400 }
       );
     }
@@ -78,7 +78,7 @@ export async function PATCH(
   } catch (error) {
     logger.error({ error }, 'Error updating apartment status');
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Wewnętrzny błąd serwera' },
       { status: 500 }
     );
   }

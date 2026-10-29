@@ -18,7 +18,7 @@ export async function GET() {
   } catch (error) {
     logger.error({ error }, 'Failed to check admin existence');
     return NextResponse.json(
-      { error: 'Failed to check setup status' },
+      { error: 'Nie udało się sprawdzić stanu konfiguracji' },
       { status: 500 }
     );
   }

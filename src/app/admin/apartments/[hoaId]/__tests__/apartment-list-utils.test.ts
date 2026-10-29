@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import {
   buildAddressKey,
   computeDuplicateActiveAddresses,
-  getFoundApartmentsLabel,
   getPageItems,
 } from '@/app/admin/apartments/[hoaId]/apartment-list-utils';
 
@@ -58,16 +57,5 @@ describe('getPageItems', () => {
 
   it('omits ellipses where pages are adjacent to the edges', () => {
     expect(getPageItems(1, 10)).toEqual([1, 2, 3, 'ellipsis', 10]);
-  });
-});
-
-describe('getFoundApartmentsLabel', () => {
-  it.each([
-    [0, 'mieszkań'],
-    [1, 'mieszkanie'],
-    [2, 'mieszkania'],
-    [5, 'mieszkań'],
-  ])('labels %i apartments as %s', (count, label) => {
-    expect(getFoundApartmentsLabel(count)).toBe(label);
   });
 });

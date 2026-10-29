@@ -103,7 +103,7 @@ describe('Admin Users Create API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toBe('Email and password are required');
+      expect(data.error).toBe('Email i hasło są wymagane');
     });
 
     it('should return 400 when password is missing', async () => {
@@ -123,7 +123,7 @@ describe('Admin Users Create API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toBe('Email and password are required');
+      expect(data.error).toBe('Email i hasło są wymagane');
     });
 
     it('should return 400 when role is invalid', async () => {
@@ -147,7 +147,7 @@ describe('Admin Users Create API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toBe('Invalid role');
+      expect(data.error).toBe('Nieprawidłowa rola');
     });
 
     it('should return 400 when status is invalid', async () => {
@@ -171,7 +171,7 @@ describe('Admin Users Create API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toBe('Invalid status');
+      expect(data.error).toBe('Nieprawidłowy status konta');
     });
 
     it('should return 400 when user already exists', async () => {
@@ -198,7 +198,7 @@ describe('Admin Users Create API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toBe('User with this email already exists');
+      expect(data.error).toBe('Użytkownik z tym adresem email już istnieje');
     });
 
     it('should create user with default role and status', async () => {
@@ -386,7 +386,7 @@ describe('Admin Users Create API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(500);
-      expect(data.error).toBe('Failed to create user');
+      expect(data.error).toBe('Nie udało się utworzyć użytkownika');
     });
   });
 });

@@ -131,7 +131,7 @@ export default function AdminImportPage() {
         await fetchStats();
       }
     } catch (err) {
-      setError(getErrorMessage(err, 'Import failed'));
+      setError(getErrorMessage(err, 'Import nie powiódł się'));
     } finally {
       setLoading(false);
     }
