@@ -250,4 +250,71 @@ describe('ApartmentSelectionDialog', () => {
     expect(onReject).toHaveBeenCalledTimes(1);
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
+
+  it('highlights apartments by selection, match and activity', () => {
+    const unmatchedUser = {
+      ...selectedUser,
+      name: null,
+      email: 'nobody@example.com',
+    };
+    const other = { ...apartment, owner: 'Ktoś', email: null };
+
+    render(
+      <ApartmentSelectionDialog
+        actionLoading={false}
+        apartmentSearch=""
+        editMode="assign-apartment"
+        filteredApartments={[
+          { ...other, id: 'selected' },
+          { ...other, id: 'matching', email: 'nobody@example.com' },
+          { ...other, id: 'inactive', isActive: false },
+          { ...other, id: 'plain', shareDenominator: null },
+        ]}
+        onApartmentSearchChange={() => {}}
+        onApproveOrAssign={() => {}}
+        onCancel={() => {}}
+        onReject={() => {}}
+        onSelectApartment={() => {}}
+        onSetApproved={() => {}}
+        open
+        selectedApartments={['selected']}
+        selectedUser={unmatchedUser}
+      />
+    );
+
+    const row = (id: string) =>
+      document.querySelector(`label[for="apt-${id}"]`) as HTMLElement;
+
+    expect(screen.getByText('nobody@example.com')).toBeInTheDocument();
+    expect(row('selected')).toHaveClass('border-primary');
+    expect(row('matching')).toHaveClass('border-green-500');
+    expect(row('inactive')).toHaveClass('opacity-60');
+    expect(row('plain')).not.toHaveClass('opacity-60');
+    expect(row('plain')).toHaveTextContent('Procent: -');
+  });
+
+  it.each([
+    [AccountStatus.APPROVED, /^zatwierdzony$/i],
+    [AccountStatus.REJECTED, /^odrzucony$/i],
+  ])('disables the current %s status', (status, name) => {
+    render(
+      <ApartmentSelectionDialog
+        actionLoading={false}
+        apartmentSearch=""
+        editMode="change-status"
+        filteredApartments={[]}
+        onApartmentSearchChange={() => {}}
+        onApproveOrAssign={() => {}}
+        onCancel={() => {}}
+        onReject={() => {}}
+        onSelectApartment={() => {}}
+        onSetApproved={() => {}}
+        open
+        selectedApartments={[]}
+        selectedUser={{ ...selectedUser, status }}
+      />
+    );
+
+    expect(screen.getByRole('button', { name })).toBeDisabled();
+  });
 });

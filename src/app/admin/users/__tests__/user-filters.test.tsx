@@ -37,4 +37,14 @@ describe('UserFilters', () => {
       ['ADMINS'],
     ]);
   });
+
+  it.each([
+    [AccountStatus.APPROVED, /zatwierdzone/i],
+    [AccountStatus.REJECTED, /odrzucone/i],
+    ['ADMINS' as const, /administratorzy/i],
+  ])('highlights the %s filter', (filter, name) => {
+    render(<UserFilters filter={filter} onChange={() => {}} />);
+
+    expect(screen.getByRole('button', { name })).toHaveClass('bg-primary');
+  });
 });

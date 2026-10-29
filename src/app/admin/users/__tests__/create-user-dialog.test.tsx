@@ -55,4 +55,34 @@ describe('CreateUserDialog', () => {
     expect(onSubmit).toHaveBeenCalledTimes(1);
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
+
+  it('changes the role and status through the selects', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const data = createEmptyNewUserData();
+
+    render(
+      <CreateUserDialog
+        actionLoading={false}
+        newUserData={data}
+        onCancel={() => {}}
+        onChange={onChange}
+        onSubmit={() => {}}
+        open
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: /rola/i }));
+    await user.click(
+      screen.getByRole('menuitemradio', { name: 'Administrator' })
+    );
+    await user.click(screen.getByRole('button', { name: /status/i }));
+    await user.click(screen.getByRole('menuitemradio', { name: 'Odrzucony' }));
+
+    expect(onChange).toHaveBeenCalledWith({ ...data, role: UserRole.ADMIN });
+    expect(onChange).toHaveBeenCalledWith({
+      ...data,
+      status: AccountStatus.REJECTED,
+    });
+  });
 });

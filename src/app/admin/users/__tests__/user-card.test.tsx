@@ -133,4 +133,28 @@ describe('UserCard', () => {
       screen.queryByRole('button', { name: /^zatwierdź$/i })
     ).not.toBeInTheDocument();
   });
+
+  it('falls back to the email and zero apartments when data is missing', () => {
+    render(
+      <UserCard
+        actionLoading={false}
+        onApprove={vi.fn()}
+        onAssignApartment={vi.fn()}
+        onChangeStatus={vi.fn()}
+        onReject={vi.fn()}
+        user={{
+          ...createUser(AccountStatus.APPROVED),
+          name: null,
+          apartments: undefined,
+        }}
+      />
+    );
+
+    expect(
+      screen.getByText('approved@example.com', { selector: '.font-semibold' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getAllByRole('button', { name: /mieszkania \(0\)/i })[0]
+    ).toBeInTheDocument();
+  });
 });

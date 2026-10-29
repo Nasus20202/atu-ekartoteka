@@ -22,4 +22,12 @@ describe('UserStatusBadge', () => {
 
     expect(screen.getByText(/odrzucony/i)).toBeInTheDocument();
   });
+
+  it('renders nothing for an unknown status', () => {
+    const { container } = render(
+      <UserStatusBadge status={'UNKNOWN' as AccountStatus} />
+    );
+
+    expect(container).toBeEmptyDOMElement();
+  });
 });
