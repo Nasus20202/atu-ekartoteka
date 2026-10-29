@@ -261,7 +261,7 @@ jobs:
         uses: grafana/setup-k6-action@43b9fc21641a76002687994433dd586f56e791b1 # v1.2.2
         with:
           # renovate: datasource=github-releases depName=grafana/k6 extractVersion=^v(?<version>.+)$
-          k6-version: '1.8.2'
+          k6-version: '2.3.0'
 
       - name: Run performance tests
         run: mkdir -p perf-results && k6 run perf/load-test.js
