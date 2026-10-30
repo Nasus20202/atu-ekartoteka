@@ -448,20 +448,57 @@ The system SHALL hide month rows where both the charge value and the payment val
 
 - **GIVEN** any month is hidden because it is empty or beyond the data date
 - **WHEN** the `Razem` footer row renders
-- **THEN** the totals continue to be computed by summing all 12 monthly columns from the `Payment` record (the hidden rows are still part of the total)
+- **THEN** the totals continue to be computed from all 12 monthly columns of the `Payment` record plus the `Bilans otwarcia` values (the hidden rows are still part of the total)
 
 #### Scenario: Year with all zero months still renders header and totals
 
 - **GIVEN** a payment record where every month has zero charge and zero payment
 - **WHEN** the table renders
 - **THEN** no month rows are rendered
-- **AND** the opening balance, `Razem` footer (showing `0,00 zł`), and closing balance rows are still rendered
+- **AND** the opening balance, `Razem` footer (showing the `Bilans otwarcia` values as its totals), and closing balance rows are still rendered
 
 #### Scenario: Bilans otwarcia row not affected
 
 - **GIVEN** a payment record with non-zero opening balance components but zero values for all twelve months
 - **WHEN** the table renders
 - **THEN** the `Bilans otwarcia` row is rendered with its actual `openingDebt` and `openingSurplus` values regardless of the empty-month filter
+
+---
+
+### Requirement: Razem Totals Include Opening Balance
+
+The system SHALL compute the `Razem` row of the payment table, in both the web view and the PDF, so that `Wpłaty` is the `Bilans otwarcia` wpłaty value (`openingSurplus`) plus all twelve monthly payments, `Naliczenia` is the `Bilans otwarcia` naliczenia value (`openingDebt`) plus all twelve monthly charges, and `Wpłaty − Naliczenia` equals the `Saldo` shown in that row.
+
+#### Scenario: Wpłaty total includes opening surplus
+
+- **GIVEN** a payment record with `openingSurplus = 80,65` and monthly payments summing to `7270,00`
+- **WHEN** the tenant views the payment table
+- **THEN** the `Wpłaty` cell of the `Razem` row shows `7350,65 zł`
+
+#### Scenario: Naliczenia total includes opening debt
+
+- **GIVEN** a payment record with `openingDebt = 120,00` and monthly charges summing to `1000,00`
+- **WHEN** the tenant views the payment table
+- **THEN** the `Naliczenia` cell of the `Razem` row shows `1120,00 zł`
+
+#### Scenario: Razem row adds up to Saldo
+
+- **GIVEN** a payment record whose closing balance equals `openingSurplus − openingDebt + Σ monthly payments − Σ monthly charges`
+- **WHEN** the tenant views the payment table
+- **THEN** the `Razem` `Wpłaty` value minus the `Razem` `Naliczenia` value equals the `Razem` `Saldo` value
+
+#### Scenario: PDF Razem row uses the same totals
+
+- **GIVEN** a payment record with a non-zero opening debt or surplus
+- **WHEN** the tenant downloads the payment PDF
+- **THEN** the PDF `Razem` row shows the same `Wpłaty` and `Naliczenia` totals as the web payment table
+
+#### Scenario: PDF summary tiles keep year-only sums
+
+- **GIVEN** a payment record with a non-zero opening debt or surplus
+- **WHEN** the tenant downloads the payment PDF
+- **THEN** the `Naliczenia` and `Suma wpłat` summary tiles show only the sums of the twelve monthly columns
+- **AND** the opening balance is shown in its own `Saldo początkowe` tile
 
 ---
 

@@ -1,4 +1,5 @@
 import { type Decimal, type DecimalLike, toDecimal } from '@/lib/utils/decimal';
+import { sumDecimals } from '@/lib/utils/sum';
 
 export type NonEmptyMonth = {
   monthIndex: number;
@@ -83,4 +84,30 @@ export function getNonEmptyMonths<T extends PaymentMonthFieldsLike>(
 
     return [{ monthIndex, charges, payments }];
   });
+}
+
+export type PaymentTotals = {
+  yearPayments: Decimal;
+  yearCharges: Decimal;
+  totalPayments: Decimal;
+  totalCharges: Decimal;
+};
+
+export function getPaymentTotals(
+  payment: PaymentMonthFieldsLike &
+    Record<'openingSurplus' | 'openingDebt', DecimalLike>
+): PaymentTotals {
+  const yearPayments = sumDecimals(
+    PAYMENT_MONTH_FIELD_KEYS.map((key) => payment[key])
+  );
+  const yearCharges = sumDecimals(
+    CHARGE_MONTH_FIELD_KEYS.map((key) => payment[key])
+  );
+
+  return {
+    yearPayments,
+    yearCharges,
+    totalPayments: yearPayments.plus(toDecimal(payment.openingSurplus)),
+    totalCharges: yearCharges.plus(toDecimal(payment.openingDebt)),
+  };
 }
