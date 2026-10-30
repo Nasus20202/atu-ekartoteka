@@ -5,6 +5,7 @@ import {
   getCommonChargesDataDate,
   getSortedPeriods,
   groupApartmentChargesByPeriod,
+  toActivePeriod,
 } from '@/app/dashboard/charges/charges-by-period';
 import { auth } from '@/auth';
 import { MultiChargesDisplay } from '@/components/charges/multi-charges-display';
@@ -14,7 +15,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { findUserWithApartmentChargesCached } from '@/lib/queries/users/find-user-with-apartment-charges';
 import { AccountStatus } from '@/lib/types';
 
-export default async function ChargesPage() {
+export default async function ChargesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ month?: string }>;
+}) {
+  const { month } = await searchParams;
   const session = await auth();
 
   if (!session) {
@@ -52,6 +58,7 @@ export default async function ChargesPage() {
           periods={periods}
           chargesByPeriod={chargesByPeriod}
           chargesDataDate={chargesDataDate}
+          activeMonth={toActivePeriod(month)}
         />
       )}
     </Page>

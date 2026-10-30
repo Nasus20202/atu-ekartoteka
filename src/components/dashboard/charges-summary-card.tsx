@@ -9,6 +9,7 @@ import type {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency, formatPeriod } from '@/lib/utils';
+import { getChargesHref } from '@/lib/utils/dashboard-links';
 import type { DecimalLike } from '@/lib/utils/decimal';
 
 interface ChargesSummaryCardProps {
@@ -20,6 +21,36 @@ interface ChargesSummaryCardProps {
   previousMonthTotal: DecimalLike;
   trendData?: ChargeTrendDatum[];
   trendSeries?: ChargeTrendSeries[];
+}
+
+function formatChargeCount(count: number): string {
+  if (count === 1) return 'naliczenie';
+  return count < 5 ? 'naliczenia' : 'naliczeń';
+}
+
+interface ChargePeriodTileProps {
+  period: string;
+  count: number;
+  total: DecimalLike;
+}
+
+function ChargePeriodTile({ period, count, total }: ChargePeriodTileProps) {
+  return (
+    <Link
+      href={getChargesHref({ period })}
+      className="rounded-lg border p-3 transition-colors hover:bg-muted/50"
+    >
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <p className="font-medium">{formatPeriod(period)}</p>
+          <p className="text-sm text-muted-foreground">
+            {count} {formatChargeCount(count)}
+          </p>
+        </div>
+        <p className="shrink-0 text-xl font-bold">{formatCurrency(total)}</p>
+      </div>
+    </Link>
+  );
 }
 
 export function ChargesSummaryCard({
@@ -48,48 +79,18 @@ export function ChargesSummaryCard({
           <>
             <div className="grid gap-3 sm:grid-cols-2">
               {currentMonthCharges.length > 0 && (
-                <div className="rounded-lg border p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="font-medium">
-                        {formatPeriod(currentPeriod)}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {currentMonthCharges.length}{' '}
-                        {currentMonthCharges.length === 1
-                          ? 'naliczenie'
-                          : currentMonthCharges.length < 5
-                            ? 'naliczenia'
-                            : 'naliczeń'}
-                      </p>
-                    </div>
-                    <p className="shrink-0 text-xl font-bold">
-                      {formatCurrency(currentMonthTotal)}
-                    </p>
-                  </div>
-                </div>
+                <ChargePeriodTile
+                  period={currentPeriod}
+                  count={currentMonthCharges.length}
+                  total={currentMonthTotal}
+                />
               )}
               {previousMonthCharges.length > 0 && (
-                <div className="rounded-lg border p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="font-medium">
-                        {formatPeriod(previousPeriod)}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {previousMonthCharges.length}{' '}
-                        {previousMonthCharges.length === 1
-                          ? 'naliczenie'
-                          : previousMonthCharges.length < 5
-                            ? 'naliczenia'
-                            : 'naliczeń'}
-                      </p>
-                    </div>
-                    <p className="shrink-0 text-xl font-bold">
-                      {formatCurrency(previousMonthTotal)}
-                    </p>
-                  </div>
-                </div>
+                <ChargePeriodTile
+                  period={previousPeriod}
+                  count={previousMonthCharges.length}
+                  total={previousMonthTotal}
+                />
               )}
             </div>
             <div className="space-y-2 rounded-lg border p-3">

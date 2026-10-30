@@ -10,7 +10,7 @@ import { formatCurrency } from '@/lib/utils';
 
 describe('chart formatters', () => {
   it('formats axis amounts compactly', () => {
-    expect(formatCompactAmount(1500).replace(/\s/g, ' ')).toBe('1,5 tys.');
+    expect(formatCompactAmount(1500).replace(/\s/g, ' ')).toBe('1,5 tys. zł');
   });
 
   it('formats tooltip amounts as currency with the series name', () => {
@@ -22,7 +22,7 @@ describe('chart formatters', () => {
 
   it('uses the payload name for HOA series tooltips', () => {
     expect(
-      formatSeriesTooltipAmount(10, 'hoa_hoa_1', { name: 'Wspólnota A' })
+      formatSeriesTooltipAmount(10, 'apt_apt_1', { name: 'Wspólnota A' })
     ).toEqual([formatCurrency(10), 'Wspólnota A']);
   });
 

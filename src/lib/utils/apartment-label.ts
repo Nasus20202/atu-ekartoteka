@@ -1,4 +1,4 @@
-interface LabelledApartment {
+export interface LabelledApartment {
   address: string | null;
   building: string | null;
   number: string;

@@ -7,6 +7,8 @@ import { formatCurrency } from '@/lib/utils';
 import { APP_LOCALE } from '@/lib/utils/locale';
 
 const compactAmountFormatter = new Intl.NumberFormat(APP_LOCALE, {
+  style: 'currency',
+  currency: 'PLN',
   notation: 'compact',
   maximumFractionDigits: 1,
 });

@@ -1,12 +1,9 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { createMockPayment } from '@/__tests__/fixtures';
 import {
-  DEFAULT_CHARGE_TREND_PERIOD_LIMIT,
-  DEFAULT_CHARGE_TREND_VIEWPORT_SIZE,
-  getChargeTrendByHoaHistory,
+  getChargeTrendByApartment,
   getPaymentMonthlyChartData,
-  getRecentChargeTrendByHoa,
 } from '@/components/charts/chart-data';
 import { Prisma } from '@/generated/prisma/browser';
 import type { PaymentDtoSource } from '@/lib/types/dto/payment-dto';
@@ -15,15 +12,6 @@ const makePayment = (overrides: Partial<PaymentDtoSource> = {}) =>
   createMockPayment({ openingBalance: new Prisma.Decimal(100), ...overrides });
 
 describe('finance chart helpers', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-03-20T12:00:00.000Z'));
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
   it('returns non-empty payment months in calendar order with running balance', () => {
     const data = getPaymentMonthlyChartData(
       makePayment({
@@ -67,35 +55,46 @@ describe('finance chart helpers', () => {
     });
   });
 
-  it('builds full HOA history up to the current month in chronological order', () => {
-    const result = getChargeTrendByHoaHistory([
-      {
-        homeownersAssociation: { id: 'hoa-1', name: 'Wspólnota A' },
-        charges: [
-          { period: '202504', totalAmount: '999.0000' },
-          { period: '202505', totalAmount: '10.0000' },
-          { period: '202603', totalAmount: '30.0000' },
-        ],
-      },
-      {
-        homeownersAssociation: { id: 'hoa-2', name: 'Wspólnota B' },
-        charges: [
-          { period: '202506', totalAmount: '20.0000' },
-          { period: '202603', totalAmount: '6.5000' },
-        ],
-      },
-    ]);
+  it('builds full apartment history up to the end period in chronological order', () => {
+    const result = getChargeTrendByApartment(
+      [
+        {
+          id: 'apt-1',
+          address: 'Testowa',
+          building: '1',
+          number: '1',
+          charges: [
+            { period: '202504', totalAmount: '999.0000' },
+            { period: '202505', totalAmount: '10.0000' },
+            { period: '202603', totalAmount: '30.0000' },
+          ],
+        },
+        {
+          id: 'apt-2',
+          address: 'Testowa',
+          building: '1',
+          number: '2',
+          charges: [
+            { period: '202506', totalAmount: '20.0000' },
+            { period: '202603', totalAmount: '6.5000' },
+          ],
+        },
+      ],
+      '202603'
+    );
 
     expect(result.series).toEqual([
       {
-        key: 'hoa_hoa_1',
-        label: 'Wspólnota A',
+        key: 'apt_apt_1',
+        label: 'Testowa 1/1',
         color: 'hsl(var(--primary))',
+        apartmentId: 'apt-1',
       },
       {
-        key: 'hoa_hoa_2',
-        label: 'Wspólnota B',
+        key: 'apt_apt_2',
+        label: 'Testowa 1/2',
         color: 'hsl(var(--destructive))',
+        apartmentId: 'apt-2',
       },
     ]);
     expect(result.data).toHaveLength(12);
@@ -104,23 +103,29 @@ describe('finance chart helpers', () => {
     expect(
       result.data.find((entry) => entry.period === '202603')
     ).toMatchObject({
-      hoa_hoa_1: 30,
-      hoa_hoa_2: 6.5,
+      apt_apt_1: 30,
+      apt_apt_2: 6.5,
     });
   });
 
-  it('ignores zero-value charges and omits empty HOA series', () => {
-    const result = getRecentChargeTrendByHoa(
+  it('ignores zero-value charges and omits empty apartment series', () => {
+    const result = getChargeTrendByApartment(
       [
         {
-          homeownersAssociation: { id: 'hoa-1', name: 'Wspólnota A' },
+          id: 'apt-1',
+          address: 'Testowa',
+          building: '1',
+          number: '1',
           charges: [
             { period: '202602', totalAmount: '0.0000' },
             { period: '202603', totalAmount: '12.3400' },
           ],
         },
         {
-          homeownersAssociation: { id: 'hoa-2', name: 'Wspólnota B' },
+          id: 'apt-2',
+          address: 'Testowa',
+          building: '1',
+          number: '2',
           charges: [{ period: '202603', totalAmount: '0.0000' }],
         },
       ],
@@ -129,25 +134,29 @@ describe('finance chart helpers', () => {
 
     expect(result.series).toEqual([
       {
-        key: 'hoa_hoa_1',
-        label: 'Wspólnota A',
+        key: 'apt_apt_1',
+        label: 'Testowa 1/1',
         color: 'hsl(var(--primary))',
+        apartmentId: 'apt-1',
       },
     ]);
     expect(
       result.data.find((entry) => entry.period === '202603')
     ).toMatchObject({
-      hoa_hoa_1: 12.34,
+      apt_apt_1: 12.34,
     });
   });
 
-  it('skips apartments without an HOA and returns no data without charges', () => {
+  it('returns no data without charges', () => {
     expect(
-      getChargeTrendByHoaHistory(
+      getChargeTrendByApartment(
         [
           {
-            homeownersAssociation: null,
-            charges: [{ period: '202603', totalAmount: '12.0000' }],
+            id: 'apt-1',
+            address: 'Testowa',
+            building: '1',
+            number: '1',
+            charges: [],
           },
         ],
         '202603'
@@ -155,8 +164,30 @@ describe('finance chart helpers', () => {
     ).toEqual({ data: [], series: [] });
   });
 
-  it('keeps the default viewport size at 12 months', () => {
-    expect(DEFAULT_CHARGE_TREND_VIEWPORT_SIZE).toBe(12);
-    expect(DEFAULT_CHARGE_TREND_PERIOD_LIMIT).toBe(12);
+  it('keeps apartments in input order instead of sorting by label', () => {
+    const result = getChargeTrendByApartment(
+      [
+        {
+          id: 'apt-2',
+          address: 'Zielona',
+          building: '',
+          number: '2',
+          charges: [{ period: '202603', totalAmount: '1.0000' }],
+        },
+        {
+          id: 'apt-1',
+          address: 'Akacjowa',
+          building: '',
+          number: '1',
+          charges: [{ period: '202603', totalAmount: '1.0000' }],
+        },
+      ],
+      '202603'
+    );
+
+    expect(result.series.map((entry) => entry.label)).toEqual([
+      'Zielona /2',
+      'Akacjowa /1',
+    ]);
   });
 });

@@ -1,14 +1,14 @@
 import { redirect } from 'next/navigation';
 
 import {
+  buildApartmentBalances,
   buildDashboardNotifications,
-  buildHoaPaymentGroups,
   getChargesForPeriod,
   getDashboardPeriods,
 } from '@/app/dashboard/dashboard-data';
 import { auth } from '@/auth';
 import { UserStatusSection } from '@/components/account/user-status-section';
-import { getRecentChargeTrendByHoa } from '@/components/charts/chart-data';
+import { getChargeTrendByApartment } from '@/components/charts/chart-data';
 import { ApartmentsSection } from '@/components/dashboard/apartments-section';
 import { ChargesSummaryCard } from '@/components/dashboard/charges-summary-card';
 import { NotificationsSidebar } from '@/components/dashboard/notifications-sidebar';
@@ -49,13 +49,16 @@ export default async function DashboardPage() {
   const previousMonthTotal = sumDecimals(
     previousMonthCharges.map((charge) => charge.totalAmount)
   );
-  const recentChargeTrend = getRecentChargeTrendByHoa(
+  const recentChargeTrend = getChargeTrendByApartment(
     userData.apartments,
     currentPeriod
   );
 
   const allNotifications = buildDashboardNotifications(userData.apartments);
-  const hoaPaymentGroups = buildHoaPaymentGroups(userData.apartments);
+  const apartmentBalances = buildApartmentBalances(
+    userData.apartments,
+    currentPeriod
+  );
 
   return (
     <div className="w-full bg-background">
@@ -87,8 +90,8 @@ export default async function DashboardPage() {
 
               {/* Payments Summary */}
               {userData.status === AccountStatus.APPROVED &&
-                hoaPaymentGroups.length > 0 && (
-                  <PaymentsSummaryCard hoaGroups={hoaPaymentGroups} />
+                apartmentBalances.length > 0 && (
+                  <PaymentsSummaryCard apartmentBalances={apartmentBalances} />
                 )}
 
               {/* Charges Card */}

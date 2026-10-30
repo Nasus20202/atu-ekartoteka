@@ -1,17 +1,24 @@
+import {
+  type BalanceHistoryDatum,
+  getBalanceHistory,
+} from '@/components/charts/balance-history-data';
 import type { findUserWithApartments } from '@/lib/queries/users/find-user-with-apartments';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
-import { toDecimal } from '@/lib/utils/decimal';
-import { sumDecimals } from '@/lib/utils/sum';
+import { getPaymentYearHref } from '@/lib/utils/dashboard-links';
+import { type Decimal, toDecimal } from '@/lib/utils/decimal';
 
 type DashboardUser = NonNullable<
   Awaited<ReturnType<typeof findUserWithApartments>>
 >;
 type DashboardApartment = DashboardUser['apartments'][number];
 
-export type HoaPaymentGroup = {
-  hoaId: string;
-  hoaName: string;
-  totalClosingBalance: ReturnType<typeof sumDecimals>;
+export type ApartmentBalance = {
+  apartmentId: string;
+  apartmentLabel: string;
+  hoaName: string | null;
+  closingBalance: Decimal;
+  href: string;
+  history: BalanceHistoryDatum[];
 };
 
 function toPeriod(date: Date): string {
@@ -53,27 +60,26 @@ export function buildDashboardNotifications(apartments: DashboardApartment[]) {
   );
 }
 
-export function buildHoaPaymentGroups(
-  apartments: DashboardApartment[]
-): HoaPaymentGroup[] {
-  const hoaPaymentMap = new Map<string, HoaPaymentGroup>();
+export function buildApartmentBalances(
+  apartments: DashboardApartment[],
+  endPeriod: string
+): ApartmentBalance[] {
+  return apartments.flatMap((apt) => {
+    const latestPayment = apt.payments[0];
 
-  for (const apt of apartments) {
-    if (apt.payments.length === 0) continue;
-    const hoa = apt.homeownersAssociation;
-    if (!hoa?.id) continue;
-    const existing = hoaPaymentMap.get(hoa.id);
-    const balance = apt.payments[0].closingBalance;
-    if (existing) {
-      existing.totalClosingBalance = existing.totalClosingBalance.plus(balance);
-    } else {
-      hoaPaymentMap.set(hoa.id, {
-        hoaId: hoa.id,
-        hoaName: hoa.name,
-        totalClosingBalance: balance,
-      });
+    if (!latestPayment) {
+      return [];
     }
-  }
 
-  return Array.from(hoaPaymentMap.values());
+    return [
+      {
+        apartmentId: apt.id,
+        apartmentLabel: formatApartmentLabel(apt),
+        hoaName: apt.homeownersAssociation?.name ?? null,
+        closingBalance: toDecimal(latestPayment.closingBalance),
+        href: getPaymentYearHref(apt.id, latestPayment.year),
+        history: getBalanceHistory(apt.payments, endPeriod),
+      },
+    ];
+  });
 }

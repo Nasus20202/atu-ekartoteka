@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
 import {
   ChargeRows,
@@ -8,6 +8,10 @@ import {
   PeriodRange,
   YearTrigger,
 } from '@/components/charges/charge-list-parts';
+import {
+  ACTIVE_MONTH_CLASS,
+  useScrollToActiveMonth,
+} from '@/components/charges/use-scroll-to-active-month';
 import { DownloadChargesPdfButton } from '@/components/pdf/download-charges-pdf-button';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import {
@@ -41,34 +45,21 @@ export function ChargesDisplay({
     : periods;
   const activeYear = activeMonth ? getPeriodYear(activeMonth) : null;
   const yearGroups = groupByYearDesc(filteredPeriods, getPeriodYear);
-  const mostRecentPeriod = periods[0] ?? null;
 
-  // All years open by default; if activeMonth given, ensure its year is included
+  // Only the newest year open by default; if activeMonth given, ensure its year is included
   const [openYears, setOpenYears] = useState<Set<string>>(() => {
-    const all = new Set(yearGroups.map((g) => g.year));
-    if (activeYear) all.add(activeYear);
-    return all;
+    const initial = new Set<string>();
+    if (yearGroups[0]) initial.add(yearGroups[0].year);
+    if (activeYear) initial.add(activeYear);
+    return initial;
   });
 
-  // Most recent period open by default; if activeMonth given, open that instead
+  // Months collapsed by default; if activeMonth given, open that one
   const [openPeriods, setOpenPeriods] = useState<Set<string>>(() => {
-    if (activeMonth) return new Set([activeMonth]);
-    if (mostRecentPeriod) return new Set([mostRecentPeriod]);
-    return new Set<string>();
+    return new Set(activeMonth ? [activeMonth] : []);
   });
 
-  const activeRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (activeMonth && activeRef.current) {
-      const el = activeRef.current;
-      // Wait for collapsible animation to finish before scrolling
-      const timer = setTimeout(() => {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [activeMonth]);
+  const activeRef = useScrollToActiveMonth(activeMonth);
 
   function toggleYear(year: string) {
     setOpenYears((prev) => {
@@ -116,7 +107,7 @@ export function ChargesDisplay({
                     ref={isActive ? activeRef : null}
                     className={cn(
                       'overflow-hidden rounded-lg border bg-card',
-                      isActive && 'border-primary bg-primary/5'
+                      isActive && ACTIVE_MONTH_CLASS
                     )}
                   >
                     <MonthTrigger

@@ -1,29 +1,45 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { PaymentsSummaryCard } from '@/components/dashboard/payments-summary-card';
 import { formatCurrency } from '@/lib/utils';
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
 const amount = (value: number) => (_: string, element: Element | null) =>
   element?.tagName === 'SPAN' && element.textContent === formatCurrency(value);
 
-const group = (hoaId: string, totalClosingBalance: number) => ({
-  hoaId,
-  hoaName: `Wspólnota ${hoaId}`,
-  totalClosingBalance,
+const apartment = (
+  id: string,
+  closingBalance: number,
+  withHistory = false
+) => ({
+  apartmentId: id,
+  apartmentLabel: `Testowa 1/${id}`,
+  hoaName: 'Wspólnota A',
+  closingBalance,
+  href: `/dashboard/payments/apt-${id}/2025`,
+  history: withHistory
+    ? [{ period: '202501', label: 'Styczeń 2025', balance: closingBalance }]
+    : [],
 });
 
 describe('PaymentsSummaryCard', () => {
-  it('renders nothing without HOA groups', () => {
-    const { container } = render(<PaymentsSummaryCard hoaGroups={[]} />);
+  it('renders nothing without apartment balances', () => {
+    const { container } = render(
+      <PaymentsSummaryCard apartmentBalances={[]} />
+    );
 
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('shows a single HOA balance', () => {
-    render(<PaymentsSummaryCard hoaGroups={[group('1', 120)]} />);
+  it('shows a single apartment balance without a total', () => {
+    render(<PaymentsSummaryCard apartmentBalances={[apartment('1', 120)]} />);
 
-    expect(screen.getByText('Wspólnota 1')).toBeInTheDocument();
+    expect(screen.getByText('Testowa 1/1')).toBeInTheDocument();
+    expect(screen.getByText('Wspólnota A')).toBeInTheDocument();
     expect(screen.getByText(amount(120))).toHaveClass('text-green-600');
     expect(screen.queryByText('Łącznie')).not.toBeInTheDocument();
     expect(
@@ -31,30 +47,61 @@ describe('PaymentsSummaryCard', () => {
     ).toHaveAttribute('href', '/dashboard/payments');
   });
 
-  it('marks a negative single balance in red', () => {
-    render(<PaymentsSummaryCard hoaGroups={[group('1', -5)]} />);
+  it('marks a negative balance in red', () => {
+    render(<PaymentsSummaryCard apartmentBalances={[apartment('1', -50)]} />);
 
-    expect(screen.getByText(amount(-5))).toHaveClass('text-red-600');
-  });
-
-  it('lists every HOA and the total for several groups', () => {
-    render(
-      <PaymentsSummaryCard hoaGroups={[group('1', 100), group('2', -150)]} />
-    );
-
-    expect(screen.getByText(amount(100))).toHaveClass('text-green-600');
-    expect(screen.getByText(amount(-150))).toHaveClass('text-red-600');
-    expect(screen.getByText('Łącznie')).toBeInTheDocument();
     expect(screen.getByText(amount(-50))).toHaveClass('text-red-600');
   });
 
-  it('shows a non-negative total in green', () => {
+  it('lists every apartment and the total for several apartments', () => {
     render(
-      <PaymentsSummaryCard hoaGroups={[group('1', 100), group('2', 0)]} />
+      <PaymentsSummaryCard
+        apartmentBalances={[apartment('1', 120), apartment('2', -150)]}
+      />
     );
 
-    expect(screen.getByText(amount(100), { selector: '.text-xl' })).toHaveClass(
-      'text-green-600'
+    expect(screen.getByText('Testowa 1/1')).toBeInTheDocument();
+    expect(screen.getByText('Testowa 1/2')).toBeInTheDocument();
+    expect(screen.getByText('Łącznie')).toBeInTheDocument();
+    expect(screen.getByText(amount(-30))).toHaveClass('text-red-600');
+  });
+
+  it('links every apartment balance to its payments', () => {
+    render(
+      <PaymentsSummaryCard
+        apartmentBalances={[apartment('1', 120), apartment('2', -30)]}
+      />
     );
+
+    expect(screen.getByRole('link', { name: /Testowa 1\/1/ })).toHaveAttribute(
+      'href',
+      '/dashboard/payments/apt-1/2025'
+    );
+    expect(screen.getByRole('link', { name: /Testowa 1\/2/ })).toHaveAttribute(
+      'href',
+      '/dashboard/payments/apt-2/2025'
+    );
+  });
+
+  it('shows one combined balance chart for all apartments', () => {
+    render(
+      <PaymentsSummaryCard
+        apartmentBalances={[
+          apartment('1', 120, true),
+          apartment('2', -30, true),
+          apartment('3', 0),
+        ]}
+      />
+    );
+
+    expect(screen.getAllByTestId('balance-history-chart')).toHaveLength(1);
+  });
+
+  it('hides the balance chart without history', () => {
+    render(<PaymentsSummaryCard apartmentBalances={[apartment('1', 120)]} />);
+
+    expect(
+      screen.queryByTestId('balance-history-chart')
+    ).not.toBeInTheDocument();
   });
 });

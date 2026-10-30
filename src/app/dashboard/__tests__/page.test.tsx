@@ -9,13 +9,13 @@ const {
   mockAuth,
   mockRedirect,
   mockFindUserWithApartmentsCached,
-  mockGetRecentChargeTrendByHoa,
+  mockGetChargeTrendByApartment,
   mockNotificationsSidebar,
 } = vi.hoisted(() => ({
   mockAuth: vi.fn(),
   mockRedirect: vi.fn(),
   mockFindUserWithApartmentsCached: vi.fn(),
-  mockGetRecentChargeTrendByHoa: vi.fn(),
+  mockGetChargeTrendByApartment: vi.fn(),
   mockNotificationsSidebar: vi.fn(),
 }));
 
@@ -31,8 +31,12 @@ vi.mock('@/lib/queries/users/find-user-with-apartments', () => ({
   findUserWithApartmentsCached: mockFindUserWithApartmentsCached,
 }));
 
+vi.mock('@/components/charts/balance-history-data', () => ({
+  getBalanceHistory: () => [],
+}));
+
 vi.mock('@/components/charts/chart-data', () => ({
-  getRecentChargeTrendByHoa: mockGetRecentChargeTrendByHoa,
+  getChargeTrendByApartment: mockGetChargeTrendByApartment,
 }));
 
 vi.mock('@/components/account/user-status-section', () => ({
@@ -61,7 +65,10 @@ vi.mock('@/components/dashboard/notifications-sidebar', () => ({
 describe('DashboardPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetRecentChargeTrendByHoa.mockReturnValue({ data: [], series: [] });
+    mockGetChargeTrendByApartment.mockReturnValue({
+      data: [],
+      series: [],
+    });
     mockAuth.mockResolvedValue({ user: { id: 'user-1' } });
   });
 

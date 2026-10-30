@@ -2,10 +2,10 @@
  * E2E tests for hiding empty months on payment details.
  */
 
-import { expect, test } from './fixtures';
-import { createMixedPaymentsUser } from './utils/create-mixed-payments-user';
-import { deleteUserAndApartmentsByEmail } from './utils/delete-user-and-apartments-by-email';
-import { USER_PASSWORD } from './utils/test-credentials';
+import { expect, login, test } from '../fixtures';
+import { createMixedPaymentsUser } from '../utils/create-mixed-payments-user';
+import { deleteUserAndApartmentsByEmail } from '../utils/delete-user-and-apartments-by-email';
+import { USER_PASSWORD } from '../utils/test-credentials';
 
 test.describe.serial('Payments Empty Months', () => {
   let email: string;
@@ -24,15 +24,7 @@ test.describe.serial('Payments Empty Months', () => {
   test('tenant sees only non-empty months while yearly totals stay exact', async ({
     page,
   }) => {
-    await page.goto('/login');
-    await page.getByLabel('Email').fill(email);
-    await page.getByLabel('Hasło', { exact: true }).fill(USER_PASSWORD);
-    await page
-      .getByRole('button', { name: 'Zaloguj się', exact: true })
-      .click();
-    await page.waitForURL((url) => !url.pathname.includes('/login'), {
-      timeout: 10000,
-    });
+    await login(page, email, USER_PASSWORD);
 
     await page.goto('/dashboard/payments');
     await expect(page.getByText('ul. Mieszana 9/9A')).toBeVisible();

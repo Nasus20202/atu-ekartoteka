@@ -3,13 +3,12 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ChargesDisplay } from '@/components/charges/charges-display';
+import { ACTIVE_MONTH_SCROLL_DELAY_MS } from '@/components/charges/use-scroll-to-active-month';
 import type { ChargeDisplayDto } from '@/lib/types/dto/charge-dto';
 
 vi.mock('@/components/pdf/download-charges-pdf-button', () => ({
   DownloadChargesPdfButton: () => <button>Pobierz PDF</button>,
 }));
-
-const SCROLL_DELAY_MS = 300;
 
 const charge = (id: string): ChargeDisplayDto => ({
   id,
@@ -49,6 +48,28 @@ describe('ChargesDisplay interactions', () => {
     expect(year).toHaveAttribute('aria-expanded', 'true');
   });
 
+  it('opens only the newest year by default', () => {
+    render(
+      <ChargesDisplay
+        {...props}
+        periods={['202502', '202401']}
+        chargesByPeriod={{
+          '202502': [charge('feb')],
+          '202401': [charge('old')],
+        }}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: /^2025$/ })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    );
+    expect(screen.getByRole('button', { name: /^2024$/ })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
+  });
+
   it('opens a collapsed month and closes it again', async () => {
     render(<ChargesDisplay {...props} />);
     const january = screen.getByRole('button', { name: /styczeń/i });
@@ -83,12 +104,12 @@ describe('ChargesDisplay interactions', () => {
     expect(scrollIntoView).not.toHaveBeenCalled();
 
     act(() => {
-      vi.advanceTimersByTime(SCROLL_DELAY_MS);
+      vi.advanceTimersByTime(ACTIVE_MONTH_SCROLL_DELAY_MS);
     });
 
     expect(scrollIntoView).toHaveBeenCalledWith({
       behavior: 'smooth',
-      block: 'center',
+      block: 'start',
     });
   });
 });

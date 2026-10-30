@@ -11,11 +11,13 @@ import {
 } from '@/components/ui/table';
 import type { PaymentDtoSource } from '@/lib/types/dto/payment-dto';
 import { formatCurrency, MONTH_NAMES_PL } from '@/lib/utils';
+import { getChargesHref } from '@/lib/utils/dashboard-links';
 import { toDecimal } from '@/lib/utils/decimal';
 import {
   dateToPeriod,
   getNonEmptyMonths,
   getPaymentTotals,
+  monthIndexToPeriod,
 } from '@/lib/utils/payment-months';
 
 interface PaymentTableProps {
@@ -92,8 +94,10 @@ export function PaymentTable({
           {monthlyData.map((month) => {
             const paymentsForMonth = month.payments;
             const chargesForMonth = month.charges;
-            const monthParam = `${payment.year}-${String(month.monthIndex + 1).padStart(2, '0')}`;
-            const href = `/dashboard/charges/${apartmentId}?month=${monthParam}`;
+            const href = getChargesHref({
+              apartmentId,
+              period: monthIndexToPeriod(payment.year, month.monthIndex),
+            });
             const balanceColor = month.balance.isNegative()
               ? 'text-red-600'
               : month.balance.greaterThan(0)

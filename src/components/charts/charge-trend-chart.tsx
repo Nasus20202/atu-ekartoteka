@@ -1,12 +1,13 @@
 'use client';
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Area,
   AreaChart,
   CartesianGrid,
   Legend,
+  type MouseHandlerDataParam,
+  ReferenceLine,
   Tooltip,
   XAxis,
   YAxis,
@@ -22,10 +23,18 @@ import {
   formatSeriesTooltipAmount,
   formatTooltipLabel,
 } from '@/components/charts/chart-formatters';
+import { createYAxisTick } from '@/components/charts/chart-ticks';
+import {
+  ChartViewportNav,
+  useChartViewport,
+} from '@/components/charts/chart-viewport';
 import { MeasuredChart } from '@/components/charts/measured-chart';
-import { Button } from '@/components/ui/button';
+import { getChargesHref } from '@/lib/utils/dashboard-links';
 
-const VIEWPORT_SIZE = 12;
+const Y_AXIS_FONT_SIZE = 11;
+const Y_AXIS_WIDTH = 72;
+
+const renderYAxisTick = createYAxisTick(formatCompactAmount, Y_AXIS_FONT_SIZE);
 
 interface ChargeTrendChartProps {
   data: ChargeTrendDatum[];
@@ -33,13 +42,23 @@ interface ChargeTrendChartProps {
 }
 
 export function ChargeTrendChart({ data, series }: ChargeTrendChartProps) {
-  const maxOffset = Math.max(data.length - VIEWPORT_SIZE, 0);
-  const [offset, setOffset] = useState(maxOffset);
+  const viewport = useChartViewport(data);
+  const { visibleData } = viewport;
+  const router = useRouter();
 
-  const visibleData = useMemo(
-    () => data.slice(offset, offset + VIEWPORT_SIZE),
-    [data, offset]
-  );
+  const openChargesMonth = ({ activeIndex }: MouseHandlerDataParam) => {
+    const period =
+      activeIndex === undefined
+        ? undefined
+        : visibleData[Number(activeIndex)]?.period;
+
+    if (!period) {
+      return;
+    }
+
+    const apartmentId = series.length === 1 ? series[0].apartmentId : undefined;
+    router.push(getChargesHref({ apartmentId, period }));
+  };
 
   if (series.length === 0) {
     return (
@@ -54,40 +73,19 @@ export function ChargeTrendChart({ data, series }: ChargeTrendChartProps) {
 
   return (
     <div className="space-y-3" data-testid="charge-trend-chart">
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-xs text-muted-foreground">
-          Pokazano {visibleData[0]?.label} - {visibleData.at(-1)?.label}
-        </p>
-        <div className="flex items-center gap-1">
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => setOffset((current) => Math.max(current - 1, 0))}
-            disabled={offset === 0}
-            aria-label="Pokaż wcześniejsze miesiące"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() =>
-              setOffset((current) => Math.min(current + 1, maxOffset))
-            }
-            disabled={offset >= maxOffset}
-            aria-label="Pokaż nowsze miesiące"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      <ChartViewportNav
+        firstLabel={visibleData[0]?.label}
+        lastLabel={visibleData.at(-1)?.label}
+        canGoBack={viewport.canGoBack}
+        canGoForward={viewport.canGoForward}
+        onBack={viewport.goBack}
+        onForward={viewport.goForward}
+      />
       <MeasuredChart className="h-56 w-full">
         {({ width, height }) => (
           <AreaChart
+            className="cursor-pointer"
+            onClick={openChargesMonth}
             width={width}
             height={height}
             data={visibleData}
@@ -129,9 +127,8 @@ export function ChargeTrendChart({ data, series }: ChargeTrendChartProps) {
             />
             <YAxis
               domain={[0, 'dataMax']}
-              width={44}
-              tickFormatter={formatCompactAmount}
-              tick={{ fill: CHART_COLORS.muted, fontSize: 11 }}
+              width={Y_AXIS_WIDTH}
+              tick={renderYAxisTick}
               tickLine={false}
               axisLine={false}
             />
@@ -143,6 +140,11 @@ export function ChargeTrendChart({ data, series }: ChargeTrendChartProps) {
                 border: `1px solid ${CHART_COLORS.tooltipBorder}`,
                 borderRadius: 12,
               }}
+            />
+            <ReferenceLine
+              y={0}
+              stroke={CHART_COLORS.zeroLine}
+              strokeWidth={1}
             />
             <Legend />
             {series.map((entry) => (
@@ -157,7 +159,6 @@ export function ChargeTrendChart({ data, series }: ChargeTrendChartProps) {
                 dot={false}
                 activeDot={{ r: 4 }}
                 fillOpacity={1}
-                isAnimationActive={false}
               />
             ))}
           </AreaChart>

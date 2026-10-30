@@ -13,10 +13,10 @@ vi.mock('@/components/charges/multi-apartment-period-card', () => ({
 const PERIODS = ['202502', '202501', '202412'];
 
 describe('MultiChargesDisplay — expanding', () => {
-  it('opens only the most recent month by default', () => {
+  it('keeps all months collapsed by default', () => {
     render(<MultiChargesDisplay periods={PERIODS} chargesByPeriod={{}} />);
 
-    expect(screen.getByText('Szczegóły 202502')).toBeInTheDocument();
+    expect(screen.queryByText('Szczegóły 202502')).not.toBeInTheDocument();
     expect(screen.queryByText('Szczegóły 202501')).not.toBeInTheDocument();
   });
 
@@ -26,8 +26,8 @@ describe('MultiChargesDisplay — expanding', () => {
     await userEvent.click(screen.getByRole('button', { name: /Styczeń 2025/ }));
     expect(screen.getByText('Szczegóły 202501')).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: /Luty 2025/ }));
-    expect(screen.queryByText('Szczegóły 202502')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /Styczeń 2025/ }));
+    expect(screen.queryByText('Szczegóły 202501')).not.toBeInTheDocument();
   });
 
   it('toggles a year', async () => {

@@ -5,6 +5,9 @@
 import { expect, test } from '../fixtures';
 import { VISUAL_YEAR } from '../utils/test-credentials';
 
+// Charges months start collapsed, so open the last seeded one to show its details
+const CHARGES_MONTH_QUERY = `?month=${VISUAL_YEAR}-12`;
+
 test.describe('Visual: tenant pages', () => {
   test('dashboard', async ({ visualPage }) => {
     await visualPage.goto('/dashboard');
@@ -34,7 +37,7 @@ test.describe('Visual: tenant pages', () => {
   });
 
   test('charges list and details', async ({ visualPage }) => {
-    await visualPage.goto('/dashboard/charges');
+    await visualPage.goto(`/dashboard/charges${CHARGES_MONTH_QUERY}`);
     await expect(visualPage).toHaveScreenshot('charges.png', {
       fullPage: true,
     });
@@ -44,7 +47,7 @@ test.describe('Visual: tenant pages', () => {
     const chargesHref = await visualPage
       .getByRole('link', { name: 'Naliczenia', exact: true })
       .getAttribute('href');
-    await visualPage.goto(chargesHref!);
+    await visualPage.goto(`${chargesHref}${CHARGES_MONTH_QUERY}`);
     await expect(visualPage).toHaveURL(/\/dashboard\/charges\/[\w-]+/);
     await expect(visualPage).toHaveScreenshot('charges-details.png', {
       fullPage: true,

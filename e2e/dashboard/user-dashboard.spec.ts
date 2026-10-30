@@ -59,6 +59,25 @@ test.describe('Dashboard Home', () => {
       // Single-HOA mode: HOA name appears as the label next to the balance
       await expect(userPage.getByText('Test HOA').first()).toBeVisible();
     });
+
+    test('user sees monthly balance chart', async ({ userPage }) => {
+      await userPage.goto('/dashboard');
+
+      await expect(userPage.getByTestId('balance-history-chart')).toBeVisible();
+    });
+
+    test('user can open apartment payments from the balance widget', async ({
+      userPage,
+    }) => {
+      await userPage.goto('/dashboard');
+
+      await userPage
+        .getByRole('link', { name: /ul\. Testowa 1\/1A/ })
+        .first()
+        .click();
+
+      await expect(userPage).toHaveURL(/\/dashboard\/payments\/[^/]+\/\d{4}/);
+    });
   });
 
   test.describe('Charges Widget', () => {
@@ -93,6 +112,20 @@ test.describe('Dashboard Home', () => {
       await userPage.getByText(/Zobacz wszystkie naliczenia/i).click();
 
       await expect(userPage).toHaveURL(/\/dashboard\/charges/);
+    });
+
+    test('user can open current month charges from the summary', async ({
+      userPage,
+    }) => {
+      await userPage.goto('/dashboard');
+
+      await userPage
+        .getByRole('link', { name: new RegExp(CURRENT_MONTH_YEAR, 'i') })
+        .click();
+
+      await expect(userPage).toHaveURL(
+        /\/dashboard\/charges\?month=\d{4}-\d{2}/
+      );
     });
 
     test('user sees 12-month charges chart section', async ({ userPage }) => {

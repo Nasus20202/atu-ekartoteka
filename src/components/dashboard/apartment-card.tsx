@@ -5,6 +5,10 @@ import { Button } from '@/components/ui/button';
 import { MarqueeText } from '@/components/ui/marquee-text';
 import { formatCurrency, formatSharePercent } from '@/lib/utils';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
+import {
+  getChargesHref,
+  getPaymentYearHref,
+} from '@/lib/utils/dashboard-links';
 import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
 
 interface ApartmentCardProps {
@@ -42,6 +46,8 @@ export function ApartmentCard({
       ? `${formatSharePercent(apartment.shareNumerator, apartment.shareDenominator)}%`
       : null;
 
+  const paymentYear = apartment.payments?.[0]?.year ?? new Date().getFullYear();
+
   return (
     <div
       className="rounded-lg border bg-muted/50 p-4"
@@ -61,7 +67,7 @@ export function ApartmentCard({
           <div className="flex gap-2 sm:shrink-0">
             {hasPayments && (
               <Link
-                href={`/dashboard/payments/${apartment.id}/${apartment.payments?.[0]?.year || new Date().getFullYear()}`}
+                href={getPaymentYearHref(apartment.id, paymentYear)}
                 className="flex-1 sm:flex-none"
               >
                 <Button
@@ -76,7 +82,7 @@ export function ApartmentCard({
             )}
             {hasCharges && (
               <Link
-                href={`/dashboard/charges/${apartment.id}`}
+                href={getChargesHref({ apartmentId: apartment.id })}
                 className="flex-1 sm:flex-none"
               >
                 <Button

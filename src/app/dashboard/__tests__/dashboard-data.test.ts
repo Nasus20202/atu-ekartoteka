@@ -5,14 +5,14 @@ import {
   createMockPayment,
 } from '@/__tests__/fixtures';
 import {
+  buildApartmentBalances,
   buildDashboardNotifications,
-  buildHoaPaymentGroups,
   getChargesForPeriod,
   getDashboardPeriods,
 } from '@/app/dashboard/dashboard-data';
 import { Prisma } from '@/generated/prisma/browser';
 
-type Apartment = Parameters<typeof buildHoaPaymentGroups>[0][number];
+type Apartment = Parameters<typeof buildApartmentBalances>[0][number];
 
 const hoa = { id: 'hoa-1', name: 'Wspólnota 1', header: 'Nagłówek' };
 
@@ -115,51 +115,72 @@ describe('buildDashboardNotifications', () => {
   });
 });
 
-describe('buildHoaPaymentGroups', () => {
-  it('sums the latest closing balances per HOA', () => {
-    const groups = buildHoaPaymentGroups([
-      makeApartment({
-        payments: [
-          createMockPayment({ closingBalance: new Prisma.Decimal(10) }),
-        ],
-      }),
-      makeApartment({
-        id: 'apt-2',
-        payments: [
-          createMockPayment({ closingBalance: new Prisma.Decimal(-4) }),
-        ],
-      }),
-      makeApartment({
-        id: 'apt-3',
-        homeownersAssociation: {
-          id: 'hoa-2',
-          name: 'Wspólnota 2',
-          header: null,
-        },
-        payments: [
-          createMockPayment({ closingBalance: new Prisma.Decimal(3) }),
-        ],
-      }),
-    ]);
+describe('buildApartmentBalances', () => {
+  it('returns the latest closing balance and link for every apartment', () => {
+    const balances = buildApartmentBalances(
+      [
+        makeApartment({
+          payments: [
+            createMockPayment({
+              year: 2025,
+              closingBalance: new Prisma.Decimal(-4),
+            }),
+            createMockPayment({ year: 2024 }),
+          ],
+        }),
+        makeApartment({
+          id: 'apt-2',
+          number: '11',
+          homeownersAssociation:
+            null as unknown as Apartment['homeownersAssociation'],
+          payments: [
+            createMockPayment({ closingBalance: new Prisma.Decimal(3) }),
+          ],
+        }),
+      ],
+      '202512'
+    );
 
     expect(
-      groups.map((g) => [g.hoaId, g.hoaName, g.totalClosingBalance.toString()])
+      balances.map((balance) => [
+        balance.apartmentId,
+        balance.apartmentLabel,
+        balance.hoaName,
+        balance.closingBalance.toString(),
+        balance.href,
+      ])
     ).toEqual([
-      ['hoa-1', 'Wspólnota 1', '6'],
-      ['hoa-2', 'Wspólnota 2', '3'],
+      [
+        'apt-1',
+        'Testowa 1/10',
+        'Wspólnota 1',
+        '-4',
+        '/dashboard/payments/apt-1/2025',
+      ],
+      ['apt-2', 'Testowa 1/11', null, '3', '/dashboard/payments/apt-2/2024'],
     ]);
   });
 
-  it('skips apartments without payments or HOA', () => {
-    expect(
-      buildHoaPaymentGroups([
-        makeApartment(),
+  it('builds the monthly balance history for each apartment', () => {
+    const [balance] = buildApartmentBalances(
+      [
         makeApartment({
-          homeownersAssociation:
-            null as unknown as Apartment['homeownersAssociation'],
-          payments: [createMockPayment()],
+          payments: [
+            createMockPayment({
+              year: 2025,
+              openingBalance: new Prisma.Decimal(10),
+              januaryCharges: new Prisma.Decimal(30),
+            }),
+          ],
         }),
-      ])
-    ).toEqual([]);
+      ],
+      '202502'
+    );
+
+    expect(balance.history.map((datum) => datum.balance)).toEqual([-20, -20]);
+  });
+
+  it('skips apartments without payments', () => {
+    expect(buildApartmentBalances([makeApartment()], '202501')).toEqual([]);
   });
 });

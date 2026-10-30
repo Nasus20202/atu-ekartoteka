@@ -58,7 +58,7 @@ export const CHARGE_MONTH_FIELD_KEYS = [
   'decemberCharges',
 ] as const;
 
-function monthIndexToPeriod(year: number, monthIndex: number): string {
+export function monthIndexToPeriod(year: number, monthIndex: number): string {
   const month = String(monthIndex + 1).padStart(2, '0');
   return `${year}${month}`;
 }

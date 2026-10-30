@@ -6,6 +6,7 @@ import {
   CartesianGrid,
   Legend,
   Line,
+  ReferenceLine,
   Tooltip,
   XAxis,
   YAxis,
@@ -17,8 +18,13 @@ import {
   formatTooltipAmount,
   formatTooltipLabel,
 } from '@/components/charts/chart-formatters';
+import { createYAxisTick } from '@/components/charts/chart-ticks';
 import { MeasuredChart } from '@/components/charts/measured-chart';
 import { formatCurrency } from '@/lib/utils';
+
+const Y_AXIS_FONT_SIZE = 12;
+
+const renderYAxisTick = createYAxisTick(formatCurrency, Y_AXIS_FONT_SIZE);
 
 interface PaymentMonthlyBalanceChartProps {
   data: PaymentMonthlyChartDatum[];
@@ -85,9 +91,8 @@ export function PaymentMonthlyBalanceChart({
             axisLine={false}
           />
           <YAxis
-            tickFormatter={(value) => formatCurrency(value)}
             width={80}
-            tick={{ fill: CHART_COLORS.muted, fontSize: 12 }}
+            tick={renderYAxisTick}
             tickLine={false}
             axisLine={false}
           />
@@ -99,6 +104,12 @@ export function PaymentMonthlyBalanceChart({
               border: `1px solid ${CHART_COLORS.tooltipBorder}`,
               borderRadius: 12,
             }}
+          />
+          <ReferenceLine
+            y={0}
+            stroke={CHART_COLORS.zeroLine}
+            strokeWidth={1}
+            ifOverflow="extendDomain"
           />
           <Legend />
           <Area
