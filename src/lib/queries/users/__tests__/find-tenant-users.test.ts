@@ -131,6 +131,44 @@ describe('findTenantUsers', () => {
     );
   });
 
+  it('sorts by name with users without a name after named users', async () => {
+    await findTenantUsers(null, 1, 50, null, UserRole.TENANT, 'name', 'asc');
+
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: [{ name: { sort: 'asc', nulls: 'last' } }, { email: 'asc' }],
+      })
+    );
+  });
+
+  it('sorts by apartment count', async () => {
+    await findTenantUsers(
+      null,
+      1,
+      50,
+      null,
+      UserRole.TENANT,
+      'apartments',
+      'desc'
+    );
+
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: [{ apartments: { _count: 'desc' } }, { email: 'asc' }],
+      })
+    );
+  });
+
+  it('sorts by status in enum order', async () => {
+    await findTenantUsers(null, 1, 50, null, UserRole.TENANT, 'status', 'asc');
+
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: [{ status: 'asc' }, { email: 'asc' }],
+      })
+    );
+  });
+
   it('returns users and total from transaction', async () => {
     const mockUsers = [{ id: '1', name: 'Jan', email: 'jan@test.com' }];
     mockTransaction.mockResolvedValue([mockUsers, 1]);

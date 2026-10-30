@@ -83,7 +83,9 @@ describe('/api/admin/users route', () => {
         1,
         50,
         null,
-        UserRole.TENANT
+        UserRole.TENANT,
+        undefined,
+        'asc'
       );
       expect(data.pagination).toEqual({
         page: 1,
@@ -129,7 +131,9 @@ describe('/api/admin/users route', () => {
         1,
         20,
         null,
-        UserRole.ADMIN
+        UserRole.ADMIN,
+        undefined,
+        'asc'
       );
       expect(data.users).toHaveLength(2);
       expect(data.users[0].createdAt).toBeTypeOf('string');
@@ -175,8 +179,43 @@ describe('/api/admin/users route', () => {
         1,
         50,
         'jan',
-        UserRole.TENANT
+        UserRole.TENANT,
+        undefined,
+        'asc'
       );
+    });
+
+    it('passes the requested sort column and direction', async () => {
+      const { GET } = await import('../route');
+
+      const response = await GET(
+        makeGetRequest({ sort: 'name', order: 'desc' })
+      );
+
+      expect(response.status).toBe(200);
+      expect(mockFindTenantUsers).toHaveBeenCalledWith(
+        null,
+        1,
+        50,
+        null,
+        UserRole.TENANT,
+        'name',
+        'desc'
+      );
+    });
+
+    it.each([
+      [{ sort: 'createdAt' }, 'Nieprawidłowe sortowanie'],
+      [{ order: 'sideways' }, 'Nieprawidłowe sortowanie'],
+    ])('rejects invalid sorting params (%o)', async (params, message) => {
+      const { GET } = await import('../route');
+
+      const response = await GET(makeGetRequest(params));
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe(message);
+      expect(mockFindTenantUsers).not.toHaveBeenCalled();
     });
   });
 
@@ -446,7 +485,9 @@ describe('/api/admin/users route', () => {
         1,
         50,
         'jan',
-        UserRole.TENANT
+        UserRole.TENANT,
+        undefined,
+        'asc'
       );
     });
 

@@ -122,11 +122,11 @@ describe('AdminPaymentsList', () => {
     });
   });
 
-  it('renders a section per payment sorted by year descending', () => {
+  it('renders a section per payment in the database order', () => {
     const payments = [
-      createMockPayment({ id: 'p-2023', year: 2023 }),
       createMockPayment({ id: 'p-2025', year: 2025 }),
       createMockPayment({ id: 'p-2024', year: 2024 }),
+      createMockPayment({ id: 'p-2023', year: 2023 }),
     ];
 
     render(<AdminPaymentsList {...baseProps} payments={payments} />);

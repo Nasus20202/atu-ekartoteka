@@ -36,9 +36,9 @@ function renderList() {
       apartmentLabel="A-1"
       hoaName="Wspólnota"
       charges={[
-        makeCharge('a', '202410', '50'),
         makeCharge('b', '202411', '100'),
         makeCharge('c', '202411', '25'),
+        makeCharge('a', '202410', '50'),
         makeCharge('d', '202312', '80'),
       ]}
     />

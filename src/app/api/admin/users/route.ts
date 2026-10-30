@@ -25,14 +25,16 @@ export async function GET(req: NextRequest) {
     if (parsed.error !== undefined) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
-    const { role, status, page, limit, search } = parsed.query;
+    const { role, status, page, limit, search, sort, order } = parsed.query;
 
     const { users, total } = await findTenantUsers(
       status,
       page,
       limit,
       search,
-      role
+      role,
+      sort ?? undefined,
+      order
     );
     const totalPages = Math.ceil(total / limit);
 

@@ -1,14 +1,14 @@
 import type { UserFilter } from '@/app/admin/users/user-filters';
-import { AccountStatus } from '@/lib/types';
 import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
 import type { UserDto } from '@/lib/types/dto/user-dto';
 import { formatSharePercent } from '@/lib/utils';
-import { compareApartmentsNaturally } from '@/lib/utils/apartment-sort';
+import type { SortState, UserSortKey } from '@/lib/utils/sort';
 
 export function buildUsersQuery(
   filter: UserFilter,
   page: number,
-  search: string
+  search: string,
+  sort: SortState<UserSortKey> | null = null
 ): string {
   const params = new URLSearchParams();
 
@@ -24,33 +24,12 @@ export function buildUsersQuery(
     params.append('search', search);
   }
 
-  return params.toString();
-}
-
-export function getAvailableApartments(
-  apartments: ApartmentSummaryDto[],
-  allUsers: UserDto[],
-  selectedUser: UserDto | null
-): ApartmentSummaryDto[] {
-  if (selectedUser?.status === AccountStatus.PENDING) {
-    return apartments.filter(
-      (apt) =>
-        !allUsers.some((user) => user.apartments?.some((a) => a.id === apt.id))
-    );
+  if (sort) {
+    params.append('sort', sort.key);
+    params.append('order', sort.direction);
   }
 
-  const currentUserApartmentIds =
-    selectedUser?.apartments?.map((apt) => apt.id) || [];
-
-  return apartments.filter(
-    (apt) =>
-      currentUserApartmentIds.includes(apt.id) ||
-      !allUsers.some(
-        (user) =>
-          user.id !== selectedUser?.id &&
-          user.apartments?.some((apartment) => apartment.id === apt.id)
-      )
-  );
+  return params.toString();
 }
 
 export function isApartmentMatchingUser(
@@ -77,58 +56,23 @@ export function isApartmentMatchingUser(
   );
 }
 
-export function filterAndSortApartments(
+/** Keeps the database order, moving selected, then user-matching apartments to the top. */
+export function pinSelectedAndMatching(
   apartments: ApartmentSummaryDto[],
-  apartmentSearch: string,
   selectedApartmentIds: string[],
   selectedUser: UserDto | null
 ): ApartmentSummaryDto[] {
-  return apartments
-    .filter((apt) => {
-      if (apartmentSearch === '') {
-        return true;
-      }
+  const selected = new Set(selectedApartmentIds);
+  const rank = (apartment: ApartmentSummaryDto) =>
+    selected.has(apartment.id)
+      ? 0
+      : isApartmentMatchingUser(apartment, selectedUser)
+        ? 1
+        : 2;
 
-      const search = apartmentSearch.toLowerCase();
-      const fullTitle =
-        `${apt.address || ''} ${apt.building || ''}/${apt.number || ''}`.toLowerCase();
-
-      return (
-        apt.number?.toLowerCase().includes(search) ||
-        apt.address?.toLowerCase().includes(search) ||
-        apt.building?.toLowerCase().includes(search) ||
-        apt.owner?.toLowerCase().includes(search) ||
-        apt.email?.toLowerCase().includes(search) ||
-        apt.externalOwnerId?.toLowerCase().includes(search) ||
-        apt.externalApartmentId?.toLowerCase().includes(search) ||
-        fullTitle.includes(search)
-      );
-    })
-    .sort((left, right) => {
-      const leftSelected = selectedApartmentIds.includes(left.id);
-      const rightSelected = selectedApartmentIds.includes(right.id);
-
-      if (leftSelected && !rightSelected) {
-        return -1;
-      }
-
-      if (!leftSelected && rightSelected) {
-        return 1;
-      }
-
-      const leftMatches = isApartmentMatchingUser(left, selectedUser);
-      const rightMatches = isApartmentMatchingUser(right, selectedUser);
-
-      if (leftMatches && !rightMatches) {
-        return -1;
-      }
-
-      if (!leftMatches && rightMatches) {
-        return 1;
-      }
-
-      return compareApartmentsNaturally(left, right);
-    });
+  return [0, 1, 2].flatMap((group) =>
+    apartments.filter((apartment) => rank(apartment) === group)
+  );
 }
 
 export function getPendingDescription(

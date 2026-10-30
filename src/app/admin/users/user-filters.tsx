@@ -1,6 +1,7 @@
 'use client';
 
 import { Check, Clock, ShieldCheck, Users, X } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { AccountStatus } from '@/lib/types';
@@ -10,9 +11,10 @@ export type UserFilter = 'ALL' | 'ADMINS' | AccountStatus;
 interface UserFiltersProps {
   filter: UserFilter;
   onChange: (filter: UserFilter) => void;
+  action?: ReactNode;
 }
 
-export function UserFilters({ filter, onChange }: UserFiltersProps) {
+export function UserFilters({ filter, onChange, action }: UserFiltersProps) {
   return (
     <div className="mb-6 flex flex-wrap gap-2">
       <Button
@@ -55,6 +57,7 @@ export function UserFilters({ filter, onChange }: UserFiltersProps) {
         <ShieldCheck className="mr-1 h-4 w-4" />
         Administratorzy
       </Button>
+      {action && <div className="ml-auto">{action}</div>}
     </div>
   );
 }

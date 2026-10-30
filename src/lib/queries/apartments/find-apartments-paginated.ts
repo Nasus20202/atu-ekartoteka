@@ -1,26 +1,75 @@
+import type { Prisma } from '@/generated/prisma/client';
 import { prisma } from '@/lib/database/prisma';
-import { compareApartmentsNaturally } from '@/lib/utils/apartment-sort';
+import type { ApartmentSortKey, SortDirection } from '@/lib/utils/sort';
 
 interface FindApartmentsPaginatedOptions {
-  where: object;
+  where: Prisma.ApartmentWhereInput;
   skip: number;
   limit: number;
   hoaId?: string | null;
+  sort?: ApartmentSortKey;
+  order?: SortDirection;
 }
 
-// Natural ordering cannot be done by the database, so only the sort keys of all
-// matches are loaded; the full rows are fetched for the requested page alone.
+const NATURAL_ORDER: Prisma.ApartmentOrderByWithRelationInput[] = [
+  { building: { sort: 'asc', nulls: 'first' } },
+  { number: 'asc' },
+  { id: 'asc' },
+];
+
+/** Prisma ordering for the apartments list; ties keep the natural order. */
+export function buildOrderBy(
+  sort: ApartmentSortKey | undefined,
+  order: SortDirection
+): Prisma.ApartmentOrderByWithRelationInput[] {
+  switch (sort) {
+    case 'label':
+      return [
+        { address: { sort: order, nulls: 'first' } },
+        { building: { sort: order, nulls: 'first' } },
+        { number: order },
+        { id: 'asc' },
+      ];
+    case 'owner':
+      return [
+        { owner: { sort: order, nulls: order === 'asc' ? 'first' : 'last' } },
+        ...NATURAL_ORDER,
+      ];
+    case 'share':
+      return [
+        {
+          shareNumerator: {
+            sort: order,
+            nulls: order === 'asc' ? 'last' : 'first',
+          },
+        },
+        { shareDenominator: order },
+        ...NATURAL_ORDER,
+      ];
+    case 'status':
+      return [{ isActive: order === 'asc' ? 'desc' : 'asc' }, ...NATURAL_ORDER];
+    default:
+      return NATURAL_ORDER;
+  }
+}
+
+/** One page of apartments, ordered and paginated by the database. */
 export async function findApartmentsPaginated({
   where,
   skip,
   limit,
   hoaId,
+  sort,
+  order = 'asc',
 }: FindApartmentsPaginatedOptions) {
-  const [sortKeys, hoa] = await Promise.all([
+  const [apartments, total, hoa] = await Promise.all([
     prisma.apartment.findMany({
       where,
-      select: { id: true, building: true, number: true },
+      orderBy: buildOrderBy(sort, order),
+      skip,
+      take: limit,
     }),
+    prisma.apartment.count({ where }),
     hoaId
       ? prisma.homeownersAssociation.findUnique({
           where: { id: hoaId },
@@ -29,15 +78,5 @@ export async function findApartmentsPaginated({
       : Promise.resolve(null),
   ]);
 
-  const pageIds = sortKeys
-    .sort(compareApartmentsNaturally)
-    .slice(skip, skip + limit)
-    .map(({ id }) => id);
-  const pageRows = await prisma.apartment.findMany({
-    where: { id: { in: pageIds } },
-  });
-  const rowsById = new Map(pageRows.map((row) => [row.id, row]));
-  const apartments = pageIds.flatMap((id) => rowsById.get(id) ?? []);
-
-  return [apartments, sortKeys.length, hoa] as const;
+  return [apartments, total, hoa] as const;
 }

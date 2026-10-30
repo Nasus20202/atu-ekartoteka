@@ -376,3 +376,86 @@ The admin user list page (`/admin/users`) SHALL load users with infinite scrolli
 - **WHEN** they approve a user from the third page
 - **THEN** the three loaded pages are re-fetched and the approved user disappears from the list
 - **AND** the remaining users stay loaded and the scroll position is not reset to the top
+
+### Requirement: Compact User Table
+
+In the table view of the admin users page, users SHALL be shown as table rows under the headers `Użytkownik`, `E-mail`, `Status`, `Mieszkania` and `Akcje`. Each row SHALL show the name (or email when there is no name), the email, the status badge, the number of assigned apartments and the same `Akcje` menu as the card for that status. Registration date and the assigned apartment details SHALL NOT be shown in the table.
+
+#### Scenario: Table content
+
+- **GIVEN** the table view
+- **WHEN** an approved user `Anna Nowak` (`anna@example.com`) with 2 assigned apartments is shown
+- **THEN** their row shows `Anna Nowak`, `anna@example.com`, the `Zatwierdzony` badge and `2 mieszkania`
+
+#### Scenario: Pending user actions
+
+- **GIVEN** a pending user row
+- **WHEN** the admin opens its `Akcje` menu
+- **THEN** `Zatwierdź` and `Odrzuć` are offered and behave exactly as on the card
+
+#### Scenario: Approved and rejected user actions
+
+- **GIVEN** an approved or rejected user row
+- **WHEN** the admin opens its `Akcje` menu
+- **THEN** approved users offer `Mieszkania (N)` and `Zmień status`, and rejected users offer `Zmień status`, behaving exactly as on the card
+
+#### Scenario: Action refreshes the table
+
+- **GIVEN** the table view under the `Oczekujące` filter
+- **WHEN** the admin approves a user from its row menu
+- **THEN** the loaded pages refresh in place and the user leaves the table, as in cards view
+
+#### Scenario: Infinite scrolling appends table rows
+
+- **GIVEN** the table view is selected and more users remain
+- **WHEN** the admin scrolls to the end of the list
+- **THEN** the next page is appended as table rows
+
+### Requirement: User Table Sorting
+
+The user table SHALL sort by `Użytkownik`, `E-mail`, `Status` and `Mieszkania` from the column headers, with the sort column and direction sent to the users API so every page arrives in that order. Names SHALL fall back to the email and use locale-aware order, status SHALL use the order `Oczekuje`, `Zatwierdzony`, `Odrzucony` and the apartment count SHALL sort numerically.
+
+#### Scenario: Sort by name
+
+- **GIVEN** users `Zed` and `Anna Nowak`
+- **WHEN** the admin sorts by `Użytkownik` ascending
+- **THEN** `Anna Nowak` comes first
+
+#### Scenario: Sort users without a name
+
+- **GIVEN** a user without a name
+- **WHEN** the admin sorts by `Użytkownik`
+- **THEN** the user is ordered by their email
+
+#### Scenario: Sort by apartment count
+
+- **GIVEN** users with 2 and 10 assigned apartments
+- **WHEN** the admin sorts by `Mieszkania` ascending
+- **THEN** the user with 2 apartments comes first
+
+#### Scenario: Sort by status
+
+- **GIVEN** pending, approved and rejected users
+- **WHEN** the admin sorts by `Status` ascending
+- **THEN** pending users come first, then approved, then rejected
+
+### Requirement: Database-Filtered Admin User Data
+
+The apartment assignment dialog SHALL list only apartments the database reports as free or held by the edited user, filtered by the dialog search on the server. The pending-accounts header on the users page SHALL show the number of pending tenant accounts counted by the database, independent of the loaded rows and the active filter.
+
+#### Scenario: Apartment held by another user is not offered
+
+- **GIVEN** more than 200 users, one of them holding apartment `A1`
+- **WHEN** an admin opens the assignment dialog for a different user
+- **THEN** `A1` is not listed
+
+#### Scenario: Dialog search by full label
+
+- **WHEN** the admin types `ul. Testowa 1/2B` in the dialog search
+- **THEN** the apartment with address `ul. Testowa`, building `1` and number `2B` is listed
+
+#### Scenario: Pending count with another filter
+
+- **GIVEN** 3 pending tenant accounts
+- **WHEN** the admin shows the `Zatwierdzone` filter
+- **THEN** the header still reads `3 konta oczekują na zatwierdzenie`

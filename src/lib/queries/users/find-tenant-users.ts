@@ -1,15 +1,36 @@
 import { Prisma } from '@/generated/prisma/client';
 import { prisma } from '@/lib/database/prisma';
 import { AccountStatus, UserRole } from '@/lib/types';
+import type { SortDirection, UserSortKey } from '@/lib/utils/sort';
 
 const DEFAULT_LIMIT = 50;
+
+function buildOrderBy(
+  sort: UserSortKey | undefined,
+  order: SortDirection
+): Prisma.UserOrderByWithRelationInput[] {
+  switch (sort) {
+    case 'name':
+      return [{ name: { sort: order, nulls: 'last' } }, { email: order }];
+    case 'email':
+      return [{ email: order }];
+    case 'status':
+      return [{ status: order }, { email: 'asc' }];
+    case 'apartments':
+      return [{ apartments: { _count: order } }, { email: 'asc' }];
+    default:
+      return [{ createdAt: 'desc' }, { id: 'asc' }];
+  }
+}
 
 export async function findTenantUsers(
   status?: AccountStatus | null,
   page = 1,
   limit = DEFAULT_LIMIT,
   search?: string | null,
-  role: UserRole = UserRole.TENANT
+  role: UserRole = UserRole.TENANT,
+  sort?: UserSortKey,
+  order: SortDirection = 'asc'
 ) {
   const normalizedSearch = search?.trim();
   const searchFilter: Prisma.UserWhereInput | undefined = normalizedSearch
@@ -70,7 +91,7 @@ export async function findTenantUsers(
         updatedAt: true,
         apartments: true,
       },
-      orderBy: [{ createdAt: 'desc' }],
+      orderBy: buildOrderBy(sort, order),
       skip,
       take: limit,
     }),

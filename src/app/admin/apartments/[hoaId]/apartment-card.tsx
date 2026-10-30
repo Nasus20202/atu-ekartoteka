@@ -1,6 +1,10 @@
-import { AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 
+import {
+  ApartmentStatusBadge,
+  DuplicateAddressBadge,
+} from '@/app/admin/apartments/[hoaId]/apartment-badges';
+import { formatApartmentShare } from '@/app/admin/apartments/[hoaId]/apartment-list-utils';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -10,7 +14,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
-import { formatSharePercent } from '@/lib/utils';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 
 export function ApartmentCard({
@@ -37,21 +40,8 @@ export function ApartmentCard({
             </CardDescription>
           </div>
           <div className="flex flex-col items-end gap-1">
-            {apartment.isActive ? (
-              <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-200">
-                Aktywne
-              </span>
-            ) : (
-              <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800 dark:bg-gray-800 dark:text-gray-200">
-                Nieaktywne
-              </span>
-            )}
-            {isDuplicate && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800 dark:bg-amber-900/60 dark:text-amber-200">
-                <AlertTriangle className="h-3 w-3" />
-                Duplikat adresu
-              </span>
-            )}
+            <ApartmentStatusBadge isActive={apartment.isActive} />
+            {isDuplicate && <DuplicateAddressBadge />}
           </div>
         </div>
       </CardHeader>
@@ -65,11 +55,7 @@ export function ApartmentCard({
             <div className="flex justify-between">
               <dt className="text-muted-foreground">Udział:</dt>
               <dd className="font-medium">
-                {apartment.shareNumerator &&
-                apartment.shareDenominator &&
-                apartment.shareDenominator > 0
-                  ? `${formatSharePercent(apartment.shareNumerator, apartment.shareDenominator)}%`
-                  : '-'}
+                {formatApartmentShare(apartment) ?? '-'}
               </dd>
             </div>
           )}

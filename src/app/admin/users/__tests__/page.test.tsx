@@ -5,6 +5,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import AdminUsersPage from '@/app/admin/users/page';
 
 const confirmMock = vi.fn();
+const pendingCountMock = vi.hoisted(() => ({ value: 0 }));
+
+vi.mock('@/app/admin/users/use-pending-count', () => ({
+  usePendingCount: () => ({
+    pendingCount: pendingCountMock.value,
+    reload: () => {},
+  }),
+}));
 
 vi.mock('@/components/layout/page', () => ({
   Page: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -149,7 +157,9 @@ const approvedUser = {
 describe('AdminUsersPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.localStorage.clear();
     confirmMock.mockResolvedValue(true);
+    pendingCountMock.value = 0;
     vi.mocked(fetch).mockResolvedValue(usersResponse());
   });
 
@@ -174,6 +184,7 @@ describe('AdminUsersPage', () => {
   });
 
   it('shows pending description and empty state message for pending filter', async () => {
+    pendingCountMock.value = 1;
     vi.mocked(fetch).mockResolvedValueOnce(usersResponse([pendingUser]));
 
     render(<AdminUsersPage />);
@@ -236,9 +247,7 @@ describe('AdminUsersPage', () => {
             },
           ],
         }),
-      } as Response)
-      .mockResolvedValueOnce(usersResponse([]))
-      .mockResolvedValueOnce(usersResponse([]));
+      } as Response);
 
     render(<AdminUsersPage />);
 
@@ -281,9 +290,7 @@ describe('AdminUsersPage', () => {
             },
           ],
         }),
-      } as Response)
-      .mockResolvedValueOnce(usersResponse([]))
-      .mockResolvedValueOnce(usersResponse([]));
+      } as Response);
 
     render(<AdminUsersPage />);
 
@@ -294,11 +301,58 @@ describe('AdminUsersPage', () => {
     });
 
     await user.click(screen.getAllByRole('button', { name: /zatwierdź/i })[0]);
-    await user.click(screen.getByLabelText(/polna 3\/1/i));
+    await user.click(await screen.findByLabelText(/polna 3\/1/i));
 
     await waitFor(() => {
       expect(confirmMock).toHaveBeenCalledWith(
         expect.objectContaining({ title: 'Nieaktywne mieszkanie' })
+      );
+    });
+  });
+
+  it('switches to the table without reloading users', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(usersResponse([approvedUser]));
+
+    render(<AdminUsersPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/zarejestrowano/i)).toBeInTheDocument();
+    });
+    const requests = vi.mocked(fetch).mock.calls.length;
+
+    fireEvent.click(screen.getByRole('button', { name: 'Tabela' }));
+
+    expect(screen.queryByText(/zarejestrowano/i)).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('columnheader', { name: 'Użytkownik' })
+    ).toBeInTheDocument();
+    expect(screen.getByText('Anna Nowak')).toBeInTheDocument();
+    expect(screen.getByText('1 mieszkanie')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Tabela' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    expect(fetch).toHaveBeenCalledTimes(requests);
+  });
+
+  it('requests sorted users when a table header is clicked', async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(usersResponse([approvedUser]))
+      .mockResolvedValueOnce(usersResponse([approvedUser]));
+
+    render(<AdminUsersPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/zarejestrowano/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Tabela' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Użytkownik' }));
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith(
+        '/api/admin/users?status=PENDING&page=1&sort=name&order=asc',
+        expect.anything()
       );
     });
   });
@@ -414,8 +468,6 @@ describe('AdminUsersPage', () => {
         ok: true,
         json: async () => ({ apartments: [] }),
       } as Response)
-      .mockResolvedValueOnce(usersResponse([]))
-      .mockResolvedValueOnce(usersResponse([]))
       .mockResolvedValueOnce({ ok: true } as Response)
       .mockResolvedValueOnce(usersResponse([approvedUser]));
 
@@ -448,8 +500,6 @@ describe('AdminUsersPage', () => {
         ok: true,
         json: async () => ({ apartments: [] }),
       } as Response)
-      .mockResolvedValueOnce(usersResponse([]))
-      .mockResolvedValueOnce(usersResponse([]))
       .mockResolvedValueOnce({ ok: true } as Response)
       .mockResolvedValueOnce(usersResponse([]));
 

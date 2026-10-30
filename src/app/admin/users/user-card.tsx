@@ -1,8 +1,10 @@
-import { Edit, MoreVertical, UserCheck, UserX } from 'lucide-react';
-
+import {
+  UserActionButtons,
+  UserActionMenu,
+  type UserActionsProps,
+} from '@/app/admin/users/user-actions';
 import { UserStatusBadge } from '@/app/admin/users/user-status-badge';
 import { getApartmentSharePercent } from '@/app/admin/users/utils';
-import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -10,33 +12,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { AccountStatus } from '@/lib/types';
-import type { UserDto } from '@/lib/types/dto/user-dto';
 import { APP_LOCALE } from '@/lib/utils/locale';
 
-interface UserCardProps {
-  actionLoading: boolean;
-  onApprove: () => void;
-  onAssignApartment: () => void;
-  onChangeStatus: () => void;
-  onReject: () => void;
-  user: UserDto;
-}
+export function UserCard(actionProps: UserActionsProps) {
+  const { user } = actionProps;
 
-export function UserCard({
-  actionLoading,
-  onApprove,
-  onAssignApartment,
-  onChangeStatus,
-  onReject,
-  user,
-}: UserCardProps) {
   return (
     <Card>
       <CardHeader>
@@ -94,112 +74,11 @@ export function UserCard({
         )}
 
         <div className="hidden gap-2 sm:flex">
-          {user.status === AccountStatus.PENDING && (
-            <>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={actionLoading}
-                onClick={onApprove}
-              >
-                <UserCheck className="mr-1 h-4 w-4" />
-                Zatwierdź
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={actionLoading}
-                className="text-destructive hover:text-destructive"
-                onClick={onReject}
-              >
-                <UserX className="mr-1 h-4 w-4" />
-                Odrzuć
-              </Button>
-            </>
-          )}
-          {user.status === AccountStatus.APPROVED && (
-            <>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={actionLoading}
-                onClick={onAssignApartment}
-              >
-                <Edit className="mr-1 h-4 w-4" />
-                Mieszkania ({user.apartments?.length || 0})
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={actionLoading}
-                onClick={onChangeStatus}
-              >
-                <Edit className="mr-1 h-4 w-4" />
-                Zmień status
-              </Button>
-            </>
-          )}
-          {user.status === AccountStatus.REJECTED && (
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={actionLoading}
-              onClick={onChangeStatus}
-            >
-              <Edit className="mr-1 h-4 w-4" />
-              Zmień status
-            </Button>
-          )}
+          <UserActionButtons {...actionProps} />
         </div>
 
         <div className="flex gap-2 sm:hidden">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={actionLoading}
-                aria-label="Akcje"
-              >
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {user.status === AccountStatus.PENDING && (
-                <>
-                  <DropdownMenuItem onSelect={onApprove}>
-                    <UserCheck className="mr-2 h-4 w-4" />
-                    Zatwierdź
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="text-destructive focus:text-destructive"
-                    onSelect={onReject}
-                  >
-                    <UserX className="mr-2 h-4 w-4" />
-                    Odrzuć
-                  </DropdownMenuItem>
-                </>
-              )}
-              {user.status === AccountStatus.APPROVED && (
-                <>
-                  <DropdownMenuItem onSelect={onAssignApartment}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    Mieszkania ({user.apartments?.length || 0})
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={onChangeStatus}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    Zmień status
-                  </DropdownMenuItem>
-                </>
-              )}
-              {user.status === AccountStatus.REJECTED && (
-                <DropdownMenuItem onSelect={onChangeStatus}>
-                  <Edit className="mr-2 h-4 w-4" />
-                  Zmień status
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <UserActionMenu {...actionProps} />
         </div>
       </CardContent>
     </Card>

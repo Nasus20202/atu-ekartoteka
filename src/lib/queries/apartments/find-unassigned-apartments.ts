@@ -34,8 +34,9 @@ export function findUnassignedApartments(
     },
     orderBy: [
       { homeownersAssociation: { name: 'asc' } },
-      { building: 'asc' },
+      { building: { sort: 'asc', nulls: 'first' } },
       { number: 'asc' },
+      { id: 'asc' },
     ],
   });
 }

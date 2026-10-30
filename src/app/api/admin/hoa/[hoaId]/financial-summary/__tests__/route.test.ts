@@ -4,8 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { UserRole } from '@/lib/types';
 
 const mockAuth = vi.fn();
-const mockApartmentFindMany = vi.fn();
-const mockPaymentFindMany = vi.fn();
+const mockPaymentGroupBy = vi.fn();
+const mockPaymentAggregate = vi.fn();
 const mockChargeNotificationAggregate = vi.fn();
 
 vi.mock('@/auth', () => ({
@@ -14,11 +14,9 @@ vi.mock('@/auth', () => ({
 
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
-    apartment: {
-      findMany: mockApartmentFindMany,
-    },
     payment: {
-      findMany: mockPaymentFindMany,
+      groupBy: mockPaymentGroupBy,
+      aggregate: mockPaymentAggregate,
     },
     chargeNotification: {
       aggregate: mockChargeNotificationAggregate,
@@ -78,56 +76,9 @@ describe('GET /api/admin/hoa/[hoaId]/financial-summary', () => {
     expect(response.status).toBe(401);
   });
 
-  it('returns zeros when HOA has no apartments', async () => {
+  it('returns zeros when HOA has no payments or notifications', async () => {
     mockAuth.mockResolvedValueOnce(adminSession);
-    mockApartmentFindMany.mockResolvedValueOnce([]);
-
-    const { GET } = await import('../route');
-    const response = await GET(makeRequest(), {
-      params: Promise.resolve({ hoaId: 'hoa-1' }),
-    });
-    const data = await response.json();
-
-    expect(response.status).toBe(200);
-    expect(data.totalClosingBalance).toBe(0);
-    expect(data.totalChargesDue).toBe(0);
-    expect(mockPaymentFindMany).not.toHaveBeenCalled();
-    expect(mockChargeNotificationAggregate).not.toHaveBeenCalled();
-  });
-
-  it('sums most recent closing balance per apartment', async () => {
-    mockAuth.mockResolvedValueOnce(adminSession);
-    mockApartmentFindMany.mockResolvedValueOnce([
-      { id: 'apt-1' },
-      { id: 'apt-2' },
-    ]);
-    // apt-1 has 2025 and 2024; apt-2 has 2025
-    mockPaymentFindMany.mockResolvedValueOnce([
-      { apartmentId: 'apt-1', year: 2025, closingBalance: 100 },
-      { apartmentId: 'apt-2', year: 2025, closingBalance: -50 },
-      { apartmentId: 'apt-1', year: 2024, closingBalance: 200 }, // should be ignored
-    ]);
-    mockChargeNotificationAggregate.mockResolvedValueOnce({
-      _sum: { totalAmount: 300 },
-    });
-
-    const { GET } = await import('../route');
-    const response = await GET(makeRequest(), {
-      params: Promise.resolve({ hoaId: 'hoa-1' }),
-    });
-    const data = await response.json();
-
-    expect(response.status).toBe(200);
-    expect(data.totalClosingBalance).toBe(50); // 100 + (-50)
-    expect(data.totalChargesDue).toBe(300);
-  });
-
-  it('uses zero for totalChargesDue when aggregate sum is null', async () => {
-    mockAuth.mockResolvedValueOnce(adminSession);
-    mockApartmentFindMany.mockResolvedValueOnce([{ id: 'apt-1' }]);
-    mockPaymentFindMany.mockResolvedValueOnce([
-      { apartmentId: 'apt-1', year: 2025, closingBalance: 500 },
-    ]);
+    mockPaymentGroupBy.mockResolvedValueOnce([]);
     mockChargeNotificationAggregate.mockResolvedValueOnce({
       _sum: { totalAmount: null },
     });
@@ -139,20 +90,22 @@ describe('GET /api/admin/hoa/[hoaId]/financial-summary', () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
+    expect(data.totalClosingBalance).toBe(0);
     expect(data.totalChargesDue).toBe(0);
+    expect(mockPaymentAggregate).not.toHaveBeenCalled();
   });
 
-  it('handles apartments with no payments (not in payment list)', async () => {
+  it('sums the closing balance of each apartment latest year in the database', async () => {
     mockAuth.mockResolvedValueOnce(adminSession);
-    mockApartmentFindMany.mockResolvedValueOnce([
-      { id: 'apt-1' },
-      { id: 'apt-no-payments' },
+    mockPaymentGroupBy.mockResolvedValueOnce([
+      { apartmentId: 'apt-1', _max: { year: 2025 } },
+      { apartmentId: 'apt-2', _max: { year: 2024 } },
     ]);
-    mockPaymentFindMany.mockResolvedValueOnce([
-      { apartmentId: 'apt-1', year: 2025, closingBalance: 150 },
-    ]);
+    mockPaymentAggregate.mockResolvedValueOnce({
+      _sum: { closingBalance: 50 },
+    });
     mockChargeNotificationAggregate.mockResolvedValueOnce({
-      _sum: { totalAmount: 0 },
+      _sum: { totalAmount: 300 },
     });
 
     const { GET } = await import('../route');
@@ -161,33 +114,32 @@ describe('GET /api/admin/hoa/[hoaId]/financial-summary', () => {
     });
     const data = await response.json();
 
+    const inHoa = { apartment: { homeownersAssociationId: 'hoa-1' } };
     expect(response.status).toBe(200);
-    expect(data.totalClosingBalance).toBe(150);
-  });
-
-  it('queries payments ordered by year desc to get most recent first', async () => {
-    mockAuth.mockResolvedValueOnce(adminSession);
-    mockApartmentFindMany.mockResolvedValueOnce([{ id: 'apt-1' }]);
-    mockPaymentFindMany.mockResolvedValueOnce([]);
-    mockChargeNotificationAggregate.mockResolvedValueOnce({
-      _sum: { totalAmount: 0 },
+    expect(data).toEqual({ totalClosingBalance: 50, totalChargesDue: 300 });
+    expect(mockPaymentGroupBy).toHaveBeenCalledWith({
+      by: ['apartmentId'],
+      where: inHoa,
+      _max: { year: true },
     });
-
-    const { GET } = await import('../route');
-    await GET(makeRequest(), {
-      params: Promise.resolve({ hoaId: 'hoa-1' }),
+    expect(mockPaymentAggregate).toHaveBeenCalledWith({
+      where: {
+        OR: [
+          { apartmentId: 'apt-1', year: 2025 },
+          { apartmentId: 'apt-2', year: 2024 },
+        ],
+      },
+      _sum: { closingBalance: true },
     });
-
-    expect(mockPaymentFindMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        orderBy: { year: 'desc' },
-      })
-    );
+    expect(mockChargeNotificationAggregate).toHaveBeenCalledWith({
+      where: inHoa,
+      _sum: { totalAmount: true },
+    });
   });
 
   it('returns 500 on database error', async () => {
     mockAuth.mockResolvedValueOnce(adminSession);
-    mockApartmentFindMany.mockRejectedValueOnce(new Error('DB failure'));
+    mockPaymentGroupBy.mockRejectedValueOnce(new Error('DB failure'));
 
     const { GET } = await import('../route');
     const response = await GET(makeRequest(), {
@@ -201,7 +153,7 @@ describe('GET /api/admin/hoa/[hoaId]/financial-summary', () => {
 
   it('reports non-Error failures as unknown errors', async () => {
     mockAuth.mockResolvedValueOnce(adminSession);
-    mockApartmentFindMany.mockRejectedValueOnce('DB failure');
+    mockPaymentGroupBy.mockRejectedValueOnce('DB failure');
 
     const { GET } = await import('../route');
     const response = await GET(makeRequest(), {

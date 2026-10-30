@@ -6,20 +6,24 @@ import { ApartmentSelectionDialog } from '@/app/admin/users/apartment-selection-
 import { CreateUserDialog } from '@/app/admin/users/create-user-dialog';
 import { useAdminUsers } from '@/app/admin/users/use-admin-users';
 import { useAvailableApartments } from '@/app/admin/users/use-available-apartments';
+import { usePendingCount } from '@/app/admin/users/use-pending-count';
 import { useUserActions } from '@/app/admin/users/use-user-actions';
 import { UserActionsMenu } from '@/app/admin/users/user-actions-menu';
-import { UserCard } from '@/app/admin/users/user-card';
 import { UserFilters } from '@/app/admin/users/user-filters';
-import { UsersEmptyState } from '@/app/admin/users/users-empty-state';
+import { UsersList } from '@/app/admin/users/users-list';
 import {
-  filterAndSortApartments,
   getPendingDescription,
+  pinSelectedAndMatching,
 } from '@/app/admin/users/utils';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import { InfiniteScrollSentinel } from '@/components/ui/infinite-scroll-sentinel';
 import { Input } from '@/components/ui/input';
-import { LoadingCard } from '@/components/ui/loading-card';
+import { ListViewSwitch } from '@/components/ui/list-view-switch';
+import {
+  LIST_VIEW_STORAGE_KEYS,
+  useListViewMode,
+} from '@/lib/hooks/use-list-view-mode';
 import { AccountStatus } from '@/lib/types';
 
 export default function AdminUsersPage() {
@@ -35,7 +39,14 @@ export default function AdminUsersPage() {
     setFilter,
     userSearch,
     setUserSearch,
+    sort,
+    setSort,
   } = useAdminUsers();
+  const { pendingCount, reload: reloadPendingCount } = usePendingCount();
+  const refreshUsersAndCount = async () => {
+    reloadPendingCount();
+    await refresh();
+  };
   const {
     selectedUser,
     selectedApartments,
@@ -53,19 +64,16 @@ export default function AdminUsersPage() {
     handleUpdateUser,
     handleCreateUser,
     handleRejectFromStatusDialog,
-  } = useUserActions(refresh);
-  const apartments = useAvailableApartments(selectedUser);
+  } = useUserActions(refreshUsersAndCount);
+  const apartments = useAvailableApartments(selectedUser, apartmentSearch);
+  const [viewMode, setViewMode] = useListViewMode(LIST_VIEW_STORAGE_KEYS.users);
 
-  const filteredApartments = filterAndSortApartments(
+  const filteredApartments = pinSelectedAndMatching(
     apartments,
-    apartmentSearch,
     selectedApartments,
     selectedUser
   );
 
-  const pendingCount = users.filter(
-    (user) => user.status === AccountStatus.PENDING
-  ).length;
   const pendingDescription = getPendingDescription(pendingCount);
 
   return (
@@ -90,27 +98,25 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      <UserFilters filter={filter} onChange={setFilter} />
+      <UserFilters
+        filter={filter}
+        onChange={setFilter}
+        action={<ListViewSwitch value={viewMode} onChange={setViewMode} />}
+      />
 
-      {loading ? (
-        <LoadingCard />
-      ) : users.length === 0 && !error ? (
-        <UsersEmptyState search={userSearch} filter={filter} />
-      ) : (
-        <div className="grid gap-4">
-          {users.map((user) => (
-            <UserCard
-              key={user.id}
-              user={user}
-              actionLoading={actionLoading}
-              onApprove={() => openUserDialog(user, 'approve')}
-              onAssignApartment={() => openUserDialog(user, 'assign-apartment')}
-              onChangeStatus={() => openUserDialog(user, 'change-status')}
-              onReject={() => handleUpdateUser(user.id, AccountStatus.REJECTED)}
-            />
-          ))}
-        </div>
-      )}
+      <UsersList
+        users={users}
+        loading={loading}
+        error={error}
+        viewMode={viewMode}
+        search={userSearch}
+        filter={filter}
+        actionLoading={actionLoading}
+        onOpenDialog={openUserDialog}
+        onReject={(user) => handleUpdateUser(user.id, AccountStatus.REJECTED)}
+        sort={sort}
+        onSort={setSort}
+      />
 
       {!loading && (
         <InfiniteScrollSentinel
