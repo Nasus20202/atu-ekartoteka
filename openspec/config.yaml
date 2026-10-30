@@ -61,10 +61,13 @@ rules:
     - Include a "Non-goals" section for anything explicitly out of scope
     - Keep proposals concise — avoid restating the spec
   design:
-    - Reference existing patterns from the codebase (auth pattern, email template pattern, admin page pattern)
+    - Reference existing patterns from the codebase (auth pattern, email
+      template pattern, admin page pattern)
     - Specify exact API request/response shapes
     - Call out any new DB fields or migrations required
   tasks:
     - Each task must be independently implementable and testable
     - Include the test requirement in the same task as the implementation
     - Prefix completed tasks with [x] (e.g., ## [x] Task 1)
+githubCopilot:
+  cloudAgent: false
