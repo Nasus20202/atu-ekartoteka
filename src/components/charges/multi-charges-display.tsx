@@ -1,12 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-
 import {
   MonthTrigger,
   YearTrigger,
 } from '@/components/charges/charge-list-parts';
 import { MultiApartmentPeriodCard } from '@/components/charges/multi-apartment-period-card';
+import { useChargeListOpenState } from '@/components/charges/use-charge-list-open-state';
 import {
   ACTIVE_MONTH_CLASS,
   useScrollToActiveMonth,
@@ -15,7 +14,7 @@ import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import type { ChargeDisplayDto } from '@/lib/types/dto/charge-dto';
 import { cn } from '@/lib/utils';
 import { getPeriodYear, groupByYearDesc } from '@/lib/utils/group-by-year';
-import { isPeriodAfterDate } from '@/lib/utils/payment-months';
+import { isPeriodAfterDate } from '@/lib/utils/period';
 import { sumDecimals } from '@/lib/utils/sum';
 
 interface ApartmentPeriodData {
@@ -50,39 +49,9 @@ export function MultiChargesDisplay({
     ? periods.filter((p) => !isPeriodAfterDate(p, chargesDataDate))
     : periods;
   const yearGroups = groupByYearDesc(filteredPeriods, getPeriodYear);
-
-  const activeYear = activeMonth ? getPeriodYear(activeMonth) : null;
-
-  const [openYears, setOpenYears] = useState<Set<string>>(() => {
-    const initial = new Set<string>();
-    if (yearGroups[0]) initial.add(yearGroups[0].year);
-    if (activeYear) initial.add(activeYear);
-    return initial;
-  });
-
-  const [openMonths, setOpenMonths] = useState<Set<string>>(() => {
-    return new Set(activeMonth ? [activeMonth] : []);
-  });
-
+  const { openYears, toggleYear, openMonths, toggleMonth } =
+    useChargeListOpenState(yearGroups[0]?.year, activeMonth);
   const activeRef = useScrollToActiveMonth(activeMonth);
-
-  function toggleYear(year: string) {
-    setOpenYears((prev) => {
-      const next = new Set(prev);
-      if (next.has(year)) next.delete(year);
-      else next.add(year);
-      return next;
-    });
-  }
-
-  function toggleMonth(period: string) {
-    setOpenMonths((prev) => {
-      const next = new Set(prev);
-      if (next.has(period)) next.delete(period);
-      else next.add(period);
-      return next;
-    });
-  }
 
   return (
     <div className="space-y-2">

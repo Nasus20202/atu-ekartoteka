@@ -1,10 +1,14 @@
 import type { YAxisTickContentProps } from 'recharts';
 
 import { CHART_COLORS } from '@/components/charts/chart-colors';
+import { formatCompactAmount } from '@/components/charts/chart-formatters';
 
 const ZERO_TICK_FONT_WEIGHT = 700;
 const DEFAULT_TICK_FONT_WEIGHT = 400;
 const TICK_BASELINE_OFFSET = 4;
+const COMPACT_Y_AXIS_FONT_SIZE = 11;
+
+export const COMPACT_Y_AXIS_WIDTH = 72;
 
 export function createYAxisTick(
   formatValue: (value: number) => string,
@@ -35,3 +39,8 @@ export function createYAxisTick(
     );
   };
 }
+
+export const renderCompactYAxisTick = createYAxisTick(
+  formatCompactAmount,
+  COMPACT_Y_AXIS_FONT_SIZE
+);

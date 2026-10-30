@@ -1,35 +1,22 @@
-import {
-  type BalanceHistoryDatum,
-  getBalanceHistory,
-} from '@/components/charts/balance-history-data';
+import { getBalanceHistory } from '@/components/charts/balance-history-data';
+import { getSeriesColor } from '@/components/charts/chart-colors';
+import type { ApartmentBalance } from '@/components/dashboard/payments-summary-card';
 import type { findUserWithApartments } from '@/lib/queries/users/find-user-with-apartments';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 import { getPaymentYearHref } from '@/lib/utils/dashboard-links';
-import { type Decimal, toDecimal } from '@/lib/utils/decimal';
+import { toDecimal } from '@/lib/utils/decimal';
+import { dateToPeriod } from '@/lib/utils/period';
 
 type DashboardUser = NonNullable<
   Awaited<ReturnType<typeof findUserWithApartments>>
 >;
 type DashboardApartment = DashboardUser['apartments'][number];
 
-export type ApartmentBalance = {
-  apartmentId: string;
-  apartmentLabel: string;
-  hoaName: string | null;
-  closingBalance: Decimal;
-  href: string;
-  history: BalanceHistoryDatum[];
-};
-
-function toPeriod(date: Date): string {
-  return `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}`;
-}
-
 export function getDashboardPeriods(now: Date) {
   const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1);
   return {
-    currentPeriod: toPeriod(now),
-    previousPeriod: toPeriod(prevMonth),
+    currentPeriod: dateToPeriod(now),
+    previousPeriod: dateToPeriod(prevMonth),
   };
 }
 
@@ -64,7 +51,7 @@ export function buildApartmentBalances(
   apartments: DashboardApartment[],
   endPeriod: string
 ): ApartmentBalance[] {
-  return apartments.flatMap((apt) => {
+  return apartments.flatMap((apt, index) => {
     const latestPayment = apt.payments[0];
 
     if (!latestPayment) {
@@ -78,6 +65,7 @@ export function buildApartmentBalances(
         hoaName: apt.homeownersAssociation?.name ?? null,
         closingBalance: toDecimal(latestPayment.closingBalance),
         href: getPaymentYearHref(apt.id, latestPayment.year),
+        color: getSeriesColor(index),
         history: getBalanceHistory(apt.payments, endPeriod),
       },
     ];

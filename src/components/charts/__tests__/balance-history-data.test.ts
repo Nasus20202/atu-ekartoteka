@@ -85,7 +85,12 @@ describe('mergeBalanceHistories', () => {
   it('returns empty trend without any history', () => {
     expect(
       mergeBalanceHistories([
-        { apartmentId: 'apt-1', label: 'Testowa 1/1', history: [] },
+        {
+          apartmentId: 'apt-1',
+          label: 'Testowa 1/1',
+          color: 'red',
+          history: [],
+        },
       ])
     ).toEqual({ data: [], series: [] });
   });
@@ -95,15 +100,22 @@ describe('mergeBalanceHistories', () => {
       {
         apartmentId: 'apt-1',
         label: 'Testowa 1/1',
+        color: 'red',
         history: [
           datum('202501', 'Styczeń 2025', 10),
           datum('202502', 'Luty 2025', -5),
         ],
       },
-      { apartmentId: 'apt-2', label: 'Testowa 1/2', history: [] },
+      {
+        apartmentId: 'apt-2',
+        label: 'Testowa 1/2',
+        color: 'green',
+        history: [],
+      },
       {
         apartmentId: 'apt-3',
         label: 'Testowa 1/3',
+        color: 'blue',
         history: [datum('202502', 'Luty 2025', 30)],
       },
     ]);
@@ -114,7 +126,7 @@ describe('mergeBalanceHistories', () => {
       ['apt_0', 'Testowa 1/1', 'apt-1'],
       ['apt_1', 'Testowa 1/3', 'apt-3'],
     ]);
-    expect(trend.series[0].color).not.toBe(trend.series[1].color);
+    expect(trend.series.map((entry) => entry.color)).toEqual(['red', 'blue']);
     expect(trend.data).toEqual([
       { period: '202501', label: 'Styczeń 2025', apt_0: 10 },
       { period: '202502', label: 'Luty 2025', apt_0: -5, apt_1: 30 },

@@ -19,22 +19,23 @@ import type {
   ChargeTrendSeries,
 } from '@/components/charts/chart-data';
 import {
-  formatCompactAmount,
   formatSeriesTooltipAmount,
   formatTooltipLabel,
 } from '@/components/charts/chart-formatters';
-import { createYAxisTick } from '@/components/charts/chart-ticks';
+import {
+  TOOLTIP_CONTENT_STYLE,
+  ZERO_LINE_PROPS,
+} from '@/components/charts/chart-styles';
+import {
+  COMPACT_Y_AXIS_WIDTH,
+  renderCompactYAxisTick,
+} from '@/components/charts/chart-ticks';
 import {
   ChartViewportNav,
   useChartViewport,
 } from '@/components/charts/chart-viewport';
 import { MeasuredChart } from '@/components/charts/measured-chart';
 import { getChargesHref } from '@/lib/utils/dashboard-links';
-
-const Y_AXIS_FONT_SIZE = 11;
-const Y_AXIS_WIDTH = 72;
-
-const renderYAxisTick = createYAxisTick(formatCompactAmount, Y_AXIS_FONT_SIZE);
 
 interface ChargeTrendChartProps {
   data: ChargeTrendDatum[];
@@ -127,25 +128,17 @@ export function ChargeTrendChart({ data, series }: ChargeTrendChartProps) {
             />
             <YAxis
               domain={[0, 'dataMax']}
-              width={Y_AXIS_WIDTH}
-              tick={renderYAxisTick}
+              width={COMPACT_Y_AXIS_WIDTH}
+              tick={renderCompactYAxisTick}
               tickLine={false}
               axisLine={false}
             />
             <Tooltip
               formatter={formatSeriesTooltipAmount}
               labelFormatter={formatTooltipLabel}
-              contentStyle={{
-                backgroundColor: CHART_COLORS.tooltip,
-                border: `1px solid ${CHART_COLORS.tooltipBorder}`,
-                borderRadius: 12,
-              }}
+              contentStyle={TOOLTIP_CONTENT_STYLE}
             />
-            <ReferenceLine
-              y={0}
-              stroke={CHART_COLORS.zeroLine}
-              strokeWidth={1}
-            />
+            <ReferenceLine {...ZERO_LINE_PROPS} />
             <Legend />
             {series.map((entry) => (
               <Area

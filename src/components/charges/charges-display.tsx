@@ -1,13 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-
 import {
   ChargeRows,
   MonthTrigger,
   PeriodRange,
   YearTrigger,
 } from '@/components/charges/charge-list-parts';
+import { useChargeListOpenState } from '@/components/charges/use-charge-list-open-state';
 import {
   ACTIVE_MONTH_CLASS,
   useScrollToActiveMonth,
@@ -20,7 +19,7 @@ import {
 } from '@/lib/types/dto/charge-dto';
 import { cn } from '@/lib/utils';
 import { getPeriodYear, groupByYearDesc } from '@/lib/utils/group-by-year';
-import { isPeriodAfterDate } from '@/lib/utils/payment-months';
+import { isPeriodAfterDate } from '@/lib/utils/period';
 import { sumDecimals } from '@/lib/utils/sum';
 
 interface ChargesDisplayProps {
@@ -43,41 +42,10 @@ export function ChargesDisplay({
   const filteredPeriods = chargesDataDate
     ? periods.filter((p) => !isPeriodAfterDate(p, chargesDataDate))
     : periods;
-  const activeYear = activeMonth ? getPeriodYear(activeMonth) : null;
   const yearGroups = groupByYearDesc(filteredPeriods, getPeriodYear);
-
-  // Only the newest year open by default; if activeMonth given, ensure its year is included
-  const [openYears, setOpenYears] = useState<Set<string>>(() => {
-    const initial = new Set<string>();
-    if (yearGroups[0]) initial.add(yearGroups[0].year);
-    if (activeYear) initial.add(activeYear);
-    return initial;
-  });
-
-  // Months collapsed by default; if activeMonth given, open that one
-  const [openPeriods, setOpenPeriods] = useState<Set<string>>(() => {
-    return new Set(activeMonth ? [activeMonth] : []);
-  });
-
+  const { openYears, toggleYear, openMonths, toggleMonth } =
+    useChargeListOpenState(yearGroups[0]?.year, activeMonth);
   const activeRef = useScrollToActiveMonth(activeMonth);
-
-  function toggleYear(year: string) {
-    setOpenYears((prev) => {
-      const next = new Set(prev);
-      if (next.has(year)) next.delete(year);
-      else next.add(year);
-      return next;
-    });
-  }
-
-  function togglePeriod(period: string) {
-    setOpenPeriods((prev) => {
-      const next = new Set(prev);
-      if (next.has(period)) next.delete(period);
-      else next.add(period);
-      return next;
-    });
-  }
 
   return (
     <div className="space-y-2">
@@ -95,13 +63,13 @@ export function ChargesDisplay({
                 charges.map((charge) => charge.totalAmount)
               );
               const isActive = period === activeMonth;
-              const isPeriodOpen = openPeriods.has(period);
+              const isPeriodOpen = openMonths.has(period);
 
               return (
                 <Collapsible
                   key={period}
                   open={isPeriodOpen}
-                  onOpenChange={() => togglePeriod(period)}
+                  onOpenChange={() => toggleMonth(period)}
                 >
                   <div
                     ref={isActive ? activeRef : null}

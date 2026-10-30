@@ -18,6 +18,10 @@ import {
   formatTooltipAmount,
   formatTooltipLabel,
 } from '@/components/charts/chart-formatters';
+import {
+  TOOLTIP_CONTENT_STYLE,
+  ZERO_LINE_PROPS,
+} from '@/components/charts/chart-styles';
 import { createYAxisTick } from '@/components/charts/chart-ticks';
 import { MeasuredChart } from '@/components/charts/measured-chart';
 import { formatCurrency } from '@/lib/utils';
@@ -99,18 +103,9 @@ export function PaymentMonthlyBalanceChart({
           <Tooltip
             formatter={formatTooltipAmount}
             labelFormatter={formatTooltipLabel}
-            contentStyle={{
-              backgroundColor: CHART_COLORS.tooltip,
-              border: `1px solid ${CHART_COLORS.tooltipBorder}`,
-              borderRadius: 12,
-            }}
+            contentStyle={TOOLTIP_CONTENT_STYLE}
           />
-          <ReferenceLine
-            y={0}
-            stroke={CHART_COLORS.zeroLine}
-            strokeWidth={1}
-            ifOverflow="extendDomain"
-          />
+          <ReferenceLine {...ZERO_LINE_PROPS} ifOverflow="extendDomain" />
           <Legend />
           <Area
             type="monotone"

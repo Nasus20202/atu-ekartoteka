@@ -10,15 +10,15 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import type { PaymentDtoSource } from '@/lib/types/dto/payment-dto';
-import { formatCurrency, MONTH_NAMES_PL } from '@/lib/utils';
+import { cn, formatCurrency, MONTH_NAMES_PL } from '@/lib/utils';
+import { getSignedBalanceClass } from '@/lib/utils/balance-class';
 import { getChargesHref } from '@/lib/utils/dashboard-links';
 import { toDecimal } from '@/lib/utils/decimal';
 import {
-  dateToPeriod,
   getNonEmptyMonths,
   getPaymentTotals,
-  monthIndexToPeriod,
 } from '@/lib/utils/payment-months';
+import { dateToPeriod, monthIndexToPeriod } from '@/lib/utils/period';
 
 interface PaymentTableProps {
   payment: PaymentDtoSource;
@@ -80,13 +80,10 @@ export function PaymentTable({
               {formatCurrency(payment.openingDebt)}
             </TableCell>
             <TableCell
-              className={`text-right ${
-                openingBalance.isNegative()
-                  ? 'text-red-600'
-                  : openingBalance.greaterThan(0)
-                    ? 'text-green-600'
-                    : ''
-              }`}
+              className={cn(
+                'text-right',
+                getSignedBalanceClass(openingBalance)
+              )}
             >
               {formatCurrency(openingBalance)}
             </TableCell>
@@ -98,11 +95,7 @@ export function PaymentTable({
               apartmentId,
               period: monthIndexToPeriod(payment.year, month.monthIndex),
             });
-            const balanceColor = month.balance.isNegative()
-              ? 'text-red-600'
-              : month.balance.greaterThan(0)
-                ? 'text-green-600'
-                : '';
+            const balanceColor = getSignedBalanceClass(month.balance);
             return (
               <TableRow
                 key={month.name}
@@ -160,13 +153,10 @@ export function PaymentTable({
               {formatCurrency(totalCharges)}
             </TableCell>
             <TableCell
-              className={`text-right font-medium ${
-                closingBalance.isNegative()
-                  ? 'text-red-600'
-                  : closingBalance.greaterThan(0)
-                    ? 'text-green-600'
-                    : ''
-              }`}
+              className={cn(
+                'text-right font-medium',
+                getSignedBalanceClass(closingBalance)
+              )}
             >
               {formatCurrency(closingBalance)}
             </TableCell>

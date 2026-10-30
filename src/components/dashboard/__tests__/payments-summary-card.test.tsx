@@ -21,6 +21,7 @@ const apartment = (
   hoaName: 'Wspólnota A',
   closingBalance,
   href: `/dashboard/payments/apt-${id}/2025`,
+  color: 'hsl(var(--primary))',
   history: withHistory
     ? [{ period: '202501', label: 'Styczeń 2025', balance: closingBalance }]
     : [],

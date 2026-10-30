@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency, formatPeriod } from '@/lib/utils';
 import { getChargesHref } from '@/lib/utils/dashboard-links';
 import type { DecimalLike } from '@/lib/utils/decimal';
+import { CHARGE_FORMS, formatCountPl } from '@/lib/utils/pluralize';
 
 interface ChargesSummaryCardProps {
   currentPeriod: string;
@@ -21,11 +22,6 @@ interface ChargesSummaryCardProps {
   previousMonthTotal: DecimalLike;
   trendData?: ChargeTrendDatum[];
   trendSeries?: ChargeTrendSeries[];
-}
-
-function formatChargeCount(count: number): string {
-  if (count === 1) return 'naliczenie';
-  return count < 5 ? 'naliczenia' : 'naliczeń';
 }
 
 interface ChargePeriodTileProps {
@@ -44,7 +40,7 @@ function ChargePeriodTile({ period, count, total }: ChargePeriodTileProps) {
         <div className="min-w-0">
           <p className="font-medium">{formatPeriod(period)}</p>
           <p className="text-sm text-muted-foreground">
-            {count} {formatChargeCount(count)}
+            {formatCountPl(count, CHARGE_FORMS)}
           </p>
         </div>
         <p className="shrink-0 text-xl font-bold">{formatCurrency(total)}</p>

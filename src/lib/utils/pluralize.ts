@@ -15,6 +15,12 @@ export const APARTMENT_FORMS: PolishPluralForms = {
   many: 'mieszkań',
 };
 
+export const CHARGE_FORMS: PolishPluralForms = {
+  one: 'naliczenie',
+  few: 'naliczenia',
+  many: 'naliczeń',
+};
+
 export const HOA_ACCUSATIVE_FORMS: PolishPluralForms = {
   one: 'wspólnotę',
   few: 'wspólnoty',

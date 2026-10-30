@@ -16,11 +16,17 @@ import {
 import type { BalanceTrend } from '@/components/charts/balance-history-data';
 import { CHART_COLORS } from '@/components/charts/chart-colors';
 import {
-  formatCompactAmount,
   formatSeriesTooltipAmount,
   formatTooltipLabel,
 } from '@/components/charts/chart-formatters';
-import { createYAxisTick } from '@/components/charts/chart-ticks';
+import {
+  TOOLTIP_CONTENT_STYLE,
+  ZERO_LINE_PROPS,
+} from '@/components/charts/chart-styles';
+import {
+  COMPACT_Y_AXIS_WIDTH,
+  renderCompactYAxisTick,
+} from '@/components/charts/chart-ticks';
 import {
   ChartViewportNav,
   useChartViewport,
@@ -29,13 +35,9 @@ import { MeasuredChart } from '@/components/charts/measured-chart';
 import { getPaymentYearHref } from '@/lib/utils/dashboard-links';
 import { getPeriodYear } from '@/lib/utils/group-by-year';
 
-const Y_AXIS_FONT_SIZE = 11;
-const Y_AXIS_WIDTH = 72;
 const BAR_RADIUS = 4;
 const MAX_BAR_SIZE = 24;
 const CLICKABLE_CLASS = 'cursor-pointer';
-
-const renderYAxisTick = createYAxisTick(formatCompactAmount, Y_AXIS_FONT_SIZE);
 
 function getSignColor(value: number | undefined): string {
   return (value ?? 0) < 0
@@ -94,8 +96,8 @@ export function BalanceHistoryChart({ data, series }: BalanceTrend) {
               axisLine={false}
             />
             <YAxis
-              width={Y_AXIS_WIDTH}
-              tick={renderYAxisTick}
+              width={COMPACT_Y_AXIS_WIDTH}
+              tick={renderCompactYAxisTick}
               tickLine={false}
               axisLine={false}
             />
@@ -103,18 +105,9 @@ export function BalanceHistoryChart({ data, series }: BalanceTrend) {
               cursor={{ fill: CHART_COLORS.grid, fillOpacity: 0.3 }}
               formatter={formatSeriesTooltipAmount}
               labelFormatter={formatTooltipLabel}
-              contentStyle={{
-                backgroundColor: CHART_COLORS.tooltip,
-                border: `1px solid ${CHART_COLORS.tooltipBorder}`,
-                borderRadius: 12,
-              }}
+              contentStyle={TOOLTIP_CONTENT_STYLE}
             />
-            <ReferenceLine
-              y={0}
-              stroke={CHART_COLORS.zeroLine}
-              strokeWidth={1}
-              ifOverflow="extendDomain"
-            />
+            <ReferenceLine {...ZERO_LINE_PROPS} ifOverflow="extendDomain" />
             {isSingleSeries ? (
               <Bar
                 dataKey={series[0].key}

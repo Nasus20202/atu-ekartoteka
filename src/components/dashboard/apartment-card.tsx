@@ -5,11 +5,12 @@ import { Button } from '@/components/ui/button';
 import { MarqueeText } from '@/components/ui/marquee-text';
 import { formatCurrency, formatSharePercent } from '@/lib/utils';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
+import { getBalanceStatusClass } from '@/lib/utils/balance-class';
 import {
   getChargesHref,
   getPaymentYearHref,
 } from '@/lib/utils/dashboard-links';
-import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
+import type { DecimalLike } from '@/lib/utils/decimal';
 
 interface ApartmentCardProps {
   apartment: {
@@ -111,9 +112,7 @@ export function ApartmentCard({
               className={`text-xl font-bold ${
                 latestPaymentBalance == null
                   ? 'text-muted-foreground'
-                  : toDecimal(latestPaymentBalance).greaterThanOrEqualTo(0)
-                    ? 'text-green-600'
-                    : 'text-red-600'
+                  : getBalanceStatusClass(latestPaymentBalance)
               }`}
             >
               {latestPaymentBalance != null
