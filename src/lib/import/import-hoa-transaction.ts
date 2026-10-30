@@ -6,6 +6,7 @@ import {
   importPayments,
 } from '@/lib/import/importers';
 import type { ParsedHoaFiles } from '@/lib/import/parse-hoa-files';
+import { buildSkippedRecordWarnings } from '@/lib/import/skipped-records';
 import type {
   HOAImportResult,
   ImportOptions,
@@ -121,4 +122,21 @@ export async function importHoaInTransaction(
       result.errors
     );
   }
+
+  result.warnings.push(
+    ...buildSkippedRecordWarnings(apartmentMap, {
+      charges: chargeEntries?.map((e) => ({
+        ownerId: e.id,
+        apartmentId: e.apartmentExternalId,
+      })),
+      notifications: notificationData?.entries.map((e) => ({
+        ownerId: e.externalId,
+        apartmentId: e.apartmentCode,
+      })),
+      payments: paymentData?.entries.map((e) => ({
+        ownerId: e.externalId,
+        apartmentId: e.apartmentCode,
+      })),
+    })
+  );
 }

@@ -28,9 +28,9 @@ export interface EntityStats {
 
 export interface ImportWarning {
   apartmentExternalId: string;
-  period: string;
-  lineNo: number;
-  difference: string;
+  period?: string;
+  lineNo?: number;
+  difference?: string;
   message: string;
 }
 

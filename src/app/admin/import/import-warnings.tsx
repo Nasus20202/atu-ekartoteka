@@ -6,6 +6,17 @@ interface ImportWarningsProps {
   warnings: ImportWarning[];
 }
 
+function formatWarningLocation(warning: ImportWarning): string {
+  return [
+    `Lokal ${warning.apartmentExternalId}`,
+    warning.period !== undefined && `okres ${warning.period}`,
+    warning.lineNo !== undefined && `linia ${warning.lineNo}`,
+    warning.difference !== undefined && `różnica ${warning.difference}`,
+  ]
+    .filter(Boolean)
+    .join(', ');
+}
+
 export function ImportWarnings({ warnings }: ImportWarningsProps) {
   if (warnings.length === 0) {
     return null;
@@ -22,8 +33,7 @@ export function ImportWarnings({ warnings }: ImportWarningsProps) {
           <li
             key={`${warning.apartmentExternalId}-${warning.period}-${warning.lineNo}-${idx}`}
           >
-            • Lokal {warning.apartmentExternalId}, okres {warning.period}, linia{' '}
-            {warning.lineNo}, różnica {warning.difference}: {warning.message}
+            • {formatWarningLocation(warning)}: {warning.message}
           </li>
         ))}
       </ul>

@@ -1,0 +1,2 @@
+W20002#Nowy Wlasciciel##TEST05-TEST05-00000-00001M#ul. Zmianowa#5#1#00-005#Gdansk#test05@test.com###50.5#1000
+N20003#Operator Telekomunikacyjny##TEST05-00000-00000-STELES#ul. Zmianowa#5#STELE#00-005#Gdansk####0#1

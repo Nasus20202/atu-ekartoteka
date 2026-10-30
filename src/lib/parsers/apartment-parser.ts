@@ -13,6 +13,7 @@ export interface ApartmentEntry {
   isOwner: boolean;
 }
 
+import { isOwnerId } from '@/lib/parsers/owner-id';
 import { decodeBuffer } from '@/lib/parsers/parser-utils';
 
 export async function parseApartmentBuffer(
@@ -59,7 +60,7 @@ export async function parseApartmentBuffer(
     const areaStr = fields[externalIdIndex + 9];
     const heightStr = fields[externalIdIndex + 10];
 
-    const isOwner = id.startsWith('W');
+    const isOwner = isOwnerId(id);
     const shareNumerator = parseFloat(areaStr) || 0;
     const shareDenominator = parseFloat(heightStr) || 0;
 
