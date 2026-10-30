@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.4] - 2026-10-30
+
+- fix(admin): require double confirmation for inactive apartments
+- refactor: share period, chart and balance helpers
+- feat(dashboard): per-apartment balance and charge charts
+- feat(import): warn about skipped records
+- fix(import): skip cross-year check against a partial previous year
+- fix(import): match cross-file charges by owner and apartment
+- fix(payments): include opening balance in Razem totals
+- chore: update openspec
+- chore(deps): update pnpm to v12.16.0 (#816)
+
 ## [0.8.3] - 2026-10-30
 
 - docs(readme): drop the performance and visual test sections (#814)
