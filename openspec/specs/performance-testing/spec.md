@@ -34,13 +34,13 @@ The load test SHALL exercise the main traffic types at the same time.
 
 - **GIVEN** a signed-in tenant (each virtual user signs in once, as its own tenant)
 - **WHEN** the `user_journey` scenario runs
-- **THEN** it visits the dashboard, charges, the tenant's apartment charges, payments and profile pages with think time between them
+- **THEN** it visits the dashboard, charges, the tenant's apartment charges, payments, the tenant's payment details for a random seeded year and profile pages with think time between them
 
 #### Scenario: Admin journey
 
 - **GIVEN** a signed-in admin
 - **WHEN** the `admin_journey` scenario runs
-- **THEN** it visits the admin apartments, users and import pages and calls the admin JSON APIs they use, requesting a random apartments page, a random apartment and a random page of unassigned apartments each iteration
+- **THEN** it visits the admin apartments, users and import pages and calls the admin JSON APIs they use, requesting a random apartments page, a random apartment, a random page of unassigned apartments, an apartment search, and the pages and JSON APIs of a random HOA (its apartments and financial summary) and a random apartment each iteration
 
 ---
 
