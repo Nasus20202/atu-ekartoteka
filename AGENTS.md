@@ -27,6 +27,8 @@
 - **Dependencies**: Don't add useless dependencies to the codebase
 - **Delete old code**: If something is unused, just delete it
 - **Don't use magic numbers/strings**: Use types or constants instead
+- **Database queries**: Do all filtering, sorting, pagination (skip/take) and aggregation of database records in the Prisma query, never by loading rows and calling `.filter`/`.sort`/`.slice` in JavaScript
+- **No raw SQL**: Do not use `$queryRaw`, `$executeRaw` or their `Unsafe` variants; use the Prisma query API (raw SQL belongs only in migration files)
 
 ## Best Practices
 

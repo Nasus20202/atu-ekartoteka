@@ -10,6 +10,7 @@ import {
 } from '@/lib/hooks/use-infinite-list';
 import { AccountStatus } from '@/lib/types';
 import type { UserDto } from '@/lib/types/dto/user-dto';
+import type { SortState, UserSortKey } from '@/lib/utils/sort';
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -20,10 +21,11 @@ export function useAdminUsers() {
   const [filter, setFilter] = useState<UserFilter>(AccountStatus.PENDING);
   const [userSearch, setUserSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [sort, setSort] = useState<SortState<UserSortKey> | null>(null);
 
   const fetchPage = useCallback<PageFetcher<UserDto>>(
     async (page, signal) => {
-      const query = buildUsersQuery(filter, page, debouncedSearch);
+      const query = buildUsersQuery(filter, page, debouncedSearch, sort);
       const response = await fetch(`/api/admin/users?${query}`, { signal });
       if (!response.ok) {
         throw new Error(`Users request failed: ${response.status}`);
@@ -36,12 +38,12 @@ export function useAdminUsers() {
         total: data.pagination.total,
       };
     },
-    [debouncedSearch, filter]
+    [debouncedSearch, filter, sort]
   );
 
   const list = useInfiniteList({
     fetchPage,
-    queryKey: `${filter}|${debouncedSearch}`,
+    queryKey: `${filter}|${debouncedSearch}|${sort?.key ?? ''}|${sort?.direction ?? ''}`,
     getId: getUserId,
   });
 
@@ -61,5 +63,7 @@ export function useAdminUsers() {
     setFilter,
     userSearch,
     setUserSearch,
+    sort,
+    setSort,
   };
 }

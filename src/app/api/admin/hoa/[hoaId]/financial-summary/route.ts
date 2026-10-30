@@ -18,43 +18,34 @@ export async function GET(
 
     const { hoaId } = await params;
 
-    // Get all apartments in this HOA
-    const apartments = await prisma.apartment.findMany({
-      where: { homeownersAssociationId: hoaId },
-      select: { id: true },
+    const inHoa = { apartment: { homeownersAssociationId: hoaId } };
+
+    // Most recent payment year per apartment
+    const latestYears = await prisma.payment.groupBy({
+      by: ['apartmentId'],
+      where: inHoa,
+      _max: { year: true },
     });
 
-    if (apartments.length === 0) {
-      return NextResponse.json({
-        totalClosingBalance: 0,
-        totalChargesDue: 0,
-      });
-    }
-
-    const apartmentIds = apartments.map((a) => a.id);
-
-    // For each apartment find its most recent year's closing balance
-    const latestPayments = await prisma.payment.findMany({
-      where: { apartmentId: { in: apartmentIds } },
-      select: { apartmentId: true, year: true, closingBalance: true },
-      orderBy: { year: 'desc' },
-    });
-
-    // Keep only the most recent year per apartment
-    const seenApartments = new Set<string>();
-    let totalClosingBalance = new Prisma.Decimal(0);
-    for (const payment of latestPayments) {
-      if (!seenApartments.has(payment.apartmentId)) {
-        seenApartments.add(payment.apartmentId);
-        totalClosingBalance = totalClosingBalance.plus(payment.closingBalance);
-      }
-    }
-
-    // Sum all charge notifications across these apartments
-    const chargesAggregate = await prisma.chargeNotification.aggregate({
-      where: { apartmentId: { in: apartmentIds } },
-      _sum: { totalAmount: true },
-    });
+    const [closingAggregate, chargesAggregate] = await Promise.all([
+      latestYears.length > 0
+        ? prisma.payment.aggregate({
+            where: {
+              OR: latestYears.map(({ apartmentId, _max }) => ({
+                apartmentId,
+                year: _max.year!,
+              })),
+            },
+            _sum: { closingBalance: true },
+          })
+        : null,
+      prisma.chargeNotification.aggregate({
+        where: inHoa,
+        _sum: { totalAmount: true },
+      }),
+    ]);
+    const totalClosingBalance =
+      closingAggregate?._sum.closingBalance ?? new Prisma.Decimal(0);
     const totalChargesDue =
       chargesAggregate._sum.totalAmount ?? new Prisma.Decimal(0);
 

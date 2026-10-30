@@ -6,7 +6,6 @@ import { findAssignedApartmentAddressKeys } from '@/lib/queries/apartments/find-
 import { findHoasWithUnassignedApartments } from '@/lib/queries/apartments/find-hoas-with-unassigned-apartments';
 import { findUnassignedApartments } from '@/lib/queries/apartments/find-unassigned-apartments';
 import { findAllUserEmails } from '@/lib/queries/users/find-all-user-emails';
-import { compareApartmentsNaturally } from '@/lib/utils/apartment-sort';
 
 const logger = createLogger('api:admin:unassigned-apartments');
 
@@ -84,10 +83,6 @@ export async function GET(request: NextRequest) {
         });
       }
       hoaMap.get(hoaId)!.apartments.push(apt);
-    }
-
-    for (const group of hoaMap.values()) {
-      group.apartments.sort(compareApartmentsNaturally);
     }
 
     logger.info(

@@ -13,7 +13,11 @@ function connect() {
   return new pg.Client({ connectionString: dbUrl });
 }
 
-/** Creates the HOA with apartments numbered 1..count and returns its id. */
+/**
+ * Creates the HOA with apartments numbered 1..count and returns its id.
+ * Shares grow with the number and every fifth apartment is inactive, so tests
+ * can check that sorting and filtering happen in the database, not in the page.
+ */
 export async function createScrollTestHoa(count: number): Promise<string> {
   const client = connect();
   const suffix = `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
@@ -36,7 +40,7 @@ export async function createScrollTestHoa(count: number): Promise<string> {
        )
        SELECT gen_random_uuid(), 'WS-' || $2 || '-' || n, 'S-' || $2 || '-' || n,
               'Scroll Owner ' || n, 'ul. Przewijana', '1', n::text,
-              '00-001', 'Warszawa', 1, 1000, true, $1, NOW(), NOW()
+              '00-001', 'Warszawa', n, 1000, n % 5 <> 0, $1, NOW(), NOW()
        FROM generate_series(1, $3::int) AS n`,
       [hoaId, suffix, count]
     );

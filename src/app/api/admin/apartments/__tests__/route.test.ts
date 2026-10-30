@@ -5,6 +5,7 @@ import { UserRole } from '@/lib/types';
 
 const mockAuth = vi.fn();
 const mockApartmentFindMany = vi.fn();
+const mockApartmentCount = vi.fn();
 const mockHoaFindUnique = vi.fn();
 
 vi.mock('@/auth', () => ({
@@ -15,6 +16,7 @@ vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     apartment: {
       findMany: mockApartmentFindMany,
+      count: mockApartmentCount,
     },
     homeownersAssociation: {
       findUnique: mockHoaFindUnique,
@@ -30,14 +32,13 @@ vi.mock('@/lib/logger', () => ({
   }),
 }));
 
-// The route first loads the sort keys of every match, then the rows of one page
-function mockApartmentRows(rows: Record<string, unknown>[]) {
-  mockApartmentFindMany.mockImplementation(
-    async ({ select, where }: { select?: object; where: any }) =>
-      select
-        ? rows
-        : rows.filter((row) => where.id.in.includes(row.id as string))
-  );
+// The database returns the requested page; the count query returns the total
+function mockApartmentRows(
+  rows: Record<string, unknown>[],
+  total = rows.length
+) {
+  mockApartmentFindMany.mockResolvedValue(rows);
+  mockApartmentCount.mockResolvedValue(total);
 }
 
 function createMockRequest(searchParams?: Record<string, string>): NextRequest {
@@ -307,13 +308,12 @@ describe('Admin Apartments API', () => {
         },
         expires: new Date().toISOString(),
       });
-      mockApartmentRows(
-        Array.from({ length: 45 }, (_, i) => ({
-          ...mockApartments[0],
-          id: `apt-${i}`,
-          number: String(i + 1),
-        }))
-      );
+      const pageRows = Array.from({ length: 20 }, (_, i) => ({
+        ...mockApartments[0],
+        id: `apt-${i + 20}`,
+        number: String(i + 21),
+      }));
+      mockApartmentRows(pageRows, 45);
       mockHoaFindUnique.mockResolvedValueOnce(null);
 
       const { GET } = await import('../route');
@@ -331,9 +331,12 @@ describe('Admin Apartments API', () => {
       expect(data.apartments.map((a: { id: string }) => a.id)).toEqual(
         Array.from({ length: 20 }, (_, i) => `apt-${i + 20}`)
       );
+      expect(mockApartmentFindMany).toHaveBeenCalledWith(
+        expect.objectContaining({ skip: 20, take: 20 })
+      );
     });
 
-    it('should sort by building and number', async () => {
+    it('should sort by building and number by default', async () => {
       mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
@@ -349,12 +352,69 @@ describe('Admin Apartments API', () => {
       const request = createMockRequest();
 
       const response = await GET(request);
-      const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.apartments).toHaveLength(2);
-      expect(data.apartments[0].number).toBe('101');
-      expect(data.apartments[1].number).toBe('102');
+      expect(mockApartmentFindMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          orderBy: [
+            { building: { sort: 'asc', nulls: 'first' } },
+            { number: 'asc' },
+            { id: 'asc' },
+          ],
+        })
+      );
+    });
+
+    it('passes the requested sort column and direction to the database', async () => {
+      mockAuth.mockResolvedValueOnce({
+        user: {
+          id: 'admin-id',
+          email: 'admin@example.com',
+          role: UserRole.ADMIN,
+        },
+        expires: new Date().toISOString(),
+      });
+      mockApartmentRows(mockApartments);
+
+      const { GET } = await import('../route');
+      const response = await GET(
+        createMockRequest({ sort: 'owner', order: 'desc' })
+      );
+
+      expect(response.status).toBe(200);
+      expect(mockApartmentFindMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          orderBy: expect.arrayContaining([
+            { owner: { sort: 'desc', nulls: 'last' } },
+          ]),
+        })
+      );
+    });
+
+    it('ignores an unknown sort column and keeps the natural order', async () => {
+      mockAuth.mockResolvedValueOnce({
+        user: {
+          id: 'admin-id',
+          email: 'admin@example.com',
+          role: UserRole.ADMIN,
+        },
+        expires: new Date().toISOString(),
+      });
+      mockApartmentRows(mockApartments);
+
+      const { GET } = await import('../route');
+      const response = await GET(createMockRequest({ sort: 'createdAt' }));
+
+      expect(response.status).toBe(200);
+      expect(mockApartmentFindMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          orderBy: [
+            { building: { sort: 'asc', nulls: 'first' } },
+            { number: 'asc' },
+            { id: 'asc' },
+          ],
+        })
+      );
     });
 
     it('should handle invalid pagination parameters', async () => {
@@ -524,7 +584,9 @@ describe('Admin Apartments API', () => {
             AND: expect.arrayContaining([
               expect.objectContaining({
                 AND: [
-                  { building: { contains: 'A', mode: 'insensitive' } },
+                  {
+                    OR: [{ building: { contains: 'A', mode: 'insensitive' } }],
+                  },
                   { number: { contains: '101', mode: 'insensitive' } },
                 ],
               }),
@@ -557,7 +619,12 @@ describe('Admin Apartments API', () => {
           where: expect.objectContaining({
             AND: expect.arrayContaining([
               expect.objectContaining({
-                AND: [{ building: { contains: 'A', mode: 'insensitive' } }, {}],
+                AND: [
+                  {
+                    OR: [{ building: { contains: 'A', mode: 'insensitive' } }],
+                  },
+                  {},
+                ],
               }),
             ]),
           }),
@@ -603,14 +670,17 @@ describe('Admin Apartments API', () => {
 
         const { GET } = await import('../route');
         const response = await GET(createMockRequest());
-        const data = await response.json();
 
-        expect(data.hoa).toBeNull();
-        expect(data.apartments.map((a: { id: string }) => a.id)).toEqual([
-          'none',
-          'a',
-          'b',
-        ]);
+        expect(response.status).toBe(200);
+        expect(mockApartmentFindMany).toHaveBeenCalledWith(
+          expect.objectContaining({
+            orderBy: [
+              { building: { sort: 'asc', nulls: 'first' } },
+              { number: 'asc' },
+              { id: 'asc' },
+            ],
+          })
+        );
       });
 
       it('returns the HOA summary for a hoaId filter', async () => {

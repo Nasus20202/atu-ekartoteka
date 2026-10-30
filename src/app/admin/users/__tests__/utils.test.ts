@@ -3,11 +3,10 @@ import { describe, expect, it } from 'vitest';
 import { createEmptyNewUserData } from '@/app/admin/users/constants';
 import {
   buildUsersQuery,
-  filterAndSortApartments,
   getApartmentSharePercent,
-  getAvailableApartments,
   getPendingDescription,
   isApartmentMatchingUser,
+  pinSelectedAndMatching,
 } from '@/app/admin/users/utils';
 import { AccountStatus, UserRole } from '@/lib/types';
 import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
@@ -79,50 +78,10 @@ describe('admin users utils', () => {
     );
   });
 
-  it('returns only unassigned apartments for pending user', () => {
-    const pendingUser = { ...approvedUser, status: AccountStatus.PENDING };
-    const otherUser = { ...approvedUser, apartments: [apartmentA] };
-
-    expect(
-      getAvailableApartments([apartmentA, apartmentB], [otherUser], pendingUser)
-    ).toEqual([apartmentB]);
-  });
-
-  it('keeps selected user apartments and excludes other assigned ones', () => {
-    const otherUser = {
-      ...approvedUser,
-      id: 'user-2',
-      apartments: [apartmentA],
-    };
-
-    expect(
-      getAvailableApartments(
-        [apartmentA, apartmentB, apartmentC],
-        [otherUser],
-        approvedUser
-      )
-    ).toEqual([apartmentB, apartmentC]);
-  });
-
   it('matches apartment by owner substring and email equality', () => {
     expect(isApartmentMatchingUser(apartmentA, approvedUser)).toBe(true);
     expect(isApartmentMatchingUser(apartmentC, approvedUser)).toBe(true);
     expect(isApartmentMatchingUser(apartmentB, null)).toBe(false);
-  });
-
-  it('filters by search and sorts selected, matching, then natural order', () => {
-    const result = filterAndSortApartments(
-      [apartmentA, apartmentB, apartmentC],
-      'lipowa',
-      ['apt-b'],
-      approvedUser
-    );
-
-    expect(result.map((apartment) => apartment.id)).toEqual([
-      'apt-b',
-      'apt-c',
-      'apt-a',
-    ]);
   });
 
   it('returns pending description in all pluralization variants', () => {
@@ -154,20 +113,6 @@ describe('admin users utils', () => {
     });
   });
 
-  it('treats a missing selected user as having no apartments', () => {
-    const otherUser = {
-      ...approvedUser,
-      id: 'user-2',
-      apartments: [apartmentA],
-    };
-
-    expect(
-      getAvailableApartments([apartmentA, apartmentB], [otherUser], null).map(
-        (apartment) => apartment.id
-      )
-    ).toEqual(['apt-b']);
-  });
-
   it('matches by email only when names are missing', () => {
     const userWithoutName = { ...approvedUser, name: null };
     const apartmentWithoutOwner = { ...apartmentA, owner: null };
@@ -192,66 +137,6 @@ describe('admin users utils', () => {
     ).toBe(true);
   });
 
-  it.each([
-    ['2', ['apt-a']],
-    ['ext-', ['apt-b', 'apt-a']],
-    ['nowak', ['apt-b']],
-    ['anna@', ['apt-b']],
-    ['owner-a', ['apt-a']],
-    ['ext-b', ['apt-b']],
-    ['lipowa 10/2', ['apt-a']],
-  ])('searches apartments by %s', (search, expected) => {
-    const result = filterAndSortApartments(
-      [
-        { ...apartmentA, address: 'Lipowa', building: '10', number: '2' },
-        { ...apartmentB, address: null, building: null, number: '7' },
-        {
-          ...apartmentC,
-          externalOwnerId: null,
-          externalApartmentId: null,
-          owner: null,
-          email: null,
-          address: null,
-          building: null,
-          number: null,
-        } as unknown as ApartmentSummaryDto,
-      ],
-      search,
-      [],
-      null
-    );
-
-    expect(result.map((apartment) => apartment.id)).toEqual(expected);
-  });
-
-  it('sorts matching apartments first, then by building and number', () => {
-    const user = { ...approvedUser, name: 'Zenon', email: 'zenon@example.com' };
-    const result = filterAndSortApartments(
-      [
-        { ...apartmentA, id: 'no-building', building: null, number: null },
-        { ...apartmentA, id: 'b1-n10', building: '1', number: '10' },
-        { ...apartmentA, id: 'b1-n9', building: '1', number: '9' },
-        {
-          ...apartmentA,
-          id: 'match',
-          building: '9',
-          owner: 'Zenon',
-          email: null,
-        },
-      ] as unknown as ApartmentSummaryDto[],
-      '',
-      [],
-      { ...user, apartments: [] }
-    );
-
-    expect(result.map((apartment) => apartment.id)).toEqual([
-      'match',
-      'no-building',
-      'b1-n9',
-      'b1-n10',
-    ]);
-  });
-
   it('builds an empty filter query for all users', () => {
     expect(buildUsersQuery('ALL', 1, '')).toBe('page=1');
   });
@@ -264,9 +149,8 @@ describe('admin users utils', () => {
       match: { ...apartmentA, id: 'match', owner: 'Zenon', email: null },
       other: { ...apartmentA, id: 'other', owner: 'Inny', email: null },
     };
-    const result = filterAndSortApartments(
+    const result = pinSelectedAndMatching(
       order.map((id) => apartments[id as keyof typeof apartments]),
-      '',
       [],
       { ...approvedUser, name: 'Zenon', email: '', apartments: [] }
     );
@@ -274,21 +158,17 @@ describe('admin users utils', () => {
     expect(result[0].id).toBe('match');
   });
 
-  it('sorts apartments without a number first in either order', () => {
-    const withNumber = { ...apartmentA, id: 'with-number', number: '1' };
-    const withoutNumber = {
-      ...apartmentA,
-      id: 'without-number',
-      number: null,
-    } as unknown as ApartmentSummaryDto;
+  it('pins selected, then matching apartments, keeping the given order', () => {
+    const result = pinSelectedAndMatching(
+      [apartmentA, apartmentB, apartmentC],
+      ['apt-b'],
+      approvedUser
+    );
 
-    for (const input of [
-      [withNumber, withoutNumber],
-      [withoutNumber, withNumber],
-    ]) {
-      expect(
-        filterAndSortApartments(input, '', [], null).map((a) => a.id)
-      ).toEqual(['without-number', 'with-number']);
-    }
+    expect(result.map((apartment) => apartment.id)).toEqual([
+      'apt-b',
+      'apt-a',
+      'apt-c',
+    ]);
   });
 });

@@ -147,18 +147,16 @@ export function AdminPaymentsList({
   apartmentLabel,
   hoaName,
 }: AdminPaymentsListProps) {
-  const sorted = [...payments].sort((a, b) => b.year - a.year);
-
   return (
     <div className="space-y-2">
-      {sorted.map((payment) => (
+      {payments.map((payment) => (
         <PaymentYearSection
           key={payment.id}
           payment={payment}
           apartmentId={apartmentId}
           apartmentLabel={apartmentLabel}
           hoaName={hoaName}
-          defaultOpen={payment.year === sorted[0].year}
+          defaultOpen={payment.year === payments[0].year}
         />
       ))}
     </div>

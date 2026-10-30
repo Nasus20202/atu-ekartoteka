@@ -11,6 +11,7 @@ import type {
   ApartmentSummaryDto,
   HomeownersAssociationSummaryDto,
 } from '@/lib/types/dto/apartment-dto';
+import type { ApartmentSortKey, SortState } from '@/lib/utils/sort';
 
 const PAGE_SIZE = 20;
 
@@ -25,6 +26,7 @@ export function useHoaApartments(hoaId: string) {
   const activeOnly = searchParams.get('activeOnly') === 'true';
 
   const [hoa, setHoa] = useState<HomeownersAssociationSummaryDto | null>(null);
+  const [sort, setSort] = useState<SortState<ApartmentSortKey> | null>(null);
 
   const fetchPage = useCallback<PageFetcher<ApartmentSummaryDto>>(
     async (page, signal) => {
@@ -35,6 +37,10 @@ export function useHoaApartments(hoaId: string) {
         activeOnly: activeOnly.toString(),
         hoaId,
       });
+      if (sort) {
+        urlParams.set('sort', sort.key);
+        urlParams.set('order', sort.direction);
+      }
       const response = await fetch(`/api/admin/apartments?${urlParams}`, {
         signal,
       });
@@ -45,12 +51,12 @@ export function useHoaApartments(hoaId: string) {
       if (data.hoa) setHoa(data.hoa);
       return { items: data.apartments, ...data.pagination };
     },
-    [activeOnly, hoaId, search]
+    [activeOnly, hoaId, search, sort]
   );
 
   const list = useInfiniteList({
     fetchPage,
-    queryKey: `${hoaId}|${search}|${activeOnly}`,
+    queryKey: `${hoaId}|${search}|${activeOnly}|${sort?.key ?? ''}|${sort?.direction ?? ''}`,
     getId: getApartmentId,
   });
 
@@ -77,5 +83,7 @@ export function useHoaApartments(hoaId: string) {
     search,
     activeOnly,
     updateURL,
+    sort,
+    setSort,
   };
 }

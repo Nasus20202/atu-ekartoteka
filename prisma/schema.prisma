@@ -52,6 +52,7 @@ model User {
   id             String   @id @default(cuid())
   email          String   @unique
   password       String?
+  // COLLATE "pl_numeric" (set in migration, not tracked by Prisma)
   name           String?
   role           UserRole @default(TENANT)
   status         AccountStatus @default(PENDING)
@@ -77,6 +78,7 @@ model Apartment {
   id                  String   @id @default(cuid())
   externalOwnerId     String       // Owner ID from file (e.g. "W00164")
   externalApartmentId String       // Apartment ID from HOA system (e.g. "KLO11-KLO11-00000-00004M")
+  // owner, address, building, number: COLLATE "pl_numeric" (set in migration, not tracked by Prisma)
   owner         String?            // owner
   email         String?            // owner email
   address       String?            // street

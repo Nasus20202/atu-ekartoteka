@@ -1,7 +1,15 @@
 import { AccountStatus, UserRole } from '@/lib/types';
+import type { SortDirection, UserSortKey } from '@/lib/utils/sort';
 
 const DEFAULT_PAGE_SIZE = 50;
 const MAX_PAGE_SIZE = 200;
+
+const SORT_KEYS: readonly UserSortKey[] = [
+  'name',
+  'email',
+  'status',
+  'apartments',
+];
 
 export interface UsersQuery {
   role: UserRole;
@@ -9,6 +17,8 @@ export interface UsersQuery {
   page: number;
   limit: number;
   search: string | null;
+  sort: UserSortKey | null;
+  order: SortDirection;
 }
 
 function parsePositiveInteger(value: string | null, fallback: number): number {
@@ -41,6 +51,16 @@ export function parseUsersQuery(
     return { error: 'Nieprawidłowy status' };
   }
 
+  const sortParam = searchParams.get('sort');
+  if (sortParam && !SORT_KEYS.includes(sortParam as UserSortKey)) {
+    return { error: 'Nieprawidłowe sortowanie' };
+  }
+
+  const orderParam = searchParams.get('order');
+  if (orderParam && orderParam !== 'asc' && orderParam !== 'desc') {
+    return { error: 'Nieprawidłowe sortowanie' };
+  }
+
   return {
     query: {
       role,
@@ -52,6 +72,8 @@ export function parseUsersQuery(
         parsePositiveInteger(searchParams.get('limit'), DEFAULT_PAGE_SIZE)
       ),
       search: searchParams.get('search')?.trim() || null,
+      sort: (sortParam as UserSortKey | null) ?? null,
+      order: orderParam === 'desc' ? 'desc' : 'asc',
     },
   };
 }

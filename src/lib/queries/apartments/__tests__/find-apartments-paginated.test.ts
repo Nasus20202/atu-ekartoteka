@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockFindMany = vi.fn();
+const mockCount = vi.fn();
 const mockHoaFindUnique = vi.fn();
 
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
-    apartment: { findMany: mockFindMany },
+    apartment: { findMany: mockFindMany, count: mockCount },
     homeownersAssociation: { findUnique: mockHoaFindUnique },
   },
 }));
@@ -16,50 +17,105 @@ const rows = ['10', '2', '1'].map((number) => ({
   number,
 }));
 
-function mockRows() {
-  mockFindMany.mockImplementation(
-    async ({ select, where }: { select?: object; where: any }) =>
-      select ? rows : rows.filter((row) => where.id.in.includes(row.id))
-  );
-}
+const NATURAL_ORDER = [
+  { building: { sort: 'asc', nulls: 'first' } },
+  { number: 'asc' },
+  { id: 'asc' },
+];
 
 describe('findApartmentsPaginated', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockRows();
+    mockFindMany.mockResolvedValue(rows);
+    mockCount.mockResolvedValue(3);
   });
 
-  it('returns the requested page in natural order with the total of all matches', async () => {
+  it('loads one page and the total from the database', async () => {
     const { findApartmentsPaginated } =
       await import('../find-apartments-paginated');
 
     const [apartments, total] = await findApartmentsPaginated({
-      where: {},
-      skip: 1,
-      limit: 2,
+      where: { homeownersAssociationId: 'hoa-1' },
+      skip: 20,
+      limit: 20,
     });
 
-    expect(apartments.map((a) => a.number)).toEqual(['2', '10']);
+    expect(apartments).toBe(rows);
     expect(total).toBe(3);
+    expect(mockFindMany).toHaveBeenCalledWith({
+      where: { homeownersAssociationId: 'hoa-1' },
+      orderBy: NATURAL_ORDER,
+      skip: 20,
+      take: 20,
+    });
+    expect(mockCount).toHaveBeenCalledWith({
+      where: { homeownersAssociationId: 'hoa-1' },
+    });
   });
 
-  it('loads full rows only for the page', async () => {
+  it('orders by label with the natural tie-breaker', async () => {
     const { findApartmentsPaginated } =
       await import('../find-apartments-paginated');
 
     await findApartmentsPaginated({
-      where: { isActive: true },
+      where: {},
       skip: 0,
-      limit: 1,
+      limit: 20,
+      sort: 'label',
+      order: 'desc',
     });
 
-    expect(mockFindMany).toHaveBeenNthCalledWith(1, {
-      where: { isActive: true },
-      select: { id: true, building: true, number: true },
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: [
+          { address: { sort: 'desc', nulls: 'first' } },
+          { building: { sort: 'desc', nulls: 'first' } },
+          { number: 'desc' },
+          { id: 'asc' },
+        ],
+      })
+    );
+  });
+
+  it('orders by owner, share and status', async () => {
+    const { findApartmentsPaginated } =
+      await import('../find-apartments-paginated');
+
+    await findApartmentsPaginated({
+      where: {},
+      skip: 0,
+      limit: 20,
+      sort: 'owner',
+      order: 'asc',
     });
-    expect(mockFindMany).toHaveBeenNthCalledWith(2, {
-      where: { id: { in: ['apt-1'] } },
+    await findApartmentsPaginated({
+      where: {},
+      skip: 0,
+      limit: 20,
+      sort: 'share',
+      order: 'desc',
     });
+    await findApartmentsPaginated({
+      where: {},
+      skip: 0,
+      limit: 20,
+      sort: 'status',
+      order: 'asc',
+    });
+
+    const orderByOf = (call: number) =>
+      mockFindMany.mock.calls[call][0].orderBy;
+
+    expect(orderByOf(0)).toEqual([
+      { owner: { sort: 'asc', nulls: 'first' } },
+      ...NATURAL_ORDER,
+    ]);
+    expect(orderByOf(1)).toEqual([
+      { shareNumerator: { sort: 'desc', nulls: 'first' } },
+      { shareDenominator: 'desc' },
+      ...NATURAL_ORDER,
+    ]);
+    expect(orderByOf(2)).toEqual([{ isActive: 'desc' }, ...NATURAL_ORDER]);
   });
 
   it('loads the HOA only when an id is given', async () => {

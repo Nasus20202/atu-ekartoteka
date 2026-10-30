@@ -78,10 +78,9 @@ export function AdminChargesList({
     {} as Record<string, AdminCharge[]>
   );
 
-  const sortedPeriods = Object.keys(byPeriod).sort((a, b) =>
-    b.localeCompare(a)
-  );
-  const yearGroups = groupByYearDesc(sortedPeriods, getPeriodYear);
+  // Charges arrive ordered by period, newest first
+  const periods = Array.from(new Set(charges.map((charge) => charge.period)));
+  const yearGroups = groupByYearDesc(periods, getPeriodYear);
   const { openYears, toggleYear, openMonths, toggleMonth } =
     useChargeListOpenState(yearGroups[0]?.year, null);
 

@@ -9,6 +9,7 @@ import {
   computeDuplicateActiveAddresses,
 } from '@/app/admin/apartments/[hoaId]/apartment-list-utils';
 import { ApartmentSearchForm } from '@/app/admin/apartments/[hoaId]/apartment-search-form';
+import { ApartmentTable } from '@/app/admin/apartments/[hoaId]/apartment-table';
 import { useHoaApartments } from '@/app/admin/apartments/[hoaId]/use-hoa-apartments';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
@@ -21,7 +22,14 @@ import {
 } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { InfiniteScrollSentinel } from '@/components/ui/infinite-scroll-sentinel';
+import { ListViewSwitch } from '@/components/ui/list-view-switch';
 import { LoadingCard } from '@/components/ui/loading-card';
+import { ViewTransition } from '@/components/ui/view-transition';
+import {
+  LIST_VIEW_STORAGE_KEYS,
+  ListViewMode,
+  useListViewMode,
+} from '@/lib/hooks/use-list-view-mode';
 import { APARTMENT_FORMS, pluralizePl } from '@/lib/utils/pluralize';
 
 export default function HOAApartmentsPage() {
@@ -39,7 +47,12 @@ export default function HOAApartmentsPage() {
     search,
     activeOnly,
     updateURL,
+    sort,
+    setSort,
   } = useHoaApartments(hoaId);
+  const [viewMode, setViewMode] = useListViewMode(
+    LIST_VIEW_STORAGE_KEYS.apartments
+  );
 
   const duplicateActiveAddresses = useMemo(
     () => computeDuplicateActiveAddresses(apartments),
@@ -57,7 +70,8 @@ export default function HOAApartmentsPage() {
         description={hoa ? hoa.externalId : undefined}
         showBackButton={true}
         action={
-          <div className="shrink-0">
+          <div className="flex shrink-0 flex-wrap items-center gap-4">
+            <ListViewSwitch value={viewMode} onChange={setViewMode} />
             <label
               htmlFor="active-only"
               className="flex cursor-pointer items-center gap-2 text-sm"
@@ -94,14 +108,24 @@ export default function HOAApartmentsPage() {
         </CardContent>
       </Card>
 
-      {loading ? (
-        <LoadingCard />
-      ) : (
-        <>
-          <div className="mb-4 text-sm text-muted-foreground">
-            Znaleziono {total ?? 0} {pluralizePl(total ?? 0, APARTMENT_FORMS)}
-          </div>
+      {!loading && (
+        <div className="mb-4 text-sm text-muted-foreground">
+          Znaleziono {total ?? 0} {pluralizePl(total ?? 0, APARTMENT_FORMS)}
+        </div>
+      )}
 
+      <ViewTransition view={viewMode}>
+        {loading ? (
+          <LoadingCard />
+        ) : viewMode === ListViewMode.TABLE ? (
+          <ApartmentTable
+            apartments={apartments}
+            hoaId={hoaId}
+            duplicateAddresses={duplicateActiveAddresses}
+            sort={sort}
+            onSort={setSort}
+          />
+        ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {apartments.map((apartment) => {
               const isDuplicate =
@@ -117,21 +141,21 @@ export default function HOAApartmentsPage() {
               );
             })}
           </div>
+        )}
+      </ViewTransition>
 
-          {apartments.length === 0 && (
-            <div className="py-12 text-center">
-              <p className="text-muted-foreground">Nie znaleziono mieszkań</p>
-            </div>
-          )}
-
-          <InfiniteScrollSentinel
-            hasMore={hasMore}
-            loading={loadingMore}
-            error={error}
-            onLoadMore={loadMore}
-          />
-        </>
+      {!loading && apartments.length === 0 && (
+        <div className="py-12 text-center">
+          <p className="text-muted-foreground">Nie znaleziono mieszkań</p>
+        </div>
       )}
+
+      <InfiniteScrollSentinel
+        hasMore={hasMore}
+        loading={loadingMore}
+        error={error}
+        onLoadMore={loadMore}
+      />
     </Page>
   );
 }

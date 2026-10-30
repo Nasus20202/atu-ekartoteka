@@ -2,72 +2,62 @@
 
 import { useEffect, useState } from 'react';
 
-import { getAvailableApartments } from '@/app/admin/users/utils';
 import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
 import type { UserDto } from '@/lib/types/dto/user-dto';
 
 const APARTMENT_FETCH_LIMIT = 100000;
+const SEARCH_DEBOUNCE_MS = 300;
 
-/** Apartments the selected user can be assigned, loaded when one is picked. */
-export function useAvailableApartments(selectedUser: UserDto | null) {
+/** Apartments the selected user can be assigned, filtered by the database. */
+export function useAvailableApartments(
+  selectedUser: UserDto | null,
+  search: string
+) {
   const [apartments, setApartments] = useState<ApartmentSummaryDto[]>([]);
+  const userId = selectedUser?.id;
 
   useEffect(() => {
-    if (!selectedUser) {
+    if (!userId) {
       return;
     }
 
-    let cancelled = false;
+    const controller = new AbortController();
 
-    async function loadApartments() {
+    const timer = setTimeout(async () => {
       try {
-        const apartmentParams = new URLSearchParams({
+        const params = new URLSearchParams({
           page: '1',
           limit: String(APARTMENT_FETCH_LIMIT),
           activeOnly: 'false',
+          assignableTo: userId,
         });
+        if (search.trim()) {
+          params.set('search', search.trim());
+        }
 
-        const response = await fetch(
-          `/api/admin/apartments?${apartmentParams}`
-        );
-        const data = await response.json();
-
+        const response = await fetch(`/api/admin/apartments?${params}`, {
+          signal: controller.signal,
+        });
         if (!response.ok) {
           return;
         }
 
-        const [tenantUsersResponse, adminUsersResponse] = await Promise.all([
-          fetch('/api/admin/users?limit=1000'),
-          fetch('/api/admin/users?role=ADMIN&limit=1000'),
-        ]);
-        const [tenantUsersData, adminUsersData] = await Promise.all([
-          tenantUsersResponse.json(),
-          adminUsersResponse.json(),
-        ]);
-
-        if (cancelled) {
-          return;
+        const data = await response.json();
+        if (!controller.signal.aborted) {
+          setApartments(data.apartments);
         }
-
-        const allUsers = [
-          ...(tenantUsersData.users || []),
-          ...(adminUsersData.users || []),
-        ];
-
-        setApartments(
-          getAvailableApartments(data.apartments, allUsers, selectedUser)
-        );
       } catch (error) {
-        console.error('Failed to fetch apartments:', error);
+        if (!controller.signal.aborted) {
+          console.error('Failed to fetch apartments:', error);
+        }
       }
-    }
-
-    void loadApartments();
+    }, SEARCH_DEBOUNCE_MS);
 
     return () => {
-      cancelled = true;
+      clearTimeout(timer);
+      controller.abort();
     };
-  }, [selectedUser]);
+  }, [userId, search]);
 
   return apartments;
 }

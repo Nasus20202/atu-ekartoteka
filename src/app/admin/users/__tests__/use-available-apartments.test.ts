@@ -11,6 +11,11 @@ function json(ok: boolean, body: object) {
   return { ok, json: () => Promise.resolve(body) };
 }
 
+function requestedParams(fetchMock: ReturnType<typeof vi.fn>) {
+  const url = String(fetchMock.mock.calls.at(-1)?.[0]);
+  return new URL(url, 'http://localhost').searchParams;
+}
+
 describe('useAvailableApartments', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -20,34 +25,49 @@ describe('useAvailableApartments', () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
 
-    const { result } = renderHook(() => useAvailableApartments(null));
+    const { result } = renderHook(() => useAvailableApartments(null, ''));
 
     expect(result.current).toEqual([]);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('loads apartments, tolerating user lists without users', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValueOnce(json(true, { apartments: [apartment] }))
-        .mockResolvedValueOnce(json(true, {}))
-        .mockResolvedValueOnce(json(true, {}))
-    );
-
-    const { result } = renderHook(() => useAvailableApartments(selectedUser));
-
-    await waitFor(() => expect(result.current).toHaveLength(1));
-  });
-
-  it('stops when the apartments request fails', async () => {
+  it('asks the API for apartments assignable to the user', async () => {
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce(json(false, { error: 'x' }));
+      .mockResolvedValue(json(true, { apartments: [apartment] }));
     vi.stubGlobal('fetch', fetchMock);
 
-    const { result } = renderHook(() => useAvailableApartments(selectedUser));
+    const { result } = renderHook(() =>
+      useAvailableApartments(selectedUser, '')
+    );
+
+    await waitFor(() => expect(result.current).toHaveLength(1));
+    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(requestedParams(fetchMock).get('assignableTo')).toBe('u1');
+    expect(requestedParams(fetchMock).has('search')).toBe(false);
+  });
+
+  it('sends the debounced search to the API', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(json(true, { apartments: [] }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { rerender } = renderHook(
+      ({ search }) => useAvailableApartments(selectedUser, search),
+      { initialProps: { search: '' } }
+    );
+    rerender({ search: ' 17/12 ' });
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
+    expect(requestedParams(fetchMock).get('search')).toBe('17/12');
+  });
+
+  it('keeps the list empty when the request fails', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(json(false, { error: 'x' }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { result } = renderHook(() =>
+      useAvailableApartments(selectedUser, '')
+    );
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
     expect(result.current).toEqual([]);
@@ -59,29 +79,27 @@ describe('useAvailableApartments', () => {
       .mockImplementation(() => {});
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
 
-    renderHook(() => useAvailableApartments(selectedUser));
+    renderHook(() => useAvailableApartments(selectedUser, ''));
 
     await waitFor(() => expect(consoleError).toHaveBeenCalled());
     consoleError.mockRestore();
   });
 
   it('ignores results that arrive after unmount', async () => {
-    let resolveUsers: (value: unknown) => void = () => {};
+    let resolveApartments: (value: unknown) => void = () => {};
     vi.stubGlobal(
       'fetch',
-      vi
-        .fn()
-        .mockResolvedValueOnce(json(true, { apartments: [apartment] }))
-        .mockReturnValueOnce(new Promise((r) => (resolveUsers = r)))
-        .mockResolvedValueOnce(json(true, { users: [] }))
+      vi.fn().mockReturnValue(new Promise((r) => (resolveApartments = r)))
     );
 
     const { result, unmount } = renderHook(() =>
-      useAvailableApartments(selectedUser)
+      useAvailableApartments(selectedUser, '')
     );
-    await act(async () => {});
+    await waitFor(() => expect(fetch).toHaveBeenCalled());
     unmount();
-    await act(async () => resolveUsers(json(true, { users: [] })));
+    await act(async () =>
+      resolveApartments(json(true, { apartments: [apartment] }))
+    );
 
     expect(result.current).toEqual([]);
   });

@@ -122,7 +122,11 @@ export function useInfiniteList<T>({
     return () => controller.abort();
   }, [queryKey, requestPage]);
 
+  // While a changed query loads, the last loaded items stay visible instead of
+  // collapsing the list into a loading placeholder.
   const current = state.key === queryKey ? state : null;
+  const items = current ? current.items : state.items;
+  const total = current ? current.total : state.total;
   const hasMore = current !== null && current.page < current.totalPages;
 
   const loadMore = useCallback(() => {
@@ -168,9 +172,9 @@ export function useInfiniteList<T>({
   }, [current, queryKey]);
 
   return {
-    items: current?.items ?? [],
-    total: current?.total ?? null,
-    loading: current === null,
+    items,
+    total,
+    loading: current === null && items.length === 0,
     loadingMore,
     hasMore,
     error: current?.error ?? null,

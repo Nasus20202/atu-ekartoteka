@@ -88,19 +88,38 @@ describe('useInfiniteList', () => {
     expect(result.current.items.map(getId)).toEqual(['a', 'b']);
   });
 
-  it('restarts from the first page when the query changes', async () => {
-    const fetchPage = vi.fn(async (page: number) => pageOf(page, [`x${page}`]));
+  it('keeps the loaded items visible while a changed query loads', async () => {
+    const next = deferred<InfinitePage<Item>>();
+    const fetchPage = vi
+      .fn()
+      .mockResolvedValueOnce(pageOf(1, ['x1', 'x2']))
+      .mockReturnValueOnce(next.promise);
     const { result, rerender } = renderList(fetchPage);
     await waitFor(() => expect(result.current.loading).toBe(false));
-    act(() => result.current.loadMore());
-    await waitFor(() => expect(result.current.items).toHaveLength(2));
+
+    rerender({ key: 'q2' });
+    expect(result.current.loading).toBe(false);
+    expect(result.current.items.map(getId)).toEqual(['x1', 'x2']);
+    expect(result.current.total).toBe(9);
+
+    await act(async () => next.resolve(pageOf(1, ['y1'])));
+    expect(result.current.items.map(getId)).toEqual(['y1']);
+    expect(fetchPage).toHaveBeenLastCalledWith(1, expect.any(AbortSignal));
+  });
+
+  it('shows the loading state when a query changes before anything loaded', async () => {
+    const first = deferred<InfinitePage<Item>>();
+    const second = deferred<InfinitePage<Item>>();
+    const fetchPage = vi
+      .fn()
+      .mockReturnValueOnce(first.promise)
+      .mockReturnValueOnce(second.promise);
+    const { result, rerender } = renderList(fetchPage);
+    expect(result.current.loading).toBe(true);
 
     rerender({ key: 'q2' });
     expect(result.current.loading).toBe(true);
     expect(result.current.items).toEqual([]);
-    await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(result.current.items.map(getId)).toEqual(['x1']);
-    expect(fetchPage).toHaveBeenLastCalledWith(1, expect.any(AbortSignal));
   });
 
   it('ignores a response for an outdated query', async () => {
