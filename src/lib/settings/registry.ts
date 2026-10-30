@@ -1,7 +1,5 @@
-import {
-  DEFAULT_TENANT_HISTORY_YEARS_BACK,
-  parseYearsBack,
-} from '@/lib/settings/constants';
+import { DEFAULT_TENANT_HISTORY_YEARS_BACK } from '@/lib/settings/constants';
+import { parseYearsBack } from '@/lib/settings/parse-years-back';
 
 interface SettingDefinition<T> {
   defaultValue: T;

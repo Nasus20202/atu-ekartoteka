@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  MAX_TENANT_HISTORY_YEARS_BACK,
-  parseYearsBack,
-} from '@/lib/settings/constants';
+import { MAX_TENANT_HISTORY_YEARS_BACK } from '@/lib/settings/constants';
+import { parseYearsBack } from '@/lib/settings/parse-years-back';
 
 describe('parseYearsBack', () => {
   it.each([0, 2, MAX_TENANT_HISTORY_YEARS_BACK])('accepts %s', (value) => {

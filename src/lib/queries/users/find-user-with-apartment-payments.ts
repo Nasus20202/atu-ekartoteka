@@ -1,6 +1,7 @@
 import { cache } from 'react';
 
 import { prisma } from '@/lib/database/prisma';
+import { paymentsFromYear } from '@/lib/utils/history-window';
 
 export function findUserWithApartmentPayments(id: string, startYear: number) {
   return prisma.user.findUnique({
@@ -11,7 +12,7 @@ export function findUserWithApartmentPayments(id: string, startYear: number) {
         include: {
           homeownersAssociation: true,
           payments: {
-            where: { year: { gte: startYear } },
+            where: paymentsFromYear(startYear),
             orderBy: { year: 'desc' },
           },
         },

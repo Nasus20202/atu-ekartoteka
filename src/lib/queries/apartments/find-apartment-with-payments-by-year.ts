@@ -1,7 +1,7 @@
 import { cache } from 'react';
 
 import { prisma } from '@/lib/database/prisma';
-import { getHistoryStartPeriod } from '@/lib/utils/history-window';
+import { chargesFromYear } from '@/lib/utils/history-window';
 
 export async function findApartmentWithPaymentsByYear(
   apartmentId: string,
@@ -23,7 +23,7 @@ export async function findApartmentWithPaymentsByYear(
         where: { year },
       },
       charges: {
-        where: { period: { gte: getHistoryStartPeriod(startYear) } },
+        where: chargesFromYear(startYear),
       },
       homeownersAssociation: true,
     },
