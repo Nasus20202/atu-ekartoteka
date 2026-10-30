@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.3] - 2026-10-30
+
+- docs(readme): drop the performance and visual test sections (#814)
+- perf: faster seeding, more payments and TypeScript k6 scripts (#813)
+- test(perf): cover HOA drill-down, search and payment details (#812)
+- perf(admin): paginate admin apartment lists
+- feat(perf): seed production-sized dataset and vary k6 targets
+
 ## [0.8.2] - 2026-10-29
 
 - test: raise coverage thresholds to 95%
