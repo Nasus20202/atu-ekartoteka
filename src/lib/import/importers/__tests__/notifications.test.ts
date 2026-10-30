@@ -395,6 +395,71 @@ describe('importNotifications', () => {
     expect(stats.updated).toBe(1);
   });
 
+  it('should not update notifications that differ only beyond the stored scale', async () => {
+    const entries = [
+      createNotificationEntry({ quantity: toDecimal('-132.580542') }),
+    ];
+    const existingNotification = {
+      id: 'notif-1',
+      apartmentId: 'apt-1',
+      lineNo: 1,
+      description: 'Test charge',
+      quantity: toDecimal('-132.5805'),
+      unit: 'szt',
+      unitPrice: toDecimal(100),
+      totalAmount: toDecimal(100),
+    };
+
+    (mockTx.chargeNotification.findMany as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce([existingNotification])
+      .mockResolvedValueOnce([existingNotification]);
+
+    await importNotifications(
+      mockTx,
+      hoa,
+      apartmentMap,
+      makeParseResult(entries),
+      stats,
+      errors
+    );
+
+    expect(stats.updated).toBe(0);
+  });
+
+  it('should update notifications that differ at the stored scale', async () => {
+    const entries = [
+      createNotificationEntry({ quantity: toDecimal('10.123600') }),
+    ];
+    const existingNotification = {
+      id: 'notif-1',
+      apartmentId: 'apt-1',
+      lineNo: 1,
+      description: 'Test charge',
+      quantity: toDecimal('10.1234'),
+      unit: 'szt',
+      unitPrice: toDecimal(100),
+      totalAmount: toDecimal(100),
+    };
+
+    (mockTx.chargeNotification.findMany as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce([existingNotification])
+      .mockResolvedValueOnce([existingNotification]);
+    (
+      mockTx.chargeNotification.update as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({});
+
+    await importNotifications(
+      mockTx,
+      hoa,
+      apartmentMap,
+      makeParseResult(entries),
+      stats,
+      errors
+    );
+
+    expect(stats.updated).toBe(1);
+  });
+
   it('should detect changes in unit', async () => {
     const entries = [createNotificationEntry({ unit: 'm2' })];
 

@@ -1,6 +1,6 @@
 import { Prisma } from '@/generated/prisma/client';
 import { PaymentEntry } from '@/lib/parsers/wplaty-parser';
-import { toDecimal } from '@/lib/utils/decimal';
+import { decimalEqualsStored } from '@/lib/utils/decimal';
 import {
   CHARGE_MONTH_FIELD_KEYS,
   PAYMENT_MONTH_FIELD_KEYS,
@@ -78,23 +78,15 @@ export function hasPaymentChanged(
   return (
     existing.dateFrom.getTime() !== entry.dateFrom.getTime() ||
     existing.dateTo.getTime() !== entry.dateTo.getTime() ||
-    !toDecimal(existing.openingDebt).equals(toDecimal(entry.openingDebt)) ||
-    !toDecimal(existing.openingSurplus).equals(
-      toDecimal(entry.openingSurplus)
-    ) ||
-    !toDecimal(existing.openingBalance).equals(
-      toDecimal(entry.openingBalance)
-    ) ||
-    !toDecimal(existing.closingBalance).equals(
-      toDecimal(entry.closingBalance)
-    ) ||
+    !decimalEqualsStored(existing.openingDebt, entry.openingDebt) ||
+    !decimalEqualsStored(existing.openingSurplus, entry.openingSurplus) ||
+    !decimalEqualsStored(existing.openingBalance, entry.openingBalance) ||
+    !decimalEqualsStored(existing.closingBalance, entry.closingBalance) ||
     PAYMENT_MONTH_FIELD_KEYS.some(
-      (field) =>
-        !toDecimal(existing[field]).equals(toDecimal(paymentData[field]))
+      (field) => !decimalEqualsStored(existing[field], paymentData[field])
     ) ||
     CHARGE_MONTH_FIELD_KEYS.some(
-      (field) =>
-        !toDecimal(existing[field]).equals(toDecimal(paymentData[field]))
+      (field) => !decimalEqualsStored(existing[field], paymentData[field])
     )
   );
 }

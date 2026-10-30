@@ -2,13 +2,17 @@
  * E2E tests for import warnings and Decimal-preserved totals.
  */
 
+import type { Page } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 
 import { expect, test } from '../fixtures';
 
-function buildImportFiles() {
+const FUND_LINE =
+  'W10001#TEST02-TEST02-00000-00001M#01/01/2025#31/01/2025#202501#3#Fundusz remontowy#50,4#m2#2,50#126,00';
+
+function buildImportFiles(fundLine: string) {
   const importDir = fileURLToPath(
     new URL('../test-data/import/TEST02', import.meta.url)
   );
@@ -21,12 +25,7 @@ function buildImportFiles() {
       let content = fs.readFileSync(filePath);
 
       if (name === 'nal_czynsz.txt') {
-        const updated = content
-          .toString('latin1')
-          .replace(
-            'W10001#TEST02-TEST02-00000-00001M#01/01/2025#31/01/2025#202501#3#Fundusz remontowy#50,4#m2#2,50#126,00',
-            'W10001#TEST02-TEST02-00000-00001M#01/01/2025#31/01/2025#202501#3#Fundusz remontowy#50,4#m2#2,5005#126,00'
-          );
+        const updated = content.toString('latin1').replace(FUND_LINE, fundLine);
         content = Buffer.from(updated, 'latin1');
       }
 
@@ -38,38 +37,58 @@ function buildImportFiles() {
     });
 }
 
+async function importFiles(
+  adminPage: Page,
+  files: ReturnType<typeof buildImportFiles>
+) {
+  await adminPage.goto('/admin/import');
+
+  await expect(
+    adminPage.getByRole('heading', { name: /Import danych/i })
+  ).toBeVisible();
+
+  await adminPage.evaluate(() => {
+    const input = document.querySelector('input[type="file"]');
+    input?.removeAttribute('webkitdirectory');
+    input?.removeAttribute('directory');
+  });
+
+  await adminPage.locator('input[type="file"]').setInputFiles(files);
+
+  await Promise.all([
+    adminPage.waitForResponse(
+      (resp) =>
+        resp.url().includes('/api/admin/import') && resp.status() === 200,
+      { timeout: 30000 }
+    ),
+    adminPage.getByRole('button', { name: /^Importuj$/i }).click(),
+  ]);
+
+  await expect(adminPage.getByText(/Import zakończony pomyślnie/i)).toBeVisible(
+    { timeout: 15000 }
+  );
+}
+
+function naliczeniaStat(adminPage: Page, label: string) {
+  return adminPage
+    .locator('div.mb-6')
+    .filter({
+      has: adminPage.getByRole('heading', { name: 'Naliczenia', exact: true }),
+    })
+    .locator('div.rounded-lg')
+    .filter({ hasText: label })
+    .locator('div')
+    .first();
+}
+
 test.describe('Admin Import Decimal Precision', () => {
   test('admin sees warning and preserved file total for sub-grosz import drift', async ({
     adminPage,
   }) => {
-    await adminPage.goto('/admin/import');
-
-    await expect(
-      adminPage.getByRole('heading', { name: /Import danych/i })
-    ).toBeVisible();
-
-    await adminPage.evaluate(() => {
-      const input = document.querySelector('input[type="file"]');
-      input?.removeAttribute('webkitdirectory');
-      input?.removeAttribute('directory');
-    });
-
-    await adminPage
-      .locator('input[type="file"]')
-      .setInputFiles(buildImportFiles());
-
-    await Promise.all([
-      adminPage.waitForResponse(
-        (resp) =>
-          resp.url().includes('/api/admin/import') && resp.status() === 200,
-        { timeout: 30000 }
-      ),
-      adminPage.getByRole('button', { name: /^Importuj$/i }).click(),
-    ]);
-
-    await expect(
-      adminPage.getByText(/Import zakończony pomyślnie/i)
-    ).toBeVisible({ timeout: 15000 });
+    await importFiles(
+      adminPage,
+      buildImportFiles(FUND_LINE.replace('#2,50#', '#2,5005#'))
+    );
     await expect(adminPage.getByText(/Ostrzeżenia \(1\)/i)).toBeVisible();
     await expect(
       adminPage.getByText(/Lokal TEST02-TEST02-00000-00001M, okres 202501/i)
@@ -101,5 +120,17 @@ test.describe('Admin Import Decimal Precision', () => {
     ).toBeVisible();
     await expect(adminPage.getByText('2,50 zł').first()).toBeVisible();
     await expect(adminPage.getByText('126,00 zł').first()).toBeVisible();
+  });
+
+  test('re-import with quantities beyond 4 decimals reports no updates', async ({
+    adminPage,
+  }) => {
+    const files = buildImportFiles(FUND_LINE.replace('#50,4#', '#50,400042#'));
+
+    await importFiles(adminPage, files);
+    await importFiles(adminPage, files);
+
+    await expect(naliczeniaStat(adminPage, 'Zaktualizowanych')).toHaveText('0');
+    await expect(naliczeniaStat(adminPage, 'Utworzonych')).toHaveText('0');
   });
 });
