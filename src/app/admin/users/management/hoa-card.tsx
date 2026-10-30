@@ -14,16 +14,7 @@ import {
   ApartmentRow,
   UnassignedApartment,
 } from '@/app/admin/users/management/apartment-row';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { InactiveApartmentDialog } from '@/app/admin/users/management/inactive-apartment-dialog';
 import { ApartmentCount } from '@/components/ui/apartment-count';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -66,12 +57,6 @@ export function HoaCard({
 
   const { duplicateAddressGroups, occupiedTwins, emailGroups, singles } =
     computeGroups(hoa.apartments);
-
-  function handleConfirmInactive() {
-    if (!pendingInactiveApt) return;
-    onToggleApartment(pendingInactiveApt.id);
-    setPendingInactiveApt(null);
-  }
 
   return (
     <>
@@ -152,28 +137,11 @@ export function HoaCard({
         </Collapsible>
       </Card>
 
-      <AlertDialog
-        open={pendingInactiveApt !== null}
-        onOpenChange={(open) => {
-          if (!open) setPendingInactiveApt(null);
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Nieaktywne mieszkanie</AlertDialogTitle>
-            <AlertDialogDescription>
-              To mieszkanie jest oznaczone jako nieaktywne. Czy na pewno chcesz
-              uwzględnić je przy tworzeniu konta użytkownika?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Anuluj</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmInactive}>
-              Tak, zaznacz
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <InactiveApartmentDialog
+        apartment={pendingInactiveApt}
+        onConfirm={(apt) => onToggleApartment(apt.id)}
+        onClose={() => setPendingInactiveApt(null)}
+      />
     </>
   );
 }

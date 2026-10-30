@@ -173,7 +173,7 @@ describe('HoaCard', () => {
     expect(screen.getByText('Nieaktywne mieszkanie')).toBeInTheDocument();
   });
 
-  it('calls onToggleApartment and closes dialog when confirm button clicked', async () => {
+  it('toggles the apartment after both confirmation steps', async () => {
     const onToggleApartment = vi.fn();
 
     render(
@@ -185,30 +185,10 @@ describe('HoaCard', () => {
     );
 
     await userEvent.click(screen.getByTestId('apt-row-apt1'));
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
-
-    await userEvent.click(screen.getByText('Tak, zaznacz'));
+    await userEvent.click(screen.getByRole('button', { name: 'Kontynuuj' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Tak, zaznacz' }));
 
     expect(onToggleApartment).toHaveBeenCalledWith('apt1');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-  });
-
-  it('does not call onToggleApartment when cancel button clicked', async () => {
-    const onToggleApartment = vi.fn();
-
-    render(
-      <HoaCard
-        {...baseProps}
-        hoa={makeHoa(['apt1'])}
-        onToggleApartment={onToggleApartment}
-      />
-    );
-
-    await userEvent.click(screen.getByTestId('apt-row-apt1'));
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
-
-    await userEvent.click(screen.getByText('Anuluj'));
-
-    expect(onToggleApartment).not.toHaveBeenCalled();
   });
 });

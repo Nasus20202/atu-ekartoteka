@@ -12,9 +12,18 @@
 
 import * as pg from 'pg';
 
-export async function createUniqueUnassignedApartment(): Promise<{
+interface UniqueApartmentOptions {
+  isActive?: boolean;
+  number?: string;
+}
+
+export async function createUniqueUnassignedApartment({
+  isActive = true,
+  number = '2B',
+}: UniqueApartmentOptions = {}): Promise<{
   id: string;
   externalOwnerId: string;
+  email: string;
 }> {
   const dbUrl = process.env.DATABASE_URL;
 
@@ -39,6 +48,7 @@ export async function createUniqueUnassignedApartment(): Promise<{
     const uniqueSuffix = `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
     const externalOwnerId = `W99-${uniqueSuffix}`;
     const externalApartmentId = `TEST01-UNIQUE-${uniqueSuffix}`;
+    const email = `unique-${uniqueSuffix}@e2e-test.com`;
 
     const result = await client.query(
       `INSERT INTO "Apartment" (
@@ -50,20 +60,15 @@ export async function createUniqueUnassignedApartment(): Promise<{
        VALUES (
          gen_random_uuid(), $1, $2,
          'E2E Unique Owner', $3,
-         'ul. Testowa', '1', '2B', '00-001', 'Warszawa',
-         50.5, 1000, true,
+         'ul. Testowa', '1', $5, '00-001', 'Warszawa',
+         50.5, 1000, $6,
          $4, NULL, NOW(), NOW()
        )
        RETURNING id`,
-      [
-        externalOwnerId,
-        externalApartmentId,
-        `unique-${uniqueSuffix}@e2e-test.com`,
-        hoaId,
-      ]
+      [externalOwnerId, externalApartmentId, email, hoaId, number, isActive]
     );
 
-    return { id: result.rows[0].id as string, externalOwnerId };
+    return { id: result.rows[0].id as string, externalOwnerId, email };
   } finally {
     await client.end();
   }
