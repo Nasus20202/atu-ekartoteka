@@ -170,7 +170,7 @@ describe('groupFilesByHOA - WMB routing', () => {
 
     expect(errors).toHaveLength(0);
     const group = result.get('HOA001');
-    expect(group?.lokFile).toBe(lokFile);
+    expect(group?.lokFiles).toEqual([lokFile]);
     expect(group?.apartmentsWmbFile).toBe(wmbFile);
   });
 

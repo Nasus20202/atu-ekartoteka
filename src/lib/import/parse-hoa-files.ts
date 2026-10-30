@@ -1,3 +1,4 @@
+import { mergeParsedFiles, parseFiles } from '@/lib/import/merge-files';
 import type { HOAImportResult, ImportFileGroup } from '@/lib/import/types';
 import {
   createEmptyStats,
@@ -14,62 +15,118 @@ import { parseWplatyFile } from '@/lib/parsers/wplaty-parser';
 
 export type ParsedHoaFiles = Awaited<ReturnType<typeof parseHoaFiles>>;
 
-/** Parses one HOA's files and records totals and WMB dates on the result. */
+async function parseApartmentFiles(files: File[]) {
+  const parsed = await parseFiles(files, async (buffer) =>
+    getUniqueApartments(await parseApartmentBuffer(buffer))
+  );
+  return mergeParsedFiles(
+    parsed.map(({ fileName, result }) => ({ fileName, entries: result })),
+    (entry) => `${entry.externalOwnerId}#${entry.externalApartmentId}`
+  );
+}
+
+async function parseChargeFiles(files: File[]) {
+  const parsed = await parseFiles(files, parseNalCzynszBuffer);
+  return mergeParsedFiles(
+    parsed.map(({ fileName, result }) => ({ fileName, entries: result })),
+    (entry) =>
+      `${entry.id}#${entry.apartmentExternalId}|${entry.period}|${entry.lineNo}`
+  );
+}
+
+async function parseNotificationFiles(files: File[]) {
+  const parsed = await parseFiles(files, parsePowCzynszFile);
+  const merged = mergeParsedFiles(
+    parsed.map(({ fileName, result }) => ({
+      fileName,
+      entries: result.entries,
+    })),
+    (entry) => `${entry.externalId}#${entry.apartmentCode}|${entry.lineNo}`
+  );
+  // Every export repeats the same HOA header and footer; keep the first one
+  const withHeader = parsed.find(({ result }) => result.header?.length);
+  return {
+    ...merged,
+    header: withHeader?.result.header,
+    footer: withHeader?.result.footer,
+  };
+}
+
+async function parsePaymentFiles(files: File[]) {
+  const parsed = await parseFiles(files, parseWplatyFile);
+  return mergeParsedFiles(
+    parsed.map(({ fileName, result }) => ({
+      fileName,
+      entries: result.entries,
+    })),
+    (entry) => `${entry.externalId}#${entry.apartmentCode}|${entry.year}`
+  );
+}
+
+async function parseWmbFile(file: File | undefined) {
+  return file ? parseWmbDate(await parseFileToBuffer(file)) : undefined;
+}
+
+/** Parses and merges one HOA's files and records totals and WMB dates on the result. */
 export async function parseHoaFiles(
   fileGroup: ImportFileGroup,
   result: HOAImportResult
 ) {
   const {
-    lokFile,
-    chargesFile,
-    notificationsFile,
-    paymentsFile,
-    apartmentsWmbFile,
-    chargesWmbFile,
-    notificationsWmbFile,
+    lokFiles = [],
+    chargesFiles = [],
+    notificationsFiles = [],
+    paymentsFiles = [],
   } = fileGroup;
+  const duplicateErrors: string[] = [];
 
-  const apartments = lokFile
-    ? getUniqueApartments(
-        await parseApartmentBuffer(await parseFileToBuffer(lokFile))
-      )
-    : [];
+  const apartmentFiles = await parseApartmentFiles(lokFiles);
+  duplicateErrors.push(...apartmentFiles.errors);
+  const apartments = apartmentFiles.entries;
   result.apartments.total = apartments.length;
 
-  const chargeEntries = chargesFile
-    ? await parseNalCzynszBuffer(await parseFileToBuffer(chargesFile))
-    : null;
-  if (chargeEntries) {
-    result.charges = createEmptyStats();
-    result.charges.total = chargeEntries.length;
+  let chargeEntries = null;
+  if (chargesFiles.length > 0) {
+    const charges = await parseChargeFiles(chargesFiles);
+    duplicateErrors.push(...charges.errors);
+    chargeEntries = charges.entries;
+    result.charges = { ...createEmptyStats(), total: chargeEntries.length };
   }
 
-  const notificationData = notificationsFile
-    ? await parsePowCzynszFile(await parseFileToBuffer(notificationsFile))
-    : null;
-  if (notificationData) {
-    result.notifications = createEmptyStats();
-    result.notifications.total = notificationData.entries.length;
+  let notificationData = null;
+  if (notificationsFiles.length > 0) {
+    const { errors, ...data } =
+      await parseNotificationFiles(notificationsFiles);
+    duplicateErrors.push(...errors);
+    notificationData = data;
+    result.notifications = {
+      ...createEmptyStats(),
+      total: data.entries.length,
+    };
   }
 
-  const paymentData = paymentsFile
-    ? await parseWplatyFile(await parseFileToBuffer(paymentsFile))
-    : null;
-  if (paymentData) {
-    result.payments = createEmptyStats();
-    result.payments.total = paymentData.entries.length;
+  let paymentData = null;
+  if (paymentsFiles.length > 0) {
+    const payments = await parsePaymentFiles(paymentsFiles);
+    duplicateErrors.push(...payments.errors);
+    paymentData = { entries: payments.entries };
+    result.payments = {
+      ...createEmptyStats(),
+      total: payments.entries.length,
+    };
   }
 
-  // Parse WMB dates
-  result.apartmentsDataDate = apartmentsWmbFile
-    ? await parseWmbDate(await parseFileToBuffer(apartmentsWmbFile))
-    : undefined;
-  result.chargesDataDate = chargesWmbFile
-    ? await parseWmbDate(await parseFileToBuffer(chargesWmbFile))
-    : undefined;
-  result.notificationsDataDate = notificationsWmbFile
-    ? await parseWmbDate(await parseFileToBuffer(notificationsWmbFile))
-    : undefined;
+  result.apartmentsDataDate = await parseWmbFile(fileGroup.apartmentsWmbFile);
+  result.chargesDataDate = await parseWmbFile(fileGroup.chargesWmbFile);
+  result.notificationsDataDate = await parseWmbFile(
+    fileGroup.notificationsWmbFile
+  );
 
-  return { apartments, chargeEntries, notificationData, paymentData };
+  return {
+    apartments,
+    chargeEntries,
+    notificationData,
+    paymentData,
+    duplicateErrors,
+  };
 }

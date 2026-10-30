@@ -38,8 +38,9 @@ async function importSingleHOA(
     warnings: [],
   };
 
-  const { lokFile, chargesFile, notificationsFile, paymentsFile } = fileGroup;
-  if (!lokFile && !chargesFile && !notificationsFile && !paymentsFile) {
+  const { lokFiles, chargesFiles, notificationsFiles, paymentsFiles } =
+    fileGroup;
+  if (!lokFiles && !chargesFiles && !notificationsFiles && !paymentsFiles) {
     result.errors.push(`Brak plików do importu dla wspólnoty ${hoaId}.`);
     return result;
   }
