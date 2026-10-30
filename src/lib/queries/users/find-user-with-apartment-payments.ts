@@ -2,7 +2,7 @@ import { cache } from 'react';
 
 import { prisma } from '@/lib/database/prisma';
 
-export function findUserWithApartmentPayments(id: string) {
+export function findUserWithApartmentPayments(id: string, startYear: number) {
   return prisma.user.findUnique({
     where: { id },
     include: {
@@ -11,6 +11,7 @@ export function findUserWithApartmentPayments(id: string) {
         include: {
           homeownersAssociation: true,
           payments: {
+            where: { year: { gte: startYear } },
             orderBy: { year: 'desc' },
           },
         },

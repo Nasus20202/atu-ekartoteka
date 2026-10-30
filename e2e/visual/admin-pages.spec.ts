@@ -17,6 +17,11 @@ test.describe('Visual: admin pages', () => {
 
     // Open links directly, client-side navigation keeps the scroll position
     await visualAdminPage.goto(hoaHref!);
+    // A frozen loading spinner is "stable" too, so wait for the data first
+    await expect(
+      visualAdminPage.getByRole('heading', { name: VISUAL_HOA_NAME })
+    ).toBeVisible();
+    await expect(visualAdminPage.getByText('Ładowanie')).toHaveCount(0);
     await expect(visualAdminPage).toHaveScreenshot('hoa-apartments.png', {
       fullPage: true,
     });
@@ -27,6 +32,8 @@ test.describe('Visual: admin pages', () => {
       .getByRole('link', { name: 'Zobacz szczegóły' })
       .getAttribute('href');
     await visualAdminPage.goto(apartmentHref!);
+    await expect(visualAdminPage.getByText('Historia wpłat')).toBeVisible();
+    await expect(visualAdminPage.getByText('Ładowanie')).toHaveCount(0);
     await expect(visualAdminPage).toHaveScreenshot('apartment-details.png', {
       fullPage: true,
     });
@@ -34,6 +41,7 @@ test.describe('Visual: admin pages', () => {
 
   test('import page', async ({ visualAdminPage }) => {
     await visualAdminPage.goto('/admin/import');
+    await expect(visualAdminPage.getByRole('table')).toBeVisible();
 
     await expect(visualAdminPage).toHaveScreenshot('import.png', {
       fullPage: true,

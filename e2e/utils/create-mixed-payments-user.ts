@@ -1,19 +1,23 @@
 /**
  * Seed an approved tenant with a single apartment and a payment year that mixes
  * zero and non-zero months. Used to verify empty-month filtering in E2E;
- * withPreviousYear adds the same payment year one year earlier.
+ * yearsAgo adds the same payment year (and January charges) that many years
+ * before the current one.
  */
 
 import bcrypt from 'bcrypt';
 import * as pg from 'pg';
 
+import { loadSql } from './load-sql';
 import { USER_PASSWORD } from './test-credentials';
 
 export async function createMixedPaymentsUser({
-  withPreviousYear = false,
-}: { withPreviousYear?: boolean } = {}): Promise<{
+  yearsAgo = [],
+}: { yearsAgo?: number[] } = {}): Promise<{
   email: string;
   year: number;
+  apartmentId: string;
+  hoaId: string;
 }> {
   const dbUrl = process.env.DATABASE_URL;
   if (!dbUrl) throw new Error('DATABASE_URL is not set');
@@ -76,7 +80,7 @@ export async function createMixedPaymentsUser({
     );
     const apartmentId = apartmentResult.rows[0].id as string;
 
-    const years = withPreviousYear ? [year, year - 1] : [year];
+    const years = [year, ...yearsAgo.map((offset) => year - offset)];
 
     for (const paymentYear of years) {
       await client.query(
@@ -110,9 +114,15 @@ export async function createMixedPaymentsUser({
           new Date(paymentYear, 11, 31),
         ]
       );
+      await client.query(loadSql('insert-charges.sql'), [
+        apartmentId,
+        new Date(paymentYear, 0, 1),
+        new Date(paymentYear, 0, 31),
+        `${paymentYear}01`,
+      ]);
     }
 
-    return { email, year };
+    return { email, year, apartmentId, hoaId };
   } finally {
     await client.end();
   }

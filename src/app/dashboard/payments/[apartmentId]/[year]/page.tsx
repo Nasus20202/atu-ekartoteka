@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/card';
 import { findApartmentPaymentYearsCached } from '@/lib/queries/apartments/find-apartment-payment-years';
 import { findApartmentWithPaymentsByYearCached } from '@/lib/queries/apartments/find-apartment-with-payments-by-year';
+import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
 import { toPaymentPdfDto } from '@/lib/types/dto/payment-dto';
 import { formatCurrency } from '@/lib/utils';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
@@ -53,13 +54,15 @@ export default async function PaymentDetailsPage({
     notFound();
   }
 
+  const startYear = await getTenantHistoryStartYear();
   const [apartment, paymentYears] = await Promise.all([
     findApartmentWithPaymentsByYearCached(
       apartmentId,
       session.user.id,
-      yearNumber
+      yearNumber,
+      startYear
     ),
-    findApartmentPaymentYearsCached(apartmentId, session.user.id),
+    findApartmentPaymentYearsCached(apartmentId, session.user.id, startYear),
   ]);
 
   if (!apartment || apartment.payments.length === 0) {

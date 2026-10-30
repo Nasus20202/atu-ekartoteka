@@ -200,6 +200,60 @@ describe('importCharges', () => {
     expect(mockTx.charge.update).not.toHaveBeenCalled();
   });
 
+  it('should not update charges that differ only beyond the stored scale', async () => {
+    const entries = [
+      createChargeEntry({ quantity: new Prisma.Decimal('-132.580542') }),
+    ];
+
+    (mockTx.charge.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      {
+        id: 'charge-1',
+        apartmentId: 'apt-1',
+        period: '2024-01',
+        externalLineNo: 1,
+        dateFrom: new Date('2024-01-01'),
+        dateTo: new Date('2024-01-31'),
+        description: 'Test charge',
+        quantity: new Prisma.Decimal('-132.5805'),
+        unit: 'szt',
+        unitPrice: 100,
+        totalAmount: 100,
+      },
+    ]);
+
+    await importCharges(mockTx, apartmentMap, entries, stats, errors);
+
+    expect(stats.updated).toBe(0);
+    expect(mockTx.charge.update).not.toHaveBeenCalled();
+  });
+
+  it('should update charges that differ at the stored scale', async () => {
+    const entries = [
+      createChargeEntry({ quantity: new Prisma.Decimal('10.123600') }),
+    ];
+
+    (mockTx.charge.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      {
+        id: 'charge-1',
+        apartmentId: 'apt-1',
+        period: '2024-01',
+        externalLineNo: 1,
+        dateFrom: new Date('2024-01-01'),
+        dateTo: new Date('2024-01-31'),
+        description: 'Test charge',
+        quantity: new Prisma.Decimal('10.1234'),
+        unit: 'szt',
+        unitPrice: 100,
+        totalAmount: 100,
+      },
+    ]);
+    (mockTx.charge.update as ReturnType<typeof vi.fn>).mockResolvedValue({});
+
+    await importCharges(mockTx, apartmentMap, entries, stats, errors);
+
+    expect(stats.updated).toBe(1);
+  });
+
   it('should handle create errors gracefully', async () => {
     const entries = [createChargeEntry()];
 

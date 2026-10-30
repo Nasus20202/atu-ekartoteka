@@ -1,10 +1,8 @@
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import {
-  HoaNotificationCard,
-  type NotificationItem,
-} from '@/components/dashboard/hoa-notification-card';
+import type { NotificationItem } from '@/components/dashboard/group-notifications';
+import { HoaNotificationCard } from '@/components/dashboard/hoa-notification-card';
 import { formatCurrency } from '@/lib/utils';
 
 const exactText = (value: string) => (_: string, element: Element | null) =>

@@ -252,3 +252,9 @@ model PasswordReset {
   @@index([token])
   @@index([expiresAt])
 }
+
+model AppSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}

@@ -3,7 +3,7 @@ import { IMPORT_CREATE_BATCH_SIZE } from '@/lib/import/constants';
 import { EntityStats, TransactionClient } from '@/lib/import/types';
 import { processInBatches } from '@/lib/import/utils';
 import { NalCzynszEntry } from '@/lib/parsers/nal-czynsz-parser';
-import { toDecimal } from '@/lib/utils/decimal';
+import { decimalEqualsStored } from '@/lib/utils/decimal';
 import { getErrorMessage } from '@/lib/utils/error-message';
 
 type ChargeKey = {
@@ -35,10 +35,10 @@ function hasChargeChanged(
     existing.dateFrom.getTime() !== entry.dateFrom.getTime() ||
     existing.dateTo.getTime() !== entry.dateTo.getTime() ||
     existing.description !== entry.description ||
-    !toDecimal(existing.quantity).equals(toDecimal(entry.quantity)) ||
+    !decimalEqualsStored(existing.quantity, entry.quantity) ||
     existing.unit !== entry.unit ||
-    !toDecimal(existing.unitPrice).equals(toDecimal(entry.unitPrice)) ||
-    !toDecimal(existing.totalAmount).equals(toDecimal(entry.totalAmount))
+    !decimalEqualsStored(existing.unitPrice, entry.unitPrice) ||
+    !decimalEqualsStored(existing.totalAmount, entry.totalAmount)
   );
 }
 

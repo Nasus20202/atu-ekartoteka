@@ -66,6 +66,17 @@ describe('NotificationsSidebar', () => {
       expect(screen.getByText('Naliczenie n2')).toBeInTheDocument();
     });
 
+    it('offers the notice PDF next to the total amount', () => {
+      render(
+        <NotificationsSidebar notifications={[makeNotification('1', '10')]} />
+      );
+
+      const button = screen.getByRole('button', { name: /Pobierz PDF/ });
+      expect(button.closest('.rounded-lg')).toHaveTextContent(
+        'Łączna kwota do zapłaty'
+      );
+    });
+
     it('shows hoaHeader as the HOA notice', () => {
       const notification = {
         ...makeNotification('n1', '100', 'hoa-1', 'Wspólnota Alpha'),

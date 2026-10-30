@@ -25,8 +25,8 @@ describe('user queries', () => {
     });
   });
 
-  it('includes apartment charges ordered by newest period', async () => {
-    await findUserWithApartmentCharges('user-1');
+  it('includes apartment charges in the window, newest period first', async () => {
+    await findUserWithApartmentCharges('user-1', 2025);
 
     expect(mockFindUnique).toHaveBeenCalledWith({
       where: { id: 'user-1' },
@@ -35,6 +35,7 @@ describe('user queries', () => {
           include: {
             homeownersAssociation: true,
             charges: {
+              where: { period: { gte: '202501' } },
               orderBy: [{ period: 'desc' }, { externalLineNo: 'asc' }],
             },
           },
@@ -43,8 +44,8 @@ describe('user queries', () => {
     });
   });
 
-  it('includes apartment payments ordered by newest year', async () => {
-    await findUserWithApartmentPayments('user-1');
+  it('includes apartment payments in the window, newest year first', async () => {
+    await findUserWithApartmentPayments('user-1', 2025);
 
     expect(mockFindUnique).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -52,7 +53,10 @@ describe('user queries', () => {
           apartments: expect.objectContaining({
             orderBy: { number: 'asc' },
             include: expect.objectContaining({
-              payments: { orderBy: { year: 'desc' } },
+              payments: {
+                where: { year: { gte: 2025 } },
+                orderBy: { year: 'desc' },
+              },
             }),
           }),
         },
@@ -60,12 +64,22 @@ describe('user queries', () => {
     );
   });
 
-  it('includes every payment year, newest first, for the dashboard', async () => {
-    await findUserWithApartments('user-1');
+  it('includes window payment years and charges for the dashboard', async () => {
+    await findUserWithApartments('user-1', 2025);
 
     const { include } = mockFindUnique.mock.calls[0][0];
     expect(include.apartments.include.payments).toEqual({
+      where: { year: { gte: 2025 } },
       orderBy: { year: 'desc' },
+    });
+    expect(include.apartments.include.homeownersAssociation.select).toEqual({
+      id: true,
+      name: true,
+      header: true,
+      footer: true,
+    });
+    expect(include.apartments.include.charges.where).toEqual({
+      period: { gte: '202501' },
     });
     expect(include.apartments.include.charges.select).toEqual({
       id: true,

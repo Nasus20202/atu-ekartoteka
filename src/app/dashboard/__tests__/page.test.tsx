@@ -31,6 +31,10 @@ vi.mock('@/lib/queries/users/find-user-with-apartments', () => ({
   findUserWithApartmentsCached: mockFindUserWithApartmentsCached,
 }));
 
+vi.mock('@/lib/settings/tenant-history', () => ({
+  getTenantHistoryStartYear: vi.fn().mockResolvedValue(2024),
+}));
+
 vi.mock('@/components/charts/balance-history-data', () => ({
   getBalanceHistory: () => [],
 }));
@@ -70,6 +74,19 @@ describe('DashboardPage', () => {
       series: [],
     });
     mockAuth.mockResolvedValue({ user: { id: 'user-1' } });
+  });
+
+  it('loads dashboard data within the tenant history window', async () => {
+    mockFindUserWithApartmentsCached.mockResolvedValue(null);
+    mockRedirect.mockImplementation(() => {
+      throw new Error('redirect');
+    });
+
+    await expect(DashboardPage()).rejects.toThrow('redirect');
+    expect(mockFindUserWithApartmentsCached).toHaveBeenCalledWith(
+      'user-1',
+      2024
+    );
   });
 
   it('passes stringified notification decimals to the sidebar', async () => {

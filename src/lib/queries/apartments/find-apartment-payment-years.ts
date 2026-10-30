@@ -4,10 +4,11 @@ import { prisma } from '@/lib/database/prisma';
 
 export async function findApartmentPaymentYears(
   apartmentId: string,
-  userId: string
+  userId: string,
+  startYear: number
 ) {
   const payments = await prisma.payment.findMany({
-    where: { apartmentId, apartment: { userId } },
+    where: { apartmentId, apartment: { userId }, year: { gte: startYear } },
     select: { year: true },
     orderBy: { year: 'desc' },
   });

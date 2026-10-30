@@ -261,6 +261,44 @@ describe('importPayments', () => {
     expect(mockTx.payment.update).not.toHaveBeenCalled();
   });
 
+  it('should not update payments that differ only beyond the stored scale', async () => {
+    const stored = createPaymentEntry({
+      openingBalance: '12.3457',
+      closingBalance: '-100.1234',
+      monthlyPayments: Array(12).fill('100.0001'),
+    });
+    const entries = [
+      createPaymentEntry({
+        openingBalance: '12.345650',
+        closingBalance: '-100.123449',
+        monthlyPayments: Array(12).fill('100.000149'),
+      }),
+    ];
+
+    (mockTx.payment.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { id: 'payment-1', ...buildPaymentData(stored, 'apt-1') },
+    ]);
+
+    await importPayments(mockTx, apartmentMap, entries, stats, errors);
+
+    expect(stats.updated).toBe(0);
+    expect(mockTx.payment.update).not.toHaveBeenCalled();
+  });
+
+  it('should update payments that differ at the stored scale', async () => {
+    const stored = createPaymentEntry({ closingBalance: '-100.1234' });
+    const entries = [createPaymentEntry({ closingBalance: '-100.123600' })];
+
+    (mockTx.payment.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { id: 'payment-1', ...buildPaymentData(stored, 'apt-1') },
+    ]);
+    (mockTx.payment.update as ReturnType<typeof vi.fn>).mockResolvedValue({});
+
+    await importPayments(mockTx, apartmentMap, entries, stats, errors);
+
+    expect(stats.updated).toBe(1);
+  });
+
   it('should handle create errors gracefully', async () => {
     const entries = [createPaymentEntry()];
 

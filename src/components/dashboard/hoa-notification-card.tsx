@@ -1,47 +1,18 @@
 import { Building2 } from 'lucide-react';
 import type { ReactNode } from 'react';
 
+import {
+  type ApartmentNotificationGroup,
+  groupByApartment,
+  type NotificationItem,
+} from '@/components/dashboard/group-notifications';
 import { HoaNotice } from '@/components/dashboard/hoa-notice';
 import { MarqueeText } from '@/components/ui/marquee-text';
 import { formatCurrency } from '@/lib/utils';
-import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
+import { toDecimal } from '@/lib/utils/decimal';
 import { sumDecimals } from '@/lib/utils/sum';
 
-export type NotificationItem = {
-  id: string;
-  description: string;
-  quantity: DecimalLike;
-  unit: string;
-  unitPrice: DecimalLike;
-  totalAmount: DecimalLike;
-  apartmentNumber: string;
-  apartmentAddress: string;
-  hoaId?: string | null;
-  hoaName?: string | null;
-  hoaHeader?: string | null;
-};
-
 const DEFAULT_HOA_NAME = 'Wspólnota';
-
-interface ApartmentNotificationGroup {
-  address: string;
-  notifications: NotificationItem[];
-}
-
-function groupByApartment(
-  notifications: NotificationItem[]
-): ApartmentNotificationGroup[] {
-  const groupMap = new Map<string, ApartmentNotificationGroup>();
-
-  for (const notification of notifications) {
-    const address = notification.apartmentAddress;
-    const group = groupMap.get(address) ?? { address, notifications: [] };
-    group.notifications.push(notification);
-    groupMap.set(address, group);
-  }
-
-  return Array.from(groupMap.values());
-}
 
 function sumNotifications(notifications: NotificationItem[]) {
   return sumDecimals(notifications.map((n) => n.totalAmount));

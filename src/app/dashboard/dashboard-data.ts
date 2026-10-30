@@ -43,6 +43,7 @@ export function buildDashboardNotifications(apartments: DashboardApartment[]) {
       hoaId: apt.homeownersAssociation?.id ?? null,
       hoaName: apt.homeownersAssociation?.name ?? null,
       hoaHeader: apt.homeownersAssociation?.header ?? null,
+      hoaFooter: apt.homeownersAssociation?.footer ?? null,
     }))
   );
 }

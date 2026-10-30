@@ -55,6 +55,27 @@ test.describe('PDF Download - Tenant', () => {
     });
   });
 
+  test.describe('Current notice PDF', () => {
+    test('tenant downloads the notice PDF from the dashboard', async ({
+      userPage,
+    }) => {
+      await userPage.goto('/dashboard');
+      const totalBox = userPage
+        .locator('div.rounded-lg')
+        .filter({ hasText: 'Łączna kwota do zapłaty' });
+      const button = totalBox.getByRole('button', { name: /Pobierz PDF/i });
+      await expect(button).toBeVisible();
+
+      const downloadPromise = userPage.waitForEvent('download');
+      await button.click();
+      const download = await downloadPromise;
+
+      expect(download.suggestedFilename()).toMatch(
+        /^naliczenia-biezace-\d{4}-\d{2}-\d{2}\.pdf$/
+      );
+    });
+  });
+
   test.describe('Payments PDF', () => {
     test('payment detail page has PDF download button', async ({
       userPage,
