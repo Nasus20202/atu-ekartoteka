@@ -1,15 +1,11 @@
-import {
-  getPeriodsBetween,
-  SERIES_COLORS,
-  toChartNumber,
-} from '@/components/charts/chart-data';
+import { toChartNumber } from '@/components/charts/chart-data';
 import { formatPeriod } from '@/lib/utils';
 import { type Decimal, type DecimalLike, toDecimal } from '@/lib/utils/decimal';
 import {
   getNonEmptyMonths,
-  monthIndexToPeriod,
   type PaymentMonthFieldsLike,
 } from '@/lib/utils/payment-months';
+import { getPeriodsBetween, monthIndexToPeriod } from '@/lib/utils/period';
 
 export type BalanceHistoryDatum = {
   period: string;
@@ -37,6 +33,7 @@ export type BalanceTrend = {
 type LabeledBalanceHistory = {
   apartmentId: string;
   label: string;
+  color: string;
   history: BalanceHistoryDatum[];
 };
 
@@ -116,7 +113,7 @@ export function mergeBalanceHistories(
     key: `apt_${index}` as BalanceSeriesKey,
     label: entry.label,
     apartmentId: entry.apartmentId,
-    color: SERIES_COLORS[index % SERIES_COLORS.length],
+    color: entry.color,
   }));
   const balancesBySeries = withData.map(
     (entry) =>

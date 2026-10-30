@@ -4,10 +4,8 @@ import { createMockPayment } from '@/__tests__/fixtures';
 import { Prisma } from '@/generated/prisma/browser';
 import type { Payment } from '@/lib/types';
 import {
-  dateToPeriod,
   getNonEmptyMonths,
   getPaymentTotals,
-  isPeriodAfterDate,
 } from '@/lib/utils/payment-months';
 
 describe('getNonEmptyMonths', () => {
@@ -106,38 +104,6 @@ describe('getNonEmptyMonths', () => {
 
       expect(result.map((m) => m.monthIndex)).toEqual([4]);
     });
-  });
-});
-
-describe('dateToPeriod', () => {
-  it('converts a Date to YYYYMM format', () => {
-    expect(dateToPeriod(new Date('2026-05-31'))).toBe('202605');
-  });
-
-  it('pads single-digit months', () => {
-    expect(dateToPeriod(new Date('2026-01-15'))).toBe('202601');
-  });
-
-  it('handles December correctly', () => {
-    expect(dateToPeriod(new Date('2025-12-01'))).toBe('202512');
-  });
-});
-
-describe('isPeriodAfterDate', () => {
-  it('returns true when period is after the date', () => {
-    expect(isPeriodAfterDate('202606', '2026-05-31')).toBe(true);
-  });
-
-  it('returns false when period is before the date', () => {
-    expect(isPeriodAfterDate('202604', '2026-05-31')).toBe(false);
-  });
-
-  it('returns false when period equals the date period', () => {
-    expect(isPeriodAfterDate('202605', '2026-05-31')).toBe(false);
-  });
-
-  it('returns false when dateStr is null', () => {
-    expect(isPeriodAfterDate('202606', null)).toBe(false);
   });
 });
 

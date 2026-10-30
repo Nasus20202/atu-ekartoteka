@@ -4,9 +4,9 @@ import Link from 'next/link';
 
 import { DownloadPaymentPdfButton } from '@/components/pdf/download-payment-pdf-button';
 import type { PaymentListItemDto } from '@/lib/types/dto/payment-dto';
-import { formatCurrency } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
+import { getBalanceStatusClass } from '@/lib/utils/balance-class';
 import { getPaymentYearHref } from '@/lib/utils/dashboard-links';
-import { toDecimal } from '@/lib/utils/decimal';
 
 type PaymentYearRowProps = {
   apartmentId: string;
@@ -38,11 +38,10 @@ export function PaymentYearRow({
       </div>
       <div className="text-right">
         <div
-          className={`text-xl font-bold tabular-nums ${
-            toDecimal(payment.closingBalance).greaterThanOrEqualTo(0)
-              ? 'text-green-600'
-              : 'text-red-600'
-          }`}
+          className={cn(
+            'text-xl font-bold tabular-nums',
+            getBalanceStatusClass(payment.closingBalance)
+          )}
         >
           {formatCurrency(payment.closingBalance)}
         </div>

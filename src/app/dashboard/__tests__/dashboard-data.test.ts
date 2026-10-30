@@ -10,6 +10,7 @@ import {
   getChargesForPeriod,
   getDashboardPeriods,
 } from '@/app/dashboard/dashboard-data';
+import { getSeriesColor } from '@/components/charts/chart-colors';
 import { Prisma } from '@/generated/prisma/browser';
 
 type Apartment = Parameters<typeof buildApartmentBalances>[0][number];
@@ -180,7 +181,14 @@ describe('buildApartmentBalances', () => {
     expect(balance.history.map((datum) => datum.balance)).toEqual([-20, -20]);
   });
 
-  it('skips apartments without payments', () => {
-    expect(buildApartmentBalances([makeApartment()], '202501')).toEqual([]);
+  it('skips apartments without payments but keeps their color slot', () => {
+    const balances = buildApartmentBalances(
+      [makeApartment(), makeApartment({ payments: [createMockPayment()] })],
+      '202501'
+    );
+
+    expect(balances.map((balance) => balance.color)).toEqual([
+      getSeriesColor(1),
+    ]);
   });
 });

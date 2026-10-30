@@ -1,12 +1,11 @@
 import type { ImportWarning } from '@/lib/import/types';
 import { isOwnerId } from '@/lib/parsers/owner-id';
-import { formatCountPl, type PolishPluralForms } from '@/lib/utils/pluralize';
+import {
+  CHARGE_FORMS,
+  formatCountPl,
+  type PolishPluralForms,
+} from '@/lib/utils/pluralize';
 
-const CHARGE_FORMS: PolishPluralForms = {
-  one: 'naliczenie',
-  few: 'naliczenia',
-  many: 'naliczeń',
-};
 const NOTIFICATION_FORMS: PolishPluralForms = {
   one: 'powiadomienie',
   few: 'powiadomienia',

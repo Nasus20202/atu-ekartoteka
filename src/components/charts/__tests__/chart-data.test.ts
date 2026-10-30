@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { createMockPayment } from '@/__tests__/fixtures';
+import { getSeriesColor } from '@/components/charts/chart-colors';
 import {
   getChargeTrendByApartment,
   getPaymentMonthlyChartData,
@@ -164,9 +165,16 @@ describe('finance chart helpers', () => {
     ).toEqual({ data: [], series: [] });
   });
 
-  it('keeps apartments in input order instead of sorting by label', () => {
+  it('keeps input order and colors by position among all apartments', () => {
     const result = getChargeTrendByApartment(
       [
+        {
+          id: 'apt-0',
+          address: 'Pusta',
+          building: '',
+          number: '0',
+          charges: [],
+        },
         {
           id: 'apt-2',
           address: 'Zielona',
@@ -188,6 +196,10 @@ describe('finance chart helpers', () => {
     expect(result.series.map((entry) => entry.label)).toEqual([
       'Zielona /2',
       'Akacjowa /1',
+    ]);
+    expect(result.series.map((entry) => entry.color)).toEqual([
+      getSeriesColor(1),
+      getSeriesColor(2),
     ]);
   });
 });

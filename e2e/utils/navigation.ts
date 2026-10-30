@@ -17,7 +17,9 @@ export async function openNavigationMenu(page: Page) {
  * Expects the month label as shown in the UI, e.g. "Październik 2026".
  */
 export async function openChargesMonth(page: Page, monthYear: string) {
+  // Exact label match skips PDF buttons whose names also contain the month
   await page
-    .getByRole('button', { name: new RegExp(`^${monthYear}`, 'i') })
+    .getByRole('button')
+    .filter({ has: page.getByText(monthYear, { exact: true }) })
     .click();
 }

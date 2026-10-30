@@ -11,3 +11,16 @@ export const CHART_COLORS = {
   tooltipBorder: 'hsl(var(--border))',
   muted: 'hsl(var(--muted-foreground))',
 };
+
+const SERIES_COLORS = [
+  'hsl(var(--primary))',
+  'hsl(var(--destructive))',
+  'hsl(173 58% 39%)',
+  'hsl(35 92% 50%)',
+  'hsl(262 83% 58%)',
+  'hsl(199 89% 48%)',
+] as const;
+
+export function getSeriesColor(index: number): string {
+  return SERIES_COLORS[index % SERIES_COLORS.length];
+}

@@ -1,4 +1,5 @@
 import { type Decimal, type DecimalLike, toDecimal } from '@/lib/utils/decimal';
+import { monthIndexToPeriod } from '@/lib/utils/period';
 import { sumDecimals } from '@/lib/utils/sum';
 
 export type NonEmptyMonth = {
@@ -6,21 +7,6 @@ export type NonEmptyMonth = {
   charges: Decimal;
   payments: Decimal;
 };
-
-export function dateToPeriod(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  return `${year}${month}`;
-}
-
-export function isPeriodAfterDate(
-  period: string,
-  dateStr: string | null
-): boolean {
-  if (!dateStr) return false;
-  const maxPeriod = dateToPeriod(new Date(dateStr));
-  return period > maxPeriod;
-}
 
 export type PaymentMonthFieldsLike = Record<
   | (typeof PAYMENT_MONTH_FIELD_KEYS)[number]
@@ -57,11 +43,6 @@ export const CHARGE_MONTH_FIELD_KEYS = [
   'novemberCharges',
   'decemberCharges',
 ] as const;
-
-export function monthIndexToPeriod(year: number, monthIndex: number): string {
-  const month = String(monthIndex + 1).padStart(2, '0');
-  return `${year}${month}`;
-}
 
 export function getNonEmptyMonths<T extends PaymentMonthFieldsLike>(
   payment: T,

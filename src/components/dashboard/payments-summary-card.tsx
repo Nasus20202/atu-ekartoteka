@@ -14,26 +14,22 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils';
-import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
+import { getBalanceStatusClass } from '@/lib/utils/balance-class';
+import type { DecimalLike } from '@/lib/utils/decimal';
 import { sumDecimals } from '@/lib/utils/sum';
 
-interface ApartmentBalance {
+export interface ApartmentBalance {
   apartmentId: string;
   apartmentLabel: string;
   hoaName: string | null;
   closingBalance: DecimalLike;
   href: string;
+  color: string;
   history: BalanceHistoryDatum[];
 }
 
 interface PaymentsSummaryCardProps {
   apartmentBalances: ApartmentBalance[];
-}
-
-function getBalanceClass(value: DecimalLike): string {
-  return toDecimal(value).greaterThanOrEqualTo(0)
-    ? 'text-green-600'
-    : 'text-red-600';
 }
 
 function ApartmentBalanceSection({ balance }: { balance: ApartmentBalance }) {
@@ -49,7 +45,7 @@ function ApartmentBalanceSection({ balance }: { balance: ApartmentBalance }) {
         )}
       </div>
       <span
-        className={`shrink-0 text-xl font-bold ${getBalanceClass(balance.closingBalance)}`}
+        className={`shrink-0 text-xl font-bold ${getBalanceStatusClass(balance.closingBalance)}`}
       >
         {formatCurrency(balance.closingBalance)}
       </span>
@@ -66,6 +62,7 @@ export const PaymentsSummaryCard = ({
     apartmentBalances.map((balance) => ({
       apartmentId: balance.apartmentId,
       label: balance.apartmentLabel,
+      color: balance.color,
       history: balance.history,
     }))
   );
@@ -92,7 +89,7 @@ export const PaymentsSummaryCard = ({
             <div className="flex items-center justify-between rounded-lg bg-muted p-3">
               <span className="text-sm text-muted-foreground">Łącznie</span>
               <span
-                className={`text-xl font-bold ${getBalanceClass(grandTotal)}`}
+                className={`text-xl font-bold ${getBalanceStatusClass(grandTotal)}`}
               >
                 {formatCurrency(grandTotal)}
               </span>
