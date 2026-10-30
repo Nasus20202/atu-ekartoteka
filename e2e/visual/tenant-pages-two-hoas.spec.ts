@@ -4,10 +4,12 @@
  */
 
 import { expect, test } from '../fixtures';
+import { VISUAL_YEAR } from '../utils/test-credentials';
 
 const PAGES = [
   { name: 'dashboard', path: '/dashboard' },
-  { name: 'charges', path: '/dashboard/charges' },
+  // Charges months start collapsed, so open the last seeded one to show its details
+  { name: 'charges', path: `/dashboard/charges?month=${VISUAL_YEAR}-12` },
   { name: 'payments', path: '/dashboard/payments' },
 ] as const;
 

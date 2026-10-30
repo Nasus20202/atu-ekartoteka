@@ -22,7 +22,12 @@ import {
 /**
  * Login helper function
  */
-async function login(page: Page, email: string, password: string, origin = '') {
+export async function login(
+  page: Page,
+  email: string,
+  password: string,
+  origin = ''
+) {
   await page.goto(`${origin}/login`);
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Hasło', { exact: true }).fill(password);

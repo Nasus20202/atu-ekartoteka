@@ -1,6 +1,7 @@
 /**
  * Seed an approved tenant with a single apartment and a payment year that mixes
- * zero and non-zero months. Used to verify empty-month filtering in E2E.
+ * zero and non-zero months. Used to verify empty-month filtering in E2E;
+ * withPreviousYear adds the same payment year one year earlier.
  */
 
 import bcrypt from 'bcrypt';
@@ -8,7 +9,9 @@ import * as pg from 'pg';
 
 import { USER_PASSWORD } from './test-credentials';
 
-export async function createMixedPaymentsUser(): Promise<{
+export async function createMixedPaymentsUser({
+  withPreviousYear = false,
+}: { withPreviousYear?: boolean } = {}): Promise<{
   email: string;
   year: number;
 }> {
@@ -73,8 +76,11 @@ export async function createMixedPaymentsUser(): Promise<{
     );
     const apartmentId = apartmentResult.rows[0].id as string;
 
-    await client.query(
-      `INSERT INTO "Payment" (
+    const years = withPreviousYear ? [year, year - 1] : [year];
+
+    for (const paymentYear of years) {
+      await client.query(
+        `INSERT INTO "Payment" (
          id, "apartmentId", year, "dateFrom", "dateTo",
          "openingBalance", "closingBalance", "openingDebt", "openingSurplus",
          "januaryPayments", "februaryPayments", "marchPayments", "aprilPayments",
@@ -96,14 +102,15 @@ export async function createMixedPaymentsUser(): Promise<{
           0, 0, 0, 0,
           NOW(), NOW()
         )`,
-      [
-        `${apartmentId}-${year}`,
-        apartmentId,
-        year,
-        new Date(year, 0, 1),
-        new Date(year, 11, 31),
-      ]
-    );
+        [
+          `${apartmentId}-${paymentYear}`,
+          apartmentId,
+          paymentYear,
+          new Date(paymentYear, 0, 1),
+          new Date(paymentYear, 11, 31),
+        ]
+      );
+    }
 
     return { email, year };
   } finally {

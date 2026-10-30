@@ -16,6 +16,8 @@ const visualUse = {
   colorScheme: 'light' as const,
   locale: 'pl-PL',
   timezoneId: 'Europe/Warsaw',
+  // Recharts skips its JS animations for reduced motion, so charts render fully drawn
+  reducedMotion: 'reduce' as const,
   // Subpixel (LCD) text antialiasing depends on the host font config, so
   // grayscale antialiasing keeps snapshots identical across machines
   launchOptions: { args: ['--disable-lcd-text'] },

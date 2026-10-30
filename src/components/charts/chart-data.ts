@@ -1,12 +1,12 @@
 import { Prisma } from '@/generated/prisma/browser';
 import type { PaymentDtoSource } from '@/lib/types/dto/payment-dto';
 import { formatPeriod, MONTH_NAMES_PL } from '@/lib/utils';
+import {
+  formatApartmentLabel,
+  type LabelledApartment,
+} from '@/lib/utils/apartment-label';
 import { type Decimal, type DecimalLike, toDecimal } from '@/lib/utils/decimal';
 import { getNonEmptyMonths } from '@/lib/utils/payment-months';
-
-export const DEFAULT_CHARGE_TREND_VIEWPORT_SIZE = 12;
-export const DEFAULT_CHARGE_TREND_PERIOD_LIMIT =
-  DEFAULT_CHARGE_TREND_VIEWPORT_SIZE;
 
 export type PaymentMonthlyChartDatum = {
   monthIndex: number;
@@ -20,25 +20,23 @@ export type ChargeTrendSeries = {
   key: string;
   label: string;
   color: string;
+  apartmentId: string;
 };
 
 export type ChargeTrendDatum = {
   period: string;
   label: string;
-} & Record<`hoa_${string}`, number>;
+} & Record<`apt_${string}`, number>;
 
-type ChargeTrendKey = `hoa_${string}`;
+type ChargeTrendKey = `apt_${string}`;
 
 type ChargeTrendSource = {
   period: string;
   totalAmount: DecimalLike;
 };
 
-type ApartmentChargesLike = {
-  homeownersAssociation?: {
-    id: string;
-    name: string;
-  } | null;
+type ApartmentChargesLike = LabelledApartment & {
+  id: string;
   charges: ChargeTrendSource[];
 };
 
@@ -47,7 +45,7 @@ export type ChargeTrendResult = {
   series: ChargeTrendSeries[];
 };
 
-const HOA_TREND_COLORS = [
+export const SERIES_COLORS = [
   'hsl(var(--primary))',
   'hsl(var(--destructive))',
   'hsl(173 58% 39%)',
@@ -55,12 +53,6 @@ const HOA_TREND_COLORS = [
   'hsl(262 83% 58%)',
   'hsl(199 89% 48%)',
 ] as const;
-
-function getCurrentPeriod(): string {
-  const now = new Date();
-
-  return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
-}
 
 function toPeriodDate(period: string): Date {
   const year = Number.parseInt(period.slice(0, 4), 10);
@@ -73,7 +65,10 @@ function toPeriodKey(date: Date): string {
   return `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}`;
 }
 
-function getPeriodsBetween(startPeriod: string, endPeriod: string): string[] {
+export function getPeriodsBetween(
+  startPeriod: string,
+  endPeriod: string
+): string[] {
   const periods: string[] = [];
   const cursor = toPeriodDate(startPeriod);
   const end = toPeriodDate(endPeriod);
@@ -86,11 +81,11 @@ function getPeriodsBetween(startPeriod: string, endPeriod: string): string[] {
   return periods;
 }
 
-function toSeriesKey(hoaId: string): ChargeTrendKey {
-  return `hoa_${hoaId.replace(/[^a-zA-Z0-9]/g, '_')}`;
+function toSeriesKey(apartmentId: string): ChargeTrendKey {
+  return `apt_${apartmentId.replace(/[^a-zA-Z0-9]/g, '_')}`;
 }
 
-function toChartNumber(value: DecimalLike): number {
+export function toChartNumber(value: DecimalLike): number {
   return Number(toDecimal(value).toFixed(4));
 }
 
@@ -112,21 +107,19 @@ export function getPaymentMonthlyChartData(
   });
 }
 
-export function getChargeTrendByHoaHistory(
+// Series follow the apartments' order, so colors match the balance chart.
+export function getChargeTrendByApartment(
   apartments: ApartmentChargesLike[],
-  endPeriod = getCurrentPeriod()
+  endPeriod: string
 ): ChargeTrendResult {
   const totalsByPeriod = new Map<string, Map<ChargeTrendKey, Decimal>>();
-  const hoaLabelsByKey = new Map<ChargeTrendKey, string>();
+  const apartmentsByKey = new Map<
+    ChargeTrendKey,
+    { label: string; apartmentId: string }
+  >();
 
   for (const apartment of apartments) {
-    const hoa = apartment.homeownersAssociation;
-
-    if (!hoa?.id) {
-      continue;
-    }
-
-    const seriesKey = toSeriesKey(hoa.id);
+    const seriesKey = toSeriesKey(apartment.id);
 
     for (const charge of apartment.charges) {
       const amount = toDecimal(charge.totalAmount);
@@ -135,7 +128,10 @@ export function getChargeTrendByHoaHistory(
         continue;
       }
 
-      hoaLabelsByKey.set(seriesKey, hoa.name);
+      apartmentsByKey.set(seriesKey, {
+        label: formatApartmentLabel(apartment),
+        apartmentId: apartment.id,
+      });
 
       const periodTotals =
         totalsByPeriod.get(charge.period) ?? new Map<ChargeTrendKey, Decimal>();
@@ -156,15 +152,13 @@ export function getChargeTrendByHoaHistory(
     endPeriod > firstPeriod ? endPeriod : firstPeriod
   );
 
-  const series = Array.from(hoaLabelsByKey.entries())
-    .sort(([, leftLabel], [, rightLabel]) =>
-      leftLabel.localeCompare(rightLabel, 'pl')
-    )
-    .map(([key, label], index) => ({
+  const series = Array.from(apartmentsByKey.entries()).map(
+    ([key, apartment], index) => ({
       key,
-      label,
-      color: HOA_TREND_COLORS[index % HOA_TREND_COLORS.length],
-    }));
+      ...apartment,
+      color: SERIES_COLORS[index % SERIES_COLORS.length],
+    })
+  );
 
   const data = periods.map((period) => {
     const periodTotals = totalsByPeriod.get(period);
@@ -184,5 +178,3 @@ export function getChargeTrendByHoaHistory(
 
   return { data, series };
 }
-
-export const getRecentChargeTrendByHoa = getChargeTrendByHoaHistory;

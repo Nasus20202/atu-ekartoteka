@@ -11,6 +11,7 @@ import { PageHeader } from '@/components/layout/page-header';
 import { PaymentApartmentDetailsCard } from '@/components/payments/payment-apartment-details-card';
 import { PaymentMonthlyChartCard } from '@/components/payments/payment-monthly-chart-card';
 import { PaymentTable } from '@/components/payments/payment-table';
+import { PaymentYearSelect } from '@/components/payments/payment-year-select';
 import { DownloadPaymentPdfButton } from '@/components/pdf/download-payment-pdf-button';
 import {
   Card,
@@ -19,6 +20,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { findApartmentPaymentYearsCached } from '@/lib/queries/apartments/find-apartment-payment-years';
 import { findApartmentWithPaymentsByYearCached } from '@/lib/queries/apartments/find-apartment-with-payments-by-year';
 import { toPaymentPdfDto } from '@/lib/types/dto/payment-dto';
 import { formatCurrency } from '@/lib/utils';
@@ -51,11 +53,14 @@ export default async function PaymentDetailsPage({
     notFound();
   }
 
-  const apartment = await findApartmentWithPaymentsByYearCached(
-    apartmentId,
-    session.user.id,
-    yearNumber
-  );
+  const [apartment, paymentYears] = await Promise.all([
+    findApartmentWithPaymentsByYearCached(
+      apartmentId,
+      session.user.id,
+      yearNumber
+    ),
+    findApartmentPaymentYearsCached(apartmentId, session.user.id),
+  ]);
 
   if (!apartment || apartment.payments.length === 0) {
     notFound();
@@ -76,6 +81,15 @@ export default async function PaymentDetailsPage({
       <PageHeader
         title={`Wpłaty - ${apartment.address} ${apartment.building || ''}/${apartment.number}`}
         description={`Szczegóły wpłat za rok ${payment.year}`}
+        action={
+          paymentYears.length > 1 && (
+            <PaymentYearSelect
+              apartmentId={apartment.id}
+              year={payment.year}
+              years={paymentYears}
+            />
+          )
+        }
       />
 
       <div className="space-y-6">

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { DownloadPaymentPdfButton } from '@/components/pdf/download-payment-pdf-button';
 import type { PaymentListItemDto } from '@/lib/types/dto/payment-dto';
 import { formatCurrency } from '@/lib/utils';
+import { getPaymentYearHref } from '@/lib/utils/dashboard-links';
 import { toDecimal } from '@/lib/utils/decimal';
 
 type PaymentYearRowProps = {
@@ -26,7 +27,7 @@ export function PaymentYearRow({
 }: PaymentYearRowProps) {
   return (
     <Link
-      href={`/dashboard/payments/${apartmentId}/${payment.year}`}
+      href={getPaymentYearHref(apartmentId, payment.year)}
       className="flex items-center gap-3 rounded-lg border p-4 transition-colors hover:bg-muted"
     >
       <div className="min-w-0 flex-1">

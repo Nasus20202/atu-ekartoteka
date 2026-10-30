@@ -11,3 +11,13 @@ export async function openNavigationMenu(page: Page) {
     await toggle.click();
   }
 }
+
+/**
+ * Expands a month on a charges page, where months start collapsed.
+ * Expects the month label as shown in the UI, e.g. "Październik 2026".
+ */
+export async function openChargesMonth(page: Page, monthYear: string) {
+  await page
+    .getByRole('button', { name: new RegExp(`^${monthYear}`, 'i') })
+    .click();
+}

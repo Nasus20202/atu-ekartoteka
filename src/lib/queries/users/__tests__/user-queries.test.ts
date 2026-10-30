@@ -60,13 +60,12 @@ describe('user queries', () => {
     );
   });
 
-  it('includes only the latest payment for the dashboard', async () => {
+  it('includes every payment year, newest first, for the dashboard', async () => {
     await findUserWithApartments('user-1');
 
     const { include } = mockFindUnique.mock.calls[0][0];
     expect(include.apartments.include.payments).toEqual({
       orderBy: { year: 'desc' },
-      take: 1,
     });
     expect(include.apartments.include.charges.select).toEqual({
       id: true,

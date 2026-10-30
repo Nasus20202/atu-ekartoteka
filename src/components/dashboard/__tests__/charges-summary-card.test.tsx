@@ -1,8 +1,12 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { ChargesSummaryCard } from '@/components/dashboard/charges-summary-card';
 import { Prisma } from '@/generated/prisma/browser';
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
 
 describe('ChargesSummaryCard', () => {
   const mockCharges = [
@@ -11,11 +15,16 @@ describe('ChargesSummaryCard', () => {
     { totalAmount: new Prisma.Decimal(300) },
   ];
   const trendData = [
-    { period: '202412', label: 'Grudzień 2024', hoa_test: 400 },
-    { period: '202501', label: 'Styczeń 2025', hoa_test: 600 },
+    { period: '202412', label: 'Grudzień 2024', apt_test: 400 },
+    { period: '202501', label: 'Styczeń 2025', apt_test: 600 },
   ];
   const trendSeries = [
-    { key: 'hoa_test', label: 'Test HOA', color: 'hsl(var(--primary))' },
+    {
+      key: 'apt_test',
+      label: 'Test HOA',
+      color: 'hsl(var(--primary))',
+      apartmentId: 'apt-1',
+    },
   ];
 
   it('renders the card title', () => {
@@ -98,6 +107,30 @@ describe('ChargesSummaryCard', () => {
     expect(screen.getAllByText('Grudzień 2024').at(-1)).toBeInTheDocument();
     expect(screen.getByText('3 naliczenia')).toBeInTheDocument();
     expect(screen.getByText('2 naliczenia')).toBeInTheDocument();
+  });
+
+  it('links each recent month to its charges', () => {
+    render(
+      <ChargesSummaryCard
+        currentPeriod="202501"
+        previousPeriod="202412"
+        currentMonthCharges={mockCharges}
+        previousMonthCharges={mockCharges}
+        currentMonthTotal={600}
+        previousMonthTotal={600}
+        trendData={trendData}
+        trendSeries={trendSeries}
+      />
+    );
+
+    expect(screen.getByRole('link', { name: /Styczeń 2025/ })).toHaveAttribute(
+      'href',
+      '/dashboard/charges?month=2025-01'
+    );
+    expect(screen.getByRole('link', { name: /Grudzień 2024/ })).toHaveAttribute(
+      'href',
+      '/dashboard/charges?month=2024-12'
+    );
   });
 
   it('shows "Zobacz wszystkie naliczenia" button when charges exist', () => {

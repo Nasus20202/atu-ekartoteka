@@ -3,6 +3,8 @@
  */
 
 import { expect, test } from '../fixtures';
+import { CURRENT_MONTH_YEAR } from '../utils/date-utils';
+import { openChargesMonth } from '../utils/navigation';
 
 async function getApartmentIdFromPaymentsPage(
   userPage: import('@playwright/test').Page
@@ -27,6 +29,7 @@ test.describe('PDF Download - Tenant', () => {
       const apartmentId = await getApartmentIdFromPaymentsPage(userPage);
 
       await userPage.goto(`/dashboard/charges/${apartmentId}`);
+      await openChargesMonth(userPage, CURRENT_MONTH_YEAR);
       await expect(
         userPage.getByRole('button', { name: /Pobierz PDF/i }).first()
       ).toBeVisible();
@@ -36,6 +39,7 @@ test.describe('PDF Download - Tenant', () => {
       const apartmentId = await getApartmentIdFromPaymentsPage(userPage);
 
       await userPage.goto(`/dashboard/charges/${apartmentId}`);
+      await openChargesMonth(userPage, CURRENT_MONTH_YEAR);
       await expect(
         userPage.getByRole('button', { name: /Pobierz PDF/i }).first()
       ).toBeVisible();

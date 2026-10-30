@@ -21,7 +21,6 @@ export function findUserWithApartments(id: string) {
           },
           payments: {
             orderBy: { year: 'desc' },
-            take: 1,
           },
         },
       },

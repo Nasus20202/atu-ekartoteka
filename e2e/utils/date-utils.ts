@@ -19,3 +19,5 @@ export const POLISH_MONTHS = [
 
 const now = new Date();
 export const CURRENT_MONTH_YEAR = `${POLISH_MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+// Value of the ?month= charges query parameter, e.g. 2026-03
+export const CURRENT_MONTH_PARAM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;

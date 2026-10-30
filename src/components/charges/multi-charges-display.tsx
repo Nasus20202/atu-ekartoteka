@@ -7,8 +7,13 @@ import {
   YearTrigger,
 } from '@/components/charges/charge-list-parts';
 import { MultiApartmentPeriodCard } from '@/components/charges/multi-apartment-period-card';
+import {
+  ACTIVE_MONTH_CLASS,
+  useScrollToActiveMonth,
+} from '@/components/charges/use-scroll-to-active-month';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import type { ChargeDisplayDto } from '@/lib/types/dto/charge-dto';
+import { cn } from '@/lib/utils';
 import { getPeriodYear, groupByYearDesc } from '@/lib/utils/group-by-year';
 import { isPeriodAfterDate } from '@/lib/utils/payment-months';
 import { sumDecimals } from '@/lib/utils/sum';
@@ -24,6 +29,7 @@ interface MultiChargesDisplayProps {
   periods: string[];
   chargesByPeriod: Record<string, ApartmentPeriodData[]>;
   chargesDataDate?: string | null;
+  activeMonth?: string | null;
 }
 
 function computePeriodTotal(periodData: ApartmentPeriodData[]) {
@@ -38,22 +44,27 @@ export function MultiChargesDisplay({
   periods,
   chargesByPeriod,
   chargesDataDate,
+  activeMonth = null,
 }: MultiChargesDisplayProps) {
   const filteredPeriods = chargesDataDate
     ? periods.filter((p) => !isPeriodAfterDate(p, chargesDataDate))
     : periods;
   const yearGroups = groupByYearDesc(filteredPeriods, getPeriodYear);
-  const mostRecentPeriod = periods[0] ?? null;
 
-  const [openYears, setOpenYears] = useState<Set<string>>(
-    () => new Set(yearGroups.map((g) => g.year))
-  );
+  const activeYear = activeMonth ? getPeriodYear(activeMonth) : null;
 
-  const [openMonths, setOpenMonths] = useState<Set<string>>(() => {
+  const [openYears, setOpenYears] = useState<Set<string>>(() => {
     const initial = new Set<string>();
-    if (mostRecentPeriod) initial.add(mostRecentPeriod);
+    if (yearGroups[0]) initial.add(yearGroups[0].year);
+    if (activeYear) initial.add(activeYear);
     return initial;
   });
+
+  const [openMonths, setOpenMonths] = useState<Set<string>>(() => {
+    return new Set(activeMonth ? [activeMonth] : []);
+  });
+
+  const activeRef = useScrollToActiveMonth(activeMonth);
 
   function toggleYear(year: string) {
     setOpenYears((prev) => {
@@ -87,13 +98,18 @@ export function MultiChargesDisplay({
               const periodData = chargesByPeriod[period] ?? [];
               const totalPeriodAmount = computePeriodTotal(periodData);
               const isMonthOpen = openMonths.has(period);
+              const isActive = period === activeMonth;
 
               return (
                 <Collapsible
                   key={period}
+                  ref={isActive ? activeRef : undefined}
                   open={isMonthOpen}
                   onOpenChange={() => toggleMonth(period)}
-                  className="overflow-hidden rounded-lg border bg-card"
+                  className={cn(
+                    'overflow-hidden rounded-lg border bg-card',
+                    isActive && ACTIVE_MONTH_CLASS
+                  )}
                 >
                   <MonthTrigger
                     period={period}

@@ -1,15 +1,25 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { ChargeTrendChart } from '@/components/charts/charge-trend-chart';
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
 describe('ChargeTrendChart', () => {
   const series = [
-    { key: 'hoa_hoa_1', label: 'Wspólnota A', color: 'hsl(var(--primary))' },
     {
-      key: 'hoa_hoa_2',
-      label: 'Wspólnota B',
+      key: 'apt_apt_1',
+      label: 'Testowa 1/1',
+      color: 'hsl(var(--primary))',
+      apartmentId: 'apt-1',
+    },
+    {
+      key: 'apt_apt_2',
+      label: 'Testowa 1/2',
       color: 'hsl(var(--destructive))',
+      apartmentId: 'apt-2',
     },
   ];
 
@@ -20,14 +30,14 @@ describe('ChargeTrendChart', () => {
           {
             period: '202501',
             label: 'Styczeń 2025',
-            hoa_hoa_1: 100,
-            hoa_hoa_2: 20,
+            apt_apt_1: 100,
+            apt_apt_2: 20,
           },
           {
             period: '202502',
             label: 'Luty 2025',
-            hoa_hoa_1: 120,
-            hoa_hoa_2: 40,
+            apt_apt_1: 120,
+            apt_apt_2: 40,
           },
         ]}
         series={series}
@@ -43,8 +53,8 @@ describe('ChargeTrendChart', () => {
         data={Array.from({ length: 13 }, (_, index) => ({
           period: `2024${String(index + 1).padStart(2, '0')}`,
           label: `Miesiąc ${index + 1}`,
-          hoa_hoa_1: 100 + index,
-          hoa_hoa_2: 50 + index,
+          apt_apt_1: 100 + index,
+          apt_apt_2: 50 + index,
         }))}
         series={series}
       />
