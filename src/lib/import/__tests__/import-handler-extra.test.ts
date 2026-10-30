@@ -400,6 +400,7 @@ describe('import-handler additional coverage', () => {
           findFirst: vi.fn().mockResolvedValue({
             id: 'payment-2023',
             closingBalance: 100,
+            dateTo: new Date(2023, 11, 31),
           }),
           createMany: vi.fn().mockResolvedValue({ count: 1 }),
           deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
@@ -459,6 +460,7 @@ describe('import-handler additional coverage', () => {
           findFirst: vi.fn().mockResolvedValue({
             id: 'payment-2023',
             closingBalance: 100,
+            dateTo: new Date(2023, 11, 31),
           }),
           createMany: vi.fn().mockResolvedValue({ count: 0 }),
           deleteMany: vi.fn().mockResolvedValue({ count: 0 }),

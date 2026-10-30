@@ -1,6 +1,10 @@
 import * as pg from 'pg';
 
-export async function createCrossYearImportFixture(): Promise<void> {
+export const FULL_YEAR_2026_END = '2026-12-31';
+
+export async function createCrossYearImportFixture(
+  dateTo: string = FULL_YEAR_2026_END
+): Promise<void> {
   const dbUrl = process.env.DATABASE_URL;
   if (!dbUrl) throw new Error('DATABASE_URL is not set');
 
@@ -51,7 +55,7 @@ export async function createCrossYearImportFixture(): Promise<void> {
          "createdAt", "updatedAt"
        )
        VALUES (
-         $1, $2, 2026, '2026-01-01', '2026-12-31',
+         $1, $2, 2026, '2026-01-01', $3,
          0, -444.25,
          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -60,8 +64,9 @@ export async function createCrossYearImportFixture(): Promise<void> {
        ON CONFLICT ("apartmentId", year) DO UPDATE SET
          "openingBalance" = 0,
          "closingBalance" = -444.25,
+         "dateTo" = $3,
          "updatedAt" = NOW()`,
-      [`${apartmentId}-2026`, apartmentId]
+      [`${apartmentId}-2026`, apartmentId, dateTo]
     );
   } finally {
     await client.end();
