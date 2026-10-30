@@ -199,6 +199,43 @@ describe('PaymentTable', () => {
       ).toBeGreaterThanOrEqual(1);
     });
 
+    it('includes the opening surplus and debt in the footer totals', () => {
+      const payment = createMockPayment({
+        openingSurplus: 80.65,
+        openingDebt: 20,
+        openingBalance: 60.65,
+        januaryPayments: 800,
+        januaryCharges: 889.2,
+        closingBalance: -28.55,
+      });
+
+      render(
+        <PaymentTable payment={payment} apartmentId="apt-1" disableLinks />
+      );
+
+      const footerCells = screen.getByText('Razem').parentElement?.children;
+      expect(footerCells?.[1].textContent).toBe(formatCurrency(880.65));
+      expect(footerCells?.[2].textContent).toBe(formatCurrency(909.2));
+      expect(footerCells?.[3].textContent).toBe(formatCurrency(-28.55));
+    });
+
+    it('shows the opening values as totals when every month is zero', () => {
+      const payment = createMockPayment({
+        openingSurplus: 15,
+        openingDebt: 40,
+        openingBalance: -25,
+        closingBalance: -25,
+      });
+
+      render(
+        <PaymentTable payment={payment} apartmentId="apt-1" disableLinks />
+      );
+
+      const footerCells = screen.getByText('Razem').parentElement?.children;
+      expect(footerCells?.[1].textContent).toBe(formatCurrency(15));
+      expect(footerCells?.[2].textContent).toBe(formatCurrency(40));
+    });
+
     it('hides months where both payments and charges are zero', () => {
       const payment = createMockPayment({
         februaryPayments: new Prisma.Decimal(100),

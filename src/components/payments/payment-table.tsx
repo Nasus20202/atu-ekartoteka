@@ -13,12 +13,10 @@ import type { PaymentDtoSource } from '@/lib/types/dto/payment-dto';
 import { formatCurrency, MONTH_NAMES_PL } from '@/lib/utils';
 import { toDecimal } from '@/lib/utils/decimal';
 import {
-  CHARGE_MONTH_FIELD_KEYS,
   dateToPeriod,
   getNonEmptyMonths,
-  PAYMENT_MONTH_FIELD_KEYS,
+  getPaymentTotals,
 } from '@/lib/utils/payment-months';
-import { sumDecimals } from '@/lib/utils/sum';
 
 interface PaymentTableProps {
   payment: PaymentDtoSource;
@@ -56,12 +54,7 @@ export function PaymentTable({
 
     return rows;
   }, []);
-  const totalPayments = sumDecimals(
-    PAYMENT_MONTH_FIELD_KEYS.map((key) => payment[key])
-  );
-  const totalCharges = sumDecimals(
-    CHARGE_MONTH_FIELD_KEYS.map((key) => payment[key])
-  );
+  const { totalPayments, totalCharges } = getPaymentTotals(payment);
   const closingBalance = toDecimal(payment.closingBalance);
 
   return (

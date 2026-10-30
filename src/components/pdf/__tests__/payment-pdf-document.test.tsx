@@ -104,6 +104,23 @@ describe('PaymentPdfDocument', () => {
     expect(text).not.toContain(formatCurrency(MONTHLY_PAYMENT));
   });
 
+  it('adds the opening values to Razem but not to the summary tiles', async () => {
+    const text = await renderText({
+      ...SAMPLE_PROPS,
+      payment: makePayment({
+        openingSurplus: new Prisma.Decimal(100),
+        openingDebt: new Prisma.Decimal(30),
+      }),
+    });
+    const [summary, razem] = text?.split('Razem') ?? [];
+
+    expect(summary).toContain(formatCurrency(MONTHLY_PAYMENT * 12));
+    expect(summary).toContain(formatCurrency(MONTHLY_CHARGE * 12));
+    expect(razem).toContain(formatCurrency(MONTHLY_PAYMENT * 12 + 100));
+    expect(razem).toContain(formatCurrency(MONTHLY_CHARGE * 12 + 30));
+    expect(razem).not.toContain(formatCurrency(MONTHLY_PAYMENT * 12));
+  });
+
   it('keeps Polish characters', async () => {
     const text = await renderText({
       ...SAMPLE_PROPS,

@@ -11,11 +11,9 @@ import type { Payment } from '@/lib/types';
 import { formatCurrency, MONTH_NAMES_PL } from '@/lib/utils';
 import { type Decimal, toDecimal } from '@/lib/utils/decimal';
 import {
-  CHARGE_MONTH_FIELD_KEYS,
   getNonEmptyMonths,
-  PAYMENT_MONTH_FIELD_KEYS,
+  getPaymentTotals,
 } from '@/lib/utils/payment-months';
-import { sumDecimals } from '@/lib/utils/sum';
 
 registerPdfFonts();
 
@@ -64,12 +62,8 @@ export function PaymentPdfDocument({
   const openingBalance = toDecimal(payment.openingBalance);
   const closingBalance = toDecimal(payment.closingBalance);
   const rows = buildMonthlyRows(payment);
-  const totalPayments = sumDecimals(
-    PAYMENT_MONTH_FIELD_KEYS.map((key) => payment[key])
-  );
-  const totalCharges = sumDecimals(
-    CHARGE_MONTH_FIELD_KEYS.map((key) => payment[key])
-  );
+  const { yearPayments, yearCharges, totalPayments, totalCharges } =
+    getPaymentTotals(payment);
   const rowsWithBalance = buildRowsWithBalance(rows, openingBalance);
 
   return (
@@ -97,13 +91,13 @@ export function PaymentPdfDocument({
           <View style={styles.summaryCell}>
             <Text style={styles.summaryCellLabel}>Naliczenia</Text>
             <Text style={styles.summaryCellValue}>
-              {formatCurrency(totalCharges)}
+              {formatCurrency(yearCharges)}
             </Text>
           </View>
           <View style={styles.summaryCell}>
             <Text style={styles.summaryCellLabel}>Suma wpłat</Text>
             <Text style={styles.summaryCellValue}>
-              {formatCurrency(totalPayments)}
+              {formatCurrency(yearPayments)}
             </Text>
           </View>
           <View style={styles.summaryCell}>
