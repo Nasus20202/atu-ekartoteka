@@ -3,6 +3,7 @@ import { CheckCircle } from 'lucide-react';
 import { HoaCard, HoaGroup } from '@/app/admin/users/management/hoa-card';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { InfiniteScrollSentinel } from '@/components/ui/infinite-scroll-sentinel';
 import { LoadingCard } from '@/components/ui/loading-card';
 
 interface ApartmentListProps {
@@ -10,6 +11,7 @@ interface ApartmentListProps {
   hoas: HoaGroup[];
   hasMore: boolean;
   loadingMore: boolean;
+  loadError: string | null;
   onLoadMore: () => void;
   allIds: string[];
   selectedIds: Set<string>;
@@ -30,6 +32,7 @@ export function ApartmentList({
   hoas,
   hasMore,
   loadingMore,
+  loadError,
   onLoadMore,
   allIds,
   selectedIds,
@@ -45,6 +48,17 @@ export function ApartmentList({
   submitIcon,
 }: ApartmentListProps) {
   if (loading) return <LoadingCard />;
+
+  const sentinel = (
+    <InfiniteScrollSentinel
+      hasMore={hasMore}
+      loading={loadingMore}
+      error={loadError}
+      onLoadMore={onLoadMore}
+    />
+  );
+
+  if (loadError && hoas.length === 0) return sentinel;
 
   if (allIds.length === 0) {
     return (
@@ -89,13 +103,7 @@ export function ApartmentList({
         ))}
       </div>
 
-      {hasMore && (
-        <div className="mt-4 flex justify-center">
-          <Button variant="outline" onClick={onLoadMore} disabled={loadingMore}>
-            {loadingMore ? 'Ładowanie...' : 'Pokaż więcej wspólnot'}
-          </Button>
-        </div>
-      )}
+      {sentinel}
     </>
   );
 }

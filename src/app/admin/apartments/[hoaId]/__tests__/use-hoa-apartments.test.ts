@@ -1,6 +1,10 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import {
+  buildAddressKey,
+  computeDuplicateActiveAddresses,
+} from '@/app/admin/apartments/[hoaId]/apartment-list-utils';
 import { useHoaApartments } from '@/app/admin/apartments/[hoaId]/use-hoa-apartments';
 
 const { push, searchParams } = vi.hoisted(() => ({
@@ -13,61 +17,114 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => searchParams.current,
 }));
 
-const responseBody = {
-  apartments: [{ id: 'apt-1' }],
-  pagination: { page: 2, limit: 20, total: 21, totalPages: 2 },
-  hoa: { id: 'hoa-1', externalId: 'W1', name: 'Wspólnota' },
-};
+const hoa = { id: 'hoa-1', externalId: 'W1', name: 'Wspólnota' };
 
-function mockFetch(ok = true, body: object = responseBody) {
-  const fetchMock = vi
-    .fn()
-    .mockResolvedValue({ ok, json: () => Promise.resolve(body) });
+const apartment = (id: string, number = id) => ({
+  id,
+  address: 'Testowa',
+  building: 'A',
+  number,
+  isActive: true,
+});
+
+function pageBody(page: number, ids: string[], totalPages = 2) {
+  return {
+    apartments: ids.map((id) => apartment(id)),
+    pagination: { page, limit: 20, total: 21, totalPages },
+    hoa,
+  };
+}
+
+function stubFetch(...bodies: object[]) {
+  const fetchMock = vi.fn();
+  for (const body of bodies) {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(body),
+    });
+  }
   vi.stubGlobal('fetch', fetchMock);
   return fetchMock;
 }
 
+const requestedUrl = (fetchMock: ReturnType<typeof vi.fn>, call = 0) =>
+  fetchMock.mock.calls[call][0];
+
 describe('useHoaApartments', () => {
   beforeEach(() => {
     push.mockClear();
-    searchParams.current = new URLSearchParams(
-      'page=2&search=17&activeOnly=true'
-    );
+    searchParams.current = new URLSearchParams('search=17&activeOnly=true');
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
-  it('loads apartments for the query in the URL', async () => {
-    const fetchMock = mockFetch();
+  it('loads the first page for the query in the URL', async () => {
+    const fetchMock = stubFetch(pageBody(1, ['apt-1']));
 
     const { result } = renderHook(() => useHoaApartments('hoa-1'));
 
     await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(fetchMock).toHaveBeenCalledWith(
-      '/api/admin/apartments?page=2&limit=20&search=17&activeOnly=true&hoaId=hoa-1'
+    expect(requestedUrl(fetchMock)).toBe(
+      '/api/admin/apartments?page=1&limit=20&search=17&activeOnly=true&hoaId=hoa-1'
     );
-    expect(result.current.apartments).toEqual(responseBody.apartments);
-    expect(result.current.hoa).toEqual(responseBody.hoa);
+    expect(result.current.apartments.map((a) => a.id)).toEqual(['apt-1']);
+    expect(result.current.total).toBe(21);
+    expect(result.current.hoa).toEqual(hoa);
     expect(result.current.search).toBe('17');
     expect(result.current.activeOnly).toBe(true);
   });
 
-  it('defaults to the first page without filters', async () => {
-    searchParams.current = new URLSearchParams();
-    const fetchMock = mockFetch();
+  it('ignores a legacy page parameter', async () => {
+    searchParams.current = new URLSearchParams('page=3');
+    const fetchMock = stubFetch(pageBody(1, ['apt-1']));
 
     const { result } = renderHook(() => useHoaApartments('hoa-1'));
 
     await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(fetchMock).toHaveBeenCalledWith(
+    expect(requestedUrl(fetchMock)).toBe(
       '/api/admin/apartments?page=1&limit=20&search=&activeOnly=false&hoaId=hoa-1'
     );
   });
 
+  it('appends the next page and highlights duplicates across pages', async () => {
+    const fetchMock = stubFetch(pageBody(1, ['apt-1']), {
+      ...pageBody(2, []),
+      apartments: [apartment('apt-2', 'apt-1')],
+    });
+    const { result } = renderHook(() => useHoaApartments('hoa-1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    act(() => result.current.loadMore());
+    await waitFor(() => expect(result.current.apartments).toHaveLength(2));
+
+    expect(requestedUrl(fetchMock, 1)).toContain('page=2');
+    expect(result.current.hasMore).toBe(false);
+    expect([
+      ...computeDuplicateActiveAddresses(result.current.apartments),
+    ]).toEqual([buildAddressKey(apartment('apt-1'))]);
+  });
+
+  it('restarts from the first page when the search changes', async () => {
+    const fetchMock = stubFetch(
+      pageBody(1, ['apt-1']),
+      pageBody(1, ['apt-9'], 1)
+    );
+    const { result, rerender } = renderHook(() => useHoaApartments('hoa-1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    searchParams.current = new URLSearchParams('search=9');
+    rerender();
+
+    await waitFor(() =>
+      expect(result.current.apartments.map((a) => a.id)).toEqual(['apt-9'])
+    );
+    expect(requestedUrl(fetchMock, 1)).toContain('page=1&limit=20&search=9');
+  });
+
   it('keeps the HOA unset when the response has none', async () => {
-    mockFetch(true, { ...responseBody, hoa: null });
+    stubFetch({ ...pageBody(1, []), hoa: null });
 
     const { result } = renderHook(() => useHoaApartments('hoa-1'));
 
@@ -75,51 +132,30 @@ describe('useHoaApartments', () => {
     expect(result.current.hoa).toBeNull();
   });
 
-  it('ignores failed responses and network errors', async () => {
-    mockFetch(false);
-    const { result } = renderHook(() => useHoaApartments('hoa-1'));
-    await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(result.current.apartments).toEqual([]);
-
-    const consoleError = vi
-      .spyOn(console, 'error')
-      .mockImplementation(() => {});
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
-    const second = renderHook(() => useHoaApartments('hoa-2'));
-    await waitFor(() => expect(second.result.current.loading).toBe(false));
-    expect(consoleError).toHaveBeenCalled();
-    consoleError.mockRestore();
-  });
-
-  it('does not update state after unmount', async () => {
-    let resolve: (value: unknown) => void = () => {};
+  it('reports a failed response as a load error', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockReturnValue(new Promise((r) => (resolve = r)))
+      vi.fn().mockResolvedValue({ ok: false, status: 500 })
     );
 
-    const { result, unmount } = renderHook(() => useHoaApartments('hoa-1'));
-    unmount();
-    await act(async () => {
-      resolve({ ok: true, json: () => Promise.resolve(responseBody) });
-    });
+    const { result } = renderHook(() => useHoaApartments('hoa-1'));
 
-    expect(result.current.loading).toBe(true);
+    await waitFor(() => expect(result.current.error).not.toBeNull());
+    expect(result.current.apartments).toEqual([]);
   });
 
-  it('pushes changed query params and skips unchanged ones', async () => {
-    mockFetch();
+  it('pushes changed query params without a page and skips unchanged ones', () => {
+    stubFetch(pageBody(1, []));
+    searchParams.current = new URLSearchParams('page=2&search=17');
     const { result } = renderHook(() => useHoaApartments('hoa-1'));
-    await waitFor(() => expect(result.current.loading).toBe(false));
 
-    act(() => result.current.updateURL({ search: '', page: '1' }));
-    expect(push).toHaveBeenCalledWith('?page=1&activeOnly=true', {
-      scroll: false,
-    });
-    expect(result.current.loading).toBe(true);
+    act(() => result.current.updateURL({ search: '', activeOnly: 'true' }));
+    expect(push).toHaveBeenCalledWith('?activeOnly=true', { scroll: false });
 
     push.mockClear();
-    act(() => result.current.updateURL({ page: '2' }));
+    searchParams.current = new URLSearchParams('search=17');
+    const second = renderHook(() => useHoaApartments('hoa-1'));
+    act(() => second.result.current.updateURL({ search: '17' }));
     expect(push).not.toHaveBeenCalled();
   });
 });

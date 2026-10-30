@@ -158,14 +158,18 @@ describe('AdminUsersPage', () => {
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith(
-        '/api/admin/users?status=PENDING&page=1'
+        '/api/admin/users?status=PENDING&page=1',
+        expect.anything()
       );
     });
 
     fireEvent.click(screen.getByRole('button', { name: /administratorzy/i }));
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith('/api/admin/users?role=ADMIN&page=1');
+      expect(fetch).toHaveBeenCalledWith(
+        '/api/admin/users?role=ADMIN&page=1',
+        expect.anything()
+      );
     });
   });
 
@@ -299,12 +303,12 @@ describe('AdminUsersPage', () => {
     });
   });
 
-  it('shows pagination and moves to next page', async () => {
+  it('loads more users without page controls', async () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({
-          users: [approvedUser],
+          users: [pendingUser],
           pagination: { totalPages: 2 },
         }),
       } as Response)
@@ -319,16 +323,26 @@ describe('AdminUsersPage', () => {
     render(<AdminUsersPage />);
 
     await waitFor(() => {
-      expect(screen.getByText(/strona 1 z 2/i)).toBeInTheDocument();
+      expect(screen.getByText('pending@example.com')).toBeInTheDocument();
     });
+    expect(screen.queryByText(/strona 1 z 2/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /następna/i })
+    ).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: /następna/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'Pokaż więcej' }));
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith(
-        '/api/admin/users?status=PENDING&page=2'
-      );
+      expect(screen.getByText('approved@example.com')).toBeInTheDocument();
     });
+    expect(fetch).toHaveBeenCalledWith(
+      '/api/admin/users?status=PENDING&page=2',
+      expect.anything()
+    );
+    expect(screen.getByText('pending@example.com')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Pokaż więcej' })
+    ).not.toBeInTheDocument();
   });
 
   it('creates a user successfully and resets the dialog', async () => {
@@ -459,34 +473,13 @@ describe('AdminUsersPage', () => {
     });
   });
 
-  it('searches users and resets page to first result page', async () => {
-    vi.mocked(fetch)
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          users: [approvedUser],
-          pagination: { totalPages: 2 },
-        }),
-      } as Response)
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          users: [approvedUser],
-          pagination: { totalPages: 1 },
-        }),
-      } as Response);
-
+  it('searches users from the first result page', async () => {
     render(<AdminUsersPage />);
 
     await waitFor(() => {
-      expect(screen.getByText(/strona 1 z 2/i)).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: /następna/i }));
-
-    await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith(
-        '/api/admin/users?status=PENDING&page=2'
+        '/api/admin/users?status=PENDING&page=1',
+        expect.anything()
       );
     });
 
@@ -498,7 +491,8 @@ describe('AdminUsersPage', () => {
     await waitFor(
       () => {
         expect(fetch).toHaveBeenCalledWith(
-          '/api/admin/users?status=PENDING&page=1&search=anna'
+          '/api/admin/users?status=PENDING&page=1&search=anna',
+          expect.anything()
         );
       },
       { timeout: 1500 }

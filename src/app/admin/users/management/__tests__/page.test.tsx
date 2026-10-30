@@ -561,7 +561,7 @@ describe('BulkCreateUsersPage', () => {
     expect(infoBadges).toHaveLength(0);
   });
 
-  describe('pagination', () => {
+  describe('infinite scroll', () => {
     const page = (hoas: typeof mockHoas, number: number, totalPages = 2) =>
       ({
         ok: true,
@@ -578,11 +578,11 @@ describe('BulkCreateUsersPage', () => {
         expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
       });
       expect(
-        screen.queryByRole('button', { name: /pokaż więcej wspólnot/i })
+        screen.queryByRole('button', { name: 'Pokaż więcej' })
       ).not.toBeInTheDocument();
     });
 
-    it('appends the next page of HOAs and hides the button on the last page', async () => {
+    it('appends the next page of HOAs and keeps the selection', async () => {
       const user = userEvent.setup();
       vi.mocked(fetch)
         .mockResolvedValueOnce(page([mockHoas[0]], 1))
@@ -590,20 +590,23 @@ describe('BulkCreateUsersPage', () => {
 
       render(<BulkCreateUsersPage />);
 
-      await user.click(
-        await screen.findByRole('button', { name: /pokaż więcej wspólnot/i })
-      );
+      await screen.findByText('Wspólnota Alfa');
+      expandHoa('Wspólnota Alfa');
+      fireEvent.click(screen.getByLabelText(/mieszkanie 10/i));
+      expect(screen.getByText(/Wybrano 1 z 2/i)).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Pokaż więcej' }));
 
       await waitFor(() => {
         expect(screen.getByText('Wspólnota Beta')).toBeInTheDocument();
       });
-      expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
+      expect(screen.getByText(/Wybrano 1 z 3/i)).toBeInTheDocument();
       expect(vi.mocked(fetch).mock.calls.map(([url]) => url)).toEqual([
         '/api/admin/unassigned-apartments?mode=creatable&page=1',
         '/api/admin/unassigned-apartments?mode=creatable&page=2',
       ]);
       expect(
-        screen.queryByRole('button', { name: /pokaż więcej wspólnot/i })
+        screen.queryByRole('button', { name: 'Pokaż więcej' })
       ).not.toBeInTheDocument();
     });
 
@@ -619,11 +622,30 @@ describe('BulkCreateUsersPage', () => {
       render(<BulkCreateUsersPage />);
 
       await user.click(
-        await screen.findByRole('button', { name: /pokaż więcej wspólnot/i })
+        await screen.findByRole('button', { name: 'Pokaż więcej' })
       );
 
-      expect(await screen.findByText('Brak uprawnień')).toBeInTheDocument();
+      expect(
+        await screen.findByText('Nie udało się wczytać kolejnych pozycji')
+      ).toBeInTheDocument();
       expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
+    });
+
+    it('offers a retry when the first page fails', async () => {
+      vi.mocked(fetch)
+        .mockResolvedValueOnce({
+          ok: false,
+          json: async () => ({ error: 'Brak uprawnień' }),
+        } as Response)
+        .mockResolvedValueOnce(page([mockHoas[0]], 1, 1));
+
+      render(<BulkCreateUsersPage />);
+
+      fireEvent.click(
+        await screen.findByRole('button', { name: 'Pokaż więcej' })
+      );
+
+      expect(await screen.findByText('Wspólnota Alfa')).toBeInTheDocument();
     });
   });
 

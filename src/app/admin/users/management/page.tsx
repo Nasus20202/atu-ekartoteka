@@ -42,9 +42,8 @@ export default function BulkCreateUsersPage() {
     loading,
     loadingMore,
     error: loadError,
-    reset,
-    reload,
     loadMore,
+    refresh,
   } = useUnassignedHoas(mode);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<string | null>(null);
@@ -65,7 +64,6 @@ export default function BulkCreateUsersPage() {
   } = useHoaSelection(hoas);
 
   const handleModeChange = (nextMode: string) => {
-    reset();
     setSelectedIds(new Set());
     setResult(null);
     setOperationError(null);
@@ -80,7 +78,7 @@ export default function BulkCreateUsersPage() {
     if (outcome.error === undefined) {
       setResult(formatBulkResult(operation, outcome.data));
       setSelectedIds(new Set());
-      await reload(operation);
+      await refresh();
     } else {
       setOperationError(outcome.error);
     }
@@ -97,7 +95,8 @@ export default function BulkCreateUsersPage() {
     hoas,
     hasMore,
     loadingMore,
-    onLoadMore: () => void loadMore(),
+    loadError,
+    onLoadMore: loadMore,
     allIds,
     selectedIds,
     submitting,
@@ -140,10 +139,10 @@ export default function BulkCreateUsersPage() {
             <AlertDescription>{result}</AlertDescription>
           </Alert>
         )}
-        {(operationError ?? loadError) && (
+        {operationError && (
           <Alert variant="destructive">
             <XCircle className="h-4 w-4" />
-            <AlertDescription>{operationError ?? loadError}</AlertDescription>
+            <AlertDescription>{operationError}</AlertDescription>
           </Alert>
         )}
 

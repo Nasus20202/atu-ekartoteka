@@ -1,74 +1,65 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import type { UserFilter } from '@/app/admin/users/user-filters';
 import { buildUsersQuery } from '@/app/admin/users/utils';
+import {
+  type PageFetcher,
+  useInfiniteList,
+} from '@/lib/hooks/use-infinite-list';
 import { AccountStatus } from '@/lib/types';
 import type { UserDto } from '@/lib/types/dto/user-dto';
 
 const SEARCH_DEBOUNCE_MS = 300;
 
-/** Paged, filtered and debounced-search list of users for the admin page. */
+const getUserId = (user: UserDto) => user.id;
+
+/** Infinitely scrolled, filtered and debounced-search list of users. */
 export function useAdminUsers() {
-  const latestUsersRequestId = useRef(0);
-  const [users, setUsers] = useState<UserDto[]>([]);
-  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<UserFilter>(AccountStatus.PENDING);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [userSearch, setUserSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
-  const fetchUsers = useCallback(async () => {
-    const requestId = ++latestUsersRequestId.current;
-    setLoading(true);
-
-    try {
+  const fetchPage = useCallback<PageFetcher<UserDto>>(
+    async (page, signal) => {
       const query = buildUsersQuery(filter, page, debouncedSearch);
-      const response = await fetch(`/api/admin/users?${query}`);
+      const response = await fetch(`/api/admin/users?${query}`, { signal });
+      if (!response.ok) {
+        throw new Error(`Users request failed: ${response.status}`);
+      }
       const data = await response.json();
+      return {
+        items: data.users,
+        page,
+        totalPages: data.pagination.totalPages,
+        total: data.pagination.total,
+      };
+    },
+    [debouncedSearch, filter]
+  );
 
-      if (response.ok && requestId === latestUsersRequestId.current) {
-        setUsers(data.users);
-        setTotalPages(data.pagination?.totalPages ?? 1);
-      }
-    } catch (error) {
-      console.error('Failed to fetch users:', error);
-    } finally {
-      if (requestId === latestUsersRequestId.current) {
-        setLoading(false);
-      }
-    }
-  }, [debouncedSearch, filter, page]);
-
-  useEffect(() => {
-    async function loadUsers() {
-      await fetchUsers();
-    }
-
-    void loadUsers();
-  }, [fetchUsers]);
+  const list = useInfiniteList({
+    fetchPage,
+    queryKey: `${filter}|${debouncedSearch}`,
+    getId: getUserId,
+  });
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(userSearch);
-      setPage(1);
-    }, SEARCH_DEBOUNCE_MS);
+    const timer = setTimeout(
+      () => setDebouncedSearch(userSearch),
+      SEARCH_DEBOUNCE_MS
+    );
 
     return () => clearTimeout(timer);
   }, [userSearch]);
 
   return {
-    users,
-    loading,
+    ...list,
+    users: list.items,
     filter,
     setFilter,
-    page,
-    setPage,
-    totalPages,
     userSearch,
     setUserSearch,
-    fetchUsers,
   };
 }
