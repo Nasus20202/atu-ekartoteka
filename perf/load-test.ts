@@ -1,3 +1,10 @@
+import type {
+  Options,
+  RampingArrivalRateScenario,
+  RampingVUsScenario,
+  Stage,
+} from 'k6/options';
+
 import {
   ADMIN_VUS,
   LOAD_STEPS,
@@ -8,17 +15,17 @@ import {
   STEP_HOLD,
   STEP_RAMP,
   USER_VUS,
-} from './lib/config.js';
-import { buildSummary } from './lib/summary.js';
-import { THRESHOLDS } from './lib/thresholds.js';
+} from './lib/config.ts';
+import { buildSummary, type SummaryData } from './lib/summary.ts';
+import { THRESHOLDS } from './lib/thresholds.ts';
 
-export { adminScenario } from './scenarios/admin.js';
-export { loginScenario } from './scenarios/login.js';
-export { publicScenario } from './scenarios/public.js';
-export { userScenario } from './scenarios/user.js';
+export { adminScenario } from './scenarios/admin.ts';
+export { loginScenario } from './scenarios/login.ts';
+export { publicScenario } from './scenarios/public.ts';
+export { userScenario } from './scenarios/user.ts';
 
 // Every scenario climbs through the same steps to its peak, holds, then drains
-function stagesTo(peak) {
+function stagesTo(peak: number): Stage[] {
   const steps = LOAD_STEPS.flatMap((share) => {
     const target = Math.max(1, Math.round(peak * share));
     return [
@@ -33,7 +40,11 @@ function stagesTo(peak) {
   ];
 }
 
-function arrivalRate(exec, peak, vusPerIteration) {
+function arrivalRate(
+  exec: string,
+  peak: number,
+  vusPerIteration: number
+): RampingArrivalRateScenario {
   return {
     executor: 'ramping-arrival-rate',
     exec,
@@ -45,11 +56,11 @@ function arrivalRate(exec, peak, vusPerIteration) {
   };
 }
 
-function rampingVus(exec, peak) {
+function rampingVus(exec: string, peak: number): RampingVUsScenario {
   return { executor: 'ramping-vus', exec, startVUs: 0, stages: stagesTo(peak) };
 }
 
-export const options = {
+export const options: Options = {
   noCookiesReset: true,
   summaryTrendStats: ['avg', 'med', 'p(90)', 'p(95)', 'p(99)', 'max'],
   thresholds: THRESHOLDS,
@@ -61,7 +72,7 @@ export const options = {
   },
 };
 
-export function handleSummary(data) {
+export function handleSummary(data: SummaryData) {
   return buildSummary(data, {
     'Users (VUs)': USER_VUS,
     'Admins (VUs)': ADMIN_VUS,

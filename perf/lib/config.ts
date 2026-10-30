@@ -1,7 +1,12 @@
+export interface Credentials {
+  email: string;
+  password: string;
+}
+
 export const BASE_URL = __ENV.PERF_BASE_URL || 'http://localhost:3000';
 
 // Must match e2e/utils/test-credentials.ts (seeded by e2e/utils/seed-test-data.ts)
-export const ADMIN = {
+export const ADMIN: Credentials = {
   email: 'admin@e2e-test.com',
   password: 'AdminPassword123!',
 };
@@ -10,7 +15,7 @@ export const ADMIN = {
 export const TENANT_PASSWORD = 'PerfPassword123!';
 export const TENANT_COUNT = Number(__ENV.PERF_TENANTS || 1000);
 export const APARTMENT_COUNT = Number(__ENV.PERF_APARTMENTS || 10000);
-export const PAYMENT_YEARS = Number(__ENV.PERF_PAYMENT_YEARS || 3);
+export const PAYMENT_YEARS = Number(__ENV.PERF_PAYMENT_YEARS || 6);
 export const HOA_COUNT = Number(__ENV.PERF_HOAS || 100);
 export const ADMIN_PAGE_SIZE = 20;
 export const UNASSIGNED_HOAS_PER_PAGE = 10;

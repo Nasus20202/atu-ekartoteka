@@ -6,9 +6,9 @@ Guards response times and error rates under concurrent load. k6 scenarios run in
 
 ## Stack
 
-- **Load tool**: k6 (`perf/load-test.js`), version pinned in `.github/workflows/test-and-build.yaml`
+- **Load tool**: k6 (`perf/load-test.ts`), version pinned in `.github/workflows/test-and-build.yaml`
 - **Target**: the Docker image started with `docker-compose.e2e.yaml` and seeded with `e2e/utils/seed-test-data.ts` (admin account) and `perf/seed/seed-perf-data.ts` (production-sized dataset)
-- **Configuration**: peak load and timing in `perf/lib/config.js`, latency limits in `perf/lib/thresholds.js`
+- **Configuration**: peak load and timing in `perf/lib/config.ts`, latency limits in `perf/lib/thresholds.ts`
 
 ---
 
@@ -52,7 +52,13 @@ The load test SHALL run against a dataset of production scale, so query cost ref
 
 - **GIVEN** the default seed
 - **WHEN** `perf/seed/seed-perf-data.ts` runs
-- **THEN** it creates 100 HOAs with 100 apartments each, 1000 tenants owning evenly spaced apartments, and 200 charges, 3 notifications and 3 payment years per apartment
+- **THEN** it creates 100 HOAs with 100 apartments each, 1000 tenants owning evenly spaced apartments, and 200 charges, 3 notifications and 6 payment years per apartment
+
+#### Scenario: Fast loading
+
+- **GIVEN** the default seed
+- **WHEN** it loads the charges
+- **THEN** it inserts them over parallel connections, so the 2 million rows take well under a minute
 
 #### Scenario: Overridable volume
 
@@ -110,7 +116,7 @@ The run SHALL fail when the app returns errors or responds slower than the agree
 
 #### Scenario: Limits follow measurements
 
-- **GIVEN** the limits in `perf/lib/thresholds.js`
+- **GIVEN** the limits in `perf/lib/thresholds.ts`
 - **WHEN** they are set or changed
 - **THEN** each sits at roughly three times the value measured in CI at peak load, so a real regression fails while a slower runner does not
 

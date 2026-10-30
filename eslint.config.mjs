@@ -87,12 +87,9 @@ const eslintConfig = defineConfig([
       'playwright/no-force-option': 'warn',
     },
   },
-  // Performance tests - k6 scripts run outside Node.js and the @ alias
+  // Performance tests - k6 scripts and their seed run outside the @ alias
   {
-    files: ['perf/**/*.js'],
-    languageOptions: {
-      globals: { __ENV: 'readonly' },
-    },
+    files: ['perf/**/*.ts'],
     rules: {
       'no-restricted-imports': 'off',
     },

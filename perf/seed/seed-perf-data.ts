@@ -12,9 +12,11 @@ import * as path from 'path';
 import * as pg from 'pg';
 import { fileURLToPath } from 'url';
 
+import { seedCharges } from './seed-charges';
+
 const SQL_DIR = fileURLToPath(new URL('./sql', import.meta.url));
 const BCRYPT_COST = 10;
-// Must match TENANT_PASSWORD in perf/lib/config.js
+// Must match TENANT_PASSWORD in perf/lib/config.ts
 const PERF_PASSWORD = 'PerfPassword123!';
 
 const HOAS = Number(process.env.PERF_SEED_HOAS || 100);
@@ -23,7 +25,7 @@ const TENANTS = Number(process.env.PERF_SEED_TENANTS || 1000);
 const CHARGE_MONTHS = Number(process.env.PERF_SEED_CHARGE_MONTHS || 40);
 const CHARGE_LINES_PER_MONTH = Number(process.env.PERF_SEED_CHARGE_LINES || 5);
 const NOTIFICATION_LINES = Number(process.env.PERF_SEED_NOTIFICATIONS || 3);
-const PAYMENT_YEARS = Number(process.env.PERF_SEED_PAYMENT_YEARS || 3);
+const PAYMENT_YEARS = Number(process.env.PERF_SEED_PAYMENT_YEARS || 6);
 
 const sql = (name: string) =>
   fs.readFileSync(path.join(SQL_DIR, `${name}.sql`), 'utf-8');
@@ -38,7 +40,6 @@ export async function seedPerfData(connectionString?: string) {
     ['hoas', [HOAS]],
     ['users', [TENANTS, passwordHash]],
     ['apartments', [HOAS, APARTMENTS_PER_HOA, TENANTS]],
-    ['charges', [apartments, CHARGE_MONTHS, CHARGE_LINES_PER_MONTH]],
     ['notifications', [apartments, NOTIFICATION_LINES]],
     ['payments', [apartments, PAYMENT_YEARS]],
   ];
@@ -53,6 +54,15 @@ export async function seedPerfData(connectionString?: string) {
         `  - ${name}: ${result.rowCount} rows in ${Date.now() - started} ms`
       );
     }
+    const chargesStarted = Date.now();
+    const rows = await seedCharges(dbUrl, sql('charges'), {
+      apartments,
+      months: CHARGE_MONTHS,
+      linesPerMonth: CHARGE_LINES_PER_MONTH,
+    });
+    console.log(
+      `  - charges: ${rows} rows in ${Date.now() - chargesStarted} ms`
+    );
     await client.query('ANALYZE');
   } finally {
     await client.end();

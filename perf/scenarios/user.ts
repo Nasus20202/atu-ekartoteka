@@ -1,13 +1,13 @@
 import { sleep } from 'k6';
 
-import { ensureLoggedIn } from '../lib/auth.js';
-import { THINK_TIME_SECONDS } from '../lib/config.js';
-import { getPage } from '../lib/requests.js';
+import { ensureLoggedIn } from '../lib/auth.ts';
+import { THINK_TIME_SECONDS } from '../lib/config.ts';
+import { getPage } from '../lib/requests.ts';
 import {
   apartmentIdOfTenant,
   randomPaymentYear,
   tenantForVu,
-} from '../lib/targets.js';
+} from '../lib/targets.ts';
 
 export function userScenario() {
   const tenant = tenantForVu();
