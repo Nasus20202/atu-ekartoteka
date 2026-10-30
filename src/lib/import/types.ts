@@ -8,10 +8,11 @@ export interface ImportOptions {
 }
 
 export interface ImportFileGroup {
-  lokFile?: File;
-  chargesFile?: File;
-  notificationsFile?: File;
-  paymentsFile?: File;
+  // Several files of one kind (e.g. wplaty1.txt, wplaty2.txt) are merged
+  lokFiles?: File[];
+  chargesFiles?: File[];
+  notificationsFiles?: File[];
+  paymentsFiles?: File[];
   // Per-data-type WMB snapshot date files
   apartmentsWmbFile?: File;
   chargesWmbFile?: File;

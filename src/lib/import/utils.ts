@@ -2,12 +2,26 @@ import { EntityStats, ImportError, ImportFileGroup } from '@/lib/import/types';
 import { decodeBuffer } from '@/lib/parsers/parser-utils';
 import { getErrorMessage } from '@/lib/utils/error-message';
 
-export const KNOWN_FILE_NAMES = [
-  'lok.txt',
-  'nal_czynsz.txt',
-  'pow_czynsz.txt',
-  'wplaty.txt',
+type TxtFileField = keyof Pick<
+  ImportFileGroup,
+  'lokFiles' | 'chargesFiles' | 'notificationsFiles' | 'paymentsFiles'
+>;
+
+const TXT_EXTENSION = '.txt';
+
+// Exports may carry a suffix, e.g. wplaty_2026.txt or nal_czynsz_test.txt
+const TXT_FILE_PREFIXES: [string, TxtFileField][] = [
+  ['nal_czynsz', 'chargesFiles'],
+  ['pow_czynsz', 'notificationsFiles'],
+  ['wplaty', 'paymentsFiles'],
+  ['lok', 'lokFiles'],
 ];
+
+export function getTxtFileField(fileName: string): TxtFileField | undefined {
+  const name = fileName.toLowerCase();
+  if (!name.endsWith(TXT_EXTENSION)) return undefined;
+  return TXT_FILE_PREFIXES.find(([prefix]) => name.startsWith(prefix))?.[1];
+}
 
 const WMB_FILE_MAP: Record<
   string,
@@ -26,7 +40,7 @@ export function createEmptyStats(): EntityStats {
 }
 
 export function isKnownFile(fileName: string): boolean {
-  return KNOWN_FILE_NAMES.includes(fileName) || fileName.endsWith('.wmb');
+  return getTxtFileField(fileName) !== undefined || fileName.endsWith('.wmb');
 }
 
 export async function parseFileToBuffer(file: File): Promise<Buffer> {
@@ -63,29 +77,13 @@ export function groupFilesByHOA(
       const hoaId = pathParts[pathParts.length - 2];
       const entry = filesByHOA.get(hoaId) ?? {};
 
+      const txtField = getTxtFileField(fileName);
       if (fileName in WMB_FILE_MAP) {
-        const field = WMB_FILE_MAP[fileName];
-        entry[field] = file;
-      } else {
-        switch (fileName) {
-          case 'lok.txt':
-            entry.lokFile = file;
-            break;
-          case 'nal_czynsz.txt':
-            entry.chargesFile = file;
-            break;
-          case 'pow_czynsz.txt':
-            entry.notificationsFile = file;
-            break;
-          case 'wplaty.txt':
-            entry.paymentsFile = file;
-            break;
-          default:
-            if (!isKnownFile(fileName)) {
-              throw new Error(`Nieznany plik: ${fileName}`);
-            }
-            break;
-        }
+        entry[WMB_FILE_MAP[fileName]] = file;
+      } else if (txtField) {
+        entry[txtField] = [...(entry[txtField] ?? []), file];
+      } else if (!isKnownFile(fileName)) {
+        throw new Error(`Nieznany plik: ${fileName}`);
       }
 
       filesByHOA.set(hoaId, entry);

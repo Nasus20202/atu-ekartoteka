@@ -11,10 +11,16 @@ import {
  * Returns false when the import must stop before the transaction.
  */
 export function validateHoaFiles(
-  { chargeEntries, paymentData }: ParsedHoaFiles,
+  { chargeEntries, paymentData, duplicateErrors }: ParsedHoaFiles,
   result: HOAImportResult,
   options: ImportOptions
 ): boolean {
+  // Merged files must not repeat records, even when validation is skipped
+  if (duplicateErrors.length > 0) {
+    result.errors.push(...duplicateErrors);
+    return false;
+  }
+
   if (chargeEntries && !options.skipValidation) {
     const nalWarnings = validateNalCzynsz(chargeEntries);
     if (nalWarnings.length > 0) {
