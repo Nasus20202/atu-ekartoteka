@@ -50,37 +50,47 @@ describe('ApartmentRow', () => {
     expect(screen.getByText('jan@example.com')).toBeInTheDocument();
   });
 
-  it('asks before selecting an inactive apartment', async () => {
+  it.each([
+    ['row text', () => screen.getByText('Nieaktywny')],
+    ['checkbox', () => screen.getByRole('checkbox')],
+  ])(
+    'asks before selecting an inactive apartment via its %s',
+    async (_, getTarget) => {
+      const onInactiveClick = vi.fn();
+      const onToggle = vi.fn();
+      render(
+        <ApartmentRow
+          apt={makeApt({ isActive: false })}
+          selected={false}
+          onToggle={onToggle}
+          onInactiveClick={onInactiveClick}
+        />
+      );
+
+      await userEvent.click(getTarget());
+
+      expect(onInactiveClick).toHaveBeenCalledOnce();
+      expect(onToggle).not.toHaveBeenCalled();
+      expect(screen.getByRole('checkbox')).not.toBeChecked();
+    }
+  );
+
+  it('deselects a selected inactive apartment without asking', async () => {
     const onInactiveClick = vi.fn();
     const onToggle = vi.fn();
     render(
       <ApartmentRow
         apt={makeApt({ isActive: false })}
-        selected={false}
+        selected
         onToggle={onToggle}
         onInactiveClick={onInactiveClick}
       />
     );
 
-    await userEvent.click(screen.getByText('Nieaktywny'));
+    await userEvent.click(screen.getByRole('checkbox'));
 
-    expect(onInactiveClick).toHaveBeenCalledOnce();
-    expect(onToggle).not.toHaveBeenCalled();
-    expect(screen.getByRole('checkbox')).toBeDisabled();
-  });
-
-  it('keeps a selected inactive apartment enabled', () => {
-    render(
-      <ApartmentRow
-        apt={makeApt({ isActive: false })}
-        selected
-        onToggle={vi.fn()}
-        onInactiveClick={vi.fn()}
-      />
-    );
-
-    expect(screen.getByRole('checkbox')).toBeEnabled();
-    expect(screen.getByRole('checkbox')).toBeChecked();
+    expect(onToggle).toHaveBeenCalledOnce();
+    expect(onInactiveClick).not.toHaveBeenCalled();
   });
 });
 
@@ -90,60 +100,51 @@ describe.each(groupComponents)('%s', (_, GroupComponent) => {
     makeApt({ id: 'b' }),
     makeApt({ id: 'c' }),
   ];
+  const inactive = makeApt({ id: 'b', isActive: false });
 
-  it('selects the whole group', async () => {
-    const onSelectIds = vi.fn();
+  async function clickGroupCheckbox(
+    apartments: UnassignedApartment[],
+    selected: string[] = []
+  ) {
+    const handlers = {
+      onToggleApartment: vi.fn(),
+      onSelectIds: vi.fn(),
+      onInactiveClick: vi.fn(),
+    };
     render(
       <GroupComponent
-        group={group}
-        selectedIds={new Set(['a'])}
-        onToggleApartment={vi.fn()}
-        onSelectIds={onSelectIds}
-        onInactiveClick={vi.fn()}
+        group={apartments}
+        selectedIds={new Set(selected)}
+        {...handlers}
       />
     );
-
     await userEvent.click(screen.getAllByRole('checkbox')[0]);
+    return handlers;
+  }
 
+  it('selects the whole group', async () => {
+    const { onSelectIds } = await clickGroupCheckbox(group, ['a']);
     expect(onSelectIds).toHaveBeenCalledWith(['a', 'b', 'c'], true);
   });
 
   it('clears a fully selected group', async () => {
-    const onSelectIds = vi.fn();
-    render(
-      <GroupComponent
-        group={group}
-        selectedIds={new Set(['a', 'b', 'c'])}
-        onToggleApartment={vi.fn()}
-        onSelectIds={onSelectIds}
-        onInactiveClick={vi.fn()}
-      />
-    );
-
-    await userEvent.click(screen.getAllByRole('checkbox')[0]);
-
+    const { onSelectIds } = await clickGroupCheckbox(group, ['a', 'b', 'c']);
     expect(onSelectIds).toHaveBeenCalledWith(['a', 'b', 'c'], false);
   });
 
-  it('asks about an inactive member before selecting the group', async () => {
-    const onInactiveClick = vi.fn();
-    const onSelectIds = vi.fn();
-    const inactive = makeApt({ id: 'b', isActive: false });
-    render(
-      <GroupComponent
-        group={[group[0], inactive, group[2]]}
-        selectedIds={new Set()}
-        onToggleApartment={vi.fn()}
-        onSelectIds={onSelectIds}
-        onInactiveClick={onInactiveClick}
-      />
-    );
+  it('selects only active members of a group with an inactive one', async () => {
+    const { onSelectIds, onInactiveClick } = await clickGroupCheckbox([
+      group[0],
+      inactive,
+      group[2],
+    ]);
+    expect(onSelectIds).toHaveBeenCalledWith(['a', 'c'], true);
+    expect(onInactiveClick).not.toHaveBeenCalled();
+  });
 
-    await userEvent.click(screen.getAllByRole('checkbox')[0]);
-    await userEvent.click(screen.getByText('Nieaktywny'));
-
-    expect(onInactiveClick.mock.calls).toEqual([[inactive], [inactive]]);
-    expect(onSelectIds).not.toHaveBeenCalled();
+  it('asks before selecting a group with only inactive members', async () => {
+    const { onInactiveClick } = await clickGroupCheckbox([inactive]);
+    expect(onInactiveClick).toHaveBeenCalledWith(inactive);
   });
 
   it('toggles a single member', async () => {

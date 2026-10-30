@@ -16,6 +16,11 @@ export function aptLabel(apt: UnassignedApartment): string {
   return `${apt.building ? `Bud. ${apt.building}, ` : ''}Mieszkanie ${apt.number}`;
 }
 
+// Bulk selection skips inactive apartments; they need an explicit confirmation
+export function getActiveIds(apartments: UnassignedApartment[]): string[] {
+  return apartments.filter((a) => a.isActive).map((a) => a.id);
+}
+
 export function addressKey(apt: UnassignedApartment): string {
   return `${apt.building ?? ''}__${apt.number}`;
 }
@@ -34,18 +39,20 @@ export function ApartmentRow({
   onInactiveClick,
 }: ApartmentRowProps) {
   const inactive = !apt.isActive;
+  // Checkbox clicks bubble here too, so one handler covers the whole row
+  const needsConfirmation = inactive && !selected;
   return (
     <label
       htmlFor={`apt-${apt.id}`}
       className={[
         'flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors hover:bg-muted',
         selected ? 'border-primary bg-primary/5' : '',
-        inactive && !selected ? 'opacity-50' : '',
+        needsConfirmation ? 'opacity-50' : '',
       ]
         .filter(Boolean)
         .join(' ')}
       onClick={
-        inactive && !selected
+        needsConfirmation
           ? (e) => {
               e.preventDefault();
               onInactiveClick();
@@ -56,8 +63,7 @@ export function ApartmentRow({
       <Checkbox
         id={`apt-${apt.id}`}
         checked={selected}
-        onCheckedChange={inactive ? undefined : onToggle}
-        disabled={inactive && !selected}
+        onCheckedChange={needsConfirmation ? undefined : onToggle}
         className="mt-0.5"
       />
       <div className="flex-1 text-sm">

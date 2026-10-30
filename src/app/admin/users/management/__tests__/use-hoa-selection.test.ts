@@ -92,6 +92,30 @@ describe('useHoaSelection', () => {
     });
   });
 
+  describe('inactive apartments', () => {
+    function makeHoaWithInactive() {
+      const hoa = makeHoa('hoa1', ['apt1', 'apt2']);
+      hoa.apartments[1].isActive = false;
+      return hoa;
+    }
+
+    it('toggleHoa selects only active apartments', () => {
+      const hoa = makeHoaWithInactive();
+      const { result } = renderHook(() => useHoaSelection([hoa]));
+      act(() => result.current.toggleHoa(hoa));
+      expect([...result.current.selectedIds]).toEqual(['apt1']);
+      expect(result.current.isHoaSelected(hoa)).toBe(true);
+    });
+
+    it('toggleHoa clears a manually selected inactive apartment', () => {
+      const hoa = makeHoaWithInactive();
+      const { result } = renderHook(() => useHoaSelection([hoa]));
+      act(() => result.current.selectIds(['apt1', 'apt2'], true));
+      act(() => result.current.toggleHoa(hoa));
+      expect(result.current.selectedIds.size).toBe(0);
+    });
+  });
+
   describe('isHoaSelected / isHoaIndeterminate', () => {
     it('isHoaSelected returns true when all apartments in HOA are selected', () => {
       const hoa = makeHoa('hoa1', ['apt1', 'apt2']);

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 
 import {
   ApartmentRow,
+  getActiveIds,
   type UnassignedApartment,
 } from '@/app/admin/users/management/apartment-row';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -46,17 +47,20 @@ export function SelectableApartmentGroup({
   header,
 }: SelectableApartmentGroupProps) {
   const ids = group.map((a) => a.id);
-  const allSelected = ids.every((id) => selectedIds.has(id));
+  const activeIds = getActiveIds(group);
+  const allSelected =
+    activeIds.length > 0 && activeIds.every((id) => selectedIds.has(id));
   const someSelected = ids.some((id) => selectedIds.has(id));
-  const firstInactive = group.find((a) => !a.isActive);
   const classes = TONE_CLASSES[tone];
 
   function handleGroupToggle() {
-    if (firstInactive && !allSelected) {
-      onInactiveClick(firstInactive);
-      return;
+    if (allSelected) {
+      onSelectIds(ids, false);
+    } else if (activeIds.length > 0) {
+      onSelectIds(activeIds, true);
+    } else {
+      onInactiveClick(group[0]);
     }
-    onSelectIds(ids, !allSelected);
   }
 
   return (
