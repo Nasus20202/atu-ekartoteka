@@ -14,6 +14,7 @@ import { ChargesSummaryCard } from '@/components/dashboard/charges-summary-card'
 import { NotificationsSidebar } from '@/components/dashboard/notifications-sidebar';
 import { PaymentsSummaryCard } from '@/components/dashboard/payments-summary-card';
 import { findUserWithApartmentsCached } from '@/lib/queries/users/find-user-with-apartments';
+import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
 import { AccountStatus } from '@/lib/types';
 import { getRequestNow } from '@/lib/utils/request-now';
 import { sumDecimals } from '@/lib/utils/sum';
@@ -25,7 +26,11 @@ export default async function DashboardPage() {
     redirect('/login');
   }
 
-  const userData = await findUserWithApartmentsCached(session.user.id);
+  const startYear = await getTenantHistoryStartYear();
+  const userData = await findUserWithApartmentsCached(
+    session.user.id,
+    startYear
+  );
 
   if (!userData) {
     redirect('/login');

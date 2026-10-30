@@ -1,12 +1,18 @@
 import { cache } from 'react';
 
 import { prisma } from '@/lib/database/prisma';
+import { chargesFromYear } from '@/lib/utils/history-window';
 
-export function findApartmentWithPaymentsByYear(
+export async function findApartmentWithPaymentsByYear(
   apartmentId: string,
   userId: string,
-  year: number
+  year: number,
+  startYear: number
 ) {
+  if (year < startYear) {
+    return null;
+  }
+
   return prisma.apartment.findFirst({
     where: {
       id: apartmentId,
@@ -16,7 +22,9 @@ export function findApartmentWithPaymentsByYear(
       payments: {
         where: { year },
       },
-      charges: true,
+      charges: {
+        where: chargesFromYear(startYear),
+      },
       homeownersAssociation: true,
     },
   });

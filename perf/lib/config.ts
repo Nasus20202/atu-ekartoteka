@@ -16,6 +16,9 @@ export const TENANT_PASSWORD = 'PerfPassword123!';
 export const TENANT_COUNT = Number(__ENV.PERF_TENANTS || 1000);
 export const APARTMENT_COUNT = Number(__ENV.PERF_APARTMENTS || 10000);
 export const PAYMENT_YEARS = Number(__ENV.PERF_PAYMENT_YEARS || 6);
+export const TENANT_HISTORY_YEARS_BACK = Number(
+  __ENV.PERF_TENANT_HISTORY_YEARS_BACK || 5
+);
 export const HOA_COUNT = Number(__ENV.PERF_HOAS || 100);
 export const ADMIN_PAGE_SIZE = 20;
 export const UNASSIGNED_HOAS_PER_PAGE = 10;
