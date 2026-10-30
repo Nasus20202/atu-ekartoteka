@@ -19,7 +19,7 @@ export function findUserWithApartments(id: string, startYear: number) {
             orderBy: { lineNo: 'asc' },
           },
           homeownersAssociation: {
-            select: { id: true, name: true, header: true },
+            select: { id: true, name: true, header: true, footer: true },
           },
           payments: {
             where: paymentsFromYear(startYear),

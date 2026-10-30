@@ -50,7 +50,6 @@ vi.mock('@/components/ui/collapsible', () => ({
 const CURRENT_YEAR = 2025;
 
 const baseProps = {
-  currentYear: CURRENT_YEAR,
   apartmentId: 'apt-1',
   apartmentLabel: 'A/101',
   hoaName: 'Wspólnota Testowa',
@@ -179,7 +178,7 @@ describe('AdminPaymentsList', () => {
     expect(screen.getByTestId('payment-monthly-chart')).toBeInTheDocument();
   });
 
-  it('colours balances by sign and opens the current year', () => {
+  it('colours balances by sign and opens the newest year', () => {
     const currentYear = CURRENT_YEAR;
     render(
       <AdminPaymentsList
@@ -212,5 +211,21 @@ describe('AdminPaymentsList', () => {
       'text-green-600'
     );
     expect(document.querySelectorAll('.rotate-180')).toHaveLength(1);
+  });
+
+  it('opens the newest stored year even when it is not the calendar year', () => {
+    render(
+      <AdminPaymentsList
+        {...baseProps}
+        payments={[
+          createMockPayment({ id: 'p-older', year: CURRENT_YEAR - 2 }),
+          createMockPayment({ id: 'p-newest', year: CURRENT_YEAR - 1 }),
+        ]}
+      />
+    );
+
+    const chevrons = document.querySelectorAll('svg.lucide-chevron-down');
+    expect(chevrons[0]).toHaveClass('rotate-180');
+    expect(chevrons[1]).not.toHaveClass('rotate-180');
   });
 });

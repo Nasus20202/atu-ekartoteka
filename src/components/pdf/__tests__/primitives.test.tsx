@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import {
   DocumentPage,
   PdfHeader,
+  PdfNoteText,
   SectionTitle,
 } from '@/components/pdf/primitives';
 
@@ -37,5 +38,11 @@ describe('PDF primitives', () => {
     const title = SectionTitle({ children: 'Podsumowanie' }) as WithChildren;
 
     expect(title.props.children).toBe('Podsumowanie');
+  });
+
+  it('renders note text unchanged, keeping line breaks', () => {
+    const note = PdfNoteText({ children: 'Linia 1\nLinia 2' }) as WithChildren;
+
+    expect(note.props.children).toBe('Linia 1\nLinia 2');
   });
 });
