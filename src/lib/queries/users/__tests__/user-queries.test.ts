@@ -72,6 +72,12 @@ describe('user queries', () => {
       where: { year: { gte: 2025 } },
       orderBy: { year: 'desc' },
     });
+    expect(include.apartments.include.homeownersAssociation.select).toEqual({
+      id: true,
+      name: true,
+      header: true,
+      footer: true,
+    });
     expect(include.apartments.include.charges.where).toEqual({
       period: { gte: '202501' },
     });

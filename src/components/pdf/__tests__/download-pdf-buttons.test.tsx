@@ -3,6 +3,10 @@ import type { ReactElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DownloadChargesPdfButton } from '@/components/pdf/download-charges-pdf-button';
+import {
+  DownloadNoticePdfButton,
+  toNoticePdfApartments,
+} from '@/components/pdf/download-notice-pdf-button';
 import { DownloadPaymentPdfButton } from '@/components/pdf/download-payment-pdf-button';
 import type { PdfDownloadButtonProps } from '@/components/pdf/pdf-download-button';
 import {
@@ -32,6 +36,10 @@ vi.mock('@/components/pdf/charge-pdf-document', () => ({
 
 vi.mock('@/components/pdf/payment-pdf-document', () => ({
   PaymentPdfDocument: () => null,
+}));
+
+vi.mock('@/components/pdf/notice-pdf-document', () => ({
+  NoticePdfDocument: () => null,
 }));
 
 function renderedDocumentProps() {
@@ -130,5 +138,63 @@ describe('PDF download buttons', () => {
     };
     expect(payment.closingBalance.toNumber()).toBe(-12.5);
     expect(payment.dateFrom).toEqual(new Date('2024-01-01T00:00:00.000Z'));
+  });
+
+  it('creates a notice PDF with one apartment section per address', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-30T12:00:00Z'));
+    const notifications = [
+      {
+        id: 'n1',
+        description: 'Zaliczka CO',
+        quantity: '1',
+        unit: 'szt',
+        unitPrice: '100',
+        totalAmount: '100',
+        apartmentNumber: '1',
+        apartmentAddress: 'ul. A 1/1',
+        hoaName: 'Wspólnota A',
+        hoaHeader: 'Nagłówek A',
+        hoaFooter: 'Stopka A',
+      },
+      {
+        id: 'n2',
+        description: 'Woda',
+        quantity: '1',
+        unit: 'm3',
+        unitPrice: '20',
+        totalAmount: '20',
+        apartmentNumber: '2',
+        apartmentAddress: 'ul. B 2/2',
+      },
+    ];
+
+    render(<DownloadNoticePdfButton notifications={notifications} />);
+    const file = await mocks.buttonProps!.createPdf();
+
+    expect(file).toEqual({
+      blob: PDF_BLOB,
+      fileName: 'naliczenia-biezace-2026-10-30.pdf',
+    });
+    expect(renderedDocumentProps()).toMatchObject({
+      generatedDate: '2026-10-30',
+    });
+    expect(toNoticePdfApartments(notifications)).toEqual([
+      {
+        address: 'ul. A 1/1',
+        hoaName: 'Wspólnota A',
+        hoaHeader: 'Nagłówek A',
+        hoaFooter: 'Stopka A',
+        notifications: [notifications[0]],
+      },
+      {
+        address: 'ul. B 2/2',
+        hoaName: null,
+        hoaHeader: null,
+        hoaFooter: null,
+        notifications: [notifications[1]],
+      },
+    ]);
+    vi.useRealTimers();
   });
 });

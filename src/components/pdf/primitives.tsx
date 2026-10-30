@@ -94,6 +94,12 @@ export const styles = StyleSheet.create({
   red: {
     color: '#dc2626',
   },
+  note: {
+    fontSize: 9,
+    color: '#374151',
+    marginVertical: 10,
+    lineHeight: 1.4,
+  },
   green: {
     color: '#16a34a',
   },
@@ -131,4 +137,9 @@ interface SectionTitleProps {
 
 export function SectionTitle({ children }: SectionTitleProps) {
   return <Text style={styles.sectionTitle}>{children}</Text>;
+}
+
+/** Free text from import files; keeps its line breaks. */
+export function PdfNoteText({ children }: { children: string }) {
+  return <Text style={styles.note}>{children}</Text>;
 }

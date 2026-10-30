@@ -39,16 +39,24 @@ function renderList() {
         makeCharge('a', '202410', '50'),
         makeCharge('b', '202411', '100'),
         makeCharge('c', '202411', '25'),
+        makeCharge('d', '202312', '80'),
       ]}
     />
   );
 }
 
 describe('AdminChargesList', () => {
-  it('lists months newest first with their totals', () => {
+  it('groups months into year sections, newest year first', () => {
     renderList();
 
-    const months = screen.getAllByRole('button', { name: /2024/ });
+    const years = screen.getAllByRole('button', { name: /^\d{4}$/ });
+    expect(years.map((y) => y.textContent)).toEqual(['2024', '2023']);
+  });
+
+  it('opens only the newest year, listing its months newest first', () => {
+    renderList();
+
+    const months = screen.getAllByRole('button', { name: /\S+ 20\d\d/ });
     expect(months.map((m) => m.textContent)).toEqual([
       `Listopad 2024${formatCurrency(125)}`,
       `Październik 2024${formatCurrency(50)}`,
@@ -71,5 +79,19 @@ describe('AdminChargesList', () => {
       screen.getByRole('button', { name: 'PDF 202411' })
     ).toBeInTheDocument();
     expect(screen.queryByText('Opłata a')).not.toBeInTheDocument();
+  });
+
+  it('keeps older years collapsed until opened', async () => {
+    renderList();
+
+    expect(
+      screen.queryByRole('button', { name: /Grudzień 2023/ })
+    ).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: '2023' }));
+
+    expect(
+      screen.getByRole('button', { name: /Grudzień 2023/ })
+    ).toBeInTheDocument();
   });
 });

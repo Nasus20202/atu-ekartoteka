@@ -1,7 +1,6 @@
-import {
-  HoaNotificationCard,
-  type NotificationItem,
-} from '@/components/dashboard/hoa-notification-card';
+import type { NotificationItem } from '@/components/dashboard/group-notifications';
+import { HoaNotificationCard } from '@/components/dashboard/hoa-notification-card';
+import { DownloadNoticePdfButton } from '@/components/pdf/download-notice-pdf-button';
 import {
   Card,
   CardContent,
@@ -62,13 +61,16 @@ export const NotificationsSidebar = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <div className="rounded-lg bg-muted p-3">
-            <div className="text-sm text-muted-foreground">
-              Łączna kwota do zapłaty
+          <div className="flex items-center justify-between gap-3 rounded-lg bg-muted p-3">
+            <div className="min-w-0">
+              <div className="text-sm text-muted-foreground">
+                Łączna kwota do zapłaty
+              </div>
+              <div className="text-2xl font-bold">
+                {formatCurrency(totalAmount)}
+              </div>
             </div>
-            <div className="text-2xl font-bold">
-              {formatCurrency(totalAmount)}
-            </div>
+            <DownloadNoticePdfButton notifications={notifications} />
           </div>
           {groupByHoa(notifications).map((group) => (
             <HoaNotificationCard

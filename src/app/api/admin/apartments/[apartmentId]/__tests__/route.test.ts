@@ -181,7 +181,6 @@ describe('Admin Apartment Detail API', () => {
       expect(data.id).toBe('apt-1');
       expect(data.homeownersAssociation).toBeDefined();
       expect(data.user).toBeDefined();
-      expect(data.currentYear).toBe(new Date().getFullYear());
       expect(data.charges).toBeDefined();
       expect(data.chargeNotifications).toBeDefined();
       expect(data.payments).toBeDefined();

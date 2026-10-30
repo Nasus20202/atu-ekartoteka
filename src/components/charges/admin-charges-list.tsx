@@ -1,15 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-
 import {
   ChargeRows,
   MonthTrigger,
   PeriodRange,
+  YearTrigger,
 } from '@/components/charges/charge-list-parts';
+import { useChargeListOpenState } from '@/components/charges/use-charge-list-open-state';
 import { DownloadChargesPdfButton } from '@/components/pdf/download-charges-pdf-button';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import type { ChargePeriodItemDto } from '@/lib/types/dto/charge-dto';
+import { getPeriodYear, groupByYearDesc } from '@/lib/utils/group-by-year';
 import { sumDecimals } from '@/lib/utils/sum';
 
 type AdminCharge = ChargePeriodItemDto;
@@ -19,6 +20,8 @@ interface PeriodSectionProps {
   charges: AdminCharge[];
   apartmentLabel: string;
   hoaName: string;
+  open: boolean;
+  onToggle: () => void;
 }
 
 function PeriodSection({
@@ -26,14 +29,15 @@ function PeriodSection({
   charges,
   apartmentLabel,
   hoaName,
+  open,
+  onToggle,
 }: PeriodSectionProps) {
-  const [open, setOpen] = useState(false);
   const total = sumDecimals(charges.map((charge) => charge.totalAmount));
 
   return (
     <Collapsible
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={onToggle}
       className="overflow-hidden rounded-lg border bg-card"
     >
       <MonthTrigger period={period} total={total} open={open} />
@@ -77,17 +81,33 @@ export function AdminChargesList({
   const sortedPeriods = Object.keys(byPeriod).sort((a, b) =>
     b.localeCompare(a)
   );
+  const yearGroups = groupByYearDesc(sortedPeriods, getPeriodYear);
+  const { openYears, toggleYear, openMonths, toggleMonth } =
+    useChargeListOpenState(yearGroups[0]?.year, null);
 
   return (
     <div className="space-y-2">
-      {sortedPeriods.map((period) => (
-        <PeriodSection
-          key={period}
-          period={period}
-          charges={byPeriod[period]}
-          apartmentLabel={apartmentLabel}
-          hoaName={hoaName}
-        />
+      {yearGroups.map(({ year, items: yearPeriods }) => (
+        <Collapsible
+          key={year}
+          open={openYears.has(year)}
+          onOpenChange={() => toggleYear(year)}
+        >
+          <YearTrigger year={year} open={openYears.has(year)} />
+          <CollapsibleContent className="space-y-2">
+            {yearPeriods.map((period) => (
+              <PeriodSection
+                key={period}
+                period={period}
+                charges={byPeriod[period]}
+                apartmentLabel={apartmentLabel}
+                hoaName={hoaName}
+                open={openMonths.has(period)}
+                onToggle={() => toggleMonth(period)}
+              />
+            ))}
+          </CollapsibleContent>
+        </Collapsible>
       ))}
     </div>
   );

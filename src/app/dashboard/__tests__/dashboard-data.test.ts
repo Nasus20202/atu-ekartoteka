@@ -15,7 +15,12 @@ import { Prisma } from '@/generated/prisma/browser';
 
 type Apartment = Parameters<typeof buildApartmentBalances>[0][number];
 
-const hoa = { id: 'hoa-1', name: 'Wspólnota 1', header: 'Nagłówek' };
+const hoa = {
+  id: 'hoa-1',
+  name: 'Wspólnota 1',
+  header: 'Nagłówek',
+  footer: 'Stopka',
+};
 
 function makeApartment(overrides: Partial<Apartment> = {}): Apartment {
   return {
@@ -85,6 +90,7 @@ describe('buildDashboardNotifications', () => {
       hoaId: 'hoa-1',
       hoaName: 'Wspólnota 1',
       hoaHeader: 'Nagłówek',
+      hoaFooter: 'Stopka',
     });
   });
 
@@ -112,6 +118,7 @@ describe('buildDashboardNotifications', () => {
       hoaId: null,
       hoaName: null,
       hoaHeader: null,
+      hoaFooter: null,
     });
   });
 });
