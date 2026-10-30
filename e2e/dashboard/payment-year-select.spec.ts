@@ -12,7 +12,7 @@ test.describe('Payment Year Select', () => {
   let year: number;
 
   test.beforeEach(async () => {
-    const seed = await createMixedPaymentsUser({ withPreviousYear: true });
+    const seed = await createMixedPaymentsUser({ yearsAgo: [1] });
     email = seed.email;
     year = seed.year;
   });

@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { findUserWithApartmentPaymentsCached } from '@/lib/queries/users/find-user-with-apartment-payments';
+import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
 import { AccountStatus } from '@/lib/types';
 
 export default async function PaymentsPage() {
@@ -22,7 +23,11 @@ export default async function PaymentsPage() {
     redirect('/login');
   }
 
-  const userData = await findUserWithApartmentPaymentsCached(session.user.id);
+  const startYear = await getTenantHistoryStartYear();
+  const userData = await findUserWithApartmentPaymentsCached(
+    session.user.id,
+    startYear
+  );
 
   if (!userData || userData.status !== AccountStatus.APPROVED) {
     redirect('/dashboard');

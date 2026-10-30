@@ -26,6 +26,10 @@ const CHARGE_MONTHS = Number(process.env.PERF_SEED_CHARGE_MONTHS || 40);
 const CHARGE_LINES_PER_MONTH = Number(process.env.PERF_SEED_CHARGE_LINES || 5);
 const NOTIFICATION_LINES = Number(process.env.PERF_SEED_NOTIFICATIONS || 3);
 const PAYMENT_YEARS = Number(process.env.PERF_SEED_PAYMENT_YEARS || 6);
+// Must match TENANT_HISTORY_YEARS_BACK in perf/lib/config.ts
+const TENANT_HISTORY_YEARS_BACK = Number(
+  process.env.PERF_SEED_TENANT_HISTORY_YEARS_BACK || 5
+);
 
 const sql = (name: string) =>
   fs.readFileSync(path.join(SQL_DIR, `${name}.sql`), 'utf-8');
@@ -42,6 +46,7 @@ export async function seedPerfData(connectionString?: string) {
     ['apartments', [HOAS, APARTMENTS_PER_HOA, TENANTS]],
     ['notifications', [apartments, NOTIFICATION_LINES]],
     ['payments', [apartments, PAYMENT_YEARS]],
+    ['app-settings', [TENANT_HISTORY_YEARS_BACK]],
   ];
 
   const client = new pg.Client({ connectionString: dbUrl });

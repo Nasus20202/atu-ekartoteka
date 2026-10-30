@@ -1,9 +1,10 @@
-import { AlertCircle, CheckCircle, Download, XCircle } from 'lucide-react';
+import { AlertCircle, Download, XCircle } from 'lucide-react';
 
 import { ImportResultCard } from '@/app/admin/import/import-result-card';
 import type { ImportResponse } from '@/app/admin/import/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { SuccessMessage } from '@/components/ui/success-message';
 import { downloadTextFile } from '@/lib/utils/download-file';
 import { serialiseErrorsToTxt } from '@/lib/utils/export-errors';
 
@@ -45,12 +46,7 @@ export function ImportResults({ response }: ImportResultsProps) {
       )}
 
       {response.success && (
-        <div className="flex items-start gap-2 rounded-lg bg-green-100 p-4 text-green-800 dark:bg-green-900 dark:text-green-200">
-          <CheckCircle className="mt-0.5 h-5 w-5 shrink-0" />
-          <div className="flex-1">
-            <p className="font-medium">Import zakończony pomyślnie</p>
-          </div>
-        </div>
+        <SuccessMessage>Import zakończony pomyślnie</SuccessMessage>
       )}
 
       {response.errors.length > 0 && (

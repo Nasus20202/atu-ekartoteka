@@ -13,6 +13,7 @@ import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { findUserWithApartmentChargesCached } from '@/lib/queries/users/find-user-with-apartment-charges';
+import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
 import { AccountStatus } from '@/lib/types';
 
 export default async function ChargesPage({
@@ -27,7 +28,11 @@ export default async function ChargesPage({
     redirect('/login');
   }
 
-  const userData = await findUserWithApartmentChargesCached(session.user.id);
+  const startYear = await getTenantHistoryStartYear();
+  const userData = await findUserWithApartmentChargesCached(
+    session.user.id,
+    startYear
+  );
 
   if (!userData || userData.status !== AccountStatus.APPROVED) {
     redirect('/dashboard');

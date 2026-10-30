@@ -22,13 +22,14 @@ describe('apartment queries', () => {
   });
 
   it('finds an apartment with charges only for its owner', async () => {
-    await findApartmentWithCharges('apt-1', 'user-1');
+    await findApartmentWithCharges('apt-1', 'user-1', 2025);
 
     expect(mockFindFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'apt-1', userId: 'user-1' },
         include: expect.objectContaining({
           charges: {
+            where: { period: { gte: '202501' } },
             orderBy: [{ period: 'desc' }, { externalLineNo: 'asc' }],
           },
         }),
@@ -37,16 +38,24 @@ describe('apartment queries', () => {
   });
 
   it('finds an apartment with payments of a single year for its owner', async () => {
-    await findApartmentWithPaymentsByYear('apt-1', 'user-1', 2025);
+    await findApartmentWithPaymentsByYear('apt-1', 'user-1', 2025, 2025);
 
     expect(mockFindFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'apt-1', userId: 'user-1' },
         include: expect.objectContaining({
           payments: { where: { year: 2025 } },
+          charges: { where: { period: { gte: '202501' } } },
         }),
       })
     );
+  });
+
+  it('returns null without querying for a year before the window', async () => {
+    await expect(
+      findApartmentWithPaymentsByYear('apt-1', 'user-1', 2024, 2025)
+    ).resolves.toBeNull();
+    expect(mockFindFirst).not.toHaveBeenCalled();
   });
 
   it('finds apartments by ids with their users', async () => {

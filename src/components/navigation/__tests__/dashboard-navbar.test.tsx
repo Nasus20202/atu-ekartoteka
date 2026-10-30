@@ -36,6 +36,25 @@ describe('DashboardNavbar', () => {
       expect(screen.getAllByText('Panel klienta').length).toBe(2);
       expect(screen.getAllByText('Mieszkania').length).toBe(2);
     });
+
+    it('renders settings as icon-only links on the right', () => {
+      render(<DashboardNavbar mode="admin" />);
+      const links = screen.getAllByRole('link', { name: 'Ustawienia' });
+
+      expect(links).toHaveLength(2);
+      links.forEach((link) => {
+        expect(link).toHaveAttribute('href', '/admin/settings');
+        expect(link).not.toHaveTextContent('Ustawienia');
+      });
+    });
+
+    it('does not render settings outside admin mode', () => {
+      render(<DashboardNavbar mode="dashboard" isAdmin />);
+
+      expect(
+        screen.queryByRole('link', { name: 'Ustawienia' })
+      ).not.toBeInTheDocument();
+    });
   });
 
   describe('Mobile menu', () => {

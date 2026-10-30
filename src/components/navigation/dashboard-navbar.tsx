@@ -6,6 +6,7 @@ import {
   Home,
   type LucideIcon,
   Menu,
+  Settings,
   Upload,
   User,
   Users,
@@ -20,6 +21,8 @@ import { Button } from '@/components/ui/button';
 
 const MOBILE_MENU_ID = 'mobile-navigation';
 const MOBILE_MENU_LABEL = 'Menu';
+const SETTINGS_HREF = '/admin/settings';
+const SETTINGS_LABEL = 'Ustawienia';
 
 type NavItem = {
   name: string;
@@ -60,6 +63,18 @@ export function DashboardNavbar({
         : [];
 
   const showProfileLink = mode === 'dashboard';
+  const settingsLink = mode === 'admin' && (
+    <Button variant="ghost" size="icon" asChild>
+      <Link
+        href={SETTINGS_HREF}
+        aria-label={SETTINGS_LABEL}
+        title={SETTINGS_LABEL}
+        onClick={() => setIsOpen(false)}
+      >
+        <Settings />
+      </Link>
+    </Button>
+  );
 
   return (
     <nav className="sticky top-0 z-50 border-b bg-card">
@@ -102,6 +117,7 @@ export function DashboardNavbar({
                 </Button>
               </Link>
             )}
+            {settingsLink}
             <ThemeToggle />
             <LogoutButton />
           </div>
@@ -156,6 +172,7 @@ export function DashboardNavbar({
               </Link>
             )}
             <div className="flex items-center gap-2 px-3 py-2">
+              {settingsLink}
               <ThemeToggle />
               <LogoutButton />
             </div>

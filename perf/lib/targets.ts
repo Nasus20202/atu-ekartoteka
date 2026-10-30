@@ -7,6 +7,7 @@ import {
   HOA_COUNT,
   PAYMENT_YEARS,
   TENANT_COUNT,
+  TENANT_HISTORY_YEARS_BACK,
   TENANT_PASSWORD,
   UNASSIGNED_HOAS_PER_PAGE,
 } from './config.ts';
@@ -61,9 +62,11 @@ export function hoaIdOfApartment(apartmentId: string) {
   return `perf-hoa-${Math.floor((index - 1) / perHoa) + 1}`;
 }
 
-// The seed has payments for the current year and the ones before it
+// The seed has payments for the current year and the ones before it; tenants
+// only see the years inside their history window
 export function randomPaymentYear() {
-  return new Date().getFullYear() - randomInt(0, PAYMENT_YEARS - 1);
+  const visibleYears = Math.min(PAYMENT_YEARS, TENANT_HISTORY_YEARS_BACK + 1);
+  return new Date().getFullYear() - randomInt(0, visibleYears - 1);
 }
 
 export function randomOwnerSearch() {
