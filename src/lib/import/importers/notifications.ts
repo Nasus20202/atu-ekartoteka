@@ -4,7 +4,7 @@ import { EntityStats, HOAContext, TransactionClient } from '@/lib/import/types';
 import { processInBatches } from '@/lib/import/utils';
 import { ParseResult } from '@/lib/parsers/parser-utils';
 import { ChargeNotificationEntry } from '@/lib/parsers/pow-czynsz-parser';
-import { toDecimal } from '@/lib/utils/decimal';
+import { decimalEqualsStored } from '@/lib/utils/decimal';
 import { getErrorMessage } from '@/lib/utils/error-message';
 
 type NotificationKey = {
@@ -31,10 +31,10 @@ function hasNotificationChanged(
 ): boolean {
   return (
     existing.description !== entry.description ||
-    !toDecimal(existing.quantity).equals(toDecimal(entry.quantity)) ||
+    !decimalEqualsStored(existing.quantity, entry.quantity) ||
     existing.unit !== entry.unit ||
-    !toDecimal(existing.unitPrice).equals(toDecimal(entry.unitPrice)) ||
-    !toDecimal(existing.totalAmount).equals(toDecimal(entry.totalAmount))
+    !decimalEqualsStored(existing.unitPrice, entry.unitPrice) ||
+    !decimalEqualsStored(existing.totalAmount, entry.totalAmount)
   );
 }
 
