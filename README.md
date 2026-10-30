@@ -97,23 +97,14 @@ See [Docker Documentation](docs/DOCKER.md) for detailed setup and troubleshootin
 - `pnpm dev` - Start development server
 - `pnpm build` - Build for production
 - `pnpm test` - Run tests
-- `pnpm test:perf` - Run k6 performance tests (see [Performance Tests](#performance-tests))
+- `pnpm test:perf` - Run k6 performance tests (seed the database with `perf/seed/seed-perf-data.ts` first)
 - `pnpm lint:fix` - Fix linting issues
 - `pnpm format` - Format code with Prettier
 - `pnpm db:migrate` - Run database migrations
 - `pnpm db:deploy` - Deploy migrations (production)
 - `pnpm test:e2e` - Run E2E tests
-- `pnpm test:e2e:visual` - Run visual regression tests (see [Visual regression tests](#visual-regression-tests))
+- `pnpm test:e2e:visual` - Run visual regression tests
 - `pnpm test:e2e:visual:update` - Regenerate visual baselines after an intended UI change
-
-### Visual regression tests
-
-Baselines in `e2e/visual/__screenshots__` are rendered on Linux, like CI. The
-app must run with `E2E_ALLOW_FIXED_NOW=true` (as in `docker-compose.e2e.yaml`).
-
-## Performance Tests
-
-[k6](https://grafana.com/docs/k6/latest/) scenarios in `perf/` (public pages, login, user and admin journeys) run in CI against the Docker image. The scripts are TypeScript, which k6 runs natively; `pnpm tsc` type-checks them. Locally, start the E2E stack, seed it with `pnpm exec tsx e2e/utils/seed-test-data.ts` and `pnpm exec tsx perf/seed/seed-perf-data.ts` (a production-sized dataset: 100 HOAs, 10,000 apartments, 2 million charges), then run `pnpm test:perf`. Every scenario climbs to its peak load in four steps, holds it, then drains. Peak load and step timing are set in `perf/lib/config.ts` (overridable with `PERF_*` env vars); latency limits per scenario and per endpoint are in `perf/lib/thresholds.ts`. The run writes `perf-results/summary.md`, which CI adds to the job summary.
 
 ## Health Checks
 
