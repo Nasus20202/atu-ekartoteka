@@ -57,16 +57,28 @@ export function validateWplaty(entries: PaymentEntry[]): string[] {
   return errors;
 }
 
+// Same owner#apartment identity as the importers, plus the YYYYMM period
+function makeCrossFileKey(
+  ownerId: string,
+  apartmentId: string,
+  period: string
+): string {
+  return `${ownerId}#${apartmentId}|${period}`;
+}
+
 export function validateChargesCrossFile(
   nalEntries: NalCzynszEntry[],
   paymentEntries: PaymentEntry[]
 ): string[] {
   const errors: string[] = [];
 
-  // Sum nal_czynsz totalAmount grouped by apartmentExternalId + period (YYYYMM)
   const nalSums = new Map<string, ReturnType<typeof toDecimal>>();
   for (const entry of nalEntries) {
-    const key = `${entry.apartmentExternalId}|${entry.period}`;
+    const key = makeCrossFileKey(
+      entry.id,
+      entry.apartmentExternalId,
+      entry.period
+    );
     nalSums.set(
       key,
       (nalSums.get(key) ?? toDecimal(0)).plus(entry.totalAmount)
@@ -78,7 +90,11 @@ export function validateChargesCrossFile(
       const monthlyCharge = toDecimal(payment.monthlyCharges[i]);
       const month = String(i + 1).padStart(2, '0');
       const period = `${payment.year}${month}`;
-      const key = `${payment.apartmentCode}|${period}`;
+      const key = makeCrossFileKey(
+        payment.externalId,
+        payment.apartmentCode,
+        period
+      );
       const nalSum = nalSums.get(key) ?? toDecimal(0);
 
       // Skip months where both sides are zero
@@ -88,7 +104,7 @@ export function validateChargesCrossFile(
 
       if (delta.greaterThan(CROSS_CHARGES_TOLERANCE)) {
         errors.push(
-          `Lokal ${payment.apartmentCode}, okres ${period}: ` +
+          `Lokal ${payment.apartmentCode} (właściciel ${payment.externalId}), okres ${period}: ` +
             `suma naliczeń ${nalSum.toFixed(2)} ≠ naliczenia z wpłat ${monthlyCharge.toFixed(2)} ` +
             `(różnica ${delta.toFixed(4)})`
         );
