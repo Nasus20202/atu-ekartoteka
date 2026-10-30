@@ -64,11 +64,9 @@ The system SHALL provide an `Administratorzy` filter on the admin user listing p
 
 #### Scenario: Pagination resets when switching filters
 
-- **GIVEN** the admin is on page 2 of any filter
+- **GIVEN** the admin has scrolled past the first page of any filter
 - **WHEN** the admin switches to or from the `Administratorzy` filter
-- **THEN** the page index resets to 1
-
----
+- **THEN** the previously loaded users are discarded and only the first page of the new filter is shown
 
 ### Requirement: Admin Users Assignable Apartments via Per-User Flow
 
@@ -192,8 +190,8 @@ The system SHALL allow admins to create multiple tenant accounts at once for apa
 #### Scenario: Load more HOAs
 
 - **GIVEN** the list has more HOAs than the first page
-- **WHEN** the admin clicks "Pokaż więcej wspólnot"
-- **THEN** the next page of HOAs is appended to the list and the selection is kept
+- **WHEN** the admin scrolls to the end of the HOA list (or activates the `Pokaż więcej` fallback button)
+- **THEN** the next page of HOAs is appended to the list automatically and the selection is kept
 
 #### Scenario: Bulk create accounts
 
@@ -236,8 +234,6 @@ The system SHALL allow admins to create multiple tenant accounts at once for apa
 - **GIVEN** a non-admin user
 - **WHEN** they call any of the bulk-create, bulk-assign, or unassigned-apartments endpoints
 - **THEN** the request is rejected with 401
-
----
 
 ### Requirement: Forced Password Change
 
@@ -355,4 +351,28 @@ The system SHALL support pagination on the admin user list API.
 
 - **GIVEN** an admin requests the user list without page/limit params
 - **WHEN** the API responds
-- **THEN** it returns the first 20 users by default
+- **THEN** it returns the first 50 users by default
+- **AND** a `limit` above 200 is capped at 200
+
+### Requirement: Admin User List Infinite Scroll
+
+The admin user list page (`/admin/users`) SHALL load users with infinite scrolling as defined by the infinite scrolling requirements in `visual-design`, ordered by creation date descending. After an admin action that changes a user (approve, reject, assign apartments, change status, create user), the list SHALL refresh every already-loaded page in place rather than returning to the top.
+
+#### Scenario: Scrolling loads further users
+
+- **GIVEN** more tenant users match the active filter than fit on one API page
+- **WHEN** the admin scrolls to the end of the user list
+- **THEN** the next users are appended in creation-date-descending order without duplicates
+
+#### Scenario: Search restarts the list
+
+- **GIVEN** the admin has loaded several pages of users
+- **WHEN** they type into the search box and the debounce elapses
+- **THEN** the list restarts with the first matching users
+
+#### Scenario: Action keeps loaded range
+
+- **GIVEN** the admin has loaded three pages under the `Oczekujące` filter
+- **WHEN** they approve a user from the third page
+- **THEN** the three loaded pages are re-fetched and the approved user disappears from the list
+- **AND** the remaining users stay loaded and the scroll position is not reset to the top

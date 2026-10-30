@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import {
   buildAddressKey,
   computeDuplicateActiveAddresses,
-  getPageItems,
 } from '@/app/admin/apartments/[hoaId]/apartment-list-utils';
 
 const apartment = (
@@ -33,29 +32,5 @@ describe('computeDuplicateActiveAddresses', () => {
     ]);
 
     expect([...duplicates]).toEqual(['Testowa__A__1']);
-  });
-});
-
-describe('getPageItems', () => {
-  it('lists every page when there are few pages', () => {
-    expect(getPageItems(1, 3)).toEqual([1, 2, 3]);
-  });
-
-  it('shows first, last and pages near the current one with ellipses', () => {
-    expect(getPageItems(10, 20)).toEqual([
-      1,
-      'ellipsis',
-      8,
-      9,
-      10,
-      11,
-      12,
-      'ellipsis',
-      20,
-    ]);
-  });
-
-  it('omits ellipses where pages are adjacent to the edges', () => {
-    expect(getPageItems(1, 10)).toEqual([1, 2, 3, 'ellipsis', 10]);
   });
 });

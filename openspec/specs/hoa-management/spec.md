@@ -75,9 +75,7 @@ The system SHALL allow admins to navigate into a specific HOA and browse its apa
 
 - **GIVEN** an authenticated admin on the admin apartments page
 - **WHEN** they select a HOA from the list
-- **THEN** they are taken to a page scoped to that HOA showing its apartments with search and pagination
-
----
+- **THEN** they are taken to a page scoped to that HOA showing its apartments with search and infinite scrolling
 
 ### Requirement: Per-HOA Financial Summary
 

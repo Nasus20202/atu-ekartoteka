@@ -47,7 +47,8 @@ export interface UnassignedHoasPage {
 
 export async function fetchUnassignedHoas(
   mode: BulkMode,
-  page = 1
+  page = 1,
+  signal?: AbortSignal
 ): Promise<RequestResult<UnassignedHoasPage>> {
   const modeParam = mode === 'assign' ? 'assignable' : 'creatable';
   const result = await requestJson<{
@@ -55,7 +56,8 @@ export async function fetchUnassignedHoas(
     pagination: { page: number; totalPages: number };
   }>(
     `/api/admin/unassigned-apartments?mode=${modeParam}&page=${page}`,
-    LOAD_APARTMENTS_FAILED
+    LOAD_APARTMENTS_FAILED,
+    signal && { signal }
   );
   return result.error === undefined
     ? {

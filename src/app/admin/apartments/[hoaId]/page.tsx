@@ -9,7 +9,6 @@ import {
   computeDuplicateActiveAddresses,
 } from '@/app/admin/apartments/[hoaId]/apartment-list-utils';
 import { ApartmentSearchForm } from '@/app/admin/apartments/[hoaId]/apartment-search-form';
-import { ApartmentsPagination } from '@/app/admin/apartments/[hoaId]/apartments-pagination';
 import { useHoaApartments } from '@/app/admin/apartments/[hoaId]/use-hoa-apartments';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
@@ -21,6 +20,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { InfiniteScrollSentinel } from '@/components/ui/infinite-scroll-sentinel';
 import { LoadingCard } from '@/components/ui/loading-card';
 import { APARTMENT_FORMS, pluralizePl } from '@/lib/utils/pluralize';
 
@@ -30,8 +30,12 @@ export default function HOAApartmentsPage() {
   const {
     apartments,
     hoa,
-    pagination,
+    total,
     loading,
+    loadingMore,
+    hasMore,
+    error,
+    loadMore,
     search,
     activeOnly,
     updateURL,
@@ -43,11 +47,7 @@ export default function HOAApartmentsPage() {
   );
 
   const handleActiveOnlyChange = (checked: boolean) => {
-    updateURL({ activeOnly: checked.toString(), page: '1' });
-  };
-
-  const goToPage = (p: number) => {
-    updateURL({ page: p.toString() });
+    updateURL({ activeOnly: checked.toString() });
   };
 
   return (
@@ -88,7 +88,7 @@ export default function HOAApartmentsPage() {
             key={search}
             defaultSearch={search}
             onSearch={(nextSearch) => {
-              updateURL({ search: nextSearch, page: '1' });
+              updateURL({ search: nextSearch });
             }}
           />
         </CardContent>
@@ -99,8 +99,7 @@ export default function HOAApartmentsPage() {
       ) : (
         <>
           <div className="mb-4 text-sm text-muted-foreground">
-            Znaleziono {pagination.total}{' '}
-            {pluralizePl(pagination.total, APARTMENT_FORMS)}
+            Znaleziono {total ?? 0} {pluralizePl(total ?? 0, APARTMENT_FORMS)}
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -125,9 +124,11 @@ export default function HOAApartmentsPage() {
             </div>
           )}
 
-          <ApartmentsPagination
-            pagination={pagination}
-            onPageChange={goToPage}
+          <InfiniteScrollSentinel
+            hasMore={hasMore}
+            loading={loadingMore}
+            error={error}
+            onLoadMore={loadMore}
           />
         </>
       )}

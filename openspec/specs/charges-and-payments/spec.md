@@ -238,30 +238,6 @@ The system SHALL render payment year rows as collapsible groups on the payments 
 - **WHEN** an admin opens the apartment detail page
 - **THEN** the 2026 section is expanded and the 2025 and 2024 sections are collapsed
 
-### Requirement: Pagination on Admin User List
-
-The system SHALL paginate the admin user list.
-
-#### Scenario: User list shows page controls
-
-- **GIVEN** an authenticated admin on the user list page with more than 20 users
-- **WHEN** the page loads
-- **THEN** pagination controls (previous/next, page number) are shown below the user list
-
-#### Scenario: Page navigation updates displayed users
-
-- **GIVEN** an admin on page 1 of the user list
-- **WHEN** they click next page
-- **THEN** the next set of users is loaded and displayed
-
-#### Scenario: Filter resets to page 1
-
-- **GIVEN** an admin on page 2 of the user list
-- **WHEN** they change the status filter
-- **THEN** the page resets to 1
-
----
-
 ### Requirement: HOA Header in Dashboard Apartment List
 
 The system SHALL display the HOA header text above each HOA group of apartments on the dashboard.
