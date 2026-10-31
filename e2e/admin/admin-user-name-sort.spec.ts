@@ -7,6 +7,7 @@ import * as pg from 'pg';
 
 import { expect, test } from '../fixtures';
 import { openAllUsers, searchUsers } from '../utils/admin-users';
+import { loadSql } from '../utils/load-sql';
 
 const NAMES = ['Żaneta Nowak', 'Adam Nowak', 'Łukasz Nowak'];
 const EXPECTED_ORDER = ['Adam Nowak', 'Łukasz Nowak', 'Żaneta Nowak'];
@@ -23,12 +24,11 @@ async function createUsers(prefix: string) {
   try {
     await client.connect();
     for (const [index, name] of NAMES.entries()) {
-      await client.query(
-        `INSERT INTO "User" (id, email, name, role, status, "emailVerified", "createdAt", "updatedAt")
-         VALUES (gen_random_uuid(), $1, $2, 'TENANT', 'REJECTED', true,
-                 NOW() - $3 * INTERVAL '1 second', NOW())`,
-        [`${prefix}-${index}@e2e-test.com`, name, index]
-      );
+      await client.query(loadSql('insert-rejected-user.sql'), [
+        `${prefix}-${index}@e2e-test.com`,
+        name,
+        index,
+      ]);
     }
   } finally {
     await client.end();
@@ -39,7 +39,7 @@ async function deleteUsers(prefix: string) {
   const client = connect();
   try {
     await client.connect();
-    await client.query(`DELETE FROM "User" WHERE email LIKE $1`, [
+    await client.query(loadSql('cleanup-users-by-email-prefix.sql'), [
       `${prefix}-%`,
     ]);
   } finally {

@@ -6,6 +6,8 @@
 
 import * as pg from 'pg';
 
+import { loadSql } from './load-sql';
+
 function connect() {
   const dbUrl = process.env.DATABASE_URL;
   if (!dbUrl) throw new Error('DATABASE_URL is not set');
@@ -18,14 +20,7 @@ export async function createScrollTestUsers(count: number): Promise<string> {
   const client = connect();
   try {
     await client.connect();
-    await client.query(
-      `INSERT INTO "User" (id, email, name, role, status, "emailVerified", "createdAt", "updatedAt")
-       SELECT gen_random_uuid(), $1 || '-' || n || '@e2e-test.com', 'Scroll User ' || n,
-              'TENANT', 'REJECTED', true,
-              TIMESTAMP '2000-01-01' - n * INTERVAL '1 second', NOW()
-       FROM generate_series(1, $2::int) AS n`,
-      [prefix, count]
-    );
+    await client.query(loadSql('insert-scroll-users.sql'), [prefix, count]);
     return prefix;
   } finally {
     await client.end();
@@ -36,7 +31,7 @@ export async function deleteScrollTestUsers(prefix: string): Promise<void> {
   const client = connect();
   try {
     await client.connect();
-    await client.query(`DELETE FROM "User" WHERE email LIKE $1`, [
+    await client.query(loadSql('cleanup-users-by-email-prefix.sql'), [
       `${prefix}-%`,
     ]);
   } finally {
