@@ -52,8 +52,7 @@ function createUser(
               number: '2',
               postalCode: '00-001',
               city: 'Warszawa',
-              shareNumerator: 1,
-              shareDenominator: 4,
+              shareRatio: 0.25,
               isActive: false,
             },
           ]

@@ -88,6 +88,9 @@ model Apartment {
   city          String?
   shareNumerator        Float?             // numerator of ownership share
   shareDenominator      Float?             // denominator of ownership share
+  // numerator / denominator, GENERATED ALWAYS in the migration; never write it.
+  // The expression is the exact text `prisma db pull` reports.
+  shareRatio            Float?             @default(dbgenerated("\nCASE\n    WHEN (\"shareDenominator\" > (0)::double precision) THEN (\"shareNumerator\" / \"shareDenominator\")\n    ELSE NULL::double precision\nEND"))
   
   // Activity status
   isActive    Boolean  @default(true)  // whether apartment is in current file

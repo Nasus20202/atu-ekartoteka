@@ -91,8 +91,7 @@ describe('ApartmentDetailsPage', () => {
         number: '10',
         postalCode: '00-001',
         city: 'Warszawa',
-        shareNumerator: 1,
-        shareDenominator: 10,
+        shareRatio: 0.1,
         isActive: true,
         homeownersAssociation: {
           id: 'hoa-1',
@@ -145,8 +144,7 @@ describe('ApartmentDetailsPage', () => {
           number: '10',
           postalCode: null,
           city: null,
-          shareNumerator: null,
-          shareDenominator: null,
+          shareRatio: null,
           isActive: true,
           homeownersAssociation: {
             id: 'hoa-1',
@@ -207,8 +205,7 @@ describe('ApartmentDetailsPage', () => {
         number: '10',
         postalCode: '00-001',
         city: 'Warszawa',
-        shareNumerator: 1,
-        shareDenominator: 10,
+        shareRatio: 0.1,
         isActive: false,
         homeownersAssociation: {
           id: 'hoa-1',

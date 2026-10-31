@@ -13,8 +13,7 @@ describe('ApartmentsSection', () => {
       city: 'Warszawa',
       owner: 'Jan Kowalski',
       building: 'A',
-      shareNumerator: 5000,
-      shareDenominator: 250,
+      shareRatio: 20.0,
     },
     {
       id: 'apt-2',
@@ -24,8 +23,7 @@ describe('ApartmentsSection', () => {
       city: 'Kraków',
       owner: 'Anna Nowak',
       building: 'B',
-      shareNumerator: 6000,
-      shareDenominator: 280,
+      shareRatio: 21.428571428571427,
     },
   ];
 

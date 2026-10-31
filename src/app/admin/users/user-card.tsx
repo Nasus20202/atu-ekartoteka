@@ -4,7 +4,6 @@ import {
   type UserActionsProps,
 } from '@/app/admin/users/user-actions';
 import { UserStatusBadge } from '@/app/admin/users/user-status-badge';
-import { getApartmentSharePercent } from '@/app/admin/users/utils';
 import {
   Card,
   CardContent,
@@ -12,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { formatSharePercent } from '@/lib/utils';
 import { APP_LOCALE } from '@/lib/utils/locale';
 
 export function UserCard(actionProps: UserActionsProps) {
@@ -46,7 +46,7 @@ export function UserCard(actionProps: UserActionsProps) {
             </p>
             <div className="space-y-1">
               {user.apartments.map((apartment) => {
-                const sharePercent = getApartmentSharePercent(apartment);
+                const sharePercent = formatSharePercent(apartment.shareRatio);
 
                 return (
                   <div

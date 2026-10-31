@@ -1,8 +1,8 @@
 import { Check } from 'lucide-react';
 
-import { getApartmentSharePercent } from '@/app/admin/users/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
+import { formatSharePercent } from '@/lib/utils';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 
 interface ApartmentOptionProps {
@@ -18,7 +18,7 @@ export function ApartmentOption({
   matching,
   onCheckedChange,
 }: ApartmentOptionProps) {
-  const sharePercent = getApartmentSharePercent(apartment);
+  const sharePercent = formatSharePercent(apartment.shareRatio);
 
   return (
     <label

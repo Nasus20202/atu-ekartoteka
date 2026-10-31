@@ -1,5 +1,4 @@
 import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
-import { formatSharePercent } from '@/lib/utils';
 
 type AddressFields = Pick<
   ApartmentSummaryDto,
@@ -8,24 +7,6 @@ type AddressFields = Pick<
 
 export function buildAddressKey(apt: AddressFields): string {
   return `${apt.address ?? ''}__${apt.building ?? ''}__${apt.number}`;
-}
-
-export function formatApartmentShare({
-  shareNumerator,
-  shareDenominator,
-}: ApartmentSummaryDto): string | null {
-  return shareNumerator && shareDenominator && shareDenominator > 0
-    ? `${formatSharePercent(shareNumerator, shareDenominator)}%`
-    : null;
-}
-
-export function apartmentShareRatio({
-  shareNumerator,
-  shareDenominator,
-}: ApartmentSummaryDto): number | null {
-  return shareNumerator && shareDenominator && shareDenominator > 0
-    ? shareNumerator / shareDenominator
-    : null;
 }
 
 export function computeDuplicateActiveAddresses(

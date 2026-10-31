@@ -8,8 +8,7 @@ import { ApartmentTable } from '@/app/admin/apartments/[hoaId]/apartment-table';
 import type { ApartmentSortKey, SortState } from '@/lib/utils/sort';
 
 const apartment = createMockApartment({
-  shareNumerator: 25,
-  shareDenominator: 1000,
+  shareRatio: 0.025,
 });
 
 function renderTable(
@@ -48,7 +47,7 @@ describe('ApartmentTable', () => {
 
     expect(screen.getByText('Main Street 1 A/101')).toBeInTheDocument();
     expect(screen.getByText('John Doe')).toBeInTheDocument();
-    expect(screen.getByText('2.5%')).toBeInTheDocument();
+    expect(screen.getByText('2,5%')).toBeInTheDocument();
     expect(screen.getByText('Aktywne')).toBeInTheDocument();
     expect(screen.queryByText('Duplikat adresu')).not.toBeInTheDocument();
   });
@@ -88,9 +87,7 @@ describe('ApartmentTable', () => {
   it('shows a dash when the share is unknown', () => {
     render(
       <ApartmentTable
-        apartments={[
-          { ...apartment, shareNumerator: null, shareDenominator: 0 },
-        ]}
+        apartments={[{ ...apartment, shareRatio: null }]}
         hoaId="hoa1"
         duplicateAddresses={new Set()}
         sort={null}

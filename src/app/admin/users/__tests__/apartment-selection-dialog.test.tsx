@@ -56,8 +56,7 @@ const apartment: ApartmentSummaryDto = {
   number: '2',
   postalCode: '00-001',
   city: 'Warszawa',
-  shareNumerator: 1,
-  shareDenominator: 4,
+  shareRatio: 0.25,
   isActive: true,
 };
 
@@ -269,7 +268,7 @@ describe('ApartmentSelectionDialog', () => {
           { ...other, id: 'selected' },
           { ...other, id: 'matching', email: 'nobody@example.com' },
           { ...other, id: 'inactive', isActive: false },
-          { ...other, id: 'plain', shareDenominator: null },
+          { ...other, id: 'plain', shareRatio: null },
         ]}
         onApartmentSearchChange={() => {}}
         onApproveOrAssign={() => {}}

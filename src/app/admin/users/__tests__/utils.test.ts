@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import { createEmptyNewUserData } from '@/app/admin/users/constants';
 import {
   buildUsersQuery,
-  getApartmentSharePercent,
   getPendingDescription,
   isApartmentMatchingUser,
   pinSelectedAndMatching,
@@ -23,8 +22,7 @@ const apartmentA: ApartmentSummaryDto = {
   number: '2',
   postalCode: '00-001',
   city: 'Warszawa',
-  shareNumerator: 1,
-  shareDenominator: 2,
+  shareRatio: 0.5,
   isActive: true,
 };
 
@@ -48,8 +46,7 @@ const apartmentC: ApartmentSummaryDto = {
   email: 'other@example.com',
   building: '2',
   number: '1',
-  shareNumerator: null,
-  shareDenominator: null,
+  shareRatio: null,
 };
 
 const approvedUser: UserDto = {
@@ -89,18 +86,6 @@ describe('admin users utils', () => {
     expect(getPendingDescription(1)).toBe('1 konto oczekuje na zatwierdzenie');
     expect(getPendingDescription(3)).toBe('3 konta oczekują na zatwierdzenie');
     expect(getPendingDescription(5)).toBe('5 kont oczekuje na zatwierdzenie');
-  });
-
-  it('formats apartment share percent only for valid denominators', () => {
-    expect(getApartmentSharePercent(apartmentA)).toBe('50%');
-    expect(getApartmentSharePercent(apartmentC)).toBeNull();
-    expect(
-      getApartmentSharePercent({
-        ...apartmentA,
-        shareNumerator: 1,
-        shareDenominator: 0,
-      })
-    ).toBeNull();
   });
 
   it('creates empty new user form data with expected defaults', () => {

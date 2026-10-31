@@ -92,15 +92,7 @@ export function ApartmentInfoCard({
           <div>
             <p className="text-sm text-muted-foreground">Procent udziału</p>
             <p className="font-medium">
-              {apartment.shareNumerator &&
-              apartment.shareDenominator &&
-              apartment.shareDenominator > 0
-                ? formatSharePercent(
-                    apartment.shareNumerator,
-                    apartment.shareDenominator
-                  )
-                : 'Brak'}
-              %
+              {formatSharePercent(apartment.shareRatio) ?? 'Brak'}
             </p>
           </div>
         </div>

@@ -1,7 +1,6 @@
 import type { UserFilter } from '@/app/admin/users/user-filters';
 import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
 import type { UserDto } from '@/lib/types/dto/user-dto';
-import { formatSharePercent } from '@/lib/utils';
 import type { SortState, UserSortKey } from '@/lib/utils/sort';
 
 export function buildUsersQuery(
@@ -91,18 +90,4 @@ export function getPendingDescription(
   }
 
   return `${pendingCount} kont oczekuje na zatwierdzenie`;
-}
-
-export function getApartmentSharePercent(
-  apartment: ApartmentSummaryDto
-): string | null {
-  if (
-    apartment.shareNumerator == null ||
-    apartment.shareDenominator == null ||
-    apartment.shareDenominator <= 0
-  ) {
-    return null;
-  }
-
-  return `${formatSharePercent(apartment.shareNumerator, apartment.shareDenominator)}%`;
 }

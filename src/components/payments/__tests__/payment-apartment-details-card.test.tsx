@@ -10,8 +10,7 @@ describe('PaymentApartmentDetailsCard', () => {
     number: '10',
     postalCode: '00-001',
     city: 'Warszawa',
-    shareNumerator: 575,
-    shareDenominator: 10000,
+    shareRatio: 0.0575,
   };
 
   it('renders apartment address', () => {
@@ -29,54 +28,19 @@ describe('PaymentApartmentDetailsCard', () => {
   it('renders share percentage without trailing zeros', () => {
     render(<PaymentApartmentDetailsCard {...defaultProps} />);
 
-    expect(screen.getByText('5.75%')).toBeInTheDocument();
+    expect(screen.getByText('5,75%')).toBeInTheDocument();
   });
 
   it('renders share as integer when calculation yields round number', () => {
-    render(
-      <PaymentApartmentDetailsCard
-        {...defaultProps}
-        shareNumerator={5000}
-        shareDenominator={250}
-      />
-    );
+    render(<PaymentApartmentDetailsCard {...defaultProps} shareRatio={20} />);
 
     expect(screen.getByText('2000%')).toBeInTheDocument();
   });
 
-  it('handles null numerator by showing dash', () => {
-    render(
-      <PaymentApartmentDetailsCard
-        {...defaultProps}
-        shareNumerator={null}
-        shareDenominator={250}
-      />
-    );
+  it('shows a dash when the share is unknown', () => {
+    render(<PaymentApartmentDetailsCard {...defaultProps} shareRatio={null} />);
 
-    expect(screen.getByText('-%')).toBeInTheDocument();
-  });
-
-  it('handles null denominator by showing dash', () => {
-    render(
-      <PaymentApartmentDetailsCard
-        {...defaultProps}
-        shareNumerator={5000}
-        shareDenominator={null}
-      />
-    );
-
-    expect(screen.getByText('-%')).toBeInTheDocument();
-  });
-
-  it('handles zero denominator by showing dash', () => {
-    render(
-      <PaymentApartmentDetailsCard
-        {...defaultProps}
-        shareNumerator={5000}
-        shareDenominator={0}
-      />
-    );
-
-    expect(screen.getByText('-%')).toBeInTheDocument();
+    expect(screen.getByText('-')).toBeInTheDocument();
+    expect(screen.queryByText('-%')).not.toBeInTheDocument();
   });
 });

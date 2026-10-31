@@ -7,8 +7,7 @@ interface PaymentApartmentDetailsCardProps {
   number: string;
   postalCode: string;
   city: string;
-  shareNumerator: number | null;
-  shareDenominator: number | null;
+  shareRatio: number | null;
 }
 
 export function PaymentApartmentDetailsCard({
@@ -17,13 +16,9 @@ export function PaymentApartmentDetailsCard({
   number,
   postalCode,
   city,
-  shareNumerator,
-  shareDenominator,
+  shareRatio,
 }: PaymentApartmentDetailsCardProps) {
-  const sharePercentage =
-    shareNumerator && shareDenominator && shareDenominator > 0
-      ? formatSharePercent(shareNumerator, shareDenominator)
-      : '-';
+  const sharePercentage = formatSharePercent(shareRatio) ?? '-';
 
   return (
     <Card>
@@ -54,7 +49,7 @@ export function PaymentApartmentDetailsCard({
             <div className="font-medium text-muted-foreground">
               Procent udziału
             </div>
-            <div>{sharePercentage}%</div>
+            <div>{sharePercentage}</div>
           </div>
         </div>
       </CardContent>
