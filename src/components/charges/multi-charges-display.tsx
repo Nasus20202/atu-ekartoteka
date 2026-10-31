@@ -13,8 +13,8 @@ import {
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import type { ChargeDisplayDto } from '@/lib/types/dto/charge-dto';
 import { cn } from '@/lib/utils';
+import { isPeriodAfterCutoff } from '@/lib/utils/charge-cutoff';
 import { getPeriodYear, groupByYearDesc } from '@/lib/utils/group-by-year';
-import { isPeriodAfterDate } from '@/lib/utils/period';
 import { sumDecimals } from '@/lib/utils/sum';
 
 interface ApartmentPeriodData {
@@ -27,7 +27,7 @@ interface ApartmentPeriodData {
 interface MultiChargesDisplayProps {
   periods: string[];
   chargesByPeriod: Record<string, ApartmentPeriodData[]>;
-  chargesDataDate?: string | null;
+  cutoffPeriod?: string | null;
   activeMonth?: string | null;
 }
 
@@ -42,12 +42,12 @@ function computePeriodTotal(periodData: ApartmentPeriodData[]) {
 export function MultiChargesDisplay({
   periods,
   chargesByPeriod,
-  chargesDataDate,
+  cutoffPeriod,
   activeMonth = null,
 }: MultiChargesDisplayProps) {
-  const filteredPeriods = chargesDataDate
-    ? periods.filter((p) => !isPeriodAfterDate(p, chargesDataDate))
-    : periods;
+  const filteredPeriods = periods.filter(
+    (p) => !isPeriodAfterCutoff(p, cutoffPeriod)
+  );
   const yearGroups = groupByYearDesc(filteredPeriods, getPeriodYear);
   const { openYears, toggleYear, openMonths, toggleMonth } =
     useChargeListOpenState(yearGroups[0]?.year, activeMonth);

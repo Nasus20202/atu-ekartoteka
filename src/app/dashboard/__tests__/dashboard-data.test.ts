@@ -37,18 +37,43 @@ function makeApartment(overrides: Partial<Apartment> = {}): Apartment {
 }
 
 describe('getDashboardPeriods', () => {
-  it('returns the current and previous month periods', () => {
-    expect(getDashboardPeriods(new Date(2025, 5, 15))).toEqual({
-      currentPeriod: '202506',
-      previousPeriod: '202505',
+  const withCharge = (key: string, year = 2026) =>
+    makeApartment({
+      payments: [createMockPayment({ year, [key]: 5 })],
     });
+
+  it('falls back to the current and previous month without payments', () => {
+    expect(
+      getDashboardPeriods([makeApartment()], new Date(2025, 5, 15))
+    ).toEqual({ currentPeriod: '202506', previousPeriod: '202505' });
   });
 
   it('rolls the previous period over to December of the last year', () => {
-    expect(getDashboardPeriods(new Date(2025, 0, 1))).toEqual({
+    expect(getDashboardPeriods([], new Date(2025, 0, 1))).toEqual({
       currentPeriod: '202501',
       previousPeriod: '202412',
     });
+  });
+
+  it('anchors on the latest charged month instead of today', () => {
+    expect(
+      getDashboardPeriods([withCharge('augustCharges')], new Date(2026, 9, 31))
+    ).toEqual({ currentPeriod: '202608', previousPeriod: '202607' });
+  });
+
+  it('uses the latest cutoff across apartments', () => {
+    expect(
+      getDashboardPeriods(
+        [withCharge('julyCharges'), withCharge('januaryCharges')],
+        new Date(2026, 9, 31)
+      )
+    ).toEqual({ currentPeriod: '202607', previousPeriod: '202606' });
+  });
+
+  it('never goes past the current month', () => {
+    expect(
+      getDashboardPeriods([withCharge('decemberCharges')], new Date(2026, 9, 1))
+    ).toEqual({ currentPeriod: '202610', previousPeriod: '202609' });
   });
 });
 

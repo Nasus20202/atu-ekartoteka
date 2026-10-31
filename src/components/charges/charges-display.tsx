@@ -18,8 +18,8 @@ import {
   toChargePdfItemDto,
 } from '@/lib/types/dto/charge-dto';
 import { cn } from '@/lib/utils';
+import { isPeriodAfterCutoff } from '@/lib/utils/charge-cutoff';
 import { getPeriodYear, groupByYearDesc } from '@/lib/utils/group-by-year';
-import { isPeriodAfterDate } from '@/lib/utils/period';
 import { sumDecimals } from '@/lib/utils/sum';
 
 interface ChargesDisplayProps {
@@ -28,7 +28,7 @@ interface ChargesDisplayProps {
   activeMonth: string | null;
   apartmentLabel: string;
   hoaName: string;
-  chargesDataDate?: string | null;
+  cutoffPeriod?: string | null;
 }
 
 export function ChargesDisplay({
@@ -37,11 +37,11 @@ export function ChargesDisplay({
   activeMonth,
   apartmentLabel,
   hoaName,
-  chargesDataDate,
+  cutoffPeriod,
 }: ChargesDisplayProps) {
-  const filteredPeriods = chargesDataDate
-    ? periods.filter((p) => !isPeriodAfterDate(p, chargesDataDate))
-    : periods;
+  const filteredPeriods = periods.filter(
+    (p) => !isPeriodAfterCutoff(p, cutoffPeriod)
+  );
   const yearGroups = groupByYearDesc(filteredPeriods, getPeriodYear);
   const { openYears, toggleYear, openMonths, toggleMonth } =
     useChargeListOpenState(yearGroups[0]?.year, activeMonth);

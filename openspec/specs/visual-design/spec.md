@@ -305,6 +305,13 @@ The system SHALL ensure financial charts are responsive, keyboard-safe, and supp
 - **WHEN** the value tooltip is shown
 - **THEN** monetary values are formatted consistently with the application's existing PLN currency formatting
 
+#### Scenario: Tooltip text readable in dark mode
+
+- **GIVEN** the application is in dark mode
+- **WHEN** a financial chart tooltip is shown, including for the balance bar chart
+- **THEN** the tooltip title and every value use the theme foreground colour, never fixed black
+- **AND** the same holds in light mode
+
 ### Requirement: Financial Charts Show Zero Baseline and Units
 
 The system SHALL render monetary financial charts with a visible zero baseline and readable amount labels.

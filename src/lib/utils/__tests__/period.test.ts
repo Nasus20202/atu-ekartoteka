@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import {
   dateToPeriod,
   getPeriodsBetween,
-  isPeriodAfterDate,
   monthIndexToPeriod,
 } from '@/lib/utils/period';
 
@@ -18,24 +17,6 @@ describe('dateToPeriod', () => {
 
   it('handles December correctly', () => {
     expect(dateToPeriod(new Date('2025-12-01'))).toBe('202512');
-  });
-});
-
-describe('isPeriodAfterDate', () => {
-  it('returns true when period is after the date', () => {
-    expect(isPeriodAfterDate('202606', '2026-05-31')).toBe(true);
-  });
-
-  it('returns false when period is before the date', () => {
-    expect(isPeriodAfterDate('202604', '2026-05-31')).toBe(false);
-  });
-
-  it('returns false when period equals the date period', () => {
-    expect(isPeriodAfterDate('202605', '2026-05-31')).toBe(false);
-  });
-
-  it('returns false when dateStr is null', () => {
-    expect(isPeriodAfterDate('202606', null)).toBe(false);
   });
 });
 

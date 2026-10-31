@@ -44,12 +44,12 @@ describe('MultiChargesDisplay — expanding', () => {
     ).toBeInTheDocument();
   });
 
-  it('hides periods after the charges data date', () => {
+  it('hides periods after the charge cutoff', () => {
     render(
       <MultiChargesDisplay
         periods={PERIODS}
         chargesByPeriod={{}}
-        chargesDataDate="2025-01-15T00:00:00.000Z"
+        cutoffPeriod="202501"
       />
     );
 

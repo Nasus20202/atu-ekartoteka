@@ -3,21 +3,29 @@ import { getSeriesColor } from '@/components/charts/chart-colors';
 import type { ApartmentBalance } from '@/components/dashboard/payments-summary-card';
 import type { findUserWithApartments } from '@/lib/queries/users/find-user-with-apartments';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
+import { getChargeCutoffPeriod } from '@/lib/utils/charge-cutoff';
 import { getPaymentYearHref } from '@/lib/utils/dashboard-links';
 import { toDecimal } from '@/lib/utils/decimal';
-import { dateToPeriod } from '@/lib/utils/period';
+import { dateToPeriod, periodToDate } from '@/lib/utils/period';
 
 type DashboardUser = NonNullable<
   Awaited<ReturnType<typeof findUserWithApartments>>
 >;
 type DashboardApartment = DashboardUser['apartments'][number];
 
-export function getDashboardPeriods(now: Date) {
-  const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1);
-  return {
-    currentPeriod: dateToPeriod(now),
-    previousPeriod: dateToPeriod(prevMonth),
-  };
+export function getDashboardPeriods(
+  apartments: DashboardApartment[],
+  now: Date
+) {
+  const currentPeriod =
+    getChargeCutoffPeriod(
+      apartments.flatMap((apt) => apt.payments),
+      now
+    ) ?? dateToPeriod(now);
+  const prevMonth = periodToDate(currentPeriod);
+  prevMonth.setMonth(prevMonth.getMonth() - 1);
+
+  return { currentPeriod, previousPeriod: dateToPeriod(prevMonth) };
 }
 
 export function getChargesForPeriod(

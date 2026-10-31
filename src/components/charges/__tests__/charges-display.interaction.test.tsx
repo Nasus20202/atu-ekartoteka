@@ -82,10 +82,8 @@ describe('ChargesDisplay interactions', () => {
     expect(january).toHaveAttribute('aria-expanded', 'false');
   });
 
-  it('hides periods after the charges data date', () => {
-    render(
-      <ChargesDisplay {...props} chargesDataDate="2025-01-31T00:00:00.000Z" />
-    );
+  it('hides periods after the charge cutoff', () => {
+    render(<ChargesDisplay {...props} cutoffPeriod="202501" />);
 
     expect(
       screen.queryByRole('button', { name: /luty/i })

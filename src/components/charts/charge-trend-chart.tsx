@@ -25,6 +25,7 @@ import {
 import {
   getTooltipPosition,
   TOOLTIP_CONTENT_STYLE,
+  TOOLTIP_TEXT_STYLE,
   TOOLTIP_WRAPPER_STYLE,
   ZERO_LINE_PROPS,
 } from '@/components/charts/chart-styles';
@@ -139,6 +140,8 @@ export function ChargeTrendChart({ data, series }: ChargeTrendChartProps) {
               formatter={formatSeriesTooltipAmount}
               labelFormatter={formatTooltipLabel}
               contentStyle={TOOLTIP_CONTENT_STYLE}
+              labelStyle={TOOLTIP_TEXT_STYLE}
+              itemStyle={TOOLTIP_TEXT_STYLE}
               position={getTooltipPosition(width)}
               wrapperStyle={TOOLTIP_WRAPPER_STYLE}
             />

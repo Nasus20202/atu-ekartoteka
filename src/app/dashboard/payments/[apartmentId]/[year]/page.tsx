@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/card';
 import { findApartmentPaymentYearsCached } from '@/lib/queries/apartments/find-apartment-payment-years';
 import { findApartmentWithPaymentsByYearCached } from '@/lib/queries/apartments/find-apartment-with-payments-by-year';
+import { findLatestChargedPayments } from '@/lib/queries/payments/find-latest-charged-payments';
 import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
 import { toPaymentPdfDto } from '@/lib/types/dto/payment-dto';
 import { formatCurrency } from '@/lib/utils';
@@ -30,7 +31,9 @@ import {
   getBalanceStatusClass,
   getSignedBalanceClass,
 } from '@/lib/utils/balance-class';
+import { getChargeCutoffPeriod } from '@/lib/utils/charge-cutoff';
 import { APP_LOCALE } from '@/lib/utils/locale';
+import { getRequestNow } from '@/lib/utils/request-now';
 
 interface PaymentDetailsPageProps {
   params: Promise<{
@@ -70,6 +73,10 @@ export default async function PaymentDetailsPage({
   }
 
   const payment = apartment.payments[0];
+  const cutoffPeriod = getChargeCutoffPeriod(
+    await findLatestChargedPayments([apartment.id]),
+    await getRequestNow()
+  );
 
   const { totalPayments, totalCharges, openingBalance, closingBalance } =
     getPaymentSummary(payment);
@@ -168,10 +175,7 @@ export default async function PaymentDetailsPage({
             <PaymentTable
               payment={payment}
               apartmentId={apartment.id}
-              chargesDataDate={
-                apartment.homeownersAssociation.chargesDataDate?.toISOString() ??
-                null
-              }
+              cutoffPeriod={cutoffPeriod}
             />
           </CardContent>
         </Card>

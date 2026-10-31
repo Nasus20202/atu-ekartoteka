@@ -37,7 +37,10 @@ export default async function DashboardPage() {
   }
 
   const now = await getRequestNow();
-  const { currentPeriod, previousPeriod } = getDashboardPeriods(now);
+  const { currentPeriod, previousPeriod } = getDashboardPeriods(
+    userData.apartments,
+    now
+  );
 
   const currentMonthCharges = getChargesForPeriod(
     userData.apartments,
