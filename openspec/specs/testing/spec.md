@@ -104,7 +104,7 @@ The system SHALL store all end-to-end tests in the `e2e/` directory, organised b
 
 ### Requirement: E2E Test Infrastructure
 
-The system SHALL provide global setup and teardown that prepares a known database state before each E2E run.
+The system SHALL provide global setup and teardown that prepares a known database state before each E2E run. E2E code that queries the database directly SHALL load its SQL from files in `e2e/test-data/seed/`.
 
 #### Scenario: Database seeding before run
 
@@ -124,7 +124,11 @@ The system SHALL provide global setup and teardown that prepares a known databas
 - **WHEN** E2E tests run
 - **THEN** Cloudflare Turnstile (`TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`) and SMTP (`SMTP_HOST`) are disabled via environment overrides so UI flows are not blocked by external services
 
----
+#### Scenario: Test data SQL kept in files
+
+- **GIVEN** an E2E helper or spec that reads or writes the database directly
+- **WHEN** it runs a query
+- **THEN** the SQL is loaded from a file in `e2e/test-data/seed/` with `loadSql`, not written inline in TypeScript
 
 ### Requirement: E2E Test Scope
 

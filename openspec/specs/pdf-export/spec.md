@@ -138,6 +138,12 @@ The notice PDF SHALL contain one A4 page per apartment. Each page SHALL show the
 - **WHEN** the PDF is generated
 - **THEN** it has two pages, each containing only that apartment's items and total
 
+#### Scenario: Same label in two HOAs
+
+- **GIVEN** a tenant with notices for apartment `ul. Lipowa 1/2` in two different HOAs
+- **WHEN** the PDF is generated
+- **THEN** it has a separate page for each HOA's apartment, each with its own HOA name, header, footer, items and total
+
 #### Scenario: HOA header printed
 
 - **GIVEN** an apartment whose HOA has header text
@@ -159,3 +165,13 @@ The notice PDF SHALL contain one A4 page per apartment. Each page SHALL show the
 
 - **WHEN** a notice PDF contains Polish diacritics
 - **THEN** all characters are legible and not rendered as placeholder boxes
+
+### Requirement: PDF Generation Date
+
+Every generation date printed in a PDF, and the date in the notice PDF filename, SHALL be the calendar date in the browser's local time zone, not the UTC date.
+
+#### Scenario: Download shortly after midnight
+
+- **GIVEN** a tenant in Poland on 2026-11-01 at 00:30 local time
+- **WHEN** they download the notice PDF
+- **THEN** the file is named `naliczenia-biezace-2026-11-01.pdf` and the PDF shows the generation date 2026-11-01
