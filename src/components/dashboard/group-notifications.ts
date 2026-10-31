@@ -27,9 +27,11 @@ export function groupByApartment(
 
   for (const notification of notifications) {
     const address = notification.apartmentAddress;
-    const group = groupMap.get(address) ?? { address, notifications: [] };
+    // The same label can exist in two HOAs; those stay separate apartments.
+    const key = `${notification.hoaId ?? ''}__${address}`;
+    const group = groupMap.get(key) ?? { address, notifications: [] };
     group.notifications.push(notification);
-    groupMap.set(address, group);
+    groupMap.set(key, group);
   }
 
   return Array.from(groupMap.values());

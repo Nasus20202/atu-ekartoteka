@@ -7,6 +7,7 @@ import {
   type PaymentPdfDto,
 } from '@/lib/types/dto/payment-dto';
 import { toDecimal } from '@/lib/utils/decimal';
+import { toLocalIsoDate } from '@/lib/utils/local-date';
 
 interface DownloadPaymentPdfButtonProps {
   apartmentLabel: string;
@@ -48,7 +49,7 @@ export function DownloadPaymentPdfButton({
         apartmentLabel={apartmentLabel}
         hoaName={hoaName}
         payment={hydratedPayment}
-        generatedDate={new Date().toISOString().slice(0, 10)}
+        generatedDate={toLocalIsoDate(new Date())}
       />
     ).toBlob();
 

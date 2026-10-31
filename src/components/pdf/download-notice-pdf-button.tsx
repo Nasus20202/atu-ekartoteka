@@ -6,6 +6,7 @@ import {
 } from '@/components/dashboard/group-notifications';
 import type { NoticePdfApartment } from '@/components/pdf/notice-pdf-document';
 import { PdfDownloadButton } from '@/components/pdf/pdf-download-button';
+import { toLocalIsoDate } from '@/lib/utils/local-date';
 
 interface DownloadNoticePdfButtonProps {
   notifications: NotificationItem[];
@@ -34,7 +35,7 @@ export function DownloadNoticePdfButton({
     const { NoticePdfDocument } =
       await import('@/components/pdf/notice-pdf-document');
 
-    const generatedDate = new Date().toISOString().slice(0, 10);
+    const generatedDate = toLocalIsoDate(new Date());
     const blob = await pdf(
       <NoticePdfDocument
         apartments={toNoticePdfApartments(notifications)}

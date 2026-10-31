@@ -33,6 +33,16 @@ describe('groupByApartment', () => {
     expect(groups[0].notifications.map((n) => n.id)).toEqual(['1', '3']);
   });
 
+  it('keeps apartments with the same label in different HOAs apart', () => {
+    const groups = groupByApartment([
+      { ...item('1', 'ul. A 1'), hoaId: 'hoa-1' },
+      { ...item('2', 'ul. A 1'), hoaId: 'hoa-2' },
+    ]);
+
+    expect(groups).toHaveLength(2);
+    expect(groups[1].notifications.map((n) => n.id)).toEqual(['2']);
+  });
+
   it('returns no groups for no notifications', () => {
     expect(groupByApartment([])).toEqual([]);
   });
