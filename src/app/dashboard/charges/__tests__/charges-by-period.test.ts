@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 
 import { createMockCharge } from '@/__tests__/fixtures';
 import {
-  getCommonChargesDataDate,
   getSortedPeriods,
   groupApartmentChargesByPeriod,
   groupChargesByPeriod,
@@ -18,7 +17,7 @@ function makeApartment(overrides: Partial<Apartment> = {}): Apartment {
     address: 'Testowa',
     building: '1',
     charges: [],
-    homeownersAssociation: { name: 'Wspólnota', chargesDataDate: null },
+    homeownersAssociation: { name: 'Wspólnota' },
     ...overrides,
   } as Apartment;
 }
@@ -63,37 +62,6 @@ describe('getSortedPeriods', () => {
     expect(
       getSortedPeriods({ '202501': [], '202503': [], '202412': [] })
     ).toEqual(['202503', '202501', '202412']);
-  });
-});
-
-describe('getCommonChargesDataDate', () => {
-  const hoaWithDate = (date: string | null) => ({
-    name: 'Wspólnota',
-    chargesDataDate: date ? new Date(date) : null,
-  });
-
-  it('returns the latest date when every HOA has one', () => {
-    expect(
-      getCommonChargesDataDate([
-        makeApartment({
-          homeownersAssociation: hoaWithDate('2025-01-01T00:00:00.000Z'),
-        } as Partial<Apartment>),
-        makeApartment({
-          homeownersAssociation: hoaWithDate('2025-02-01T00:00:00.000Z'),
-        } as Partial<Apartment>),
-      ])
-    ).toBe('2025-02-01T00:00:00.000Z');
-  });
-
-  it('returns null when any HOA has no date', () => {
-    expect(
-      getCommonChargesDataDate([
-        makeApartment({
-          homeownersAssociation: hoaWithDate('2025-01-01T00:00:00.000Z'),
-        } as Partial<Apartment>),
-        makeApartment(),
-      ])
-    ).toBeNull();
   });
 });
 

@@ -18,26 +18,23 @@ import {
   getNonEmptyMonths,
   getPaymentTotals,
 } from '@/lib/utils/payment-months';
-import { dateToPeriod, monthIndexToPeriod } from '@/lib/utils/period';
+import { monthIndexToPeriod } from '@/lib/utils/period';
 
 interface PaymentTableProps {
   payment: PaymentDtoSource;
   apartmentId: string;
   disableLinks?: boolean;
-  chargesDataDate?: string | null;
+  cutoffPeriod?: string | null;
 }
 
 export function PaymentTable({
   payment,
   apartmentId,
   disableLinks = false,
-  chargesDataDate,
+  cutoffPeriod,
 }: PaymentTableProps) {
   const openingBalance = toDecimal(payment.openingBalance);
-  const maxPeriod = chargesDataDate
-    ? dateToPeriod(new Date(chargesDataDate))
-    : null;
-  const monthlyData = getNonEmptyMonths(payment, maxPeriod).reduce<
+  const monthlyData = getNonEmptyMonths(payment, cutoffPeriod).reduce<
     Array<{
       monthIndex: number;
       name: string;

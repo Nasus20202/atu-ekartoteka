@@ -2,7 +2,6 @@ import { FileText } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
 import {
-  getCommonChargesDataDate,
   getSortedPeriods,
   groupApartmentChargesByPeriod,
   toActivePeriod,
@@ -12,9 +11,12 @@ import { MultiChargesDisplay } from '@/components/charges/multi-charges-display'
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
+import { findLatestChargedPayments } from '@/lib/queries/payments/find-latest-charged-payments';
 import { findUserWithApartmentChargesCached } from '@/lib/queries/users/find-user-with-apartment-charges';
 import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
 import { AccountStatus } from '@/lib/types';
+import { getChargeCutoffPeriod } from '@/lib/utils/charge-cutoff';
+import { getRequestNow } from '@/lib/utils/request-now';
 
 export default async function ChargesPage({
   searchParams,
@@ -29,9 +31,14 @@ export default async function ChargesPage({
   }
 
   const startYear = await getTenantHistoryStartYear();
+  const cutoffPeriod = getChargeCutoffPeriod(
+    await findLatestChargedPayments({ userId: session.user.id }),
+    await getRequestNow()
+  );
   const userData = await findUserWithApartmentChargesCached(
     session.user.id,
-    startYear
+    startYear,
+    cutoffPeriod
   );
 
   if (!userData || userData.status !== AccountStatus.APPROVED) {
@@ -40,7 +47,6 @@ export default async function ChargesPage({
 
   const chargesByPeriod = groupApartmentChargesByPeriod(userData.apartments);
   const periods = getSortedPeriods(chargesByPeriod);
-  const chargesDataDate = getCommonChargesDataDate(userData.apartments);
 
   return (
     <Page>
@@ -62,7 +68,6 @@ export default async function ChargesPage({
         <MultiChargesDisplay
           periods={periods}
           chargesByPeriod={chargesByPeriod}
-          chargesDataDate={chargesDataDate}
           activeMonth={toActivePeriod(month)}
         />
       )}

@@ -43,21 +43,4 @@ describe('MultiChargesDisplay — expanding', () => {
       screen.getByRole('button', { name: /Luty 2025/ })
     ).toBeInTheDocument();
   });
-
-  it('hides periods after the charges data date', () => {
-    render(
-      <MultiChargesDisplay
-        periods={PERIODS}
-        chargesByPeriod={{}}
-        chargesDataDate="2025-01-15T00:00:00.000Z"
-      />
-    );
-
-    expect(
-      screen.queryByRole('button', { name: /Luty 2025/ })
-    ).not.toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /Styczeń 2025/ })
-    ).toBeInTheDocument();
-  });
 });

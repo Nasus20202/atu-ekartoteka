@@ -59,22 +59,6 @@ export function getSortedPeriods(chargesByPeriod: Record<string, unknown>) {
   return Object.keys(chargesByPeriod).sort().reverse();
 }
 
-export function getCommonChargesDataDate(
-  apartments: ChargesApartment[]
-): string | null {
-  const chargesDataDates = apartments
-    .map((a) => a.homeownersAssociation.chargesDataDate)
-    .filter((date): date is Date => date !== null);
-
-  if (chargesDataDates.length !== apartments.length) {
-    return null;
-  }
-
-  return new Date(
-    Math.max(...chargesDataDates.map((d) => d.getTime()))
-  ).toISOString();
-}
-
 export function groupChargesByPeriod(
   charges: (ChargeDtoSource & { period: string })[]
 ): Record<string, ChargeDisplayDto[]> {

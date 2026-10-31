@@ -26,7 +26,7 @@ describe('user queries', () => {
   });
 
   it('includes apartment charges in the window, newest period first', async () => {
-    await findUserWithApartmentCharges('user-1', 2025);
+    await findUserWithApartmentCharges('user-1', 2025, '202608');
 
     expect(mockFindUnique).toHaveBeenCalledWith({
       where: { id: 'user-1' },
@@ -35,7 +35,7 @@ describe('user queries', () => {
           include: {
             homeownersAssociation: true,
             charges: {
-              where: { period: { gte: '202501' } },
+              where: { period: { gte: '202501', lte: '202608' } },
               orderBy: [{ period: 'desc' }, { externalLineNo: 'asc' }],
             },
           },

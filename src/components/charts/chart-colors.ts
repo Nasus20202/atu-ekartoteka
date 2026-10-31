@@ -8,6 +8,7 @@ export const CHART_COLORS = {
   balanceNegative: 'hsl(0 72% 51%)',
   zeroLine: 'hsl(var(--muted-foreground))',
   tooltip: 'hsl(var(--card))',
+  tooltipText: 'hsl(var(--foreground))',
   tooltipBorder: 'hsl(var(--border))',
   muted: 'hsl(var(--muted-foreground))',
 };

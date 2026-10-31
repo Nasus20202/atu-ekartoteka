@@ -287,7 +287,7 @@ describe('PaymentTable', () => {
     );
   });
 
-  it('hides months after the charges data date', () => {
+  it('hides months after the charge cutoff', () => {
     render(
       <PaymentTable
         payment={createMockPayment({
@@ -297,7 +297,7 @@ describe('PaymentTable', () => {
         })}
         apartmentId="apt-1"
         disableLinks
-        chargesDataDate="2024-01-31T00:00:00.000Z"
+        cutoffPeriod="202401"
       />
     );
 

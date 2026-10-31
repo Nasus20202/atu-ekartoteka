@@ -19,14 +19,6 @@ export function periodToDate(period: string): Date {
   return new Date(year, month, 1);
 }
 
-export function isPeriodAfterDate(
-  period: string,
-  dateStr: string | null
-): boolean {
-  if (!dateStr) return false;
-  return period > dateToPeriod(new Date(dateStr));
-}
-
 export function getPeriodsBetween(
   startPeriod: string,
   endPeriod: string

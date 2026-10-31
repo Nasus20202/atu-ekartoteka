@@ -19,7 +19,6 @@ import {
 } from '@/lib/types/dto/charge-dto';
 import { cn } from '@/lib/utils';
 import { getPeriodYear, groupByYearDesc } from '@/lib/utils/group-by-year';
-import { isPeriodAfterDate } from '@/lib/utils/period';
 import { sumDecimals } from '@/lib/utils/sum';
 
 interface ChargesDisplayProps {
@@ -28,7 +27,6 @@ interface ChargesDisplayProps {
   activeMonth: string | null;
   apartmentLabel: string;
   hoaName: string;
-  chargesDataDate?: string | null;
 }
 
 export function ChargesDisplay({
@@ -37,12 +35,8 @@ export function ChargesDisplay({
   activeMonth,
   apartmentLabel,
   hoaName,
-  chargesDataDate,
 }: ChargesDisplayProps) {
-  const filteredPeriods = chargesDataDate
-    ? periods.filter((p) => !isPeriodAfterDate(p, chargesDataDate))
-    : periods;
-  const yearGroups = groupByYearDesc(filteredPeriods, getPeriodYear);
+  const yearGroups = groupByYearDesc(periods, getPeriodYear);
   const { openYears, toggleYear, openMonths, toggleMonth } =
     useChargeListOpenState(yearGroups[0]?.year, activeMonth);
   const activeRef = useScrollToActiveMonth(activeMonth);

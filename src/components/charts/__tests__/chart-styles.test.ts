@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { getTooltipPosition } from '@/components/charts/chart-styles';
+import {
+  getTooltipPosition,
+  TOOLTIP_CONTENT_STYLE,
+  TOOLTIP_TEXT_STYLE,
+} from '@/components/charts/chart-styles';
 
 describe('getTooltipPosition', () => {
   it('pins the tooltip to the left edge on narrow charts', () => {
@@ -10,5 +14,12 @@ describe('getTooltipPosition', () => {
 
   it('lets the tooltip follow the cursor on wide charts', () => {
     expect(getTooltipPosition(481)).toBeUndefined();
+  });
+});
+
+describe('tooltip text colour', () => {
+  it('follows the theme foreground instead of a fixed colour', () => {
+    expect(TOOLTIP_TEXT_STYLE.color).toBe('hsl(var(--foreground))');
+    expect(TOOLTIP_CONTENT_STYLE.color).toBe(TOOLTIP_TEXT_STYLE.color);
   });
 });

@@ -82,19 +82,6 @@ describe('ChargesDisplay interactions', () => {
     expect(january).toHaveAttribute('aria-expanded', 'false');
   });
 
-  it('hides periods after the charges data date', () => {
-    render(
-      <ChargesDisplay {...props} chargesDataDate="2025-01-31T00:00:00.000Z" />
-    );
-
-    expect(
-      screen.queryByRole('button', { name: /luty/i })
-    ).not.toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /styczeń/i })
-    ).toBeInTheDocument();
-  });
-
   it('scrolls the active month into view after the animation', () => {
     vi.useFakeTimers();
     const scrollIntoView = vi.fn();

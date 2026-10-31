@@ -7,7 +7,10 @@ export const TOOLTIP_CONTENT_STYLE = {
   border: `1px solid ${CHART_COLORS.tooltipBorder}`,
   borderRadius: TOOLTIP_BORDER_RADIUS,
   whiteSpace: 'normal' as const,
+  color: CHART_COLORS.tooltipText,
 };
+
+export const TOOLTIP_TEXT_STYLE = { color: CHART_COLORS.tooltipText };
 
 const TOOLTIP_Z_INDEX = 10;
 

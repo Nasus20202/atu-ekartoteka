@@ -22,16 +22,30 @@ describe('apartment queries', () => {
   });
 
   it('finds an apartment with charges only for its owner', async () => {
-    await findApartmentWithCharges('apt-1', 'user-1', 2025);
+    await findApartmentWithCharges('apt-1', 'user-1', 2025, '202608');
 
     expect(mockFindFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'apt-1', userId: 'user-1' },
         include: expect.objectContaining({
           charges: {
-            where: { period: { gte: '202501' } },
+            where: { period: { gte: '202501', lte: '202608' } },
             orderBy: [{ period: 'desc' }, { externalLineNo: 'asc' }],
           },
+        }),
+      })
+    );
+  });
+
+  it('does not limit charges without a cutoff', async () => {
+    await findApartmentWithCharges('apt-1', 'user-1', 2025, null);
+
+    expect(mockFindFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        include: expect.objectContaining({
+          charges: expect.objectContaining({
+            where: { period: { gte: '202501' } },
+          }),
         }),
       })
     );
