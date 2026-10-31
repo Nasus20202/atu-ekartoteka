@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   chargesFromYear,
+  chargesInWindow,
   getHistoryStartYear,
   paymentsFromYear,
 } from '@/lib/utils/history-window';
@@ -21,6 +22,13 @@ describe('history window', () => {
 
   it('starts the charge window in January of the start year', () => {
     expect(chargesFromYear(2025)).toEqual({ period: { gte: '202501' } });
+  });
+
+  it('ends the charge window at the cutoff period when there is one', () => {
+    expect(chargesInWindow(2025, '202608')).toEqual({
+      period: { gte: '202501', lte: '202608' },
+    });
+    expect(chargesInWindow(2025, null)).toEqual({ period: { gte: '202501' } });
   });
 
   it('starts the payment window at the start year', () => {

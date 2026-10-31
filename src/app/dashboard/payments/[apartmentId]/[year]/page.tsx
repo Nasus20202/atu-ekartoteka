@@ -74,7 +74,10 @@ export default async function PaymentDetailsPage({
 
   const payment = apartment.payments[0];
   const cutoffPeriod = getChargeCutoffPeriod(
-    await findLatestChargedPayments([apartment.id]),
+    await findLatestChargedPayments({
+      userId: session.user.id,
+      apartmentId: apartment.id,
+    }),
     await getRequestNow()
   );
 

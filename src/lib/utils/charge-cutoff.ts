@@ -28,10 +28,3 @@ export function getChargeCutoffPeriod(
 
   return [periods.sort().at(-1) as string, dateToPeriod(now)].sort()[0];
 }
-
-export function isPeriodAfterCutoff(
-  period: string,
-  cutoffPeriod: string | null | undefined
-): boolean {
-  return Boolean(cutoffPeriod) && period > (cutoffPeriod as string);
-}

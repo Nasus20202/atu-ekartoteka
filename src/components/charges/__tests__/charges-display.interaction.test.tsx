@@ -82,17 +82,6 @@ describe('ChargesDisplay interactions', () => {
     expect(january).toHaveAttribute('aria-expanded', 'false');
   });
 
-  it('hides periods after the charge cutoff', () => {
-    render(<ChargesDisplay {...props} cutoffPeriod="202501" />);
-
-    expect(
-      screen.queryByRole('button', { name: /luty/i })
-    ).not.toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /styczeń/i })
-    ).toBeInTheDocument();
-  });
-
   it('scrolls the active month into view after the animation', () => {
     vi.useFakeTimers();
     const scrollIntoView = vi.fn();

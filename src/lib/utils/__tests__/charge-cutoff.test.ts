@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  getChargeCutoffPeriod,
-  isPeriodAfterCutoff,
-} from '@/lib/utils/charge-cutoff';
+import { getChargeCutoffPeriod } from '@/lib/utils/charge-cutoff';
 
 const NOW = new Date(2026, 9, 31);
 
@@ -42,17 +39,5 @@ describe('getChargeCutoffPeriod', () => {
     expect(
       getChargeCutoffPeriod([{ year: 2026, decemberCharges: 1 }], NOW)
     ).toBe('202610');
-  });
-});
-
-describe('isPeriodAfterCutoff', () => {
-  it('compares periods against the cutoff', () => {
-    expect(isPeriodAfterCutoff('202609', '202608')).toBe(true);
-    expect(isPeriodAfterCutoff('202608', '202608')).toBe(false);
-  });
-
-  it('never hides anything without a cutoff', () => {
-    expect(isPeriodAfterCutoff('209912', null)).toBe(false);
-    expect(isPeriodAfterCutoff('209912', undefined)).toBe(false);
   });
 });

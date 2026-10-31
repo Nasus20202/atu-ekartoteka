@@ -7,11 +7,15 @@ const CHARGE_MONTH_SELECT = Object.fromEntries(
   CHARGE_MONTH_FIELD_KEYS.map((key) => [key, true])
 ) as Record<ChargeMonthKey, true>;
 
-// One row per apartment: its newest payment year that has any charge.
-export function findLatestChargedPayments(apartmentIds: string[]) {
+// One row per owned apartment: its newest payment year that has any charge.
+export function findLatestChargedPayments(owner: {
+  userId: string;
+  apartmentId?: string;
+}) {
   return prisma.payment.findMany({
     where: {
-      apartmentId: { in: apartmentIds },
+      apartment: { userId: owner.userId },
+      ...(owner.apartmentId ? { apartmentId: owner.apartmentId } : {}),
       OR: CHARGE_MONTH_FIELD_KEYS.map((key) => ({ [key]: { not: 0 } })),
     },
     distinct: ['apartmentId'],

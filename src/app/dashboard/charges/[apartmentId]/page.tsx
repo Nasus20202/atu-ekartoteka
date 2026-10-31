@@ -41,10 +41,18 @@ export default async function ApartmentChargesPage({
     redirect('/dashboard');
   }
 
+  const cutoffPeriod = getChargeCutoffPeriod(
+    await findLatestChargedPayments({
+      userId: session.user.id,
+      apartmentId,
+    }),
+    await getRequestNow()
+  );
   const apartment = await findApartmentWithChargesCached(
     apartmentId,
     session.user.id,
-    await getTenantHistoryStartYear()
+    await getTenantHistoryStartYear(),
+    cutoffPeriod
   );
 
   if (!apartment) {
@@ -55,10 +63,6 @@ export default async function ApartmentChargesPage({
   const periods = getSortedPeriods(chargesByPeriod);
   const apartmentLabel = formatApartmentLabel(apartment);
   const activeMonth = toActivePeriod(month);
-  const cutoffPeriod = getChargeCutoffPeriod(
-    await findLatestChargedPayments([apartment.id]),
-    await getRequestNow()
-  );
 
   return (
     <Page maxWidth="4xl">
@@ -86,7 +90,6 @@ export default async function ApartmentChargesPage({
           activeMonth={activeMonth}
           apartmentLabel={apartmentLabel}
           hoaName={apartment.homeownersAssociation.name}
-          cutoffPeriod={cutoffPeriod}
         />
       )}
     </Page>

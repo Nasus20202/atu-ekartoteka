@@ -123,14 +123,6 @@ The application provides health check endpoints for monitoring:
 - Import from legacy system files (`.txt`, `.wmb` format)
 - Role-based access (Admin/Tenant)
 
-## Tenant data cutoff
+## Import and tenant data cutoff
 
-Tenants only see data up to the **charge cutoff**: the latest month with a non-zero charge in the apartment's payment records (`Payment` monthly charge columns), never later than the current month. It applies to the dashboard tiles and charts, the charges lists and the payment detail table.
-
-- On the dashboard the "current month" is the cutoff month, so it matches the newest month in the charges list. Without any payment data it falls back to the current month.
-- Combined views (dashboard, charges overview) use the latest cutoff across the tenant's apartments; per-apartment pages use that apartment's own cutoff.
-- Admin views are not affected and always show every month.
-- The `.wmb` data-as-of dates are still stored per HOA and shown in the admin HOA list and import result, but they no longer hide anything.
-- The cutoff is derived from imported data, so there is nothing to configure. To show a newer month, import payments that charge it.
-
-The logic lives in `src/lib/utils/charge-cutoff.ts` and `src/lib/queries/payments/find-latest-charged-payments.ts`.
+Admins import legacy `.txt` and `.wmb` files per HOA; the data-as-of dates from the `.wmb` files are stored on the HOA and shown in the admin panel only. Tenants see data up to the latest month with a non-zero charge in the imported payments (never later than the current month), so the dashboard and the charges lists always end on the same month. To show a newer month, import payments that charge it. Admin views always show every month.

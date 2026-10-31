@@ -43,21 +43,4 @@ describe('MultiChargesDisplay — expanding', () => {
       screen.getByRole('button', { name: /Luty 2025/ })
     ).toBeInTheDocument();
   });
-
-  it('hides periods after the charge cutoff', () => {
-    render(
-      <MultiChargesDisplay
-        periods={PERIODS}
-        chargesByPeriod={{}}
-        cutoffPeriod="202501"
-      />
-    );
-
-    expect(
-      screen.queryByRole('button', { name: /Luty 2025/ })
-    ).not.toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /Styczeń 2025/ })
-    ).toBeInTheDocument();
-  });
 });

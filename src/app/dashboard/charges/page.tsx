@@ -31,9 +31,14 @@ export default async function ChargesPage({
   }
 
   const startYear = await getTenantHistoryStartYear();
+  const cutoffPeriod = getChargeCutoffPeriod(
+    await findLatestChargedPayments({ userId: session.user.id }),
+    await getRequestNow()
+  );
   const userData = await findUserWithApartmentChargesCached(
     session.user.id,
-    startYear
+    startYear,
+    cutoffPeriod
   );
 
   if (!userData || userData.status !== AccountStatus.APPROVED) {
@@ -42,10 +47,6 @@ export default async function ChargesPage({
 
   const chargesByPeriod = groupApartmentChargesByPeriod(userData.apartments);
   const periods = getSortedPeriods(chargesByPeriod);
-  const cutoffPeriod = getChargeCutoffPeriod(
-    await findLatestChargedPayments(userData.apartments.map(({ id }) => id)),
-    await getRequestNow()
-  );
 
   return (
     <Page>
@@ -67,7 +68,6 @@ export default async function ChargesPage({
         <MultiChargesDisplay
           periods={periods}
           chargesByPeriod={chargesByPeriod}
-          cutoffPeriod={cutoffPeriod}
           activeMonth={toActivePeriod(month)}
         />
       )}
