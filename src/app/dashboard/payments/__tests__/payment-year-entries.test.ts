@@ -29,7 +29,7 @@ describe('toPaymentYearEntries', () => {
       apartmentId: 'apt-1',
       apartmentLabel: 'Testowa /10',
       hoaName: 'Wspólnota',
-      dateFromLabel: '1.01.2025',
+      dateFromLabel: '01.01.2025',
       dateToLabel: '31.12.2025',
     });
     expect(entry.payment.id).toBe('pay-2025');

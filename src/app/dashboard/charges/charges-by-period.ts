@@ -4,6 +4,7 @@ import {
   type ChargeDtoSource,
   toChargeDisplayDto,
 } from '@/lib/types/dto/charge-dto';
+import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 
 type ChargesUser = NonNullable<
   Awaited<ReturnType<typeof findUserWithApartmentCharges>>
@@ -23,10 +24,7 @@ export function groupApartmentChargesByPeriod(
   const chargesByPeriod: Record<string, ApartmentPeriodData[]> = {};
 
   for (const apartment of apartments) {
-    const apartmentLabel =
-      `${apartment.address || ''} ${apartment.building || ''}/${apartment.number}`
-        .replace(/\s+\//g, ' /')
-        .trim();
+    const apartmentLabel = formatApartmentLabel(apartment);
 
     for (const charge of apartment.charges) {
       if (!chargesByPeriod[charge.period]) {

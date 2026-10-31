@@ -1,7 +1,7 @@
 import type { findUserWithApartmentPayments } from '@/lib/queries/users/find-user-with-apartment-payments';
 import { toPaymentListItemDto } from '@/lib/types/dto/payment-dto';
+import { formatDate } from '@/lib/utils';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
-import { APP_LOCALE } from '@/lib/utils/locale';
 
 type PaymentsUser = NonNullable<
   Awaited<ReturnType<typeof findUserWithApartmentPayments>>
@@ -16,7 +16,7 @@ export function toPaymentYearEntries(apartment: PaymentsApartment) {
     apartmentId: apartment.id,
     apartmentLabel,
     hoaName: apartment.homeownersAssociation.name,
-    dateFromLabel: payment.dateFrom.toLocaleDateString(APP_LOCALE),
-    dateToLabel: payment.dateTo.toLocaleDateString(APP_LOCALE),
+    dateFromLabel: formatDate(payment.dateFrom),
+    dateToLabel: formatDate(payment.dateTo),
   }));
 }

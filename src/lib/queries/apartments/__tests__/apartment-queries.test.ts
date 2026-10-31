@@ -1,19 +1,24 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { mockFindFirst, mockFindMany } = vi.hoisted(() => ({
+const { mockFindFirst, mockFindMany, mockCount } = vi.hoisted(() => ({
   mockFindFirst: vi.fn(),
   mockFindMany: vi.fn(),
+  mockCount: vi.fn(),
 }));
 
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
-    apartment: { findFirst: mockFindFirst, findMany: mockFindMany },
+    apartment: {
+      findFirst: mockFindFirst,
+      findMany: mockFindMany,
+      count: mockCount,
+    },
   },
 }));
 
+import { countApartmentAvailability } from '@/lib/queries/apartments/count-apartment-availability';
 import { findApartmentWithCharges } from '@/lib/queries/apartments/find-apartment-with-charges';
 import { findApartmentWithPaymentsByYear } from '@/lib/queries/apartments/find-apartment-with-payments-by-year';
-import { findApartmentsByIds } from '@/lib/queries/apartments/find-apartments-by-ids';
 import { findAssignedApartmentAddressKeys } from '@/lib/queries/apartments/find-assigned-apartment-address-keys';
 
 describe('apartment queries', () => {
@@ -72,12 +77,20 @@ describe('apartment queries', () => {
     expect(mockFindFirst).not.toHaveBeenCalled();
   });
 
-  it('finds apartments by ids with their users', async () => {
-    await findApartmentsByIds(['a', 'b']);
+  it('counts existing and foreign-owned apartments in the database', async () => {
+    mockCount.mockResolvedValueOnce(2).mockResolvedValueOnce(1);
 
-    expect(mockFindMany).toHaveBeenCalledWith({
+    const result = await countApartmentAvailability(['a', 'b'], 'user-1');
+
+    expect(result).toEqual({ found: 2, occupiedByOthers: 1 });
+    expect(mockCount).toHaveBeenNthCalledWith(1, {
       where: { id: { in: ['a', 'b'] } },
-      include: { user: true },
+    });
+    expect(mockCount).toHaveBeenNthCalledWith(2, {
+      where: {
+        id: { in: ['a', 'b'] },
+        AND: [{ userId: { not: null } }, { userId: { not: 'user-1' } }],
+      },
     });
   });
 

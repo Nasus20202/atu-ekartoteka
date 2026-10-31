@@ -14,4 +14,10 @@ describe('formatApartmentLabel', () => {
       formatApartmentLabel({ address: 'Testowa', building: null, number: '3' })
     ).toBe('Testowa /3');
   });
+
+  it('omits a missing address without leaving a leading space', () => {
+    expect(
+      formatApartmentLabel({ address: null, building: '12', number: '3' })
+    ).toBe('12/3');
+  });
 });

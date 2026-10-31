@@ -139,8 +139,8 @@ describe('ImportResults', () => {
     expect(screen.getByText(/błędy plików \(1\)/i)).toBeInTheDocument();
     expect(screen.getByText(/wspólnoty z błędami \(1\)/i)).toBeInTheDocument();
     expect(screen.getByText(/wspólnota: HOA-1/i)).toBeInTheDocument();
-    expect(screen.getByText(/mieszkania: 2.01.2024/i)).toBeInTheDocument();
-    expect(screen.getByText(/naliczenia: 3.01.2024/i)).toBeInTheDocument();
+    expect(screen.getByText(/mieszkania: 02.01.2024/i)).toBeInTheDocument();
+    expect(screen.getByText(/naliczenia: 03.01.2024/i)).toBeInTheDocument();
     expect(screen.getByText(/powiadomienia o opłatach/i)).toBeInTheDocument();
     expect(screen.getByText(/wpłaty/i)).toBeInTheDocument();
     expect(screen.getByText(/błędy walidacji \(2\)/i)).toBeInTheDocument();

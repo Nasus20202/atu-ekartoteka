@@ -41,7 +41,7 @@ describe('HoaListCard', () => {
     expect(screen.getByText('Wspólnota Testowa')).toBeInTheDocument();
     expect(screen.getByText('3')).toBeInTheDocument();
     expect(screen.getByText('mieszkania')).toBeInTheDocument();
-    expect(screen.getByText('Mieszkania: 7.03.2025')).toBeInTheDocument();
+    expect(screen.getByText('Mieszkania: 07.03.2025')).toBeInTheDocument();
     expect(screen.queryByText(/Naliczenia:/)).not.toBeInTheDocument();
     expect(screen.getByRole('link')).toHaveAttribute(
       'href',
@@ -64,8 +64,8 @@ describe('HoaListCard', () => {
         notificationsDataDate: '2025-03-09T12:00:00.000Z',
       },
     });
-    expect(screen.getByText('Naliczenia: 8.03.2025')).toBeInTheDocument();
-    expect(screen.getByText('Powiadomienia: 9.03.2025')).toBeInTheDocument();
+    expect(screen.getByText('Naliczenia: 08.03.2025')).toBeInTheDocument();
+    expect(screen.getByText('Powiadomienia: 09.03.2025')).toBeInTheDocument();
   });
 
   it('hides import dates when none are known', () => {
