@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.5] - 2026-10-31
+
+- fix(charges): show quantities with a Polish decimal comma
+- test(e2e): expect Polish share format and re-record dashboard baselines
+- docs(openspec): record review fixes in specs
+- test(e2e): load scroll and name-sort test SQL from seed files
+- test(dashboard): cover a previous month outside the history window
+- fix(api): reject malformed settings JSON and parallelise the HOA financial summary
+- fix(admin): avoid stale assignment options and refresh races in infinite lists
+- fix(pdf): use the local date and keep same-label apartments of different HOAs apart
+- fix(apartments): sort and display shares from a database ratio
+- feat(import): accept suffixed and multiple txt files per kind
+- feat(admin): add sortable table view and move list filtering to the database
+- feat(admin): replace manual pagination with infinite scrolling
+- feat: notice PDF and admin year grouping
+- feat(dashboard): limit tenant history to an admin-configured window
+- fix(import): ignore rounding-only decimal changes
+- chore(deps): update semgrep/semgrep docker tag to v1.183.0 (#821)
+- chore(deps): update pnpm to v12.16.1 (#818)
+
 ## [0.8.4] - 2026-10-30
 
 - fix(admin): require double confirmation for inactive apartments
