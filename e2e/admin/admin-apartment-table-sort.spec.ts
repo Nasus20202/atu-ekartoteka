@@ -18,10 +18,14 @@ const ownerColumn = (page: Page) => page.locator('tbody tr td:nth-child(2)');
 const shareColumn = (page: Page) => page.locator('tbody tr td:nth-child(3)');
 const statusColumn = (page: Page) => page.locator('tbody tr td:nth-child(4)');
 
-/** Same formatting as the table: 45/1000 -> "4.5%". */
+const sharePercentFormat = new Intl.NumberFormat('pl-PL', {
+  maximumFractionDigits: 4,
+  useGrouping: false,
+});
+
+/** Same formatting as the table: 45/1000 -> "4,5%". */
 function formatShare(numerator: number, denominator = 1000): string {
-  const percent = ((numerator / denominator) * 100).toFixed(4);
-  return `${percent.replace(/\.?0+$/, '')}%`;
+  return `${sharePercentFormat.format((numerator / denominator) * 100)}%`;
 }
 
 function descendingNumbers(): number[] {
@@ -108,7 +112,7 @@ test.describe('Admin apartments table sorting', () => {
       descendingNumbers().map((n) => `Scroll Owner ${n}`)
     );
 
-    // Share: ordered by the numerator (the denominator is constant per HOA)
+    // Share: ordered by the database share ratio
     await openApartmentTable(adminPage, hoaId);
     await sortBy(
       adminPage,
