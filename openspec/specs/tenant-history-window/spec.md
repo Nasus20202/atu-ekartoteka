@@ -65,7 +65,12 @@ The system SHALL apply the history window to the tenant dashboard (balances, bal
 - **WHEN** the tenant views the dashboard
 - **THEN** the `Powiadomienia` card shows them regardless of the window
 
----
+#### Scenario: Previous month outside the window
+
+- **GIVEN** the setting is 0 and the current date is 2027-01-10
+- **AND** the tenant's apartment has charges for December 2026 and January 2027
+- **WHEN** the tenant views the dashboard `Naliczenia` card
+- **THEN** only the January 2027 tile is shown, with no December 2026 tile, no previous-month amount and no December point in the charge trend
 
 ### Requirement: Admin Views Ignore the Window
 
@@ -107,6 +112,12 @@ The system SHALL let an admin set, on the `Ustawienia` page at `/admin/settings`
 
 - **GIVEN** an authenticated admin
 - **WHEN** they send the settings API a value that is negative, above 20 or not a whole number, or an unknown setting
+- **THEN** the request is rejected with 400 and nothing is stored
+
+#### Scenario: Malformed request body rejected
+
+- **GIVEN** an authenticated admin
+- **WHEN** they send the settings API a body that is not valid JSON
 - **THEN** the request is rejected with 400 and nothing is stored
 
 #### Scenario: Default when never configured

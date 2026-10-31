@@ -1,0 +1,90 @@
+## MODIFIED Requirements
+
+### Requirement: Window Applies to Every Tenant View
+
+The system SHALL apply the history window to the tenant dashboard (balances, balance chart, charge trend), the charges overview and per-apartment charge pages, the payments list, the payment detail page and its year switcher.
+
+#### Scenario: Hidden payment year by URL
+
+- **GIVEN** a tenant and a payment year of their apartment that is older than the window
+- **WHEN** they open `/dashboard/payments/<apartmentId>/<hidden year>`
+- **THEN** a not-found page is shown
+
+#### Scenario: Hidden month requested in charges
+
+- **GIVEN** a tenant
+- **WHEN** they open `/dashboard/charges?month=YYYY-MM` for a month older than the window
+- **THEN** the month is not shown and the page renders the visible years with default expansion
+
+#### Scenario: Year switcher lists visible years only
+
+- **GIVEN** an apartment with stored payment years 2023 through 2027 and a window start year of 2025
+- **WHEN** the tenant views a payment detail page
+- **THEN** the `Rok` select lists only 2027, 2026 and 2025
+
+#### Scenario: Dashboard balance uses visible years
+
+- **GIVEN** a tenant whose apartment has payment years outside the window
+- **WHEN** they view the dashboard `Saldo wpłat` card
+- **THEN** the balance chart history contains only months from visible years
+
+#### Scenario: Current charge notices unaffected
+
+- **GIVEN** current charge notifications for a tenant's apartment
+- **WHEN** the tenant views the dashboard
+- **THEN** the `Powiadomienia` card shows them regardless of the window
+
+#### Scenario: Previous month outside the window
+
+- **GIVEN** the setting is 0 and the current date is 2027-01-10
+- **AND** the tenant's apartment has charges for December 2026 and January 2027
+- **WHEN** the tenant views the dashboard `Naliczenia` card
+- **THEN** only the January 2027 tile is shown, with no December 2026 tile, no previous-month amount and no December point in the charge trend
+
+### Requirement: Admin-Configurable Window Length
+
+The system SHALL let an admin set, on the `Ustawienia` page at `/admin/settings`, the number of previous full calendar years visible to tenants. The value SHALL be a whole number from 0 to 20 and SHALL default to 2 when it has never been set.
+
+#### Scenario: Admin views the current setting
+
+- **GIVEN** an authenticated admin
+- **WHEN** they open `/admin/settings`
+- **THEN** a select labelled `Liczba poprzednich lat widocznych dla mieszkańców` shows the current value (e.g. `2 lata`), offering every whole number from 0 to 20
+- **AND** a hint explains which years tenants currently see (e.g. `Mieszkańcy widzą lata 2025–2027`)
+
+#### Scenario: Admin saves a new value
+
+- **GIVEN** an admin on the settings page
+- **WHEN** they choose `1 rok` and click `Zapisz`
+- **THEN** the value is stored, a success alert `Zapisano ustawienia` is shown
+- **AND** subsequent tenant page loads use the new window
+
+#### Scenario: Invalid value rejected
+
+- **GIVEN** an authenticated admin
+- **WHEN** they send the settings API a value that is negative, above 20 or not a whole number, or an unknown setting
+- **THEN** the request is rejected with 400 and nothing is stored
+
+#### Scenario: Malformed request body rejected
+
+- **GIVEN** an authenticated admin
+- **WHEN** they send the settings API a body that is not valid JSON
+- **THEN** the request is rejected with 400 and nothing is stored
+
+#### Scenario: Default when never configured
+
+- **GIVEN** no stored setting
+- **WHEN** a tenant page or the settings page loads
+- **THEN** the value 2 is used
+
+#### Scenario: Non-admin cannot change setting
+
+- **GIVEN** an unauthenticated user or a tenant
+- **WHEN** they call the settings API
+- **THEN** the request is rejected with 401 or 403 and nothing is stored
+
+#### Scenario: Settings in admin navigation
+
+- **GIVEN** an authenticated admin in the admin panel
+- **WHEN** the navigation renders
+- **THEN** it contains an `Ustawienia` link to `/admin/settings`

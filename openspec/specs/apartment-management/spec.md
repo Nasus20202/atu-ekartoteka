@@ -135,13 +135,19 @@ The system SHALL expose an admin endpoint listing apartments that have no linked
 
 ### Requirement: Apartment Ownership Share
 
-The system SHALL store and display the ownership share (numerator/denominator) of each apartment within its HOA.
+The system SHALL store the ownership share (numerator/denominator) of each apartment within its HOA. The database SHALL derive the share ratio (numerator divided by denominator, unknown when the denominator is missing or zero) and every view SHALL display that stored ratio instead of computing it.
 
 #### Scenario: Share stored on import
 
 - **GIVEN** apartment data imported from a legacy file
 - **WHEN** the file contains share numerator and denominator values
 - **THEN** these values are persisted on the apartment record
+
+#### Scenario: Displayed share comes from the database
+
+- **GIVEN** an apartment with numerator 1 and denominator 2
+- **WHEN** any admin or tenant view shows its share
+- **THEN** the percentage is formatted from the stored ratio 0.5 as `50%`
 
 #### Scenario: Inactive apartments remain visible
 
@@ -218,8 +224,8 @@ In the table view of the HOA apartments page, apartments SHALL be shown as table
 #### Scenario: Table content
 
 - **GIVEN** the table view on a HOA's apartments
-- **WHEN** an active apartment `ul. Przytulna 22 A/4` owned by `Ślesiccy Teresa i Jerzy D` with share 1.22% is shown
-- **THEN** its row shows `ul. Przytulna 22 A/4`, `Ślesiccy Teresa i Jerzy D`, `1.22%` and `Aktywne` under the matching headers
+- **WHEN** an active apartment `ul. Przytulna 22 A/4` owned by `Ślesiccy Teresa i Jerzy D` with share 1,22% is shown
+- **THEN** its row shows `ul. Przytulna 22 A/4`, `Ślesiccy Teresa i Jerzy D`, `1,22%` and `Aktywne` under the matching headers
 
 #### Scenario: Row opens details
 
@@ -247,7 +253,7 @@ In the table view of the HOA apartments page, apartments SHALL be shown as table
 
 ### Requirement: Apartment Table Sorting
 
-The apartment table SHALL sort by `Adres`, `Właściciel`, `Udział` and `Status` from the column headers, with the sort column and direction sent to the apartments API so every page arrives in that order. Address and owner SHALL use locale-aware alphanumeric order, share SHALL sort numerically by numerator, then denominator (not by the formatted string), which is ratio order for an HOA using one denominator, and apartments with an unknown share SHALL come last when sorting ascending. Status SHALL group active apartments before inactive ones when sorting ascending.
+The apartment table SHALL sort by `Adres`, `Właściciel`, `Udział` and `Status` from the column headers, with the sort column and direction sent to the apartments API so every page arrives in that order. Address and owner SHALL use locale-aware alphanumeric order, share SHALL sort by its ratio (numerator divided by denominator), and apartments with an unknown share SHALL come last when sorting ascending. Status SHALL group active apartments before inactive ones when sorting ascending.
 
 #### Scenario: Sort by address
 
@@ -257,13 +263,19 @@ The apartment table SHALL sort by `Adres`, `Właściciel`, `Udział` and `Status
 
 #### Scenario: Sort by share value
 
-- **GIVEN** apartments with shares 20% and 1.22%
+- **GIVEN** apartments with shares 20% and 1,22%
 - **WHEN** the admin sorts by `Udział` ascending
-- **THEN** the 1.22% apartment comes first
+- **THEN** the 1,22% apartment comes first
+
+#### Scenario: Shares with different denominators
+
+- **GIVEN** apartments with shares 1/2 (50%) and 30/100 (30%)
+- **WHEN** the admin sorts by `Udział` ascending
+- **THEN** the 30% apartment comes first
 
 #### Scenario: Unknown share
 
-- **GIVEN** an apartment without a share and apartments with shares
+- **GIVEN** an apartment without a share, or with a zero denominator, and apartments with shares
 - **WHEN** the admin sorts by `Udział` ascending
 - **THEN** the apartment without a share is last
 
