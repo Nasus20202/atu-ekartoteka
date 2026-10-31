@@ -103,4 +103,24 @@ describe('useAvailableApartments', () => {
 
     expect(result.current).toEqual([]);
   });
+
+  it("never lists the previous user's apartments for another user", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(json(true, { apartments: [apartment] }))
+      .mockReturnValueOnce(new Promise(() => {}));
+    vi.stubGlobal('fetch', fetchMock);
+    const otherUser = { id: 'u2', apartments: [] } as unknown as UserDto;
+
+    const { result, rerender } = renderHook(
+      ({ user }) => useAvailableApartments(user, ''),
+      { initialProps: { user: selectedUser as UserDto | null } }
+    );
+    await waitFor(() => expect(result.current).toHaveLength(1));
+
+    rerender({ user: otherUser });
+    expect(result.current).toEqual([]);
+    rerender({ user: null });
+    expect(result.current).toEqual([]);
+  });
 });
