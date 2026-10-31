@@ -88,4 +88,20 @@ describe('DashboardNavbar', () => {
       expect(mobileMenu()).toHaveClass('max-h-0');
     });
   });
+
+  describe('Admin mobile menu', () => {
+    it('closes after choosing the settings link', async () => {
+      render(<DashboardNavbar mode="admin" />);
+      const toggle = screen.getByRole('button', { name: 'Menu' });
+
+      await userEvent.click(toggle);
+      expect(toggle).toHaveAttribute('aria-expanded', 'true');
+
+      await userEvent.click(
+        screen.getAllByRole('link', { name: 'Ustawienia' })[0]
+      );
+
+      expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    });
+  });
 });

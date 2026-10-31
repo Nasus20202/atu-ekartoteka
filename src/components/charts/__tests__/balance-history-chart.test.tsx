@@ -57,4 +57,15 @@ describe('BalanceHistoryChart', () => {
       screen.getByRole('button', { name: 'Pokaż wcześniejsze miesiące' })
     ).toBeDisabled();
   });
+
+  it('renders months without a balance value', () => {
+    render(
+      <BalanceHistoryChart
+        data={[{ period: '202401', label: 'Miesiąc 1' }]}
+        series={singleSeries}
+      />
+    );
+
+    expect(screen.getByTestId('balance-history-chart')).toBeInTheDocument();
+  });
 });

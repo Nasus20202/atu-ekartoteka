@@ -124,4 +124,18 @@ describe('ApartmentTable', () => {
 
     expect(onSort).toHaveBeenCalledWith({ key: 'label', direction: 'desc' });
   });
+
+  it.each([
+    ['Adres', 'label'],
+    ['Właściciel', 'owner'],
+    ['Udział', 'share'],
+    ['Status', 'status'],
+  ])('sorts by %s', async (header, key) => {
+    const user = userEvent.setup();
+    const onSort = renderTable();
+
+    await user.click(screen.getByRole('button', { name: header }));
+
+    expect(onSort).toHaveBeenCalledWith({ key, direction: 'asc' });
+  });
 });
