@@ -45,9 +45,7 @@ export function buildDashboardNotifications(apartments: DashboardApartment[]) {
       unitPrice: toDecimal(n.unitPrice).toString(),
       totalAmount: toDecimal(n.totalAmount).toString(),
       apartmentNumber: apt.number,
-      apartmentAddress: formatApartmentLabel(apt)
-        .replace(/\s+\//g, ' /')
-        .trim(),
+      apartmentAddress: formatApartmentLabel(apt),
       hoaId: apt.homeownersAssociation?.id ?? null,
       hoaName: apt.homeownersAssociation?.name ?? null,
       hoaHeader: apt.homeownersAssociation?.header ?? null,

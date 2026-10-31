@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { formatSharePercent } from '@/lib/utils';
+import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 import { APP_LOCALE } from '@/lib/utils/locale';
 
 export function UserCard(actionProps: UserActionsProps) {
@@ -54,8 +55,7 @@ export function UserCard(actionProps: UserActionsProps) {
                     className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-muted-foreground"
                   >
                     <span className="font-medium text-foreground">
-                      {apartment.address} {apartment.building}/
-                      {apartment.number}
+                      {formatApartmentLabel(apartment)}
                     </span>
                     <span>
                       {apartment.postalCode} {apartment.city}

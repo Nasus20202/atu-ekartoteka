@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatSharePercent } from '@/lib/utils';
+import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 
 interface PaymentApartmentDetailsCardProps {
   address: string;
@@ -29,9 +30,7 @@ export function PaymentApartmentDetailsCard({
         <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
           <div>
             <div className="font-medium text-muted-foreground">Adres</div>
-            <div>
-              {address} {building || ''}/{number}
-            </div>
+            <div>{formatApartmentLabel({ address, building, number })}</div>
           </div>
           <div>
             <div className="font-medium text-muted-foreground">Miasto</div>

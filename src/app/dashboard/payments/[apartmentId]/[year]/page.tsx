@@ -92,7 +92,7 @@ export default async function PaymentDetailsPage({
   return (
     <Page maxWidth="4xl">
       <PageHeader
-        title={`Wpłaty - ${apartment.address} ${apartment.building || ''}/${apartment.number}`}
+        title={`Wpłaty - ${apartmentLabel}`}
         description={`Szczegóły wpłat za rok ${payment.year}`}
         action={
           paymentYears.length > 1 && (

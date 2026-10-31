@@ -15,6 +15,7 @@ import {
 import { findUserWithApartmentPaymentsCached } from '@/lib/queries/users/find-user-with-apartment-payments';
 import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
 import { AccountStatus } from '@/lib/types';
+import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 
 export default async function PaymentsPage() {
   const session = await auth();
@@ -47,10 +48,7 @@ export default async function PaymentsPage() {
             return (
               <Card key={apartment.id}>
                 <CardHeader>
-                  <CardTitle>
-                    {apartment.address} {apartment.building || ''}/
-                    {apartment.number}
-                  </CardTitle>
+                  <CardTitle>{formatApartmentLabel(apartment)}</CardTitle>
                   <CardDescription>
                     {apartment.postalCode} {apartment.city}
                   </CardDescription>
