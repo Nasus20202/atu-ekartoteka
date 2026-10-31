@@ -4,6 +4,7 @@ import type { ChargePeriodGroup } from '@/components/pdf/charge-pdf-document';
 import { PdfDownloadButton } from '@/components/pdf/pdf-download-button';
 import type { ChargePdfItemDto } from '@/lib/types/dto/charge-dto';
 import { formatPeriod } from '@/lib/utils';
+import { toLocalIsoDate } from '@/lib/utils/local-date';
 import { sumDecimals } from '@/lib/utils/sum';
 
 interface DownloadChargesPdfButtonProps {
@@ -39,7 +40,7 @@ export function DownloadChargesPdfButton({
       total: sumDecimals(charges.map((charge) => charge.totalAmount)),
     };
 
-    const generatedDate = new Date().toISOString().slice(0, 10);
+    const generatedDate = toLocalIsoDate(new Date());
     const blob = await pdf(
       <ChargePdfDocument
         apartmentLabel={apartmentLabel}
