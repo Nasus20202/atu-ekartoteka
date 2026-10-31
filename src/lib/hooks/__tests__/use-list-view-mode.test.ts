@@ -1,4 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
+import { createElement } from 'react';
+import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ListViewMode, useListViewMode } from '@/lib/hooks/use-list-view-mode';
@@ -69,5 +71,13 @@ describe('useListViewMode', () => {
     });
 
     expect(result.current[0]).toBe(ListViewMode.TABLE);
+  });
+
+  it('renders cards on the server', () => {
+    window.localStorage.setItem('test:ssr', 'table');
+    const Probe = () =>
+      createElement('span', null, useListViewMode('test:ssr')[0]);
+
+    expect(renderToString(createElement(Probe))).toContain(ListViewMode.CARDS);
   });
 });

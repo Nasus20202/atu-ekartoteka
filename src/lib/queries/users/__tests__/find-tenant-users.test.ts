@@ -141,6 +141,14 @@ describe('findTenantUsers', () => {
     );
   });
 
+  it('sorts by email', async () => {
+    await findTenantUsers(null, 1, 50, null, UserRole.TENANT, 'email', 'desc');
+
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({ orderBy: [{ email: 'desc' }] })
+    );
+  });
+
   it('sorts by apartment count', async () => {
     await findTenantUsers(
       null,

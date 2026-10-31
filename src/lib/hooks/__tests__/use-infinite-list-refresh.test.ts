@@ -86,4 +86,54 @@ describe('useInfiniteList refresh', () => {
     await waitFor(() => expect(result.current.items).toHaveLength(2));
     expect(fetchPage).toHaveBeenLastCalledWith(2, expect.any(AbortSignal));
   });
+
+  it('ignores a refresh superseded by a newer one', async () => {
+    const outdated = deferred<InfinitePage<Item>>();
+    const fetchPage = vi
+      .fn()
+      .mockResolvedValueOnce(pageOf(1, ['a']))
+      .mockReturnValueOnce(outdated.promise)
+      .mockResolvedValueOnce({ items: [{ id: 'z' }], page: 1, totalPages: 1 });
+    const { result } = renderList(fetchPage);
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    let first: Promise<void> = Promise.resolve();
+    act(() => {
+      first = result.current.refresh();
+    });
+    await act(() => result.current.refresh());
+    await act(async () => {
+      outdated.resolve(pageOf(1, ['stale']));
+      await first;
+    });
+
+    expect(result.current.items.map(getId)).toEqual(['z']);
+    expect(result.current.total).toBeNull();
+  });
+
+  it('ignores a refresh failure after it was superseded', async () => {
+    let rejectOutdated: (reason: unknown) => void = () => {};
+    const fetchPage = vi
+      .fn()
+      .mockResolvedValueOnce(pageOf(1, ['a']))
+      .mockReturnValueOnce(
+        new Promise((_, reject) => (rejectOutdated = reject))
+      )
+      .mockResolvedValueOnce(pageOf(1, ['b']));
+    const { result } = renderList(fetchPage);
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    let first: Promise<void> = Promise.resolve();
+    act(() => {
+      first = result.current.refresh();
+    });
+    await act(() => result.current.refresh());
+    await act(async () => {
+      rejectOutdated(new Error('aborted'));
+      await first;
+    });
+
+    expect(result.current.error).toBeNull();
+    expect(result.current.items.map(getId)).toEqual(['b']);
+  });
 });

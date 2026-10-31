@@ -13,7 +13,7 @@ export interface MergedEntries<T> {
 }
 
 function baseName(file: File): string {
-  return file.name.split('/').pop() ?? file.name;
+  return file.name.slice(file.name.lastIndexOf('/') + 1);
 }
 
 export async function parseFiles<R>(

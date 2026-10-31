@@ -115,6 +115,22 @@ describe('useInfiniteList', () => {
     expect(result.current.items.map(getId)).toEqual(['fresh']);
   });
 
+  it('ignores a failure of an outdated query', async () => {
+    let rejectStale: (reason: unknown) => void = () => {};
+    const fetchPage = vi
+      .fn()
+      .mockReturnValueOnce(new Promise((_, reject) => (rejectStale = reject)))
+      .mockResolvedValueOnce(pageOf(1, ['fresh']));
+    const { result, rerender } = renderList(fetchPage);
+
+    rerender({ key: 'q2' });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await act(async () => rejectStale(new Error('aborted')));
+
+    expect(result.current.error).toBeNull();
+    expect(result.current.items.map(getId)).toEqual(['fresh']);
+  });
+
   it('keeps loaded items on failure and retries the same page', async () => {
     const fetchPage = vi
       .fn()

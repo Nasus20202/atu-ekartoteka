@@ -104,6 +104,27 @@ describe('useAvailableApartments', () => {
     expect(result.current).toEqual([]);
   });
 
+  it('does not log a network error that arrives after unmount', async () => {
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    let rejectRequest: (reason: unknown) => void = () => {};
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockReturnValue(new Promise((_, r) => (rejectRequest = r)))
+    );
+
+    const { unmount } = renderHook(() =>
+      useAvailableApartments(selectedUser, '')
+    );
+    await waitFor(() => expect(fetch).toHaveBeenCalled());
+    unmount();
+    await act(async () => rejectRequest(new Error('aborted')));
+
+    expect(consoleError).not.toHaveBeenCalled();
+    consoleError.mockRestore();
+  });
+
   it("never lists the previous user's apartments for another user", async () => {
     const fetchMock = vi
       .fn()

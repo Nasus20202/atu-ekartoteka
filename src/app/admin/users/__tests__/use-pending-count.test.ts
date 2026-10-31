@@ -26,6 +26,37 @@ describe('usePendingCount', () => {
     );
   });
 
+  it('keeps the count when the API answers with an error', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(json(false, {}));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { result } = renderHook(() => usePendingCount());
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
+    expect(result.current.pendingCount).toBe(0);
+  });
+
+  it('treats a response without pagination as zero pending accounts', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(json(true, {})));
+
+    const { result } = renderHook(() => usePendingCount());
+
+    await waitFor(() => expect(fetch).toHaveBeenCalled());
+    expect(result.current.pendingCount).toBe(0);
+  });
+
+  it('logs network errors', async () => {
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
+
+    renderHook(() => usePendingCount());
+
+    await waitFor(() => expect(consoleError).toHaveBeenCalled());
+    consoleError.mockRestore();
+  });
+
   it('reloads the count on demand', async () => {
     const fetchMock = vi
       .fn()
