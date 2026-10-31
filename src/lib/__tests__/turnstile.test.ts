@@ -16,7 +16,7 @@ describe('Turnstile helper', () => {
     expect(result).toBe(false);
   });
 
-  it('returns true when secret not set (dev)', async () => {
+  it('skips verification when the secret is not set', async () => {
     process.env.TURNSTILE_SITE_KEY = 'site';
     const result = await verifyTurnstileToken('token');
     expect(result).toBe(true);

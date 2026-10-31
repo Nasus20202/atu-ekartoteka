@@ -38,12 +38,8 @@ export async function verifyTurnstileToken(
     return false;
   }
 
-  const secret = process.env.TURNSTILE_SECRET_KEY;
-  if (!secret) {
-    logger.warn('TURNSTILE_SECRET_KEY not set; skipping verification (dev)');
-    // In development, if secret is not set we assume validation passes for convenience.
-    return true;
-  }
+  // isTurnstileEnabled() guarantees the secret is set
+  const secret = process.env.TURNSTILE_SECRET_KEY as string;
 
   try {
     const body = new URLSearchParams();

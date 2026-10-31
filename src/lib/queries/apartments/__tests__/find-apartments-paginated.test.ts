@@ -117,6 +117,38 @@ describe('findApartmentsPaginated', () => {
     expect(orderByOf(2)).toEqual([{ isActive: 'desc' }, ...NATURAL_ORDER]);
   });
 
+  it('reverses null placement for the opposite sort directions', async () => {
+    const { findApartmentsPaginated } =
+      await import('../find-apartments-paginated');
+
+    for (const [sort, order] of [
+      ['owner', 'desc'],
+      ['share', 'asc'],
+      ['status', 'desc'],
+    ] as const) {
+      await findApartmentsPaginated({
+        where: {},
+        skip: 0,
+        limit: 20,
+        sort,
+        order,
+      });
+    }
+
+    const orderByOf = (call: number) =>
+      mockFindMany.mock.calls[call][0].orderBy;
+
+    expect(orderByOf(0)).toEqual([
+      { owner: { sort: 'desc', nulls: 'last' } },
+      ...NATURAL_ORDER,
+    ]);
+    expect(orderByOf(1)).toEqual([
+      { shareRatio: { sort: 'asc', nulls: 'last' } },
+      ...NATURAL_ORDER,
+    ]);
+    expect(orderByOf(2)).toEqual([{ isActive: 'asc' }, ...NATURAL_ORDER]);
+  });
+
   it('loads the HOA only when an id is given', async () => {
     mockHoaFindUnique.mockResolvedValueOnce({ id: 'hoa-1' });
     const { findApartmentsPaginated } =

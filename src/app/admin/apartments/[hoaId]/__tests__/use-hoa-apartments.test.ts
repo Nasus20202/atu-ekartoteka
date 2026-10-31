@@ -123,6 +123,17 @@ describe('useHoaApartments', () => {
     expect(requestedUrl(fetchMock, 1)).toContain('page=1&limit=20&search=9');
   });
 
+  it('sends the chosen sort to the API', async () => {
+    const fetchMock = stubFetch(pageBody(1, ['apt-1']), pageBody(1, ['apt-1']));
+    const { result } = renderHook(() => useHoaApartments('hoa-1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    act(() => result.current.setSort({ key: 'owner', direction: 'desc' }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    expect(requestedUrl(fetchMock, 1)).toContain('sort=owner&order=desc');
+  });
+
   it('keeps the HOA unset when the response has none', async () => {
     stubFetch({ ...pageBody(1, []), hoa: null });
 

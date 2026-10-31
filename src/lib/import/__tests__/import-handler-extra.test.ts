@@ -262,6 +262,27 @@ describe('import-handler additional coverage', () => {
       expect(result.results[0].errors).toHaveLength(0);
     });
 
+    it('keeps the header of the first notifications file with entries', async () => {
+      const notifFile = makeFile('hoa1/pow_czynsz.txt');
+
+      mockParsePowCzynszFile.mockResolvedValue({
+        entries: [
+          { externalId: 'own-1', apartmentCode: 'A1', lineNo: 1 },
+          { externalId: 'own-1', apartmentCode: 'A1', lineNo: 2 },
+        ],
+        header: ['HOA header'],
+        footer: ['HOA footer'],
+      });
+
+      mockTransaction.mockImplementation(async (fn: unknown) =>
+        (fn as (tx: ReturnType<typeof makeTx>) => Promise<void>)(makeTx())
+      );
+
+      const result = await processBatchImport([notifFile]);
+
+      expect(result.results[0].notifications?.total).toBe(2);
+    });
+
     it('processes wplaty.txt payments file', async () => {
       const paymentsFile = makeFile('hoa1/wplaty.txt');
 
