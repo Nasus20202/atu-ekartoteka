@@ -332,7 +332,7 @@ The system SHALL represent all monetary fields on `Charge` and `Payment` records
 
 ### Requirement: Skip Empty Months in Monthly Listings
 
-The system SHALL hide month rows where both the charge value and the payment value are zero, in all monthly listing views. Yearly totals and balance rows SHALL continue to reflect the full data set (and SHALL NOT be affected by the filtered rendering). Additionally, the system SHALL hide, in tenant views, months whose period is after the tenant's charge cutoff: the latest month with a non-zero charge in the payment records of the apartment (or of any of the tenant's apartments in combined views), never later than the current month.
+The system SHALL hide month rows where both the charge value and the payment value are zero, in all monthly listing views. Yearly totals and balance rows SHALL continue to reflect the full data set (and SHALL NOT be affected by the filtered rendering).
 
 #### Scenario: Empty month is hidden in tenant payment table
 
@@ -352,42 +352,6 @@ The system SHALL hide month rows where both the charge value and the payment val
 - **GIVEN** an admin viewing the per-apartment payments accordion
 - **WHEN** the embedded payment table renders
 - **THEN** months that are empty for both columns are hidden, identical to the tenant view
-
-#### Scenario: Future month hidden beyond data date
-
-- **GIVEN** an apartment whose payment records have a non-zero charge up to August 2026 and charge records that also exist for September 2026
-- **WHEN** the tenant views the charges overview or the apartment's charges page
-- **THEN** no month after August 2026 is listed
-
-#### Scenario: HOA snapshot date no longer filters
-
-- **GIVEN** a HOA with `chargesDataDate` set to 2026-05-31 and payment records with a non-zero charge in August 2026
-- **WHEN** the tenant views charges or payments for that HOA
-- **THEN** months up to August 2026 are displayed
-
-#### Scenario: Cutoff capped at the current month
-
-- **GIVEN** payment records with a non-zero charge in a month after the current month
-- **WHEN** the tenant views any charges or payments list
-- **THEN** months after the current month are not displayed
-
-#### Scenario: All months shown when data date is null
-
-- **GIVEN** an apartment with no payment records, whatever its HOA's `chargesDataDate`
-- **WHEN** the tenant views its charges
-- **THEN** no cutoff filtering is applied and all existing charge months are shown
-
-#### Scenario: Combined view uses the latest cutoff
-
-- **GIVEN** a tenant with two apartments whose latest charged months are July and August 2026
-- **WHEN** they view the combined charges page
-- **THEN** months up to August 2026 are listed
-
-#### Scenario: Admin views ignore the cutoff
-
-- **GIVEN** an admin viewing an apartment's charges and payments
-- **WHEN** the pages render
-- **THEN** months after the cutoff are displayed as before
 
 #### Scenario: Yearly totals reflect full year regardless of hidden rows
 
@@ -517,7 +481,7 @@ The system SHALL display a compact per-apartment area trend chart on the tenant 
 - **GIVEN** a tenant with charge data from multiple billing periods
 - **WHEN** the dashboard chart data is prepared
 - **THEN** the chart includes all available monthly periods in chronological order
-- **AND** the visible dashboard viewport shows 12 consecutive months ending with the current month by default
+- **AND** the visible dashboard viewport shows 12 consecutive months ending with the charge cutoff month by default
 - **AND** those periods are displayed in chronological order from oldest to newest within the chart
 
 #### Scenario: Dashboard trend distinguishes apartments
@@ -573,7 +537,7 @@ The system SHALL display one monthly balance bar chart in the dashboard `Saldo w
 - **GIVEN** an apartment with stored payment years
 - **WHEN** the chart data is prepared
 - **THEN** each month's balance is the year's opening balance plus cumulative payments minus cumulative charges up to that month
-- **AND** months without activity, up to the current month, keep the last known balance
+- **AND** months without activity, up to the charge cutoff month, keep the last known balance
 
 #### Scenario: Single apartment coloured by sign
 
@@ -669,6 +633,48 @@ The system SHALL display charge and notice quantities with a Polish decimal comm
 - **GIVEN** a charge item with quantity 1 and unit `szt`
 - **WHEN** it is shown
 - **THEN** the quantity reads `1 szt`
+
+### Requirement: Tenant Charge Cutoff
+
+The system SHALL hide, in tenant views, months whose period is after the tenant's charge cutoff: the latest month with a non-zero charge in the payment records of the apartment (or of any of the tenant's apartments in combined views), never later than the current month. The HOA `chargesDataDate` SHALL NOT filter any view.
+
+#### Scenario: Future month hidden beyond data date
+
+- **GIVEN** an apartment whose payment records have a non-zero charge up to August 2026 and charge records that also exist for September 2026
+- **WHEN** the tenant views the charges overview or the apartment's charges page
+- **THEN** no month after August 2026 is listed
+
+#### Scenario: HOA snapshot date no longer filters
+
+- **GIVEN** a HOA with `chargesDataDate` set to 2026-05-31 and payment records with a non-zero charge in August 2026
+- **WHEN** the tenant views charges or payments for that HOA
+- **THEN** months up to August 2026 are displayed
+
+#### Scenario: Cutoff capped at the current month
+
+- **GIVEN** payment records with a non-zero charge in a month after the current month
+- **WHEN** the tenant views any charges or payments list
+- **THEN** months after the current month are not displayed
+
+#### Scenario: All months shown when data date is null
+
+- **GIVEN** an apartment with no payment records, whatever its HOA's `chargesDataDate`
+- **WHEN** the tenant views its charges
+- **THEN** no cutoff filtering is applied and all existing charge months are shown
+
+#### Scenario: Combined view uses the latest cutoff
+
+- **GIVEN** a tenant with two apartments whose latest charged months are July and August 2026
+- **WHEN** they view the combined charges page
+- **THEN** months up to August 2026 are listed
+
+#### Scenario: Admin views ignore the cutoff
+
+- **GIVEN** an admin viewing an apartment's charges and payments
+- **WHEN** the pages render
+- **THEN** months after the cutoff are displayed as before
+
+---
 
 ### Requirement: Dashboard Cards Follow the Charge Cutoff
 
