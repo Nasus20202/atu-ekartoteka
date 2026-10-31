@@ -19,7 +19,9 @@ import {
   formatTooltipLabel,
 } from '@/components/charts/chart-formatters';
 import {
+  getTooltipPosition,
   TOOLTIP_CONTENT_STYLE,
+  TOOLTIP_WRAPPER_STYLE,
   ZERO_LINE_PROPS,
 } from '@/components/charts/chart-styles';
 import { createYAxisTick } from '@/components/charts/chart-ticks';
@@ -104,6 +106,8 @@ export function PaymentMonthlyBalanceChart({
             formatter={formatTooltipAmount}
             labelFormatter={formatTooltipLabel}
             contentStyle={TOOLTIP_CONTENT_STYLE}
+            position={getTooltipPosition(width)}
+            wrapperStyle={TOOLTIP_WRAPPER_STYLE}
           />
           <ReferenceLine {...ZERO_LINE_PROPS} ifOverflow="extendDomain" />
           <Legend />
