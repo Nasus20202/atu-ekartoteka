@@ -154,4 +154,20 @@ describe('SettingsPage', () => {
       await screen.findByText('Nie udało się pobrać ustawień')
     ).toBeInTheDocument();
   });
+
+  it('treats an empty value as invalid', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(jsonResponse({ tenantHistoryYearsBack: 2 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const input = await renderLoaded();
+    fireEvent.change(input, { target: { value: '  ' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Zapisz' }));
+
+    expect(
+      await screen.findByText('Podaj liczbę całkowitą od 0 do 20')
+    ).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
 });

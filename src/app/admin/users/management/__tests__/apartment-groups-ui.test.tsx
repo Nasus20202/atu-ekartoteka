@@ -11,6 +11,7 @@ import {
   ApartmentRow,
   type UnassignedApartment,
 } from '@/app/admin/users/management/apartment-row';
+import { SelectableApartmentGroup } from '@/app/admin/users/management/selectable-apartment-group';
 
 function makeApt(
   overrides: Partial<UnassignedApartment> = {}
@@ -195,5 +196,28 @@ describe('OccupiedTwinRow', () => {
     expect(
       screen.getByText('Mieszkanie o tym adresie zostało już przypisane')
     ).toBeInTheDocument();
+  });
+});
+
+describe('SelectableApartmentGroup', () => {
+  it('forwards inactive apartment clicks with the clicked apartment', async () => {
+    const onInactiveClick = vi.fn();
+    const inactive = makeApt({ id: 'apt-2', isActive: false });
+    render(
+      <SelectableApartmentGroup
+        group={[makeApt(), inactive]}
+        selectedIds={new Set()}
+        onToggleApartment={vi.fn()}
+        onSelectIds={vi.fn()}
+        onInactiveClick={onInactiveClick}
+        checkboxId="group"
+        tone="blue"
+        header="Grupa"
+      />
+    );
+
+    await userEvent.click(screen.getByText('Nieaktywny'));
+
+    expect(onInactiveClick).toHaveBeenCalledWith(inactive);
   });
 });

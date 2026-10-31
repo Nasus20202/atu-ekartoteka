@@ -168,4 +168,24 @@ describe('UsersTable', () => {
       direction: 'desc',
     });
   });
+
+  it.each([
+    ['Użytkownik', 'name'],
+    ['E-mail', 'email'],
+    ['Status', 'status'],
+    ['Mieszkania', 'apartments'],
+  ])('sorts by %s', async (header, key) => {
+    const user = userEvent.setup();
+    const handlers = renderTable(createUser());
+
+    await user.click(screen.getByRole('button', { name: header }));
+
+    expect(handlers.onSort).toHaveBeenCalledWith({ key, direction: 'asc' });
+  });
+
+  it('shows zero apartments when the list is missing', () => {
+    renderTable(createUser({ apartments: undefined }));
+
+    expect(screen.getByText('0 mieszkań')).toBeInTheDocument();
+  });
 });
