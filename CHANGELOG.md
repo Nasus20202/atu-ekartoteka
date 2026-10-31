@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.6] - 2026-10-31
+
+- feat(dashboard): align tenant data cutoff with last charged month (#825)
+- test: cover hooks, queries and import paths
+- test(ui): cover sortable headers, users list and chart interactions
+- fix(charts): keep tooltip inside chart on narrow screens
+- chore(deps): update dependency lucide-react to v1.63.0 (#822)
+
 ## [0.8.5] - 2026-10-31
 
 - fix(charges): show quantities with a Polish decimal comma

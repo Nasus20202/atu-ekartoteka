@@ -1,6 +1,6 @@
 {
   "name": "atu-ekartoteka",
-  "version": "0.8.5",
+  "version": "0.8.6",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@12.16.1",
