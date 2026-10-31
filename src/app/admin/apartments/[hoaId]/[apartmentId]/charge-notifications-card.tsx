@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import type { ChargeNotificationDto } from '@/lib/types/dto/apartment-dto';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatQuantity } from '@/lib/utils';
 import { sumDecimals } from '@/lib/utils/sum';
 
 export function ChargeNotificationsCard({
@@ -34,7 +34,7 @@ export function ChargeNotificationsCard({
                   {notification.description}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {notification.quantity} {notification.unit} ×{' '}
+                  {formatQuantity(notification.quantity)} {notification.unit} ×{' '}
                   {formatCurrency(notification.unitPrice)}
                 </p>
               </div>

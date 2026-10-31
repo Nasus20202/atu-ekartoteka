@@ -8,7 +8,7 @@ import {
 } from '@/components/dashboard/group-notifications';
 import { HoaNotice } from '@/components/dashboard/hoa-notice';
 import { MarqueeText } from '@/components/ui/marquee-text';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatQuantity } from '@/lib/utils';
 import { toDecimal } from '@/lib/utils/decimal';
 import { sumDecimals } from '@/lib/utils/sum';
 
@@ -27,7 +27,7 @@ function NotificationRow({ notification }: { notification: NotificationItem }) {
         <div className="break-words">{notification.description}</div>
         {quantity.greaterThan(0) && (
           <div className="text-xs text-muted-foreground">
-            {quantity.toString()} {notification.unit} ×{' '}
+            {formatQuantity(quantity)} {notification.unit} ×{' '}
             {formatCurrency(notification.unitPrice)}
           </div>
         )}

@@ -4,8 +4,14 @@ import { ChevronDown } from 'lucide-react';
 
 import { CollapsibleTrigger } from '@/components/ui/collapsible';
 import type { ChargeDisplayDto } from '@/lib/types/dto/charge-dto';
-import { cn, formatCurrency, formatDate, formatPeriod } from '@/lib/utils';
-import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
+import {
+  cn,
+  formatCurrency,
+  formatDate,
+  formatPeriod,
+  formatQuantity,
+} from '@/lib/utils';
+import { type DecimalLike } from '@/lib/utils/decimal';
 
 export function YearTrigger({ year, open }: { year: string; open: boolean }) {
   return (
@@ -80,7 +86,7 @@ function ChargeRow({ charge }: { charge: ChargeDisplayDto }) {
       <div className="min-w-0">
         <p className="break-words font-medium">{charge.description}</p>
         <p className="text-xs text-muted-foreground">
-          {toDecimal(charge.quantity).toString()} {charge.unit} ×{' '}
+          {formatQuantity(charge.quantity)} {charge.unit} ×{' '}
           {formatCurrency(charge.unitPrice)}
         </p>
       </div>

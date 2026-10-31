@@ -1,8 +1,8 @@
 import { Text, View } from '@react-pdf/renderer';
 
 import { styles } from '@/components/pdf/primitives';
-import { formatCurrency } from '@/lib/utils';
-import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
+import { formatCurrency, formatQuantity } from '@/lib/utils';
+import { type DecimalLike } from '@/lib/utils/decimal';
 
 export interface PdfItem {
   id: string;
@@ -34,7 +34,7 @@ export function PdfItemsTable({
         <View key={item.id} style={styles.tableRow}>
           <Text style={styles.cellLeft}>{item.description}</Text>
           <Text style={styles.cellRight}>
-            {toDecimal(item.quantity).toString()} {item.unit}
+            {formatQuantity(item.quantity)} {item.unit}
           </Text>
           <Text style={styles.cellRight}>{formatCurrency(item.unitPrice)}</Text>
           <Text style={styles.cellRight}>

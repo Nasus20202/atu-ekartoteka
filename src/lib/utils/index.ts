@@ -39,6 +39,13 @@ export const formatCurrency = (amount: DecimalLike): string => {
   }).format(Number(toDecimal(amount).toFixed(2)));
 };
 
+const DECIMAL_POINT = '.';
+const DECIMAL_COMMA = ',';
+
+/** Exact quantity with a Polish decimal comma, e.g. 50.5 -> "50,5". */
+export const formatQuantity = (quantity: DecimalLike): string =>
+  toDecimal(quantity).toString().replace(DECIMAL_POINT, DECIMAL_COMMA);
+
 export const formatDate = (date: Date): string => {
   return date.toLocaleDateString(APP_LOCALE, {
     day: '2-digit',
