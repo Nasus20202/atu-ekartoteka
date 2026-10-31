@@ -5,6 +5,8 @@
 
 import * as pg from 'pg';
 
+import { loadSql } from './load-sql';
+
 export const SCROLL_HOA_NAME = 'E2E Scroll HOA';
 
 function connect() {
@@ -23,27 +25,17 @@ export async function createScrollTestHoa(count: number): Promise<string> {
   const suffix = `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
   try {
     await client.connect();
-    const hoa = await client.query(
-      `INSERT INTO "HomeownersAssociation" (id, "externalId", name, "createdAt", "updatedAt")
-       VALUES (gen_random_uuid(), $1, $2, NOW(), NOW())
-       RETURNING id`,
-      [`SCROLL-${suffix}`, SCROLL_HOA_NAME]
-    );
+    const hoa = await client.query(loadSql('insert-scroll-hoa.sql'), [
+      `SCROLL-${suffix}`,
+      SCROLL_HOA_NAME,
+    ]);
     const hoaId = hoa.rows[0].id as string;
 
-    await client.query(
-      `INSERT INTO "Apartment" (
-         id, "externalOwnerId", "externalApartmentId", owner,
-         address, building, number, "postalCode", city,
-         "shareNumerator", "shareDenominator", "isActive",
-         "homeownersAssociationId", "createdAt", "updatedAt"
-       )
-       SELECT gen_random_uuid(), 'WS-' || $2 || '-' || n, 'S-' || $2 || '-' || n,
-              'Scroll Owner ' || n, 'ul. Przewijana', '1', n::text,
-              '00-001', 'Warszawa', n, 1000, n % 5 <> 0, $1, NOW(), NOW()
-       FROM generate_series(1, $3::int) AS n`,
-      [hoaId, suffix, count]
-    );
+    await client.query(loadSql('insert-scroll-apartments.sql'), [
+      hoaId,
+      suffix,
+      count,
+    ]);
     return hoaId;
   } finally {
     await client.end();
@@ -54,13 +46,8 @@ export async function deleteScrollTestHoa(hoaId: string): Promise<void> {
   const client = connect();
   try {
     await client.connect();
-    await client.query(
-      `DELETE FROM "Apartment" WHERE "homeownersAssociationId" = $1`,
-      [hoaId]
-    );
-    await client.query(`DELETE FROM "HomeownersAssociation" WHERE id = $1`, [
-      hoaId,
-    ]);
+    await client.query(loadSql('cleanup-hoa-apartments.sql'), [hoaId]);
+    await client.query(loadSql('cleanup-hoa.sql'), [hoaId]);
   } finally {
     await client.end();
   }
