@@ -123,6 +123,13 @@ The application provides health check endpoints for monitoring:
 - Import from legacy system files (`.txt`, `.wmb` format)
 - Role-based access (Admin/Tenant)
 
-## Import and tenant data cutoff
+## How import works
 
-Admins import legacy `.txt` and `.wmb` files per HOA; the data-as-of dates from the `.wmb` files are stored on the HOA and shown in the admin panel only. Tenants see data up to the latest month with a non-zero charge in the imported payments (never later than the current month), so the dashboard and the charges lists always end on the same month. To show a newer month, import payments that charge it. Admin views always show every month.
+Admins upload the legacy export in the admin panel, one folder per HOA. Then:
+
+1. **Files are grouped by HOA** and recognised by name: `lok*.txt` (apartments and owners), `nal_czynsz*.txt` (charges), `pow_czynsz*.txt` (current charge notices, HOA header and footer), `wplaty*.txt` (payments and balances) and the three `.wmb` files (the date each export was made).
+2. **Files are validated.** Money values, balances across years and duplicate records are checked, and problems are reported per file.
+3. **Each HOA is written in one transaction**, in parallel with the others. Existing records are updated, or wiped first with the clean import option. If anything fails, that HOA is not changed at all.
+4. **The result shows** how many records were created, updated, skipped or failed, plus the `.wmb` dates.
+
+What the data is used for: apartments and owners decide who can see what, charges fill the `Naliczenia` pages, payments feed the `Wpłaty` pages and balance charts, notices appear on the dashboard, and the `.wmb` dates are only shown to admins. Tenants see months up to the latest one that has a charge in the imported payments (never later than the current month), so the dashboard and charges lists end on the same month. Admins always see everything.
