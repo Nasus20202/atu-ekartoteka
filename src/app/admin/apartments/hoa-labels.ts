@@ -1,6 +1,6 @@
-import { APP_LOCALE } from '@/lib/utils/locale';
+import { formatDate } from '@/lib/utils';
 
 export function formatImportDate(dateStr: string | null): string | null {
   if (!dateStr) return null;
-  return new Date(dateStr).toLocaleDateString(APP_LOCALE);
+  return formatDate(new Date(dateStr));
 }

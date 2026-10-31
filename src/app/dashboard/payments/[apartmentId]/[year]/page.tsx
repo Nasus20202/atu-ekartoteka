@@ -25,14 +25,13 @@ import { findApartmentWithPaymentsByYearCached } from '@/lib/queries/apartments/
 import { findLatestChargedPayments } from '@/lib/queries/payments/find-latest-charged-payments';
 import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
 import { toPaymentPdfDto } from '@/lib/types/dto/payment-dto';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatDate } from '@/lib/utils';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 import {
   getBalanceStatusClass,
   getSignedBalanceClass,
 } from '@/lib/utils/balance-class';
 import { getChargeCutoffPeriod } from '@/lib/utils/charge-cutoff';
-import { APP_LOCALE } from '@/lib/utils/locale';
 import { getRequestNow } from '@/lib/utils/request-now';
 
 interface PaymentDetailsPageProps {
@@ -113,8 +112,8 @@ export default async function PaymentDetailsPage({
               <div>
                 <CardTitle>Podsumowanie roku {payment.year}</CardTitle>
                 <CardDescription>
-                  Okres: {payment.dateFrom.toLocaleDateString(APP_LOCALE)} -{' '}
-                  {payment.dateTo.toLocaleDateString(APP_LOCALE)}
+                  Okres: {formatDate(payment.dateFrom)} -{' '}
+                  {formatDate(payment.dateTo)}
                 </CardDescription>
               </div>
               <div className="shrink-0">
