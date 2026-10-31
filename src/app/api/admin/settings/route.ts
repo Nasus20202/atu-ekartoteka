@@ -34,7 +34,8 @@ export async function PUT(req: NextRequest) {
     const { response } = await requireAdmin('Settings update attempt');
     if (response) return response;
 
-    const update = parseAppSettingsUpdate(await req.json());
+    const body: unknown = await req.json().catch(() => null);
+    const update = parseAppSettingsUpdate(body);
 
     if (update === null) {
       return NextResponse.json(

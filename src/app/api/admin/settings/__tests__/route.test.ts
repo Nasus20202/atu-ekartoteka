@@ -105,6 +105,19 @@ describe('Admin settings API', () => {
       expect(mockTransaction).not.toHaveBeenCalled();
     });
 
+    it('rejects a body that is not valid JSON', async () => {
+      const request = {
+        json: async () => {
+          throw new SyntaxError('Unexpected token');
+        },
+      } as unknown as NextRequest;
+
+      const response = await PUT(request);
+
+      expect(response.status).toBe(400);
+      expect(mockTransaction).not.toHaveBeenCalled();
+    });
+
     it('rejects unauthenticated requests', async () => {
       mockAuth.mockResolvedValue(null);
 

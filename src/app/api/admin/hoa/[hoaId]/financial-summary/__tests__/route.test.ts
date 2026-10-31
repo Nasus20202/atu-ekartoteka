@@ -100,6 +100,7 @@ describe('GET /api/admin/hoa/[hoaId]/financial-summary', () => {
     mockPaymentGroupBy.mockResolvedValueOnce([
       { apartmentId: 'apt-1', _max: { year: 2025 } },
       { apartmentId: 'apt-2', _max: { year: 2024 } },
+      { apartmentId: 'apt-3', _max: { year: 2025 } },
     ]);
     mockPaymentAggregate.mockResolvedValueOnce({
       _sum: { closingBalance: 50 },
@@ -125,8 +126,8 @@ describe('GET /api/admin/hoa/[hoaId]/financial-summary', () => {
     expect(mockPaymentAggregate).toHaveBeenCalledWith({
       where: {
         OR: [
-          { apartmentId: 'apt-1', year: 2025 },
-          { apartmentId: 'apt-2', year: 2024 },
+          { year: 2025, apartmentId: { in: ['apt-1', 'apt-3'] } },
+          { year: 2024, apartmentId: { in: ['apt-2'] } },
         ],
       },
       _sum: { closingBalance: true },

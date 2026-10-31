@@ -20,30 +20,40 @@ export async function GET(
 
     const inHoa = { apartment: { homeownersAssociationId: hoaId } };
 
-    // Most recent payment year per apartment
-    const latestYears = await prisma.payment.groupBy({
-      by: ['apartmentId'],
-      where: inHoa,
-      _max: { year: true },
-    });
-
-    const [closingAggregate, chargesAggregate] = await Promise.all([
-      latestYears.length > 0
-        ? prisma.payment.aggregate({
-            where: {
-              OR: latestYears.map(({ apartmentId, _max }) => ({
-                apartmentId,
-                year: _max.year!,
-              })),
-            },
-            _sum: { closingBalance: true },
-          })
-        : null,
+    const [latestYears, chargesAggregate] = await Promise.all([
+      // Most recent payment year per apartment
+      prisma.payment.groupBy({
+        by: ['apartmentId'],
+        where: inHoa,
+        _max: { year: true },
+      }),
       prisma.chargeNotification.aggregate({
         where: inHoa,
         _sum: { totalAmount: true },
       }),
     ]);
+
+    // One clause per distinct year keeps the query small for large HOAs.
+    const apartmentsByYear = new Map<number, string[]>();
+    for (const { apartmentId, _max } of latestYears) {
+      const year = _max.year!;
+      const apartmentIds = apartmentsByYear.get(year) ?? [];
+      apartmentIds.push(apartmentId);
+      apartmentsByYear.set(year, apartmentIds);
+    }
+
+    const closingAggregate =
+      apartmentsByYear.size > 0
+        ? await prisma.payment.aggregate({
+            where: {
+              OR: Array.from(apartmentsByYear, ([year, apartmentIds]) => ({
+                year,
+                apartmentId: { in: apartmentIds },
+              })),
+            },
+            _sum: { closingBalance: true },
+          })
+        : null;
     const totalClosingBalance =
       closingAggregate?._sum.closingBalance ?? new Prisma.Decimal(0);
     const totalChargesDue =
