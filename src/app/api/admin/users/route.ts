@@ -5,7 +5,7 @@ import { requireAdmin } from '@/lib/auth/require-admin';
 import { createLogger } from '@/lib/logger';
 import { updateUserStatus } from '@/lib/mutations/users/update-user-status';
 import { notifyAccountApproved } from '@/lib/notifications/account-status';
-import { findApartmentsByIds } from '@/lib/queries/apartments/find-apartments-by-ids';
+import { countApartmentAvailability } from '@/lib/queries/apartments/count-apartment-availability';
 import { findTenantUsers } from '@/lib/queries/users/find-tenant-users';
 import { findUserById } from '@/lib/queries/users/find-user-by-id';
 import { AccountStatus, UserRole } from '@/lib/types';
@@ -111,19 +111,19 @@ export async function PATCH(req: NextRequest) {
       apartmentIds &&
       apartmentIds.length > 0
     ) {
-      const apartments = await findApartmentsByIds(apartmentIds);
+      const { found, occupiedByOthers } = await countApartmentAvailability(
+        apartmentIds,
+        userId
+      );
 
-      if (apartments.length !== apartmentIds.length) {
+      if (found !== apartmentIds.length) {
         return NextResponse.json(
           { error: 'Niektóre mieszkania nie zostały znalezione' },
           { status: 404 }
         );
       }
 
-      const occupiedApartments = apartments.filter(
-        (apt: (typeof apartments)[number]) => apt.user && apt.user.id !== userId
-      );
-      if (occupiedApartments.length > 0) {
+      if (occupiedByOthers > 0) {
         return NextResponse.json(
           {
             error:

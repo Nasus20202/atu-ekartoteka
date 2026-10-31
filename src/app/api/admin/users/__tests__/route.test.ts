@@ -6,7 +6,7 @@ import { AccountStatus, UserRole } from '@/lib/types';
 const mockAuth = vi.fn();
 const mockFindTenantUsers = vi.fn();
 const mockFindUserById = vi.fn();
-const mockFindApartmentsByIds = vi.fn();
+const mockCountApartmentAvailability = vi.fn();
 const mockUpdateUserStatus = vi.fn();
 const mockNotifyAccountApproved = vi.fn();
 
@@ -28,8 +28,8 @@ vi.mock('@/lib/queries/users/find-user-by-id', () => ({
   findUserById: mockFindUserById,
 }));
 
-vi.mock('@/lib/queries/apartments/find-apartments-by-ids', () => ({
-  findApartmentsByIds: mockFindApartmentsByIds,
+vi.mock('@/lib/queries/apartments/count-apartment-availability', () => ({
+  countApartmentAvailability: mockCountApartmentAvailability,
 }));
 
 vi.mock('@/lib/mutations/users/update-user-status', () => ({
@@ -228,7 +228,10 @@ describe('/api/admin/users route', () => {
         role: UserRole.ADMIN,
         status: AccountStatus.PENDING,
       });
-      mockFindApartmentsByIds.mockResolvedValue([{ id: 'apt-1', user: null }]);
+      mockCountApartmentAvailability.mockResolvedValue({
+        found: 1,
+        occupiedByOthers: 0,
+      });
       mockUpdateUserStatus.mockResolvedValue({
         id: 'admin-user',
         email: 'target-admin@example.com',
@@ -399,9 +402,10 @@ describe('/api/admin/users route', () => {
 
       it('returns 404 when some apartments do not exist', async () => {
         mockFindUserById.mockResolvedValue(tenant);
-        mockFindApartmentsByIds.mockResolvedValue([
-          { id: 'apt-1', user: null },
-        ]);
+        mockCountApartmentAvailability.mockResolvedValue({
+          found: 1,
+          occupiedByOthers: 0,
+        });
         const { PATCH } = await import('../route');
 
         const response = await PATCH(approve(['apt-1', 'apt-2']));
@@ -412,9 +416,10 @@ describe('/api/admin/users route', () => {
 
       it('rejects apartments assigned to another user', async () => {
         mockFindUserById.mockResolvedValue(tenant);
-        mockFindApartmentsByIds.mockResolvedValue([
-          { id: 'apt-1', user: { id: 'other-user' } },
-        ]);
+        mockCountApartmentAvailability.mockResolvedValue({
+          found: 1,
+          occupiedByOthers: 1,
+        });
         const { PATCH } = await import('../route');
 
         const response = await PATCH(approve(['apt-1']));
@@ -428,9 +433,10 @@ describe('/api/admin/users route', () => {
           ...tenant,
           status: AccountStatus.APPROVED,
         });
-        mockFindApartmentsByIds.mockResolvedValue([
-          { id: 'apt-1', user: { id: 'tenant-user' } },
-        ]);
+        mockCountApartmentAvailability.mockResolvedValue({
+          found: 1,
+          occupiedByOthers: 0,
+        });
         mockUpdateUserStatus.mockResolvedValue({
           ...tenant,
           status: AccountStatus.APPROVED,
