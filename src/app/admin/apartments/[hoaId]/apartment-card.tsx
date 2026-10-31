@@ -4,7 +4,6 @@ import {
   ApartmentStatusBadge,
   DuplicateAddressBadge,
 } from '@/app/admin/apartments/[hoaId]/apartment-badges';
-import { formatApartmentShare } from '@/app/admin/apartments/[hoaId]/apartment-list-utils';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -14,6 +13,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
+import { formatSharePercent } from '@/lib/utils';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 
 export function ApartmentCard({
@@ -51,11 +51,11 @@ export function ApartmentCard({
             <dt className="text-muted-foreground">Właściciel:</dt>
             <dd className="font-medium">{apartment.owner}</dd>
           </div>
-          {(apartment.shareNumerator || apartment.shareDenominator) && (
+          {apartment.shareRatio !== null && (
             <div className="flex justify-between">
               <dt className="text-muted-foreground">Udział:</dt>
               <dd className="font-medium">
-                {formatApartmentShare(apartment) ?? '-'}
+                {formatSharePercent(apartment.shareRatio)}
               </dd>
             </div>
           )}

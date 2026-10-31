@@ -182,8 +182,7 @@ export default async function PaymentDetailsPage({
           number={apartment.number}
           postalCode={apartment.postalCode ?? ''}
           city={apartment.city ?? ''}
-          shareNumerator={apartment.shareNumerator}
-          shareDenominator={apartment.shareDenominator}
+          shareRatio={apartment.shareRatio}
         />
       </div>
     </Page>

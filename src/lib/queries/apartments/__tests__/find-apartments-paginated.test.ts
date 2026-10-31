@@ -111,8 +111,7 @@ describe('findApartmentsPaginated', () => {
       ...NATURAL_ORDER,
     ]);
     expect(orderByOf(1)).toEqual([
-      { shareNumerator: { sort: 'desc', nulls: 'first' } },
-      { shareDenominator: 'desc' },
+      { shareRatio: { sort: 'desc', nulls: 'first' } },
       ...NATURAL_ORDER,
     ]);
     expect(orderByOf(2)).toEqual([{ isActive: 'desc' }, ...NATURAL_ORDER]);

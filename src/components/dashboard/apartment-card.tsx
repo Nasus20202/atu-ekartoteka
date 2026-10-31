@@ -21,8 +21,7 @@ interface ApartmentCardProps {
     city: string | null;
     owner: string | null;
     building: string | null;
-    shareNumerator: number | null;
-    shareDenominator: number | null;
+    shareRatio: number | null;
     payments?: Array<{
       year: number;
     }>;
@@ -40,12 +39,7 @@ export function ApartmentCard({
   hasPayments = false,
   index,
 }: ApartmentCardProps) {
-  const sharePercent =
-    apartment.shareNumerator != null &&
-    apartment.shareDenominator != null &&
-    apartment.shareDenominator > 0
-      ? `${formatSharePercent(apartment.shareNumerator, apartment.shareDenominator)}%`
-      : null;
+  const sharePercent = formatSharePercent(apartment.shareRatio);
 
   const paymentYear = apartment.payments?.[0]?.year ?? new Date().getFullYear();
 

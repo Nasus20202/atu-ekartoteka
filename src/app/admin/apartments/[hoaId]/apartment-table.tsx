@@ -7,10 +7,7 @@ import {
   ApartmentStatusBadge,
   DuplicateAddressBadge,
 } from '@/app/admin/apartments/[hoaId]/apartment-badges';
-import {
-  buildAddressKey,
-  formatApartmentShare,
-} from '@/app/admin/apartments/[hoaId]/apartment-list-utils';
+import { buildAddressKey } from '@/app/admin/apartments/[hoaId]/apartment-list-utils';
 import { SortableTableHead } from '@/components/ui/sortable-table-head';
 import {
   Table,
@@ -21,7 +18,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
-import { cn } from '@/lib/utils';
+import { cn, formatSharePercent } from '@/lib/utils';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 import {
   type ApartmentSortKey,
@@ -38,7 +35,7 @@ function ApartmentTableRow({
   hoaId: string;
   isDuplicate: boolean;
 }) {
-  const share = formatApartmentShare(apartment);
+  const share = formatSharePercent(apartment.shareRatio);
 
   return (
     <TableRow

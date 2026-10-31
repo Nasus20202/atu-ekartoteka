@@ -5,8 +5,7 @@ import { createMockApartment } from '@/__tests__/fixtures';
 import { ApartmentCard } from '@/app/admin/apartments/[hoaId]/apartment-card';
 
 const apartment = createMockApartment({
-  shareNumerator: 25,
-  shareDenominator: 1000,
+  shareRatio: 0.025,
 });
 
 describe('ApartmentCard', () => {
@@ -17,7 +16,7 @@ describe('ApartmentCard', () => {
 
     expect(screen.getByText('Main Street 1 A/101')).toBeInTheDocument();
     expect(screen.getByText('John Doe')).toBeInTheDocument();
-    expect(screen.getByText('2.5%')).toBeInTheDocument();
+    expect(screen.getByText('2,5%')).toBeInTheDocument();
     expect(screen.getByText('Aktywne')).toBeInTheDocument();
     expect(screen.getByRole('link')).toHaveAttribute(
       'href',
@@ -39,23 +38,15 @@ describe('ApartmentCard', () => {
     expect(screen.getByText('Duplikat adresu')).toBeInTheDocument();
   });
 
-  it('shows a dash for an incomplete share and hides a missing one', () => {
+  it('shows the share from the database ratio and hides an unknown one', () => {
     const { rerender } = render(
-      <ApartmentCard
-        apartment={{ ...apartment, shareDenominator: null }}
-        hoaId="hoa1"
-        isDuplicate={false}
-      />
+      <ApartmentCard apartment={apartment} hoaId="hoa1" isDuplicate={false} />
     );
-    expect(screen.getByText('-')).toBeInTheDocument();
+    expect(screen.getByText('2,5%')).toBeInTheDocument();
 
     rerender(
       <ApartmentCard
-        apartment={{
-          ...apartment,
-          shareNumerator: null,
-          shareDenominator: null,
-        }}
+        apartment={{ ...apartment, shareRatio: null }}
         hoaId="hoa1"
         isDuplicate={false}
       />

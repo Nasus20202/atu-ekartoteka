@@ -20,8 +20,7 @@ describe('toApartmentSummaryDto', () => {
         number: '10',
         postalCode: '00-001',
         city: 'Warszawa',
-        shareNumerator: 1,
-        shareDenominator: 10,
+        shareRatio: 0.1,
         isActive: true,
       })
     ).toEqual({
@@ -35,8 +34,7 @@ describe('toApartmentSummaryDto', () => {
       number: '10',
       postalCode: '00-001',
       city: 'Warszawa',
-      shareNumerator: 1,
-      shareDenominator: 10,
+      shareRatio: 0.1,
       isActive: true,
     });
   });
@@ -55,8 +53,7 @@ describe('toApartmentDetailDto', () => {
       number: '10',
       postalCode: '00-001',
       city: 'Warszawa',
-      shareNumerator: 1,
-      shareDenominator: 10,
+      shareRatio: 0.1,
       isActive: true,
       homeownersAssociation: {
         id: 'hoa-1',

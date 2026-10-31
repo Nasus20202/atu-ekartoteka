@@ -20,8 +20,7 @@ type ApartmentSummaryKey =
   | 'number'
   | 'postalCode'
   | 'city'
-  | 'shareNumerator'
-  | 'shareDenominator'
+  | 'shareRatio'
   | 'isActive';
 
 type ChargeNotificationAmountKey = 'quantity' | 'unitPrice' | 'totalAmount';
@@ -89,8 +88,7 @@ export function toApartmentSummaryDto(
     number: apartment.number,
     postalCode: apartment.postalCode,
     city: apartment.city,
-    shareNumerator: apartment.shareNumerator,
-    shareDenominator: apartment.shareDenominator,
+    shareRatio: apartment.shareRatio,
     isActive: apartment.isActive,
   };
 }

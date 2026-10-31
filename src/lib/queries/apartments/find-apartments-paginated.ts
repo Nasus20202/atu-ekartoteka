@@ -38,12 +38,11 @@ export function buildOrderBy(
     case 'share':
       return [
         {
-          shareNumerator: {
+          shareRatio: {
             sort: order,
             nulls: order === 'asc' ? 'last' : 'first',
           },
         },
-        { shareDenominator: order },
         ...NATURAL_ORDER,
       ];
     case 'status':

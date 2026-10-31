@@ -13,6 +13,7 @@ export const createMockApartment = (
     city?: string;
     shareNumerator?: number;
     shareDenominator?: number;
+    shareRatio?: number | null;
     isActive?: boolean;
     user?: unknown;
     userId?: string | null;
@@ -36,6 +37,8 @@ export const createMockApartment = (
   updatedAt: new Date(),
   user: null,
   userId: null,
+  shareRatio:
+    (overrides.shareNumerator ?? 55.5) / (overrides.shareDenominator ?? 2.7),
   ...overrides,
 });
 

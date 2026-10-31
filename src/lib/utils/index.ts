@@ -47,10 +47,15 @@ export const formatDate = (date: Date): string => {
   });
 };
 
-export function formatSharePercent(
-  numerator: number,
-  denominator: number
-): string {
-  const percent = ((numerator / denominator) * 100).toFixed(4);
-  return percent.replace(/\.?0+$/, '');
+const SHARE_PERCENT_DECIMALS = 4;
+
+const sharePercentFormat = new Intl.NumberFormat(APP_LOCALE, {
+  maximumFractionDigits: SHARE_PERCENT_DECIMALS,
+  useGrouping: false,
+});
+
+/** Formats the database `shareRatio` as a percentage, or null when unknown. */
+export function formatSharePercent(shareRatio: number | null): string | null {
+  if (shareRatio === null) return null;
+  return `${sharePercentFormat.format(shareRatio * 100)}%`;
 }

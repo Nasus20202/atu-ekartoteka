@@ -12,8 +12,7 @@ describe('ApartmentCard', () => {
     city: 'Warszawa',
     owner: 'Jan Kowalski',
     building: 'A',
-    shareNumerator: 5000,
-    shareDenominator: 250,
+    shareRatio: 20.0,
   };
 
   it('renders apartment basic information', () => {
@@ -124,8 +123,7 @@ describe('ApartmentCard', () => {
       city: null,
       owner: null,
       building: null,
-      shareNumerator: null,
-      shareDenominator: null,
+      shareRatio: null,
     };
 
     render(<ApartmentCard apartment={apartmentWithNulls} index={0} />);
@@ -139,8 +137,7 @@ describe('ApartmentCard', () => {
     const apartmentWithZeroDenominator = {
       ...mockApartment,
       owner: null,
-      shareNumerator: 5000,
-      shareDenominator: 0,
+      shareRatio: null,
     };
 
     render(
@@ -165,7 +162,7 @@ describe('ApartmentCard', () => {
   ])('colours a payment balance of %s', (balance, colour) => {
     render(
       <ApartmentCard
-        apartment={{ ...mockApartment, owner: null, shareDenominator: 0 }}
+        apartment={{ ...mockApartment, owner: null, shareRatio: null }}
         latestPaymentBalance={balance}
         index={0}
       />
