@@ -631,3 +631,19 @@ The system SHALL group the admin apartment detail charge list into collapsible y
 - **GIVEN** a collapsed older year section
 - **WHEN** the admin clicks its header
 - **THEN** that year's months are listed and each month can be expanded to show its line items and PDF button
+
+### Requirement: Quantity Formatting
+
+The system SHALL display charge and notice quantities with a Polish decimal comma and their full stored precision, in tenant views, admin views and PDFs.
+
+#### Scenario: Fractional quantity
+
+- **GIVEN** a notice item with quantity 50.5 and unit `m2`
+- **WHEN** it is shown in the `Powiadomienia` card, the admin notifications card, a charge list or a PDF
+- **THEN** the quantity reads `50,5 m2`
+
+#### Scenario: Whole quantity
+
+- **GIVEN** a charge item with quantity 1 and unit `szt`
+- **WHEN** it is shown
+- **THEN** the quantity reads `1 szt`

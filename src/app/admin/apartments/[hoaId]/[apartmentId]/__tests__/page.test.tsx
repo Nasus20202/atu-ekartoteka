@@ -124,7 +124,7 @@ describe('ApartmentDetailsPage', () => {
     });
 
     expect(screen.getByText('Fundusz remontowy')).toBeInTheDocument();
-    expect(screen.getByText('50.5 m2 × 2,50 zł')).toBeInTheDocument();
+    expect(screen.getByText('50,5 m2 × 2,50 zł')).toBeInTheDocument();
     expect(screen.getAllByText('126,25 zł')).toHaveLength(2);
     expect(screen.getByText('Razem:')).toBeInTheDocument();
   });

@@ -70,7 +70,7 @@ test.describe('Charges', () => {
       await userPage.goto('/dashboard/charges');
       await openChargesMonth(userPage, CURRENT_MONTH_YEAR);
 
-      // Should see quantity info (e.g., 50.5 m2 for fundusz remontowy)
+      // Should see quantity info (e.g., 50,5 m2 for fundusz remontowy)
       await expect(userPage.getByText(/50[,.]5/).first()).toBeVisible();
     });
   });
