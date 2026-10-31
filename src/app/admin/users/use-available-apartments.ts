@@ -7,13 +7,17 @@ import type { UserDto } from '@/lib/types/dto/user-dto';
 
 const APARTMENT_FETCH_LIMIT = 100000;
 const SEARCH_DEBOUNCE_MS = 300;
+const NO_APARTMENTS: ApartmentSummaryDto[] = [];
 
 /** Apartments the selected user can be assigned, filtered by the database. */
 export function useAvailableApartments(
   selectedUser: UserDto | null,
   search: string
 ) {
-  const [apartments, setApartments] = useState<ApartmentSummaryDto[]>([]);
+  const [loaded, setLoaded] = useState<{
+    userId: string;
+    apartments: ApartmentSummaryDto[];
+  } | null>(null);
   const userId = selectedUser?.id;
 
   useEffect(() => {
@@ -44,7 +48,7 @@ export function useAvailableApartments(
 
         const data = await response.json();
         if (!controller.signal.aborted) {
-          setApartments(data.apartments);
+          setLoaded({ userId, apartments: data.apartments });
         }
       } catch (error) {
         if (!controller.signal.aborted) {
@@ -59,5 +63,6 @@ export function useAvailableApartments(
     };
   }, [userId, search]);
 
-  return apartments;
+  // Another user's list is never shown, even while the new one loads.
+  return loaded && loaded.userId === userId ? loaded.apartments : NO_APARTMENTS;
 }

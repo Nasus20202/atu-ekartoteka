@@ -114,13 +114,21 @@ export function useInfiniteList<T>({
     []
   );
 
-  useEffect(() => {
+  // Aborting the previous controller drops any response still in flight, so a
+  // stale page can never land after a reset or refresh.
+  const replaceController = useCallback(() => {
+    controllerRef.current?.abort();
     const controller = new AbortController();
     controllerRef.current = controller;
+    return controller;
+  }, []);
+
+  useEffect(() => {
+    const controller = replaceController();
     requestingRef.current = true;
     void requestPage(FIRST_PAGE, queryKey, controller.signal);
     return () => controller.abort();
-  }, [queryKey, requestPage]);
+  }, [queryKey, replaceController, requestPage]);
 
   // While a changed query loads, the last loaded items stay visible instead of
   // collapsing the list into a loading placeholder.
@@ -138,11 +146,11 @@ export function useInfiniteList<T>({
   }, [current, hasMore, queryKey, requestPage]);
 
   const refresh = useCallback(async () => {
-    const controller = controllerRef.current;
-    if (!controller) return;
-    const { signal } = controller;
+    if (!controllerRef.current) return;
+    const { signal } = replaceController();
     const loadedPages = Math.max(current?.page ?? 0, FIRST_PAGE);
     requestingRef.current = true;
+    setLoadingMore(false);
     try {
       const results = await Promise.all(
         Array.from({ length: loadedPages }, (_, index) =>
@@ -169,7 +177,7 @@ export function useInfiniteList<T>({
     } finally {
       if (!signal.aborted) requestingRef.current = false;
     }
-  }, [current, queryKey]);
+  }, [current, queryKey, replaceController]);
 
   return {
     items,
