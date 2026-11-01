@@ -82,8 +82,8 @@ export async function approveWithApartment(
   await Promise.all([
     page.waitForResponse((resp) => isUsersResponse(resp.url(), resp.status())),
     page
-      .locator('.fixed.inset-0')
-      .getByRole('button', { name: /Zatwierdź/i })
+      .getByRole('dialog')
+      .getByRole('button', { name: /^Zatwierdź$/ })
       .click(),
   ]);
   await expect(page.getByText(/Zatwierdź konto/i)).not.toBeVisible({

@@ -63,8 +63,8 @@ test.describe.serial('Admin Users Filter', () => {
           resp.url().includes('/api/admin/users') && resp.status() === 200
       ),
       adminPage
-        .locator('.fixed.inset-0')
-        .getByRole('button', { name: /Przypisz \(1\)/i })
+        .getByRole('dialog')
+        .getByRole('button', { name: /^Przypisz \(1\)$/ })
         .click(),
     ]);
 
