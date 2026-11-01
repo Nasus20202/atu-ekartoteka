@@ -2,6 +2,7 @@ import { cache } from 'react';
 
 import { auth } from '@/auth';
 import { isApprovedAccount } from '@/lib/auth/account-access';
+import { isAdminRole } from '@/lib/auth/admin-access';
 import {
   formatAdminApartmentTitle,
   formatChargesTitle,
@@ -14,7 +15,6 @@ import {
 } from '@/lib/queries/apartments/find-apartment-label';
 import { findHoaName } from '@/lib/queries/hoa/find-hoa-name';
 import { findUserByIdCached } from '@/lib/queries/users/find-user-by-id';
-import { UserRole } from '@/lib/types';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 
 /** One session lookup per request, shared by the layout and page metadata. */
@@ -22,7 +22,7 @@ const getSession = cache(() => auth());
 
 async function isAdminSession(): Promise<boolean> {
   const session = await getSession();
-  return session?.user?.role === UserRole.ADMIN;
+  return isAdminRole(session?.user?.role);
 }
 
 /** Address label of the apartment, only for its approved owner; null otherwise. */

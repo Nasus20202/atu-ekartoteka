@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { parseUsersQuery } from '@/app/api/admin/users/users-query';
+import { isApprovedStatus } from '@/lib/auth/account-access';
+import { isAdminRole } from '@/lib/auth/admin-access';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { createLogger } from '@/lib/logger';
 import { updateUserStatus } from '@/lib/mutations/users/update-user-status';
@@ -8,7 +10,7 @@ import { notifyAccountApproved } from '@/lib/notifications/account-status';
 import { countApartmentAvailability } from '@/lib/queries/apartments/count-apartment-availability';
 import { findTenantUsers } from '@/lib/queries/users/find-tenant-users';
 import { findUserById } from '@/lib/queries/users/find-user-by-id';
-import { AccountStatus, UserRole } from '@/lib/types';
+import { AccountStatus } from '@/lib/types';
 import { toUserDto } from '@/lib/types/dto/user-dto';
 import { getErrorMessage } from '@/lib/utils/error-message';
 
@@ -106,11 +108,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     // If approving and apartments are provided, check if apartments are available
-    if (
-      status === AccountStatus.APPROVED &&
-      apartmentIds &&
-      apartmentIds.length > 0
-    ) {
+    if (isApprovedStatus(status) && apartmentIds && apartmentIds.length > 0) {
       const { found, occupiedByOthers } = await countApartmentAvailability(
         apartmentIds,
         userId
@@ -153,9 +151,9 @@ export async function PATCH(req: NextRequest) {
 
     // Send notification only if account was just approved (status changed from non-APPROVED to APPROVED)
     if (
-      status === AccountStatus.APPROVED &&
-      user.status !== AccountStatus.APPROVED &&
-      updatedUser.role !== UserRole.ADMIN
+      isApprovedStatus(status) &&
+      !isApprovedStatus(user.status) &&
+      !isAdminRole(updatedUser.role)
     ) {
       await notifyAccountApproved(updatedUser.email, updatedUser.name);
     }

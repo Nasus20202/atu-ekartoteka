@@ -10,8 +10,12 @@ interface AdminCandidate {
   status: AccountStatus;
 }
 
+export function isAdminRole(role: UserRole | null | undefined): boolean {
+  return role === UserRole.ADMIN;
+}
+
 export function isApprovedAdmin(user: AdminCandidate | null): boolean {
-  return isApprovedAccount(user) && user?.role === UserRole.ADMIN;
+  return isApprovedAccount(user) && isAdminRole(user?.role);
 }
 
 /**

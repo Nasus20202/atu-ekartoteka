@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 
 import { auth } from '@/auth';
-import { UserRole } from '@/lib/types';
+import { isAdminRole } from '@/lib/auth/admin-access';
 
 export default async function HomePage() {
   const session = await auth();
@@ -10,7 +10,7 @@ export default async function HomePage() {
     redirect('/login');
   }
 
-  if (session.user.role === UserRole.ADMIN) {
+  if (isAdminRole(session.user.role)) {
     redirect('/admin/apartments');
   }
 
