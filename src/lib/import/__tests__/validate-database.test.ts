@@ -127,7 +127,7 @@ describe('validateDatabase', () => {
     expect(result.success).toBe(true);
     expect(result.results[0].warnings).toHaveLength(1);
     expect(result.results[0].warnings[0].message).toContain(
-      'różnica równa wyrównaniom'
+      'różnica -80.00 równa wyrównaniom'
     );
   });
 

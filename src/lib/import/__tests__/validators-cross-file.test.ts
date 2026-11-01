@@ -226,7 +226,7 @@ describe('validateChargesCrossFile rollup', () => {
     const warnings = validateChargesCrossFile(nalEntries, paymentEntries);
 
     expect(warnings).toHaveLength(1);
-    expect(warnings[0].message).toContain('różnica równa wyrównaniom');
+    expect(warnings[0].message).toContain('różnica -80.00 równa wyrównaniom');
   });
 
   it('does not flag differences unrelated to settlement lines', () => {

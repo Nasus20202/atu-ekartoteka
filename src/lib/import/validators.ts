@@ -151,10 +151,11 @@ export function validateChargesCrossFile(
       const equalsSettlement =
         !settlement.isZero() &&
         unexplained.abs().lessThanOrEqualTo(CROSS_CHARGES_TOLERANCE);
+      const difference = nalSum.minus(monthlyCharge);
       months.push(
         `${period}: suma naliczeń ${nalSum.toFixed(2)} ≠ naliczenia z wpłat ${monthlyCharge.toFixed(2)}` +
           (equalsSettlement
-            ? ' (różnica równa wyrównaniom)'
+            ? ` (różnica ${difference.toFixed(2)} równa wyrównaniom)`
             : ` (niewyjaśniona różnica ${unexplained.toFixed(2)})`)
       );
       totalDifference = totalDifference.plus(delta);
