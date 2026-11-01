@@ -49,7 +49,7 @@ export const callbacks: NextAuthConfig['callbacks'] = {
     if (session.user && token.id) {
       Object.assign(session.user, {
         id: token.id as string,
-        role: token.role as string,
+        role: token.role as UserRole,
         mustChangePassword: token.mustChangePassword as boolean,
       });
     }
