@@ -5,8 +5,9 @@ import { fileURLToPath } from 'url';
 
 import { expect, test } from '../fixtures';
 
+const HOA_ID = 'TEST06';
 const IMPORT_DIR = fileURLToPath(
-  new URL('../test-data/import/TEST05', import.meta.url)
+  new URL(`../test-data/import/${HOA_ID}`, import.meta.url)
 );
 
 interface ImportFile {
@@ -14,17 +15,12 @@ interface ImportFile {
   content: string;
 }
 
-// Reuses the TEST05 rows under its own HOA so it never races the TEST05 spec
-const HOA_ID = 'TEST06';
-
-function readTest05(name: string): string {
-  return fs
-    .readFileSync(path.join(IMPORT_DIR, name), 'latin1')
-    .replaceAll('TEST05', HOA_ID);
+function readTestFile(name: string): string {
+  return fs.readFileSync(path.join(IMPORT_DIR, name), 'latin1');
 }
 
 function wplatyLines(): string[] {
-  return readTest05('wplaty.txt')
+  return readTestFile('wplaty.txt')
     .split('\n')
     .filter((line) => line.trim());
 }
@@ -61,8 +57,8 @@ test.describe('Admin Import Multiple Files', () => {
     const [first, ...rest] = wplatyLines();
 
     await importFiles(adminPage, [
-      { name: 'lok.txt', content: readTest05('lok.txt') },
-      { name: 'nal_czynsztest.txt', content: readTest05('nal_czynsz.txt') },
+      { name: 'lok.txt', content: readTestFile('lok.txt') },
+      { name: 'nal_czynsztest.txt', content: readTestFile('nal_czynsz.txt') },
       { name: 'wplaty1.txt', content: `${first}\n` },
       { name: 'wplaty_2026.txt', content: `${rest.join('\n')}\n` },
     ]);
@@ -79,7 +75,7 @@ test.describe('Admin Import Multiple Files', () => {
     const lines = wplatyLines();
 
     await importFiles(adminPage, [
-      { name: 'lok.txt', content: readTest05('lok.txt') },
+      { name: 'lok.txt', content: readTestFile('lok.txt') },
       { name: 'wplaty1.txt', content: `${lines.join('\n')}\n` },
       { name: 'wplaty2.txt', content: `${lines[1]}\n` },
     ]);

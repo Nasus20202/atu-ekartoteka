@@ -4,7 +4,7 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 
 import { expect, test } from '../fixtures';
-import { deleteHoaByExternalId, readOwnerRows } from '../utils/owner-validity';
+import { readOwnerRows } from '../utils/owner-validity';
 
 const OWNER_VALIDITY_HOA = 'TEST06';
 
@@ -39,10 +39,6 @@ async function importFolder(adminPage: Page, folder: string) {
 }
 
 test.describe('Admin Import Owner Change', () => {
-  test.afterAll(async () => {
-    await deleteHoaByExternalId(OWNER_VALIDITY_HOA);
-  });
-
   test('import with a former-owner wplaty row passes cross-file validation', async ({
     adminPage,
   }) => {
