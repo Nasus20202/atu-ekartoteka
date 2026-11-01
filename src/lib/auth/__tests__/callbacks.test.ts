@@ -56,7 +56,9 @@ describe('callbacks.jwt', () => {
       session: undefined,
     });
 
-    expect(result!.id).toBe('user-123');
+    // Auth.js derives `sub` from the provider user; the callback only adds
+    // the fields the application needs.
+    expect(result!.sub).toBe('user-123');
     expect(result!.role).toBe(UserRole.TENANT);
     expect(result!.mustChangePassword).toBe(false);
   });
@@ -76,7 +78,7 @@ describe('callbacks.jwt', () => {
   });
 
   it('refreshes token data from DB on update trigger', async () => {
-    const token = makeToken({ id: 'user-123' });
+    const token = makeToken();
     vi.mocked(prisma.user.findUnique).mockResolvedValue(
       createMockUser({ mustChangePassword: false })
     );
@@ -101,7 +103,7 @@ describe('callbacks.jwt', () => {
   });
 
   it('returns null to sign out when the user no longer exists on update', async () => {
-    const token = makeToken({ id: 'user-123', role: UserRole.ADMIN });
+    const token = makeToken({ role: UserRole.ADMIN });
     vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
 
     const result = await callbacks!.jwt!({
@@ -116,7 +118,7 @@ describe('callbacks.jwt', () => {
   });
 
   it('does not fetch DB on signIn trigger', async () => {
-    const token = makeToken({ id: 'user-123' });
+    const token = makeToken();
 
     await callbacks!.jwt!({
       token,
@@ -141,7 +143,6 @@ describe('callbacks.session', () => {
       expires: '',
     };
     const token = makeToken({
-      id: 'user-123',
       role: UserRole.TENANT,
       mustChangePassword: false,
     });
@@ -161,12 +162,12 @@ describe('callbacks.session', () => {
     });
   });
 
-  it('returns session unchanged when token has no id', async () => {
+  it('returns session unchanged when the token has no subject', async () => {
     const session = {
       user: { name: 'Test', email: 'test@example.com', image: null },
       expires: '',
     };
-    const token = makeToken();
+    const token = makeToken({ sub: undefined });
 
     const result = await callbacks!.session!({
       session: session as never,
