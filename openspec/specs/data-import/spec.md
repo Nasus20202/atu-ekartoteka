@@ -823,6 +823,8 @@ Each import warning SHALL carry a kind from a fixed set: `line-total`, `charges-
 
 The system SHALL read the start date and the end date of each apartment row in a `lok` file and store them on the apartment as `validFrom` and `validTo`. Both dates are optional. A blank or non-`YYYYMMDD` value SHALL be stored as null without failing the row. Dates SHALL be updated on reimport when they change.
 
+The WMB export always contains both date columns, so a missing column is not a supported file variant. A blank end date means the owner is still current, not that the end date is unknown. Every reimport replaces the stored dates, so a later export without an end date clears a previously stored one.
+
 #### Scenario: Start and end dates stored
 
 - **GIVEN** a `lok` row with a start date `20250210` and an end date `20250209` for a former owner
@@ -834,6 +836,12 @@ The system SHALL read the start date and the end date of each apartment row in a
 - **GIVEN** a `lok` row with a start date and an empty end date
 - **WHEN** import runs
 - **THEN** the apartment row stores `validFrom` and `validTo` is null
+
+#### Scenario: Reimport clears a stored end date
+
+- **GIVEN** an apartment whose `validTo` is stored from an earlier import
+- **WHEN** a later `lok` row for the same apartment has an empty end date
+- **THEN** the apartment row no longer stores an end date, because the owner is current again
 
 #### Scenario: Invalid date stored as null
 
