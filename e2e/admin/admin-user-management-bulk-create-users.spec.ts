@@ -4,6 +4,7 @@
 
 import { expect, test } from '../fixtures';
 import { createUnassignedApartment } from '../utils/create-unassigned-apartment';
+import { openTestHoaCard } from '../utils/open-test-hoa';
 
 test.describe.serial('Admin Bulk User Creation', () => {
   let unassignedApartmentId: string;
@@ -36,8 +37,8 @@ test.describe.serial('Admin Bulk User Creation', () => {
       adminPage.getByRole('heading', { name: /Zarządzanie kontami/i })
     ).toBeVisible();
 
-    // HOA cards start collapsed — click the CollapsibleTrigger (HOA name) to expand
-    await adminPage.getByText('Test HOA').first().click();
+    // HOA cards start collapsed — expand the test HOA card
+    await openTestHoaCard(adminPage);
 
     await expect(adminPage.getByRole('checkbox').first()).toBeVisible({
       timeout: 5000,
@@ -67,8 +68,8 @@ test.describe.serial('Admin Bulk User Creation', () => {
       adminPage.getByRole('heading', { name: /Zarządzanie kontami/i })
     ).toBeVisible();
 
-    // Expand the first HOA card by clicking its name
-    await adminPage.getByText('Test HOA').first().click();
+    // Expand the test HOA card
+    await openTestHoaCard(adminPage);
 
     const hoaCheckbox = adminPage
       .getByRole('checkbox', { name: /Zaznacz wszystkie/i })
@@ -92,8 +93,8 @@ test.describe.serial('Admin Bulk User Creation', () => {
       adminPage.getByRole('heading', { name: /Zarządzanie kontami/i })
     ).toBeVisible();
 
-    // Expand the first HOA card then select the first individual apartment
-    await adminPage.getByText('Test HOA').first().click();
+    // Expand the test HOA card then select the first individual apartment
+    await openTestHoaCard(adminPage);
 
     const apartmentCheckboxes = adminPage.getByRole('checkbox').filter({
       hasNot: adminPage.locator('[aria-label*="Zaznacz wszystkie"]'),

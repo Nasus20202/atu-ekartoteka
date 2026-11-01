@@ -64,7 +64,10 @@ export function HoaCard({
         <Collapsible open={open} onOpenChange={setOpen}>
           <CardHeader className={open ? 'pb-2' : ''}>
             <CardTitle className="flex items-center gap-3 text-base">
-              <CollapsibleTrigger className="flex flex-1 cursor-pointer items-center gap-2 text-left">
+              <CollapsibleTrigger
+                className="flex flex-1 cursor-pointer items-center gap-2 text-left"
+                data-testid={`hoa-card-${hoa.hoaId}`}
+              >
                 <span className="flex-1">{hoa.hoaName}</span>
                 <span className="text-sm font-normal text-muted-foreground">
                   <ApartmentCount count={hoa.apartments.length} />
