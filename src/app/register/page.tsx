@@ -2,11 +2,9 @@
 
 import { Loader2, Shield } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
-import { useState } from 'react';
 
 import { RegisterSuccess } from '@/app/register/register-success';
+import { useRegisterForm } from '@/app/register/use-register-form';
 import { useSetupStatus } from '@/app/register/use-setup-status';
 import { AuthLoading } from '@/components/auth/auth-loading';
 import { TurnstileField } from '@/components/auth/turnstile-field';
@@ -19,93 +17,19 @@ import {
   MIN_PASSWORD_LENGTH,
   PASSWORD_TOO_SHORT_MESSAGE,
 } from '@/lib/auth/password-rules';
-import { useTurnstile } from '@/lib/hooks/use-turnstile';
-import {
-  GENERIC_ERROR_MESSAGE,
-  getErrorMessage,
-} from '@/lib/utils/error-message';
 
 export default function RegisterPage() {
-  const router = useRouter();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    name: '',
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const { isFirstAdmin, checkingSetup } = useSetupStatus();
-  const turnstile = useTurnstile();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setSuccess(false);
-
-    // Validate passwords match
-    if (formData.password !== formData.confirmPassword) {
-      setError('Hasła nie są identyczne');
-      return;
-    }
-
-    // Validate password length
-    if (formData.password.length < MIN_PASSWORD_LENGTH) {
-      setError(PASSWORD_TOO_SHORT_MESSAGE);
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const response = await fetch('/api/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          name: formData.name || undefined,
-          isFirstAdmin,
-          turnstileToken: turnstile.token,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Rejestracja nie powiodła się');
-      }
-
-      setSuccess(true);
-      const loginResult = await signIn('credentials', {
-        email: formData.email,
-        password: formData.password,
-        autoLoginBypassToken: data.autoLoginToken ?? undefined,
-        redirect: false,
-      });
-
-      if (loginResult?.error) {
-        throw new Error(
-          'Konto utworzone, ale nie udało się zalogować automatycznie. Zaloguj się ręcznie.'
-        );
-      }
-
-      router.push('/dashboard');
-      router.refresh();
-    } catch (err) {
-      setSuccess(false);
-      setError(getErrorMessage(err, GENERIC_ERROR_MESSAGE));
-    } finally {
-      setLoading(false);
-      // Reset Turnstile token after any registration attempt (success or failure)
-      turnstile.reset();
-    }
-  };
-
-  const isFormDisabled = loading || turnstile.isPending;
+  const {
+    formData,
+    setFormData,
+    loading,
+    error,
+    success,
+    turnstile,
+    isFormDisabled,
+    handleSubmit,
+  } = useRegisterForm(isFirstAdmin);
 
   if (success) {
     return <RegisterSuccess isFirstAdmin={isFirstAdmin} />;
