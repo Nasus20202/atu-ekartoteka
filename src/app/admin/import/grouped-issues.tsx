@@ -47,6 +47,11 @@ export function GroupedIssues<K extends string, T>({
           <p className={cn('text-xs', classes.description)}>
             {group.description}
           </p>
+          {group.summary?.map((line) => (
+            <p key={line} className={cn('text-xs font-medium', classes.item)}>
+              {line}
+            </p>
+          ))}
           <ul className={cn('space-y-1 text-sm', classes.item)}>
             {group.items.map((item, idx) => (
               <li key={idx}>• {formatItem(item)}</li>

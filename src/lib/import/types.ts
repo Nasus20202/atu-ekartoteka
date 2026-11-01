@@ -43,6 +43,8 @@ export interface ImportWarning {
   year?: number;
   lineNo?: number;
   difference?: string;
+  // Charges mismatch only: differing months and how many of them the settlement lines explain
+  months?: { differing: number; explainedBySettlement: number };
   message: string;
 }
 

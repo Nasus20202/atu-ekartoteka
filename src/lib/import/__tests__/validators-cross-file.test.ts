@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { validateChargesCrossFile } from '@/lib/import/charges-cross-file';
 import { MONTHLY_CHARGES_IGNORED_NOTE } from '@/lib/import/constants';
-import { validateChargesCrossFile } from '@/lib/import/validators';
 import { NalCzynszEntry } from '@/lib/parsers/nal-czynsz-parser';
 import { PaymentEntry } from '@/lib/parsers/wplaty-parser';
 
@@ -187,6 +187,14 @@ describe('validateChargesCrossFile with owner changes', () => {
 });
 
 describe('validateChargesCrossFile rollup', () => {
+  function makeCredit(
+    period: string,
+    description: string,
+    totalAmount: number
+  ) {
+    return { ...makeNal(OWNER, 'APT001', period, totalAmount), description };
+  }
+
   function makeSettlement(period: string, totalAmount: number) {
     return {
       ...makeNal(OWNER, 'APT001', period, totalAmount),
@@ -208,6 +216,10 @@ describe('validateChargesCrossFile rollup', () => {
 
     expect(warnings).toHaveLength(1);
     expect(warnings[0].difference).toBe('80.0000');
+    expect(warnings[0].months).toEqual({
+      differing: 2,
+      explainedBySettlement: 0,
+    });
     expect(warnings[0].message).toContain('2 mies.');
     expect(warnings[0].message).toContain('202501');
     expect(warnings[0].message).toContain('202503');
@@ -227,6 +239,10 @@ describe('validateChargesCrossFile rollup', () => {
 
     expect(warnings).toHaveLength(1);
     expect(warnings[0].message).toContain('różnica -80.00 równa wyrównaniom');
+    expect(warnings[0].months).toEqual({
+      differing: 1,
+      explainedBySettlement: 1,
+    });
   });
 
   it('does not flag differences unrelated to settlement lines', () => {
@@ -239,13 +255,15 @@ describe('validateChargesCrossFile rollup', () => {
 
     expect(warning.message).not.toContain('równa wyrównaniom');
     expect(warning.message).toContain('(niewyjaśniona różnica 50.00)');
+    expect(warning.message).not.toContain('ujemne pozycje');
   });
 
-  it('states the part of the difference that settlement lines do not explain', () => {
+  it('lists the negative lines that the unexplained part could come from', () => {
     const nalEntries = [
       makeNal(OWNER, 'APT001', '202512', 500),
       makeSettlement('202512', -80),
-      makeNal(OWNER, 'APT001', '202512', -20),
+      makeCredit('202512', 'CO opłata stała', -16.3),
+      makeCredit('202512', 'Opłata za miejsce parkingowe', -3.7),
     ];
     const paymentEntries = [
       makePayment(OWNER, 'APT001', 2025, [...Array(11).fill(0), 500]),
@@ -254,6 +272,8 @@ describe('validateChargesCrossFile rollup', () => {
     const [warning] = validateChargesCrossFile(nalEntries, paymentEntries);
 
     expect(warning.message).not.toContain('równa wyrównaniom');
-    expect(warning.message).toContain('(niewyjaśniona różnica -20.00)');
+    expect(warning.message).toContain(
+      '(niewyjaśniona różnica -20.00; ujemne pozycje bez wyrównań: CO opłata stała -16.30, Opłata za miejsce parkingowe -3.70)'
+    );
   });
 });

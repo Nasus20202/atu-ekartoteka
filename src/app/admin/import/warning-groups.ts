@@ -4,6 +4,8 @@ import {
 } from '@/app/admin/import/issue-groups';
 import type { ImportWarning, ImportWarningKind } from '@/lib/import/types';
 
+type WarningSummary = (warnings: ImportWarning[]) => string[];
+
 // Insertion order is the display order of the groups
 export const WARNING_GROUPS: Record<ImportWarningKind, IssueGroupInfo> = {
   'charges-mismatch': {
@@ -33,6 +35,42 @@ export const WARNING_GROUPS: Record<ImportWarningKind, IssueGroupInfo> = {
   },
 };
 
+function summarizeChargesMismatch(warnings: ImportWarning[]): string[] {
+  const years = new Map<
+    number,
+    { apartments: number; differing: number; explained: number }
+  >();
+
+  for (const { year, months } of warnings) {
+    if (year === undefined || months === undefined) continue;
+    const current = years.get(year) ?? {
+      apartments: 0,
+      differing: 0,
+      explained: 0,
+    };
+    years.set(year, {
+      apartments: current.apartments + 1,
+      differing: current.differing + months.differing,
+      explained: current.explained + months.explainedBySettlement,
+    });
+  }
+
+  return Array.from(years)
+    .sort(([a], [b]) => a - b)
+    .map(
+      ([year, { apartments, differing, explained }]) =>
+        `Rok ${year} (${apartments} lok.): ${differing} mies. z różnicą — ` +
+        `${explained} równa wyrównaniom, ${differing - explained} poza wyrównaniami`
+    );
+}
+
+const WARNING_SUMMARIES: Partial<Record<ImportWarningKind, WarningSummary>> = {
+  'charges-mismatch': summarizeChargesMismatch,
+};
+
 export function groupWarnings(warnings: ImportWarning[]) {
-  return groupByKind(warnings, WARNING_GROUPS);
+  return groupByKind(warnings, WARNING_GROUPS).map((group) => ({
+    ...group,
+    summary: WARNING_SUMMARIES[group.kind]?.(group.items),
+  }));
 }

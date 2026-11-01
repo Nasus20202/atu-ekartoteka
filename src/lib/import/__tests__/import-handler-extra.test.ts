@@ -49,6 +49,9 @@ vi.mock('@/lib/parsers/wplaty-parser', () => ({
 vi.mock('@/lib/import/validators', () => ({
   validateNalCzynsz: mockValidateNalCzynsz,
   validateWplaty: mockValidateWplaty,
+}));
+
+vi.mock('@/lib/import/charges-cross-file', () => ({
   validateChargesCrossFile: mockValidateChargesCrossFile,
 }));
 
