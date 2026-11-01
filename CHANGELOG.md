@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.7] - 2026-11-01
+
+- feat(payments): calculate monthly charges and balances from charge records (#830)
+- chore(deps): update dependency @types/node to v26.6.6 (#828)
+- chore(deps): update dependency @opentelemetry/semantic-conventions to v1.44.0 (#829)
+- perf(users): use DB counts for apartment checks and unify data formatting (#827)
+- chore(deps): update grafana/otel-lgtm docker tag to v0.39.0 (#826)
+
 ## [0.8.6] - 2026-10-31
 
 - feat(dashboard): align tenant data cutoff with last charged month (#825)
