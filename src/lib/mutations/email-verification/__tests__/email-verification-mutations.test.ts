@@ -21,7 +21,7 @@ vi.mock('@/lib/database/prisma', () => ({
     emailVerification: {
       create: mockCreate,
       deleteMany: mockDeleteMany,
-      update: mockUpdate,
+      updateMany: mockUpdate,
     },
   },
 }));
@@ -74,23 +74,39 @@ describe('email verification mutations', () => {
     });
   });
 
-  it('marks the user and the verification as verified in one transaction', async () => {
-    mockUserUpdate.mockReturnValue('user-update');
-    mockUpdate.mockReturnValue('verification-update');
+  it('consumes the verification and marks the user as verified', async () => {
+    mockUpdate.mockResolvedValue({ count: 1 });
+    mockTransaction.mockImplementation((callback) =>
+      callback({
+        emailVerification: { updateMany: mockUpdate },
+        user: { update: mockUserUpdate },
+      })
+    );
 
-    await verifyEmailTransaction('user-1', 'verification-1');
+    expect(await verifyEmailTransaction('user-1', 'verification-1')).toBe(true);
 
+    expect(mockUpdate).toHaveBeenCalledWith({
+      where: { id: 'verification-1', verified: false },
+      data: { verified: true },
+    });
     expect(mockUserUpdate).toHaveBeenCalledWith({
       where: { id: 'user-1' },
       data: { emailVerified: true },
     });
-    expect(mockUpdate).toHaveBeenCalledWith({
-      where: { id: 'verification-1' },
-      data: { verified: true },
-    });
-    expect(mockTransaction).toHaveBeenCalledWith([
-      'user-update',
-      'verification-update',
-    ]);
+  });
+
+  it('does not verify the user when the token was already consumed', async () => {
+    mockUpdate.mockResolvedValue({ count: 0 });
+    mockTransaction.mockImplementation((callback) =>
+      callback({
+        emailVerification: { updateMany: mockUpdate },
+        user: { update: mockUserUpdate },
+      })
+    );
+
+    expect(await verifyEmailTransaction('user-1', 'verification-1')).toBe(
+      false
+    );
+    expect(mockUserUpdate).not.toHaveBeenCalled();
   });
 });

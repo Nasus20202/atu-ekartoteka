@@ -2,42 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import {
   generateSecureToken,
-  generateVerificationCode,
   getVerificationExpiration,
   isVerificationExpired,
 } from '@/lib/email/verification-utils';
 
 describe('verification-utils', () => {
-  describe('generateVerificationCode', () => {
-    it('should generate code with correct length', () => {
-      const code = generateVerificationCode();
-      expect(code).toHaveLength(8);
-    });
-
-    it('should generate alphanumeric uppercase code', () => {
-      const code = generateVerificationCode();
-      expect(code).toMatch(/^[A-Z0-9]+$/);
-    });
-
-    it('should generate different codes on multiple calls', () => {
-      const codes = new Set();
-      for (let i = 0; i < 100; i++) {
-        codes.add(generateVerificationCode());
-      }
-      // Should have at least 95 unique codes out of 100
-      expect(codes.size).toBeGreaterThan(95);
-    });
-
-    it('should only contain alphanumeric characters', () => {
-      // Generate many codes to test
-      for (let i = 0; i < 100; i++) {
-        const code = generateVerificationCode();
-        // Should only contain A-Z and 0-9
-        expect(code).toMatch(/^[A-Z0-9]+$/);
-      }
-    });
-  });
-
   describe('generateSecureToken', () => {
     it('should generate token with sufficient length', () => {
       const token = generateSecureToken();

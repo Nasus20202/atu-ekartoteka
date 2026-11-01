@@ -12,23 +12,6 @@ export function hashToken(token: string): string {
 }
 
 /**
- * Generate a random verification code
- * @param length - Length of the code (default: 8)
- * @returns Random alphanumeric code
- */
-export function generateVerificationCode(length: number = 8): string {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let code = '';
-
-  for (let i = 0; i < length; i++) {
-    const randomIndex = Math.floor(Math.random() * characters.length);
-    code += characters[randomIndex];
-  }
-
-  return code;
-}
-
-/**
  * Generate a secure random token for password reset
  * @returns A URL-safe random token
  */
