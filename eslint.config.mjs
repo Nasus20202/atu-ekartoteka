@@ -168,6 +168,15 @@ const eslintConfig = defineConfig([
       'no-restricted-imports': 'off',
     },
   },
+  // Repo-level check: it runs once, on the lint config, and reports any
+  // OpenSpec change that still lives outside `openspec/changes/archive/`.
+  {
+    files: ['eslint.config.mjs'],
+    plugins: { local: localRules },
+    rules: {
+      'local/no-unarchived-openspec-changes': 'error',
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
