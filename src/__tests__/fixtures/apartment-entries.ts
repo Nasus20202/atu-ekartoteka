@@ -15,7 +15,7 @@ export const createMockApartmentEntry = (
   shareNumerator: 50.5,
   shareDenominator: 2.5,
   isOwner: true,
-  validFrom: null,
+  validFrom: new Date('2025-02-10T00:00:00.000Z'),
   validTo: null,
   ...overrides,
 });
