@@ -24,7 +24,13 @@ interface HoaNoticeCardProps {
 const NOTICE_WRAPPER_CLASS =
   'overflow-hidden rounded-md border [&>[role=note]]:border-t-0';
 
-function NoticeSection({ label, text }: { label: string; text: string }) {
+export function NoticeSection({
+  label,
+  text,
+}: {
+  label: string;
+  text: string;
+}) {
   return (
     <section className="space-y-1">
       <h3 className="text-sm font-medium">{label}</h3>

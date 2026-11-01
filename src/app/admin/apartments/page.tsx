@@ -1,9 +1,10 @@
 'use client';
 
-import { Building2, Search } from 'lucide-react';
+import { Building2, FileText, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { HoaListCard } from '@/app/admin/apartments/hoa-list-card';
+import { HoaNoticesDialog } from '@/app/admin/apartments/hoa-notices-dialog';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,7 @@ export default function ApartmentsPage() {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
+  const [noticesOpen, setNoticesOpen] = useState(false);
 
   async function fetchHOAs(nextSearch: string) {
     try {
@@ -107,7 +109,14 @@ export default function ApartmentsPage() {
         title="Wspólnoty mieszkaniowe"
         description="Wybierz wspólnotę, aby zobaczyć mieszkania"
         showBackButton={false}
+        action={
+          <Button variant="outline" onClick={() => setNoticesOpen(true)}>
+            <FileText className="mr-2 h-4 w-4" />
+            Nagłówki i stopki
+          </Button>
+        }
       />
+      <HoaNoticesDialog open={noticesOpen} onOpenChange={setNoticesOpen} />
 
       <Card className="mb-6">
         <CardHeader>
