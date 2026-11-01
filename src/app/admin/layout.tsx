@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import packageJson from '@/../package.json';
 import { auth } from '@/auth';
 import { DashboardNavbar } from '@/components/navigation/dashboard-navbar';
-import { UserRole } from '@/lib/types';
+import { hasAdminAccess } from '@/lib/auth/admin-access';
 
 export default async function AdminLayout({
   children,
@@ -12,8 +12,12 @@ export default async function AdminLayout({
 }) {
   const session = await auth();
 
-  if (!session || session.user.role !== UserRole.ADMIN) {
+  if (!session) {
     redirect('/login');
+  }
+
+  if (!(await hasAdminAccess(session.user.id))) {
+    redirect('/dashboard');
   }
 
   return (

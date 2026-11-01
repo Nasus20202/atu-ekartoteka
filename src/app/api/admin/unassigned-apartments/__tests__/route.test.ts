@@ -36,6 +36,10 @@ vi.mock(
   })
 );
 
+vi.mock('@/lib/auth/admin-access', () => ({
+  hasAdminAccess: vi.fn().mockResolvedValue(true),
+}));
+
 vi.mock('@/lib/logger', () => ({
   createLogger: () => ({
     info: vi.fn(),

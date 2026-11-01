@@ -4,8 +4,8 @@ import packageJson from '@/../package.json';
 import { auth } from '@/auth';
 import { EmailVerificationBanner } from '@/components/account/email-verification-banner';
 import { DashboardNavbar } from '@/components/navigation/dashboard-navbar';
+import { isApprovedAdmin } from '@/lib/auth/admin-access';
 import { findUserByIdCached } from '@/lib/queries/users/find-user-by-id';
-import { UserRole } from '@/lib/types';
 
 export default async function DashboardLayout({
   children,
@@ -18,8 +18,8 @@ export default async function DashboardLayout({
     redirect('/login');
   }
 
-  const isAdmin = session.user.role === UserRole.ADMIN;
   const user = await findUserByIdCached(session.user.id);
+  const isAdmin = isApprovedAdmin(user);
 
   return (
     <>
