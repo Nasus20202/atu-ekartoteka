@@ -44,7 +44,7 @@ describe('toApartmentSummaryDto', () => {
 
 function detailSourceWithoutDates(): Omit<
   ApartmentDetailDtoSource,
-  'validFrom'
+  'validFrom' | 'validTo'
 > {
   return {
     id: 'apt-1',
@@ -108,6 +108,7 @@ describe('toApartmentDetailDto', () => {
       ],
       payments: [],
       validFrom: null,
+      validTo: null,
     });
 
     expect(dto.chargeNotifications[0]).toEqual({
@@ -127,6 +128,7 @@ describe('toApartmentDetailDto', () => {
     const dto = toApartmentDetailDto({
       ...detailSourceWithoutDates(),
       validFrom: new Date('2025-02-10T00:00:00.000Z'),
+      validTo: null,
     });
 
     expect(dto.validFrom).toBe('2025-02-10T00:00:00.000Z');
@@ -136,9 +138,30 @@ describe('toApartmentDetailDto', () => {
     const dto = toApartmentDetailDto({
       ...detailSourceWithoutDates(),
       validFrom: null,
+      validTo: null,
     });
 
     expect(dto.validFrom).toBeNull();
+  });
+
+  it('maps the owner end date to an ISO string', () => {
+    const dto = toApartmentDetailDto({
+      ...detailSourceWithoutDates(),
+      validFrom: null,
+      validTo: new Date('2025-02-09T00:00:00.000Z'),
+    });
+
+    expect(dto.validTo).toBe('2025-02-09T00:00:00.000Z');
+  });
+
+  it('maps a missing owner end date to null', () => {
+    const dto = toApartmentDetailDto({
+      ...detailSourceWithoutDates(),
+      validFrom: null,
+      validTo: null,
+    });
+
+    expect(dto.validTo).toBeNull();
   });
 
   it('maps the HOA notice with header and footer', () => {

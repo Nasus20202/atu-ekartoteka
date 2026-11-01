@@ -26,6 +26,7 @@ function createApartment(
     chargeNotifications: [],
     payments: [],
     validFrom: null,
+    validTo: null,
     ...overrides,
   };
 }
@@ -40,20 +41,33 @@ function renderCard(apartment: ApartmentDetailDto) {
   );
 }
 
-describe('ApartmentInfoCard owner since', () => {
-  it('shows the owner start date', () => {
+describe('ApartmentInfoCard owner period', () => {
+  it('shows only the start date for the current owner', () => {
     renderCard(createApartment({ validFrom: '2025-02-10T12:00:00.000Z' }));
 
     expect(
-      screen.getByText('Właściciel od').nextElementSibling
-    ).toHaveTextContent('10.02.2025');
+      screen.getByText('Okres własności').nextElementSibling
+    ).toHaveTextContent('od 10.02.2025');
   });
 
-  it('shows Brak when there is no start date', () => {
-    renderCard(createApartment({ validFrom: null }));
+  it('shows start and end dates for a former owner', () => {
+    renderCard(
+      createApartment({
+        validFrom: '2025-01-01T12:00:00.000Z',
+        validTo: '2025-02-09T12:00:00.000Z',
+      })
+    );
 
     expect(
-      screen.getByText('Właściciel od').nextElementSibling
+      screen.getByText('Okres własności').nextElementSibling
+    ).toHaveTextContent('od 01.01.2025 do 09.02.2025');
+  });
+
+  it('shows Brak when there are no dates', () => {
+    renderCard(createApartment({ validFrom: null, validTo: null }));
+
+    expect(
+      screen.getByText('Okres własności').nextElementSibling
     ).toHaveTextContent('Brak');
   });
 });

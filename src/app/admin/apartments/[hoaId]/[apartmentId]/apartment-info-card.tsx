@@ -3,8 +3,9 @@ import { Power, PowerOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { ApartmentDetailDto } from '@/lib/types/dto/apartment-dto';
-import { formatDate, formatSharePercent } from '@/lib/utils';
+import { formatSharePercent } from '@/lib/utils';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
+import { formatOwnerPeriod } from '@/lib/utils/owner-period';
 
 interface ApartmentInfoCardProps {
   apartment: ApartmentDetailDto;
@@ -41,11 +42,9 @@ export function ApartmentInfoCard({
             </p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">Właściciel od</p>
+            <p className="text-sm text-muted-foreground">Okres własności</p>
             <p className="font-medium">
-              {apartment.validFrom
-                ? formatDate(new Date(apartment.validFrom))
-                : 'Brak'}
+              {formatOwnerPeriod(apartment.validFrom, apartment.validTo)}
             </p>
           </div>
           <div>
