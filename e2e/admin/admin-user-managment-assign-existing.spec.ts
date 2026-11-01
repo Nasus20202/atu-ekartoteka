@@ -6,6 +6,7 @@
 import { expect, test } from '../fixtures';
 import { createUserWithUnassignedApartment } from '../utils/create-user-with-unassigned-apartment';
 import { deleteUserAndApartmentsByEmail } from '../utils/delete-user-and-apartments-by-email';
+import { openTestHoaCard } from '../utils/open-test-hoa';
 
 test.describe.serial('Admin Bulk Assign Existing Users', () => {
   let email: string;
@@ -46,8 +47,8 @@ test.describe.serial('Admin Bulk Assign Existing Users', () => {
       adminPage.getByRole('tab', { name: /Przypisz istniejące/i }).click(),
     ]);
 
-    // HOA cards start collapsed — click the HOA name (CollapsibleTrigger) to expand
-    await adminPage.getByText('Test HOA').first().click();
+    // HOA cards start collapsed — expand the test HOA card
+    await openTestHoaCard(adminPage);
 
     // The seeded apartment email should be visible in the list
     await expect(adminPage.getByText(email)).toBeVisible({ timeout: 10000 });
@@ -68,8 +69,8 @@ test.describe.serial('Admin Bulk Assign Existing Users', () => {
       adminPage.getByRole('tab', { name: /Przypisz istniejące/i }).click(),
     ]);
 
-    // Expand the first HOA card
-    await adminPage.getByText('Test HOA').first().click();
+    // Expand the test HOA card
+    await openTestHoaCard(adminPage);
 
     // Wait for apartment list to appear
     await expect(adminPage.getByText(email)).toBeVisible({ timeout: 10000 });

@@ -4,6 +4,8 @@
 
 import * as pg from 'pg';
 
+import { loadSql } from './load-sql';
+
 export interface OwnerRow {
   id: string;
   homeownersAssociationId: string;
@@ -26,11 +28,7 @@ export async function readOwnerRows(
   try {
     await client.connect();
     const result = await client.query<OwnerRow>(
-      `SELECT a.id, a."homeownersAssociationId", a."externalOwnerId", a."isActive", a."validFrom", a."validTo"
-       FROM "Apartment" a
-       JOIN "HomeownersAssociation" h ON h.id = a."homeownersAssociationId"
-       WHERE h."externalId" = $1
-       ORDER BY a."externalOwnerId"`,
+      loadSql('select-owner-rows.sql'),
       [hoaExternalId]
     );
     return result.rows;

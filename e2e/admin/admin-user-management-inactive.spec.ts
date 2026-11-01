@@ -7,6 +7,7 @@ import type { Page } from '@playwright/test';
 import { expect, test } from '../fixtures';
 import { createUniqueUnassignedApartment } from '../utils/create-unique-unassigned-apartment';
 import { deleteApartment } from '../utils/delete-apartment';
+import { openTestHoaCard } from '../utils/open-test-hoa';
 
 // Sorts after the shared test apartments so other specs never pick it first
 const INACTIVE_APARTMENT_NUMBER = '999';
@@ -27,7 +28,7 @@ test.describe('Admin Account Management - inactive apartments', () => {
 
   async function openTestHoa(page: Page) {
     await page.goto('/admin/users/management');
-    await page.getByText('Test HOA').first().click();
+    await openTestHoaCard(page);
     const row = page.locator('label', { hasText: apartment.email });
     await expect(row).toBeVisible({ timeout: 5000 });
     return row.getByRole('checkbox');
