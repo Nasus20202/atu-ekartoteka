@@ -285,24 +285,38 @@ The apartment table SHALL sort by `Adres`, `Właściciel`, `Udział` and `Status
 - **WHEN** the admin sorts by `Status` ascending
 - **THEN** active apartments are listed before inactive ones
 
-### Requirement: Owner Since on Apartment Detail
+---
 
-The admin apartment detail page SHALL show the date from which the current owner has owned the apartment, labelled `Właściciel od`. The date SHALL be formatted with the same date format used on the import result card. When the apartment has no start date, the page SHALL show `Brak`.
+### Requirement: Owner Period on Apartment Detail
 
-#### Scenario: Owner since shown
+The admin apartment detail page SHALL show the owner period of the apartment in one field labelled `Okres własności`. The field SHALL show `od` followed by the start date when only the start date is known, `do` followed by the end date when only the end date is known, and `od` start date followed by `do` end date when both are known. When neither date is known, the page SHALL show `Brak`. Dates SHALL be formatted with the same date format used on the import result card.
 
-- **GIVEN** an apartment with `validFrom` set to 2025-02-10
+#### Scenario: Current owner with a start date
+
+- **GIVEN** an apartment with `validFrom` set to 2025-02-10 and `validTo` null
 - **WHEN** an admin opens the apartment detail page
-- **THEN** the page shows `Właściciel od` with the date 10.02.2025
+- **THEN** the page shows `Okres własności` with the value `od 10.02.2025`
 
-#### Scenario: No start date
+#### Scenario: Former owner with start and end dates
 
-- **GIVEN** an apartment with `validFrom` null
+- **GIVEN** an apartment with `validFrom` set to 2025-01-01 and `validTo` set to 2025-02-09
 - **WHEN** an admin opens the apartment detail page
-- **THEN** the page shows `Właściciel od` with the value `Brak`
+- **THEN** the page shows `Okres własności` with the value `od 01.01.2025 do 09.02.2025`
+
+#### Scenario: End date without a start date
+
+- **GIVEN** an apartment with `validFrom` null and `validTo` set to 2025-02-09
+- **WHEN** an admin opens the apartment detail page
+- **THEN** the page shows `Okres własności` with the value `do 09.02.2025`
+
+#### Scenario: No dates
+
+- **GIVEN** an apartment with `validFrom` null and `validTo` null
+- **WHEN** an admin opens the apartment detail page
+- **THEN** the page shows `Okres własności` with the value `Brak`
 
 #### Scenario: Not shown to tenants
 
 - **GIVEN** a tenant opens the dashboard for their assigned apartment
 - **WHEN** the page loads
-- **THEN** the owner-since date is not shown
+- **THEN** the owner period is not shown
