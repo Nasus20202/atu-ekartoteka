@@ -429,7 +429,10 @@ describe('User Profile API', () => {
         },
         expires: new Date().toISOString(),
       });
-      mockUserFindUnique.mockResolvedValueOnce(mockUser);
+      mockUserFindUnique.mockResolvedValueOnce({
+        ...mockUser,
+        mustChangePassword: true,
+      });
       mockUserUpdate.mockResolvedValueOnce({ ...mockUser });
 
       const { PATCH } = await import('../route');
@@ -444,6 +447,32 @@ describe('User Profile API', () => {
       const updateCall = mockUserUpdate.mock.calls[0][0];
       expect(updateCall.data).toHaveProperty('mustChangePassword', false);
       expect(updateCall.data).toHaveProperty('password');
+    });
+
+    it('should ignore a stale mustChangePassword flag from the session token', async () => {
+      mockAuth.mockResolvedValueOnce({
+        user: {
+          id: 'user-id',
+          email: 'user@example.com',
+          role: UserRole.TENANT,
+          mustChangePassword: true,
+        },
+        expires: new Date().toISOString(),
+      });
+      mockUserFindUnique.mockResolvedValueOnce({
+        ...mockUser,
+        mustChangePassword: false,
+      });
+
+      const { PATCH } = await import('../route');
+      const request = createMockRequest({ newPassword: 'newPassword123' });
+
+      const response = await PATCH(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe('Obecne hasło jest wymagane aby zmienić hasło');
+      expect(mockUserUpdate).not.toHaveBeenCalled();
     });
   });
 });
