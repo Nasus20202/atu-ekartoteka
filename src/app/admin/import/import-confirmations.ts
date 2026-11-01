@@ -9,6 +9,24 @@ export const CLEAN_IMPORT_CONFIRMATION: ConfirmOptions = {
   variant: 'destructive',
 };
 
+export const CLEAN_IMPORT_WARNING: ConfirmOptions = {
+  title: 'Ostrzeżenie – czysty import',
+  description:
+    'Czysty import usunie wszystkie naliczenia, powiadomienia o opłatach i wpłaty importowanych wspólnot. Tej operacji nie można cofnąć.',
+  confirmText: 'Rozumiem, dalej',
+  cancelText: 'Anuluj',
+  variant: 'destructive',
+};
+
+export const CLEAN_IMPORT_FINAL_CONFIRMATION: ConfirmOptions = {
+  title: 'Potwierdzenie – czysty import',
+  description:
+    'To jest ostateczne potwierdzenie. Dotychczasowe dane naliczeń, powiadomień i wpłat tych wspólnot zostaną usunięte przed importem. Czy kontynuować?',
+  confirmText: 'Potwierdzam – czysty import',
+  cancelText: 'Anuluj',
+  variant: 'destructive',
+};
+
 export const SKIP_VALIDATION_CONFIRMATION: ConfirmOptions = {
   title: 'Pominięcie walidacji',
   description:

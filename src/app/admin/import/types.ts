@@ -1,4 +1,4 @@
-import type { ImportWarning } from '@/lib/import/types';
+import type { ImportWarning, YearBalanceRow } from '@/lib/import/types';
 
 export interface DatabaseStats {
   hoa: number;
@@ -19,6 +19,7 @@ export interface EntityStats {
 
 export interface ImportResult {
   hoaId: string;
+  hoaName?: string;
   apartments: EntityStats;
   errors: string[];
   warnings: ImportWarning[];
@@ -28,10 +29,12 @@ export interface ImportResult {
   apartmentsDataDate?: string;
   chargesDataDate?: string;
   notificationsDataDate?: string;
+  yearBalances?: YearBalanceRow[];
 }
 
 export interface ImportResponse {
   success: boolean;
   results: ImportResult[];
   errors: Array<{ hoaId?: string; file?: string; error: string }>;
+  fullValidationSkipped?: boolean;
 }

@@ -2,13 +2,14 @@ import { ChevronDown, Download, XCircle } from 'lucide-react';
 
 import { ImportWarnings } from '@/app/admin/import/import-warnings';
 import type { ImportResponse, ImportResult } from '@/app/admin/import/types';
+import { ValidationBanner } from '@/app/admin/import/validation-banner';
+import { YearBalanceGrid } from '@/app/admin/import/year-balance-grid';
 import { Button } from '@/components/ui/button';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { SuccessMessage } from '@/components/ui/success-message';
 import { downloadTextFile } from '@/lib/utils/download-file';
 import { serialiseErrorsToTxt } from '@/lib/utils/export-errors';
 
@@ -82,41 +83,40 @@ export function ValidationResults({ response }: { response: ImportResponse }) {
     (result) => result.errors.length > 0 || result.warnings.length > 0
   );
 
-  if (findings.length === 0) {
-    return (
-      <SuccessMessage>
-        Walidacja zakończona — nie znaleziono błędów ani ostrzeżeń
-      </SuccessMessage>
-    );
-  }
-
   return (
-    <div className="space-y-4">
-      <div className="flex items-start justify-between gap-3">
-        <p className="text-sm text-muted-foreground">{LEGEND}</p>
-        <Button
-          variant="outline"
-          size="sm"
-          className="shrink-0"
-          onClick={() => {
-            const content = serialiseErrorsToTxt(
-              findings.map(({ hoaId, errors, warnings }) => ({
-                hoaId,
-                errors,
-                warnings,
-              }))
-            );
-            downloadTextFile(content, VALIDATION_EXPORT_FILE);
-          }}
-        >
-          <Download className="mr-2 h-4 w-4" />
-          Pobierz wyniki
-        </Button>
-      </div>
+    <div className="space-y-6">
+      <ValidationBanner response={response} />
+      <YearBalanceGrid results={response.results} />
 
-      {findings.map((result) => (
-        <HoaSection key={result.hoaId} result={result} />
-      ))}
+      {findings.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-start justify-between gap-3">
+            <p className="text-sm text-muted-foreground">{LEGEND}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="shrink-0"
+              onClick={() => {
+                const content = serialiseErrorsToTxt(
+                  findings.map(({ hoaId, errors, warnings }) => ({
+                    hoaId,
+                    errors,
+                    warnings,
+                  }))
+                );
+                downloadTextFile(content, VALIDATION_EXPORT_FILE);
+              }}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Pobierz wyniki
+            </Button>
+          </div>
+
+          {findings.map((result) => (
+            <HoaSection key={result.hoaId} result={result} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
