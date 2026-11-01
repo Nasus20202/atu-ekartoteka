@@ -56,8 +56,6 @@ export interface HOAImportResult {
   notifications?: EntityStats;
   payments?: EntityStats;
   errors: ImportErrorItem[];
-  // Year of each error in `errors` that belongs to one year; the others apply to the whole HOA
-  yearErrors?: number[];
   warnings: ImportWarning[];
   // Data-as-of dates from WMB files
   apartmentsDataDate?: Date;
@@ -101,6 +99,8 @@ export type ImportErrorKind =
 export interface ImportErrorItem {
   kind: ImportErrorKind;
   message: string;
+  // Year the error belongs to; undefined when it applies to the whole HOA
+  year?: number;
 }
 
 // Error about a whole batch: a file that could not be read or an HOA that could not be imported

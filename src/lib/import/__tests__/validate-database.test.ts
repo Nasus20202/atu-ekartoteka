@@ -219,7 +219,7 @@ describe('validateDatabase', () => {
     const result = await validateDatabase();
 
     expect(result.results[0].errors).toHaveLength(1);
-    expect(result.results[0].yearErrors).toEqual([2025]);
+    expect(result.results[0].errors[0].year).toBe(2025);
     expect(
       result.results[0].yearBalances?.map(({ year, status }) => [year, status])
     ).toEqual([

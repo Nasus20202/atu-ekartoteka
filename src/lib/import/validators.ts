@@ -61,6 +61,7 @@ export function validateWplaty(entries: PaymentEntry[]): ImportErrorItem[] {
     if (check.mismatch) {
       errors.push({
         kind: 'balance-mismatch',
+        year: entry.year,
         message:
           `Wpłata ${entry.externalId} (lokal ${entry.apartmentCode}, rok ${entry.year}): ` +
           `saldo zamknięcia ${check.closingBalance.toFixed(4)} ≠ ` +
@@ -71,11 +72,4 @@ export function validateWplaty(entries: PaymentEntry[]): ImportErrorItem[] {
   }
 
   return errors;
-}
-
-/** Year of each payment entry that fails the balance identity, in entry order. */
-export function paymentErrorYears(entries: PaymentEntry[]): number[] {
-  return entries
-    .filter((entry) => checkPaymentIdentity(entry).mismatch)
-    .map(({ year }) => year);
 }

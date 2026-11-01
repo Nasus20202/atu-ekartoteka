@@ -227,7 +227,7 @@ describe('withYearStatus', () => {
   ];
 
   it('marks every year ok when there are no issues', () => {
-    const rows = withYearStatus(summaries, [], [], []);
+    const rows = withYearStatus(summaries, [], []);
 
     expect(rows.map(({ status, issueCount }) => [status, issueCount])).toEqual([
       ['ok', 0],
@@ -236,25 +236,20 @@ describe('withYearStatus', () => {
   });
 
   it('marks only the year of a warning', () => {
-    const rows = withYearStatus(summaries, [], [], [warning({ year: 2025 })]);
+    const rows = withYearStatus(summaries, [], [warning({ year: 2025 })]);
 
     expect(rows.map(({ status }) => status)).toEqual(['ok', 'warning']);
     expect(rows[1].issueCount).toBe(1);
   });
 
   it('uses the year of the charge period for a warning', () => {
-    const rows = withYearStatus(
-      summaries,
-      [],
-      [],
-      [warning({ period: '202412' })]
-    );
+    const rows = withYearStatus(summaries, [], [warning({ period: '202412' })]);
 
     expect(rows.map(({ status }) => status)).toEqual(['warning', 'ok']);
   });
 
   it('applies a warning without a year to every year', () => {
-    const rows = withYearStatus(summaries, [], [], [warning({})]);
+    const rows = withYearStatus(summaries, [], [warning({})]);
 
     expect(rows.map(({ status }) => status)).toEqual(['warning', 'warning']);
   });
@@ -266,7 +261,7 @@ describe('withYearStatus', () => {
       { ...summaries[1], year: 2026 },
     ];
 
-    const rows = withYearStatus(mismatch, [], [], []);
+    const rows = withYearStatus(mismatch, [], []);
 
     expect(rows.map(({ status }) => status)).toEqual([
       'warning',
@@ -279,7 +274,6 @@ describe('withYearStatus', () => {
     const rows = withYearStatus(
       summaries,
       [{ kind: 'balance-mismatch', message: 'błąd' }],
-      [],
       []
     );
 
@@ -289,8 +283,7 @@ describe('withYearStatus', () => {
   it('marks only the year of an error that names a year', () => {
     const rows = withYearStatus(
       summaries,
-      [{ kind: 'balance-mismatch', message: 'błąd 2025' }],
-      [2025],
+      [{ kind: 'balance-mismatch', message: 'błąd 2025', year: 2025 }],
       []
     );
 

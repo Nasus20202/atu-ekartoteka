@@ -22,10 +22,12 @@ function warningYear(warning: ImportWarning): number | undefined {
 export function withYearStatus(
   rows: YearBalanceSummary[],
   errors: ImportErrorItem[],
-  errorYears: number[],
   warnings: ImportWarning[]
 ): YearBalanceRow[] {
-  const sharedErrorCount = errors.length - errorYears.length;
+  const sharedError = errors.some(({ year }) => year === undefined);
+  const errorYears = new Set(
+    errors.flatMap(({ year }) => (year === undefined ? [] : [year]))
+  );
 
   return rows.map((row, index) => {
     const warningCount = warnings.filter((warning) => {
@@ -38,7 +40,7 @@ export function withYearStatus(
     const issueCount = warningCount + mismatchCount;
 
     let status: YearStatus = 'ok';
-    if (sharedErrorCount > 0 || errorYears.includes(row.year)) status = 'error';
+    if (sharedError || errorYears.has(row.year)) status = 'error';
     else if (issueCount > 0) status = 'warning';
 
     return { ...row, issueCount, status };
