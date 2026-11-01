@@ -15,7 +15,6 @@ const VISUAL_MOBILE_ONLY_MATCH = '**/*.mobile.spec.ts';
 const visualUse = {
   colorScheme: 'light' as const,
   locale: 'pl-PL',
-  timezoneId: 'Europe/Warsaw',
   // Recharts skips its JS animations for reduced motion, so charts render fully drawn
   reducedMotion: 'reduce' as const,
   // Subpixel (LCD) text antialiasing depends on the host font config, so
@@ -57,6 +56,8 @@ export default defineConfig({
 
     /* Take screenshot on failure */
     screenshot: 'only-on-failure',
+    /* Dates come from UTC midnight timestamps; a fixed zone keeps assertions host independent */
+    timezoneId: 'Europe/Warsaw',
   },
 
   /* Configure projects for major browsers */
