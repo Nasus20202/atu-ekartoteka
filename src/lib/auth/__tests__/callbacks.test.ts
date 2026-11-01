@@ -93,6 +93,7 @@ describe('callbacks.jwt', () => {
       where: { id: 'user-123' },
       select: {
         role: true,
+        status: true,
         mustChangePassword: true,
       },
     });

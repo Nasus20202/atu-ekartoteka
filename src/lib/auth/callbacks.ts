@@ -5,7 +5,7 @@ import { createGoogleUser } from '@/lib/mutations/users/create-google-user';
 import { notifyAdminsOfNewUser } from '@/lib/notifications/new-user-registration';
 import { authMetrics } from '@/lib/opentelemetry/auth-metrics';
 import { findUserByEmail } from '@/lib/queries/users/find-user-by-email';
-import { findUserTokenFields } from '@/lib/queries/users/find-user-token-fields';
+import { findUserSessionFields } from '@/lib/queries/users/find-user-session-fields';
 import { UserRole } from '@/lib/types';
 
 interface ExtendedUser {
@@ -28,7 +28,7 @@ export const callbacks: NextAuthConfig['callbacks'] = {
     }
 
     if (trigger === 'update' && token.id) {
-      const freshUser = await findUserTokenFields(token.id as string);
+      const freshUser = await findUserSessionFields(token.id as string);
 
       if (!freshUser) {
         logger.warn(
