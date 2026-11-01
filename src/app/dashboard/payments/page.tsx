@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
 import { toPaymentYearEntries } from '@/app/dashboard/payments/payment-year-entries';
@@ -12,12 +13,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { PAGE_TITLES } from '@/lib/metadata/document-title';
 import { findUserWithApartmentPaymentsCached } from '@/lib/queries/users/find-user-with-apartment-payments';
 import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
 import { AccountStatus } from '@/lib/types';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 import { dateToPeriod } from '@/lib/utils/period';
 import { getRequestNow } from '@/lib/utils/request-now';
+
+export const metadata: Metadata = { title: PAGE_TITLES.payments };
 
 export default async function PaymentsPage() {
   const session = await auth();

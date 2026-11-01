@@ -1,4 +1,5 @@
 import { FileText } from 'lucide-react';
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
 import {
@@ -11,11 +12,14 @@ import { MultiChargesDisplay } from '@/components/charges/multi-charges-display'
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
+import { PAGE_TITLES } from '@/lib/metadata/document-title';
 import { findUserWithApartmentChargesCached } from '@/lib/queries/users/find-user-with-apartment-charges';
 import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
 import { AccountStatus } from '@/lib/types';
 import { dateToPeriod } from '@/lib/utils/period';
 import { getRequestNow } from '@/lib/utils/request-now';
+
+export const metadata: Metadata = { title: PAGE_TITLES.charges };
 
 export default async function ChargesPage({
   searchParams,

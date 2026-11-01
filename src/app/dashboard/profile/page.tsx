@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
 import { auth } from '@/auth';
@@ -11,8 +12,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { PAGE_TITLES } from '@/lib/metadata/document-title';
 import { findUserProfileCached } from '@/lib/queries/users/find-user-profile';
 import { AuthMethod } from '@/lib/types';
+
+export const metadata: Metadata = { title: PAGE_TITLES.profile };
 
 export default async function ProfilePage() {
   const session = await auth();
