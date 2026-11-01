@@ -71,8 +71,10 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (newPassword) {
-      // Users with mustChangePassword set may skip the current password check
-      const mustChangePassword = session.user.mustChangePassword;
+      // Users with mustChangePassword set may skip the current password check.
+      // The database value is authoritative - a stale token must not relax the
+      // check (e.g. when an admin forced a password change mid-session).
+      const mustChangePassword = user.mustChangePassword;
 
       if (!mustChangePassword) {
         if (!currentPassword) {
