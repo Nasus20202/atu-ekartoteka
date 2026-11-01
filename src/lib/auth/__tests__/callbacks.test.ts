@@ -99,7 +99,7 @@ describe('callbacks.jwt', () => {
     expect(result!.mustChangePassword).toBe(false);
   });
 
-  it('keeps token data when the user no longer exists on update', async () => {
+  it('returns null to sign out when the user no longer exists on update', async () => {
     const token = makeToken({ id: 'user-123', role: UserRole.ADMIN });
     vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
 
@@ -111,7 +111,7 @@ describe('callbacks.jwt', () => {
       session: undefined,
     });
 
-    expect(result!.role).toBe(UserRole.ADMIN);
+    expect(result).toBeNull();
   });
 
   it('does not fetch DB on signIn trigger', async () => {

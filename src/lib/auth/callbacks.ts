@@ -30,10 +30,16 @@ export const callbacks: NextAuthConfig['callbacks'] = {
     if (trigger === 'update' && token.id) {
       const freshUser = await findUserTokenFields(token.id as string);
 
-      if (freshUser) {
-        token.role = freshUser.role;
-        token.mustChangePassword = freshUser.mustChangePassword;
+      if (!freshUser) {
+        logger.warn(
+          { userId: token.id },
+          'Session refresh failed: user no longer exists, signing out'
+        );
+        return null;
       }
+
+      token.role = freshUser.role;
+      token.mustChangePassword = freshUser.mustChangePassword;
     }
 
     return token;
