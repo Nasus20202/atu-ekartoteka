@@ -210,5 +210,18 @@ describe('nal-czynsz-parser', () => {
       expect(entries[0].lineNo).toBe(1);
       expect(entries[1].lineNo).toBe(1);
     });
+
+    it('parses CR-only exports', async () => {
+      const row = (id: string) =>
+        `${id}#hoa1-hoa1-00000-00001M#01/01/2025#31/01/2025#202501#1#Styczen#1#szt#73#73,00`;
+      const buffer = iconv.encode(
+        [row('W1'), row('W2')].join('\r'),
+        'iso-8859-2'
+      );
+
+      const entries = await parseNalCzynszBuffer(buffer);
+
+      expect(entries).toHaveLength(2);
+    });
   });
 });

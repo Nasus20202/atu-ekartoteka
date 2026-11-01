@@ -48,4 +48,21 @@ describe('apartment-parser owner validity dates', () => {
     expect(entry.validTo?.toISOString()).toBe('2025-02-09T00:00:00.000Z');
     expect(entry.shareNumerator).toBe(50.5);
   });
+
+  it('reads every row from a CR-only export', async () => {
+    const rows = [
+      'W1#Jan Kowalski##EXT001#ul. Testowa#1#1#00-001#Warszawa#jan@example.com#20250210#20251231#50.5#250',
+      'W2#Anna Nowak##EXT002#ul. Testowa#1#2#00-001#Warszawa#anna@example.com#20260101##60#250',
+    ];
+
+    const entries = await parseApartmentBuffer(
+      iconv.encode(rows.join('\r'), 'iso-8859-2')
+    );
+
+    expect(entries).toHaveLength(2);
+    expect(entries[0].validTo?.toISOString()).toBe('2025-12-31T00:00:00.000Z');
+    expect(entries[1].validFrom?.toISOString()).toBe(
+      '2026-01-01T00:00:00.000Z'
+    );
+  });
 });
