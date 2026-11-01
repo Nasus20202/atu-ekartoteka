@@ -39,7 +39,7 @@ export function HoaListCard({
   const hasImportDates = aptDate || chgDate || notDate;
 
   return (
-    <Card className="hover:shadow-lg transition-all duration-300">
+    <Card className="transition-all duration-300">
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
