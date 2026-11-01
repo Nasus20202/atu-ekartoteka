@@ -1,10 +1,15 @@
 import { cache } from 'react';
 
 import { prisma } from '@/lib/database/prisma';
+import { deriveApartmentPayments } from '@/lib/queries/payments/derive-apartment-payments';
 import { paymentsFromYear } from '@/lib/utils/history-window';
 
-export function findUserWithApartmentPayments(id: string, startYear: number) {
-  return prisma.user.findUnique({
+export async function findUserWithApartmentPayments(
+  id: string,
+  startYear: number,
+  maxPeriod: string
+) {
+  const user = await prisma.user.findUnique({
     where: { id },
     include: {
       apartments: {
@@ -19,6 +24,15 @@ export function findUserWithApartmentPayments(id: string, startYear: number) {
       },
     },
   });
+
+  if (!user) {
+    return null;
+  }
+
+  return {
+    ...user,
+    apartments: await deriveApartmentPayments(user.apartments, maxPeriod),
+  };
 }
 
 export const findUserWithApartmentPaymentsCached = cache(

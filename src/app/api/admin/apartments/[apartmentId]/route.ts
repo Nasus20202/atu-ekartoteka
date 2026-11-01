@@ -11,6 +11,8 @@ import {
 } from '@/lib/types/dto/apartment-dto';
 import { toChargePeriodItemDto } from '@/lib/types/dto/charge-dto';
 import { toPaymentPdfDto } from '@/lib/types/dto/payment-dto';
+import { dateToPeriod } from '@/lib/utils/period';
+import { getRequestNow } from '@/lib/utils/request-now';
 
 const logger = createLogger('api:admin:apartments:detail');
 
@@ -24,7 +26,10 @@ export async function GET(
 
     const { apartmentId } = await params;
 
-    const apartment = await findApartmentDetail(apartmentId);
+    const apartment = await findApartmentDetail(
+      apartmentId,
+      dateToPeriod(await getRequestNow())
+    );
 
     if (!apartment) {
       return NextResponse.json(

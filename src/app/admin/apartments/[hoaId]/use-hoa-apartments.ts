@@ -9,7 +9,7 @@ import {
 } from '@/lib/hooks/use-infinite-list';
 import type {
   ApartmentSummaryDto,
-  HomeownersAssociationSummaryDto,
+  HomeownersAssociationNoticeDto,
 } from '@/lib/types/dto/apartment-dto';
 import type { ApartmentSortKey, SortState } from '@/lib/utils/sort';
 
@@ -25,7 +25,7 @@ export function useHoaApartments(hoaId: string) {
   const search = searchParams.get('search') || '';
   const activeOnly = searchParams.get('activeOnly') === 'true';
 
-  const [hoa, setHoa] = useState<HomeownersAssociationSummaryDto | null>(null);
+  const [hoa, setHoa] = useState<HomeownersAssociationNoticeDto | null>(null);
   const [sort, setSort] = useState<SortState<ApartmentSortKey> | null>(null);
 
   const fetchPage = useCallback<PageFetcher<ApartmentSummaryDto>>(

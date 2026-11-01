@@ -60,7 +60,7 @@ export function PaymentPdfDocument({
   generatedDate,
 }: PaymentPdfDocumentProps) {
   const openingBalance = toDecimal(payment.openingBalance);
-  const closingBalance = toDecimal(payment.closingBalance);
+  const closingBalance = toDecimal(payment.calculatedClosingBalance);
   const rows = buildMonthlyRows(payment);
   const { yearPayments, yearCharges, totalPayments, totalCharges } =
     getPaymentTotals(payment);

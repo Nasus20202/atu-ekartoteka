@@ -13,6 +13,7 @@ import { ImportResults } from '@/app/admin/import/import-results';
 import { prepareImportFiles } from '@/app/admin/import/prepare-import-files';
 import type { ImportResponse } from '@/app/admin/import/types';
 import { useDatabaseStats } from '@/app/admin/import/use-database-stats';
+import { ValidateDatabaseCard } from '@/app/admin/import/validate-database-card';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import { useConfirm } from '@/components/providers/confirm-dialog';
@@ -124,6 +125,8 @@ export default function AdminImportPage() {
       <PageHeader title="Import danych" showBackButton={false} />
 
       <DatabaseStatsCard dbStats={dbStats} statsLoading={statsLoading} />
+
+      <ValidateDatabaseCard />
 
       <Card>
         <CardHeader>

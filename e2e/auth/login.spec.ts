@@ -50,7 +50,7 @@ test.describe('Login', () => {
 
       // Should see apartment info (seeded data - ul. Testowa 1/1A)
       await expect(
-        userPage.getByText('ul. Testowa 1/1A').first()
+        userPage.getByText('ul. Testowa 1/1A').filter({ visible: true }).first()
       ).toBeVisible();
     });
   });

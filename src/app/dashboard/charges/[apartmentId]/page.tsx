@@ -12,12 +12,11 @@ import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { findApartmentWithChargesCached } from '@/lib/queries/apartments/find-apartment-with-charges';
-import { findLatestChargedPayments } from '@/lib/queries/payments/find-latest-charged-payments';
 import { findUserByIdCached } from '@/lib/queries/users/find-user-by-id';
 import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
 import { AccountStatus } from '@/lib/types';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
-import { getChargeCutoffPeriod } from '@/lib/utils/charge-cutoff';
+import { dateToPeriod } from '@/lib/utils/period';
 import { getRequestNow } from '@/lib/utils/request-now';
 
 export default async function ApartmentChargesPage({
@@ -41,13 +40,7 @@ export default async function ApartmentChargesPage({
     redirect('/dashboard');
   }
 
-  const cutoffPeriod = getChargeCutoffPeriod(
-    await findLatestChargedPayments({
-      userId: session.user.id,
-      apartmentId,
-    }),
-    await getRequestNow()
-  );
+  const cutoffPeriod = dateToPeriod(await getRequestNow());
   const apartment = await findApartmentWithChargesCached(
     apartmentId,
     session.user.id,

@@ -16,6 +16,8 @@ import { findUserWithApartmentPaymentsCached } from '@/lib/queries/users/find-us
 import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
 import { AccountStatus } from '@/lib/types';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
+import { dateToPeriod } from '@/lib/utils/period';
+import { getRequestNow } from '@/lib/utils/request-now';
 
 export default async function PaymentsPage() {
   const session = await auth();
@@ -27,7 +29,8 @@ export default async function PaymentsPage() {
   const startYear = await getTenantHistoryStartYear();
   const userData = await findUserWithApartmentPaymentsCached(
     session.user.id,
-    startYear
+    startYear,
+    dateToPeriod(await getRequestNow())
   );
 
   if (!userData || userData.status !== AccountStatus.APPROVED) {

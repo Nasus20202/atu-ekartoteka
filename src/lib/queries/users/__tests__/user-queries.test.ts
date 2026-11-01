@@ -3,7 +3,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const { mockFindUnique } = vi.hoisted(() => ({ mockFindUnique: vi.fn() }));
 
 vi.mock('@/lib/database/prisma', () => ({
-  prisma: { user: { findUnique: mockFindUnique } },
+  prisma: {
+    user: { findUnique: mockFindUnique },
+    charge: { groupBy: vi.fn().mockResolvedValue([]) },
+  },
 }));
 
 import { findUserProfile } from '@/lib/queries/users/find-user-profile';
@@ -14,6 +17,14 @@ import { findUserWithApartments } from '@/lib/queries/users/find-user-with-apart
 describe('user queries', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it('returns null for an unknown user without deriving payments', async () => {
+    mockFindUnique.mockResolvedValueOnce(null);
+
+    await expect(
+      findUserWithApartmentPayments('missing', 2025, '202611')
+    ).resolves.toBeNull();
   });
 
   it('selects only the profile fields', async () => {
@@ -45,7 +56,7 @@ describe('user queries', () => {
   });
 
   it('includes apartment payments in the window, newest year first', async () => {
-    await findUserWithApartmentPayments('user-1', 2025);
+    await findUserWithApartmentPayments('user-1', 2025, '202611');
 
     expect(mockFindUnique).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -65,7 +76,7 @@ describe('user queries', () => {
   });
 
   it('includes window payment years and charges for the dashboard', async () => {
-    await findUserWithApartments('user-1', 2025);
+    await findUserWithApartments('user-1', 2025, '202611');
 
     const { include } = mockFindUnique.mock.calls[0][0];
     expect(include.apartments.include.payments).toEqual({

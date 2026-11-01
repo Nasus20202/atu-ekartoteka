@@ -77,9 +77,9 @@ describe('AdminPaymentsList', () => {
     it('displays correct total charges sum across all months', () => {
       const payment = createMockPayment({
         year: 2024,
-        januaryCharges: 300,
-        julyCharges: 200,
-        decemberCharges: 100,
+        calculatedJanuaryCharges: 300,
+        calculatedJulyCharges: 200,
+        calculatedDecemberCharges: 100,
         // rest are 0
       });
 
@@ -148,7 +148,7 @@ describe('AdminPaymentsList', () => {
 
   it('renders closing balance with correct color class for negative balance', () => {
     const payment = createMockPayment({
-      closingBalance: new Prisma.Decimal(-150),
+      calculatedClosingBalance: new Prisma.Decimal(-150),
     });
 
     const { container } = render(
@@ -167,7 +167,7 @@ describe('AdminPaymentsList', () => {
   it('renders monthly chart inside the payment year section', () => {
     const payment = createMockPayment({
       januaryPayments: 100,
-      januaryCharges: 50,
+      calculatedJanuaryCharges: 50,
     });
 
     render(<AdminPaymentsList {...baseProps} payments={[payment]} />);
@@ -188,13 +188,13 @@ describe('AdminPaymentsList', () => {
             id: 'p-current',
             year: currentYear,
             openingBalance: new Prisma.Decimal(10),
-            closingBalance: new Prisma.Decimal(5),
+            calculatedClosingBalance: new Prisma.Decimal(5),
           }),
           createMockPayment({
             id: 'p-previous',
             year: currentYear - 1,
             openingBalance: new Prisma.Decimal(-3),
-            closingBalance: new Prisma.Decimal(0),
+            calculatedClosingBalance: new Prisma.Decimal(0),
           }),
         ]}
       />

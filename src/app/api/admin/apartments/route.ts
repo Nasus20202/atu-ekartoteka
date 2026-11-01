@@ -6,7 +6,7 @@ import { createLogger } from '@/lib/logger';
 import { findApartmentsPaginated } from '@/lib/queries/apartments/find-apartments-paginated';
 import {
   toApartmentSummaryDto,
-  toHomeownersAssociationSummaryDto,
+  toHomeownersAssociationNoticeDto,
 } from '@/lib/types/dto/apartment-dto';
 import { getErrorMessage } from '@/lib/utils/error-message';
 import type { ApartmentSortKey, SortDirection } from '@/lib/utils/sort';
@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       apartments: apartments.map(toApartmentSummaryDto),
-      hoa: hoa ? toHomeownersAssociationSummaryDto(hoa) : null,
+      hoa: hoa ? toHomeownersAssociationNoticeDto(hoa) : null,
       pagination: {
         page,
         limit,

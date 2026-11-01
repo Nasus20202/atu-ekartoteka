@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { MONTHLY_CHARGES_IGNORED_NOTE } from '@/lib/import/constants';
 import { validateChargesCrossFile } from '@/lib/import/validators';
 import { NalCzynszEntry } from '@/lib/parsers/nal-czynsz-parser';
 import { PaymentEntry } from '@/lib/parsers/wplaty-parser';
@@ -50,7 +51,7 @@ function makePayment(
 }
 
 describe('validateChargesCrossFile', () => {
-  it('returns no errors when nal_czynsz sums match wplaty monthly charges', () => {
+  it('returns no warnings when nal_czynsz sums match wplaty monthly charges', () => {
     const nalEntries = [
       makeNal(OWNER, 'APT001', '202501', 300),
       makeNal(OWNER, 'APT001', '202501', 200),
@@ -63,16 +64,20 @@ describe('validateChargesCrossFile', () => {
     );
   });
 
-  it('returns error when nal_czynsz sum does not match wplaty monthly charge', () => {
+  it('returns a warning when nal_czynsz sum does not match wplaty monthly charge', () => {
     const nalEntries = [makeNal(OWNER, 'APT001', '202501', 300)];
     const paymentEntries = [
       makePayment(OWNER, 'APT001', 2025, [500, ...Array(11).fill(0)]),
     ];
-    const errors = validateChargesCrossFile(nalEntries, paymentEntries);
-    expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain(
-      `Lokal APT001 (właściciel ${OWNER}), okres 202501`
+    const warnings = validateChargesCrossFile(nalEntries, paymentEntries);
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0].apartmentExternalId).toBe('APT001');
+    expect(warnings[0].difference).toBe('200.0000');
+    expect(warnings[0].message).toContain(
+      `Lokal APT001 (właściciel ${OWNER}), rok 2025`
     );
+    expect(warnings[0].message).toContain('202501');
+    expect(warnings[0].message).toContain(MONTHLY_CHARGES_IGNORED_NOTE);
   });
 
   it('skips months where both wplaty and nal are zero', () => {
@@ -85,19 +90,19 @@ describe('validateChargesCrossFile', () => {
     );
   });
 
-  it('returns error when nal has charges but wplaty monthly charge is zero', () => {
+  it('returns a warning when nal has charges but wplaty monthly charge is zero', () => {
     // Real-world case: last month in wplaty not yet settled but nal_czynsz already recorded
     const nalEntries = [makeNal(OWNER, 'APT001', '202512', 500)];
     const paymentEntries = [
       makePayment(OWNER, 'APT001', 2025, [...Array(11).fill(0), 0]),
     ];
-    const errors = validateChargesCrossFile(nalEntries, paymentEntries);
-    expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain('APT001');
-    expect(errors[0]).toContain('202512');
+    const warnings = validateChargesCrossFile(nalEntries, paymentEntries);
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0].message).toContain('APT001');
+    expect(warnings[0].message).toContain('202512');
   });
 
-  it('returns no errors when difference is within tolerance', () => {
+  it('returns no warnings when difference is within tolerance', () => {
     const nalEntries = [makeNal(OWNER, 'APT001', '202501', 499.99)];
     const paymentEntries = [
       makePayment(OWNER, 'APT001', 2025, [500, ...Array(11).fill(0)]),
@@ -116,12 +121,12 @@ describe('validateChargesCrossFile', () => {
       makePayment(OWNER, 'APT001', 2025, [500, ...Array(11).fill(0)]),
       makePayment(OWNER, 'APT002', 2025, [200, ...Array(11).fill(0)]),
     ];
-    const errors = validateChargesCrossFile(nalEntries, paymentEntries);
-    expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain('APT002');
+    const warnings = validateChargesCrossFile(nalEntries, paymentEntries);
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0].message).toContain('APT002');
   });
 
-  it('returns no errors for empty inputs', () => {
+  it('returns no warnings for empty inputs', () => {
     expect(validateChargesCrossFile([], [])).toHaveLength(0);
   });
 });
@@ -172,10 +177,66 @@ describe('validateChargesCrossFile with owner changes', () => {
     const paymentEntries = [
       makePayment(FORMER_OWNER, APARTMENT, 2026, [400, ...Array(11).fill(0)]),
     ];
-    const errors = validateChargesCrossFile(nalEntries, paymentEntries);
-    expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain(
-      `Lokal ${APARTMENT} (właściciel ${FORMER_OWNER}), okres 202601`
+    const warnings = validateChargesCrossFile(nalEntries, paymentEntries);
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0].message).toContain(
+      `Lokal ${APARTMENT} (właściciel ${FORMER_OWNER}), rok 2026`
     );
+    expect(warnings[0].message).toContain('202601');
+  });
+});
+
+describe('validateChargesCrossFile rollup', () => {
+  function makeSettlement(period: string, totalAmount: number) {
+    return {
+      ...makeNal(OWNER, 'APT001', period, totalAmount),
+      description: 'Wyrównanie zaliczek CW',
+    } as NalCzynszEntry;
+  }
+
+  it('rolls differing months of one year into a single warning', () => {
+    const nalEntries = [
+      makeNal(OWNER, 'APT001', '202501', 100),
+      makeNal(OWNER, 'APT001', '202502', 100),
+      makeNal(OWNER, 'APT001', '202503', 100),
+    ];
+    const paymentEntries = [
+      makePayment(OWNER, 'APT001', 2025, [150, 100, 130, ...Array(9).fill(0)]),
+    ];
+
+    const warnings = validateChargesCrossFile(nalEntries, paymentEntries);
+
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0].difference).toBe('80.0000');
+    expect(warnings[0].message).toContain('2 mies.');
+    expect(warnings[0].message).toContain('202501');
+    expect(warnings[0].message).toContain('202503');
+    expect(warnings[0].message).not.toContain('202502');
+  });
+
+  it('flags a difference that equals the settlement lines', () => {
+    const nalEntries = [
+      makeNal(OWNER, 'APT001', '202504', 500),
+      makeSettlement('202504', -80),
+    ];
+    const paymentEntries = [
+      makePayment(OWNER, 'APT001', 2025, [0, 0, 0, 500, ...Array(8).fill(0)]),
+    ];
+
+    const warnings = validateChargesCrossFile(nalEntries, paymentEntries);
+
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0].message).toContain('różnica równa wyrównaniom');
+  });
+
+  it('does not flag differences unrelated to settlement lines', () => {
+    const nalEntries = [makeNal(OWNER, 'APT001', '202504', 500)];
+    const paymentEntries = [
+      makePayment(OWNER, 'APT001', 2025, [0, 0, 0, 450, ...Array(8).fill(0)]),
+    ];
+
+    const [warning] = validateChargesCrossFile(nalEntries, paymentEntries);
+
+    expect(warning.message).not.toContain('równa wyrównaniom');
   });
 });

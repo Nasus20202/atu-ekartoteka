@@ -40,7 +40,8 @@ test.describe('Financial Summary API', () => {
     expect(typeof body.totalClosingBalance).toBe('number');
     expect(typeof body.totalChargesDue).toBe('number');
 
-    // Seeded payment has closingBalance = -444.25; charge notifications total = 444.25
+    // Derived from the charge records: no payments minus the 444.25 charge of
+    // the current month (the seeded imported closing balance of 999 is ignored)
     expect(body.totalClosingBalance).toBe(-444.25);
     expect(Number(body.totalChargesDue)).toBeGreaterThan(0);
   });

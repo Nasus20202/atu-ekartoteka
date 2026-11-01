@@ -40,7 +40,7 @@ describe('PaymentTable', () => {
       const payment = createMockPayment({
         openingBalance: 100,
         januaryPayments: 50,
-        januaryCharges: 200,
+        calculatedJanuaryCharges: 200,
         // running balance after Jan: 100 + 50 - 200 = -50
       });
 
@@ -60,11 +60,11 @@ describe('PaymentTable', () => {
       const payment = createMockPayment({
         openingBalance: 0,
         januaryPayments: 100,
-        januaryCharges: 0, // +100 → balance = 100
+        calculatedJanuaryCharges: 0, // +100 → balance = 100
         februaryPayments: 0,
-        februaryCharges: 200, // -200 → balance = -100
+        calculatedFebruaryCharges: 200, // -200 → balance = -100
         marchPayments: 300,
-        marchCharges: 0, // +300 → balance = 200
+        calculatedMarchCharges: 0, // +300 → balance = 200
       });
 
       render(
@@ -83,7 +83,7 @@ describe('PaymentTable', () => {
       const payment = createMockPayment({
         openingBalance: 0,
         januaryPayments: 0,
-        januaryCharges: 100, // balance -100
+        calculatedJanuaryCharges: 100, // balance -100
       });
 
       const { container } = render(
@@ -101,7 +101,7 @@ describe('PaymentTable', () => {
       const payment = createMockPayment({
         openingBalance: 0,
         januaryPayments: 100,
-        januaryCharges: 0, // balance +100
+        calculatedJanuaryCharges: 0, // balance +100
       });
 
       const { container } = render(
@@ -185,8 +185,8 @@ describe('PaymentTable', () => {
 
     it('renders correct total charges in the footer', () => {
       const payment = createMockPayment({
-        februaryCharges: 300,
-        novemberCharges: 100,
+        calculatedFebruaryCharges: 300,
+        calculatedNovemberCharges: 100,
         // Total charges: 400
       });
 
@@ -205,8 +205,8 @@ describe('PaymentTable', () => {
         openingDebt: 20,
         openingBalance: 60.65,
         januaryPayments: 800,
-        januaryCharges: 889.2,
-        closingBalance: -28.55,
+        calculatedJanuaryCharges: 889.2,
+        calculatedClosingBalance: -28.55,
       });
 
       render(
@@ -224,7 +224,7 @@ describe('PaymentTable', () => {
         openingSurplus: 15,
         openingDebt: 40,
         openingBalance: -25,
-        closingBalance: -25,
+        calculatedClosingBalance: -25,
       });
 
       render(
@@ -253,7 +253,10 @@ describe('PaymentTable', () => {
   it('colours opening and closing balances by their sign', () => {
     const { rerender } = render(
       <PaymentTable
-        payment={createMockPayment({ openingBalance: -5, closingBalance: 7 })}
+        payment={createMockPayment({
+          openingBalance: -5,
+          calculatedClosingBalance: 7,
+        })}
         apartmentId="apt-1"
         disableLinks
       />
@@ -270,9 +273,9 @@ describe('PaymentTable', () => {
       <PaymentTable
         payment={createMockPayment({
           openingBalance: 3,
-          closingBalance: -2,
+          calculatedClosingBalance: -2,
           januaryPayments: 3,
-          januaryCharges: 3,
+          calculatedJanuaryCharges: 3,
         })}
         apartmentId="apt-1"
         disableLinks
@@ -292,8 +295,8 @@ describe('PaymentTable', () => {
       <PaymentTable
         payment={createMockPayment({
           januaryPayments: 10,
-          januaryCharges: 10,
-          februaryCharges: 20,
+          calculatedJanuaryCharges: 10,
+          calculatedFebruaryCharges: 20,
         })}
         apartmentId="apt-1"
         disableLinks

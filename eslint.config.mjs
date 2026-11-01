@@ -57,6 +57,33 @@ const eslintConfig = defineConfig([
       ],
     },
   },
+  // Fields prefixed with `legacy` hold values loaded from the input files that
+  // are known to be incorrect; only import code and tests may touch them
+  {
+    files: ['src/**/*.ts', 'src/**/*.tsx'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'Identifier[name=/^legacy/]',
+          message:
+            'Identifiers starting with "legacy" hold incorrect imported values. Use the figures derived from Charge records instead.',
+        },
+      ],
+    },
+  },
+  {
+    files: [
+      'src/lib/import/**',
+      'src/lib/queries/payments/**',
+      '**/__tests__/**',
+      '**/*.test.ts',
+      '**/*.test.tsx',
+    ],
+    rules: {
+      'no-restricted-syntax': 'off',
+    },
+  },
   // Allow 'any' type in test files
   {
     files: [

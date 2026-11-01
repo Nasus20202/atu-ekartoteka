@@ -4,6 +4,7 @@
 
 import { expect, test } from '../fixtures';
 import { CURRENT_MONTH_YEAR } from '../utils/date-utils';
+import { expandNotifications } from '../utils/expand-notifications';
 import { openNavigationMenu } from '../utils/navigation';
 import { USER_NAME } from '../utils/test-credentials';
 
@@ -22,7 +23,7 @@ test.describe('Dashboard Home', () => {
 
       // Should see apartment address from seeded data
       await expect(
-        userPage.getByText('ul. Testowa 1/1A').first()
+        userPage.getByText('ul. Testowa 1/1A').filter({ visible: true }).first()
       ).toBeVisible();
     });
   });
@@ -57,7 +58,9 @@ test.describe('Dashboard Home', () => {
       await userPage.goto('/dashboard');
 
       // Single-HOA mode: HOA name appears as the label next to the balance
-      await expect(userPage.getByText('Test HOA').first()).toBeVisible();
+      await expect(
+        userPage.getByText('Test HOA').filter({ visible: true }).first()
+      ).toBeVisible();
     });
 
     test('user sees monthly balance chart', async ({ userPage }) => {
@@ -187,6 +190,7 @@ test.describe('Dashboard Home', () => {
       userPage,
     }) => {
       await userPage.goto('/dashboard');
+      await expandNotifications(userPage);
 
       // Single-HOA mode: individual charge rows are rendered directly (no per-HOA collapsible trigger)
       // The notification card shows "Powiadomienia" heading and individual charge amounts

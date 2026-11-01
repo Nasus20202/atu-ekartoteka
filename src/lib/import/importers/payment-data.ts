@@ -2,7 +2,7 @@ import { Prisma } from '@/generated/prisma/client';
 import { PaymentEntry } from '@/lib/parsers/wplaty-parser';
 import { decimalEqualsStored } from '@/lib/utils/decimal';
 import {
-  CHARGE_MONTH_FIELD_KEYS,
+  LEGACY_CHARGE_FIELD_KEYS,
   PAYMENT_MONTH_FIELD_KEYS,
 } from '@/lib/utils/payment-months';
 
@@ -12,7 +12,7 @@ export type PaymentKey = {
 };
 
 type PaymentMonthField = (typeof PAYMENT_MONTH_FIELD_KEYS)[number];
-type ChargeMonthField = (typeof CHARGE_MONTH_FIELD_KEYS)[number];
+type LegacyChargeField = (typeof LEGACY_CHARGE_FIELD_KEYS)[number];
 
 export type ExistingPayment = PaymentKey & {
   id: string;
@@ -21,8 +21,8 @@ export type ExistingPayment = PaymentKey & {
   openingDebt: Prisma.Decimal;
   openingSurplus: Prisma.Decimal;
   openingBalance: Prisma.Decimal;
-  closingBalance: Prisma.Decimal;
-} & Record<PaymentMonthField | ChargeMonthField, Prisma.Decimal>;
+  legacyClosingBalance: Prisma.Decimal;
+} & Record<PaymentMonthField | LegacyChargeField, Prisma.Decimal>;
 
 type PaymentData = {
   apartmentId?: string;
@@ -32,9 +32,9 @@ type PaymentData = {
   openingDebt: PaymentEntry['openingDebt'];
   openingSurplus: PaymentEntry['openingSurplus'];
   openingBalance: PaymentEntry['openingBalance'];
-  closingBalance: PaymentEntry['closingBalance'];
+  legacyClosingBalance: PaymentEntry['closingBalance'];
 } & Record<PaymentMonthField, PaymentEntry['monthlyPayments'][number]> &
-  Record<ChargeMonthField, PaymentEntry['monthlyCharges'][number]>;
+  Record<LegacyChargeField, PaymentEntry['monthlyCharges'][number]>;
 
 export function makePaymentKey(p: PaymentKey): string {
   return `${p.apartmentId}|${p.year}`;
@@ -49,12 +49,12 @@ export function buildPaymentData(
       field,
       entry.monthlyPayments[index],
     ]),
-    ...CHARGE_MONTH_FIELD_KEYS.map((field, index) => [
+    ...LEGACY_CHARGE_FIELD_KEYS.map((field, index) => [
       field,
       entry.monthlyCharges[index],
     ]),
   ]) as Record<PaymentMonthField, PaymentEntry['monthlyPayments'][number]> &
-    Record<ChargeMonthField, PaymentEntry['monthlyCharges'][number]>;
+    Record<LegacyChargeField, PaymentEntry['monthlyCharges'][number]>;
 
   return {
     ...(apartmentId ? { apartmentId } : {}),
@@ -64,7 +64,7 @@ export function buildPaymentData(
     openingDebt: entry.openingDebt,
     openingSurplus: entry.openingSurplus,
     openingBalance: entry.openingBalance,
-    closingBalance: entry.closingBalance,
+    legacyClosingBalance: entry.closingBalance,
     ...monthData,
   };
 }
@@ -81,11 +81,11 @@ export function hasPaymentChanged(
     !decimalEqualsStored(existing.openingDebt, entry.openingDebt) ||
     !decimalEqualsStored(existing.openingSurplus, entry.openingSurplus) ||
     !decimalEqualsStored(existing.openingBalance, entry.openingBalance) ||
-    !decimalEqualsStored(existing.closingBalance, entry.closingBalance) ||
+    !decimalEqualsStored(existing.legacyClosingBalance, entry.closingBalance) ||
     PAYMENT_MONTH_FIELD_KEYS.some(
       (field) => !decimalEqualsStored(existing[field], paymentData[field])
     ) ||
-    CHARGE_MONTH_FIELD_KEYS.some(
+    LEGACY_CHARGE_FIELD_KEYS.some(
       (field) => !decimalEqualsStored(existing[field], paymentData[field])
     )
   );

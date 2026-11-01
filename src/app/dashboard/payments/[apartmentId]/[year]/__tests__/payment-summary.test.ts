@@ -25,9 +25,9 @@ describe('getPaymentSummary', () => {
       createMockPayment({
         januaryPayments: new Prisma.Decimal('100.5'),
         decemberPayments: new Prisma.Decimal('20'),
-        marchCharges: new Prisma.Decimal('42.0725'),
+        calculatedMarchCharges: new Prisma.Decimal('42.0725'),
         openingBalance: new Prisma.Decimal(-5),
-        closingBalance: new Prisma.Decimal(73),
+        calculatedClosingBalance: new Prisma.Decimal(73),
       })
     );
 

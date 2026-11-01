@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   toApartmentDetailDto,
   toApartmentSummaryDto,
+  toHomeownersAssociationNoticeDto,
 } from '@/lib/types/dto/apartment-dto';
 import { toDecimal } from '@/lib/utils/decimal';
 
@@ -92,6 +93,24 @@ describe('toApartmentDetailDto', () => {
       totalAmount: '10',
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-02T00:00:00.000Z',
+    });
+  });
+
+  it('maps the HOA notice with header and footer', () => {
+    expect(
+      toHomeownersAssociationNoticeDto({
+        id: 'hoa-1',
+        externalId: 'HOA-1',
+        name: 'Wspólnota',
+        header: 'Nagłówek',
+        footer: null,
+      })
+    ).toEqual({
+      id: 'hoa-1',
+      externalId: 'HOA-1',
+      name: 'Wspólnota',
+      header: 'Nagłówek',
+      footer: null,
     });
   });
 });

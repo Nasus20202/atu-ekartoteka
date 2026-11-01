@@ -1,10 +1,20 @@
 // Periods are "YYYYMM" strings
 const PERIOD_YEAR_LENGTH = 4;
 const PERIOD_LENGTH = 6;
+const FIRST_MONTH_INDEX = 0;
+const LAST_MONTH_INDEX = 11;
 
 export function monthIndexToPeriod(year: number, monthIndex: number): string {
   const month = String(monthIndex + 1).padStart(2, '0');
   return `${year}${month}`;
+}
+
+export function yearStartPeriod(year: number): string {
+  return monthIndexToPeriod(year, FIRST_MONTH_INDEX);
+}
+
+export function yearEndPeriod(year: number): string {
+  return monthIndexToPeriod(year, LAST_MONTH_INDEX);
 }
 
 export function dateToPeriod(date: Date): string {

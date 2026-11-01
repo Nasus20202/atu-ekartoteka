@@ -1,3 +1,4 @@
+import { CollapsibleOnMobile } from '@/components/dashboard/collapsible-on-mobile';
 import type { NotificationItem } from '@/components/dashboard/group-notifications';
 import { HoaNotificationCard } from '@/components/dashboard/hoa-notification-card';
 import { DownloadNoticePdfButton } from '@/components/pdf/download-notice-pdf-button';
@@ -15,6 +16,7 @@ interface HoaNotificationGroup {
   hoaId: string | null;
   hoaName: string | null;
   hoaHeader: string | null;
+  hoaFooter: string | null;
   notifications: NotificationItem[];
 }
 
@@ -33,6 +35,7 @@ function groupByHoa(notifications: NotificationItem[]): HoaNotificationGroup[] {
       hoaId: n.hoaId ?? null,
       hoaName: n.hoaName ?? null,
       hoaHeader: n.hoaHeader ?? null,
+      hoaFooter: n.hoaFooter ?? null,
       notifications: [],
     };
     group.notifications.push(n);
@@ -72,14 +75,20 @@ export const NotificationsSidebar = ({
             </div>
             <DownloadNoticePdfButton notifications={notifications} />
           </div>
-          {groupByHoa(notifications).map((group) => (
-            <HoaNotificationCard
-              key={group.hoaId ?? NO_HOA_KEY}
-              hoaName={group.hoaName}
-              hoaHeader={group.hoaHeader}
-              notifications={group.notifications}
-            />
-          ))}
+          <CollapsibleOnMobile
+            showLabel="Pokaż szczegóły powiadomień"
+            hideLabel="Ukryj szczegóły powiadomień"
+          >
+            {groupByHoa(notifications).map((group) => (
+              <HoaNotificationCard
+                key={group.hoaId ?? NO_HOA_KEY}
+                hoaName={group.hoaName}
+                hoaHeader={group.hoaHeader}
+                hoaFooter={group.hoaFooter}
+                notifications={group.notifications}
+              />
+            ))}
+          </CollapsibleOnMobile>
         </div>
       </CardContent>
     </Card>

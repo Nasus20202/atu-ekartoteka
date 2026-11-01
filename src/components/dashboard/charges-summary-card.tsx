@@ -8,7 +8,7 @@ import type {
 } from '@/components/charts/chart-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatCurrency, formatPeriod } from '@/lib/utils';
+import { cn, formatCurrency, formatPeriod } from '@/lib/utils';
 import { getChargesHref } from '@/lib/utils/dashboard-links';
 import type { DecimalLike } from '@/lib/utils/decimal';
 import { CHARGE_FORMS, formatCountPl } from '@/lib/utils/pluralize';
@@ -61,6 +61,8 @@ export function ChargesSummaryCard({
 }: ChargesSummaryCardProps) {
   const hasCharges =
     currentMonthCharges.length > 0 || previousMonthCharges.length > 0;
+  const hasBothPeriods =
+    currentMonthCharges.length > 0 && previousMonthCharges.length > 0;
 
   return (
     <Card>
@@ -73,7 +75,9 @@ export function ChargesSummaryCard({
       <CardContent className="space-y-4">
         {hasCharges ? (
           <>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div
+              className={cn('grid gap-3', hasBothPeriods && 'sm:grid-cols-2')}
+            >
               {currentMonthCharges.length > 0 && (
                 <ChargePeriodTile
                   period={currentPeriod}

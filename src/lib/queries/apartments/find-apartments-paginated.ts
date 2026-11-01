@@ -72,7 +72,13 @@ export async function findApartmentsPaginated({
     hoaId
       ? prisma.homeownersAssociation.findUnique({
           where: { id: hoaId },
-          select: { id: true, externalId: true, name: true },
+          select: {
+            id: true,
+            externalId: true,
+            name: true,
+            header: true,
+            footer: true,
+          },
         })
       : Promise.resolve(null),
   ]);

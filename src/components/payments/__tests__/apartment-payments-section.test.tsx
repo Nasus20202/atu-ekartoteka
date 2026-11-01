@@ -16,12 +16,12 @@ describe('ApartmentPaymentsSection', () => {
         payments={[
           createMockPayment({
             year: 2024,
-            closingBalance: new Prisma.Decimal(-100),
+            calculatedClosingBalance: new Prisma.Decimal(-100),
           }),
           createMockPayment({
             id: 'pay-2',
             year: 2025,
-            closingBalance: new Prisma.Decimal(50),
+            calculatedClosingBalance: new Prisma.Decimal(50),
           }),
         ]}
         apartmentId="apt-1"

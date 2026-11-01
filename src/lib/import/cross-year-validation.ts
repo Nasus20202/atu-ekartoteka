@@ -1,5 +1,8 @@
-import { WPLATY_BALANCE_TOLERANCE } from '@/lib/import/constants';
-import type { TransactionClient } from '@/lib/import/types';
+import {
+  CLOSING_BALANCE_IGNORED_NOTE,
+  WPLATY_BALANCE_TOLERANCE,
+} from '@/lib/import/constants';
+import type { ImportWarning, TransactionClient } from '@/lib/import/types';
 import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
 
 const DECEMBER_MONTH_INDEX = 11;
@@ -16,19 +19,27 @@ type CrossYearPaymentEntry = {
 
 type CrossYearTransactionClient = Pick<TransactionClient, 'payment'>;
 
-function coversFullYear(dateTo: Date, year: number): boolean {
+/** Earliest period end that still counts as covering the whole year. */
+export function fullYearEndThreshold(year: number): Date {
   const yearEnd = new Date(year, DECEMBER_MONTH_INDEX, LAST_DAY_OF_DECEMBER);
-  return dateTo.getTime() >= yearEnd.getTime() - YEAR_END_TOLERANCE_MS;
+  return new Date(yearEnd.getTime() - YEAR_END_TOLERANCE_MS);
 }
 
+function coversFullYear(dateTo: Date, year: number): boolean {
+  return dateTo.getTime() >= fullYearEndThreshold(year).getTime();
+}
+
+/**
+ * Warns when the opening balance of a year differs from the closing balance
+ * stored from the files for the previous, complete year. The imported closing
+ * balances of closed years are unreliable, so this never blocks an import.
+ */
 export async function validateCrossYearBalances(
   tx: CrossYearTransactionClient,
   apartmentMap: Map<string, string>,
   entries: CrossYearPaymentEntry[],
-  errors: string[]
+  warnings: ImportWarning[]
 ): Promise<void> {
-  let mismatches = 0;
-
   for (const entry of entries) {
     const prevYear = entry.year - 1;
     const apartmentId = apartmentMap.get(
@@ -38,7 +49,7 @@ export async function validateCrossYearBalances(
 
     const prevPayment = await tx.payment.findFirst({
       where: { apartmentId, year: prevYear },
-      select: { closingBalance: true, dateTo: true },
+      select: { legacyClosingBalance: true, dateTo: true },
     });
 
     // A partial previous year has no year-end balance to compare against
@@ -46,20 +57,18 @@ export async function validateCrossYearBalances(
       continue;
     }
 
-    const diff = toDecimal(entry.openingBalance)
-      .minus(toDecimal(prevPayment.closingBalance))
-      .abs();
-    if (diff.greaterThan(WPLATY_BALANCE_TOLERANCE)) {
-      errors.push(
-        `Lokal ${entry.apartmentCode}, rok ${entry.year}: saldo otwarcia ${entry.openingBalance} ≠ saldo zamknięcia ${prevPayment.closingBalance} roku ${prevYear}`
-      );
-      mismatches++;
-    }
-  }
-
-  if (mismatches > 0) {
-    throw new Error(
-      `Niezgodność sald otwarcia z zamknięciem poprzedniego roku: ${mismatches} lokal(e)`
+    const difference = toDecimal(entry.openingBalance).minus(
+      toDecimal(prevPayment.legacyClosingBalance)
     );
+    if (difference.abs().greaterThan(WPLATY_BALANCE_TOLERANCE)) {
+      warnings.push({
+        apartmentExternalId: entry.apartmentCode,
+        difference: difference.abs().toFixed(4),
+        message:
+          `Lokal ${entry.apartmentCode}, rok ${entry.year}: saldo otwarcia ${entry.openingBalance} ≠ ` +
+          `saldo zamknięcia roku ${prevYear} z pliku ${prevPayment.legacyClosingBalance}. ` +
+          CLOSING_BALANCE_IGNORED_NOTE,
+      });
+    }
   }
 }

@@ -15,7 +15,7 @@ type ApartmentCardData = Pick<
   | 'building'
   | 'shareRatio'
 > & {
-  payments?: Pick<Payment, 'closingBalance' | 'year'>[];
+  payments?: Pick<Payment, 'calculatedClosingBalance' | 'year'>[];
   charges?: Array<{ id: string }>;
   homeownersAssociation?: { id: string; header: string | null } | null;
 };
@@ -45,7 +45,7 @@ export function ApartmentsSection({ apartments }: ApartmentsSectionProps) {
                 key={apartment.id}
                 apartment={apartment}
                 latestPaymentBalance={
-                  apartment.payments?.[0]?.closingBalance ?? null
+                  apartment.payments?.[0]?.calculatedClosingBalance ?? null
                 }
                 hasCharges={(apartment.charges?.length ?? 0) > 0}
                 hasPayments={(apartment.payments?.length ?? 0) > 0}

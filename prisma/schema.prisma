@@ -184,7 +184,9 @@ model Payment {
   
   // Balances
   openingBalance  Decimal  @db.Decimal(14, 4)
-  closingBalance  Decimal  @db.Decimal(14, 4)
+  // Loaded from wplaty.txt and built on the incorrect monthly charges below, so
+  // it is never presented. The closing balance is derived from Charge records.
+  legacyClosingBalance Decimal @db.Decimal(14, 4) @map("closingBalance")
 
   // Opening period breakdown (from wplaty.txt fields 6 and 7)
   openingDebt    Decimal  @default(0) @db.Decimal(14, 4)
@@ -204,19 +206,21 @@ model Payment {
   novemberPayments        Decimal  @default(0) @db.Decimal(14, 4)
   decemberPayments        Decimal  @default(0) @db.Decimal(14, 4)
 
-  // Monthly charges (12 months)
-  januaryCharges   Decimal  @default(0) @db.Decimal(14, 4)
-  februaryCharges  Decimal  @default(0) @db.Decimal(14, 4)
-  marchCharges     Decimal  @default(0) @db.Decimal(14, 4)
-  aprilCharges     Decimal  @default(0) @db.Decimal(14, 4)
-  mayCharges       Decimal  @default(0) @db.Decimal(14, 4)
-  juneCharges      Decimal  @default(0) @db.Decimal(14, 4)
-  julyCharges      Decimal  @default(0) @db.Decimal(14, 4)
-  augustCharges    Decimal  @default(0) @db.Decimal(14, 4)
-  septemberCharges Decimal  @default(0) @db.Decimal(14, 4)
-  octoberCharges   Decimal  @default(0) @db.Decimal(14, 4)
-  novemberCharges  Decimal  @default(0) @db.Decimal(14, 4)
-  decemberCharges  Decimal  @default(0) @db.Decimal(14, 4)
+  // Monthly charges (12 months) loaded from wplaty.txt. The exporter omits
+  // settlement lines, so these values are incorrect and are never presented.
+  // Charges are calculated from Charge records instead.
+  legacyJanuaryCharges Decimal @default(0) @db.Decimal(14, 4) @map("januaryCharges")
+  legacyFebruaryCharges Decimal @default(0) @db.Decimal(14, 4) @map("februaryCharges")
+  legacyMarchCharges Decimal @default(0) @db.Decimal(14, 4) @map("marchCharges")
+  legacyAprilCharges Decimal @default(0) @db.Decimal(14, 4) @map("aprilCharges")
+  legacyMayCharges Decimal @default(0) @db.Decimal(14, 4) @map("mayCharges")
+  legacyJuneCharges Decimal @default(0) @db.Decimal(14, 4) @map("juneCharges")
+  legacyJulyCharges Decimal @default(0) @db.Decimal(14, 4) @map("julyCharges")
+  legacyAugustCharges Decimal @default(0) @db.Decimal(14, 4) @map("augustCharges")
+  legacySeptemberCharges Decimal @default(0) @db.Decimal(14, 4) @map("septemberCharges")
+  legacyOctoberCharges Decimal @default(0) @db.Decimal(14, 4) @map("octoberCharges")
+  legacyNovemberCharges Decimal @default(0) @db.Decimal(14, 4) @map("novemberCharges")
+  legacyDecemberCharges Decimal @default(0) @db.Decimal(14, 4) @map("decemberCharges")
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

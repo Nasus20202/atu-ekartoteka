@@ -17,11 +17,13 @@ export async function insertChargesForPeriod(
   const client = new pg.Client({ connectionString: dbUrl });
   try {
     await client.connect();
+    // Month indexes past December roll over into the next year
+    const first = new Date(year, monthIndex, 1);
     await client.query(loadSql('insert-charges.sql'), [
       apartmentId,
-      new Date(year, monthIndex, 1),
+      first,
       new Date(year, monthIndex + 1, 0),
-      `${year}${String(monthIndex + 1).padStart(2, '0')}`,
+      `${first.getFullYear()}${String(first.getMonth() + 1).padStart(2, '0')}`,
     ]);
   } finally {
     await client.end();

@@ -3,6 +3,7 @@
  */
 
 import { expect, test } from '../fixtures';
+import { POLISH_MONTHS } from '../utils/date-utils';
 
 test.describe('Payments', () => {
   test.describe('Payments List', () => {
@@ -91,8 +92,10 @@ test.describe('Payments', () => {
       const currentYear = new Date().getFullYear();
       await userPage.getByText(`Rok ${currentYear}`).first().click();
 
-      // Should see monthly data - use first() to avoid strict mode
-      await expect(userPage.getByText(/Styczeń/i).first()).toBeVisible();
+      // The seeded charge is in the current month - use first() to avoid strict mode
+      await expect(
+        userPage.getByText(POLISH_MONTHS[new Date().getMonth()]).first()
+      ).toBeVisible();
     });
 
     test('apartment payments page shows monthly balance chart', async ({

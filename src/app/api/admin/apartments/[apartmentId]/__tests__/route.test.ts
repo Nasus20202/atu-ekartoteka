@@ -13,12 +13,16 @@ const mockAuth = vi.mocked(auth);
 
 const mockApartmentFindUnique = vi.fn();
 const mockApartmentUpdate = vi.fn();
+const mockChargeGroupBy = vi.fn();
 
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     apartment: {
       findUnique: mockApartmentFindUnique,
       update: mockApartmentUpdate,
+    },
+    charge: {
+      groupBy: mockChargeGroupBy,
     },
   },
 }));
@@ -33,6 +37,7 @@ vi.mock('@/lib/logger', () => ({
 describe('Admin Apartment Detail API', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockChargeGroupBy.mockResolvedValue([]);
   });
 
   describe('GET /api/admin/apartments/[apartmentId]', () => {
@@ -94,7 +99,7 @@ describe('Admin Apartment Detail API', () => {
           dateFrom: new Date('2024-01-01T00:00:00.000Z'),
           dateTo: new Date('2024-12-31T00:00:00.000Z'),
           openingBalance: new Prisma.Decimal('0.0000'),
-          closingBalance: new Prisma.Decimal('6000.0000'),
+          legacyClosingBalance: new Prisma.Decimal('6000.0000'),
           openingDebt: new Prisma.Decimal('0.0000'),
           openingSurplus: new Prisma.Decimal('0.0000'),
           januaryPayments: new Prisma.Decimal('500.0000'),
@@ -109,18 +114,18 @@ describe('Admin Apartment Detail API', () => {
           octoberPayments: new Prisma.Decimal('500.0000'),
           novemberPayments: new Prisma.Decimal('500.0000'),
           decemberPayments: new Prisma.Decimal('500.0000'),
-          januaryCharges: new Prisma.Decimal('0.0000'),
-          februaryCharges: new Prisma.Decimal('0.0000'),
-          marchCharges: new Prisma.Decimal('0.0000'),
-          aprilCharges: new Prisma.Decimal('0.0000'),
-          mayCharges: new Prisma.Decimal('0.0000'),
-          juneCharges: new Prisma.Decimal('0.0000'),
-          julyCharges: new Prisma.Decimal('0.0000'),
-          augustCharges: new Prisma.Decimal('0.0000'),
-          septemberCharges: new Prisma.Decimal('0.0000'),
-          octoberCharges: new Prisma.Decimal('0.0000'),
-          novemberCharges: new Prisma.Decimal('0.0000'),
-          decemberCharges: new Prisma.Decimal('0.0000'),
+          legacyJanuaryCharges: new Prisma.Decimal('0.0000'),
+          legacyFebruaryCharges: new Prisma.Decimal('0.0000'),
+          legacyMarchCharges: new Prisma.Decimal('0.0000'),
+          legacyAprilCharges: new Prisma.Decimal('0.0000'),
+          legacyMayCharges: new Prisma.Decimal('0.0000'),
+          legacyJuneCharges: new Prisma.Decimal('0.0000'),
+          legacyJulyCharges: new Prisma.Decimal('0.0000'),
+          legacyAugustCharges: new Prisma.Decimal('0.0000'),
+          legacySeptemberCharges: new Prisma.Decimal('0.0000'),
+          legacyOctoberCharges: new Prisma.Decimal('0.0000'),
+          legacyNovemberCharges: new Prisma.Decimal('0.0000'),
+          legacyDecemberCharges: new Prisma.Decimal('0.0000'),
           createdAt: new Date('2024-01-01T00:00:00.000Z'),
           updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         },
@@ -282,6 +287,35 @@ describe('Admin Apartment Detail API', () => {
       expect(data.chargeNotifications[0].createdAt).toBe(
         '2024-01-01T00:00:00.000Z'
       );
+    });
+
+    it('should present charges and closing balance derived from charge records', async () => {
+      mockAuth.mockResolvedValueOnce({
+        user: {
+          id: 'admin-id',
+          email: 'admin@example.com',
+          role: UserRole.ADMIN,
+        },
+        expires: new Date().toISOString(),
+      } as any);
+      mockApartmentFindUnique.mockResolvedValueOnce(mockApartment);
+      mockChargeGroupBy.mockResolvedValueOnce([
+        {
+          apartmentId: 'apt-1',
+          period: '202401',
+          _sum: { totalAmount: new Prisma.Decimal('420') },
+        },
+      ]);
+
+      const { GET } = await import('../route');
+      const response = await GET({} as NextRequest, {
+        params: Promise.resolve({ apartmentId: 'apt-1' }),
+      });
+      const data = await response.json();
+
+      expect(data.payments[0].calculatedJanuaryCharges).toBe('420');
+      expect(data.payments[0].calculatedClosingBalance).toBe('5580');
+      expect(data.payments[0]).not.toHaveProperty('legacyClosingBalance');
     });
 
     it('should handle apartment without user', async () => {

@@ -22,7 +22,6 @@ import {
 } from '@/components/ui/card';
 import { findApartmentPaymentYearsCached } from '@/lib/queries/apartments/find-apartment-payment-years';
 import { findApartmentWithPaymentsByYearCached } from '@/lib/queries/apartments/find-apartment-with-payments-by-year';
-import { findLatestChargedPayments } from '@/lib/queries/payments/find-latest-charged-payments';
 import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
 import { toPaymentPdfDto } from '@/lib/types/dto/payment-dto';
 import { formatCurrency, formatDate } from '@/lib/utils';
@@ -31,7 +30,7 @@ import {
   getBalanceStatusClass,
   getSignedBalanceClass,
 } from '@/lib/utils/balance-class';
-import { getChargeCutoffPeriod } from '@/lib/utils/charge-cutoff';
+import { dateToPeriod } from '@/lib/utils/period';
 import { getRequestNow } from '@/lib/utils/request-now';
 
 interface PaymentDetailsPageProps {
@@ -57,12 +56,14 @@ export default async function PaymentDetailsPage({
   }
 
   const startYear = await getTenantHistoryStartYear();
+  const cutoffPeriod = dateToPeriod(await getRequestNow());
   const [apartment, paymentYears] = await Promise.all([
     findApartmentWithPaymentsByYearCached(
       apartmentId,
       session.user.id,
       yearNumber,
-      startYear
+      startYear,
+      cutoffPeriod
     ),
     findApartmentPaymentYearsCached(apartmentId, session.user.id, startYear),
   ]);
@@ -72,13 +73,6 @@ export default async function PaymentDetailsPage({
   }
 
   const payment = apartment.payments[0];
-  const cutoffPeriod = getChargeCutoffPeriod(
-    await findLatestChargedPayments({
-      userId: session.user.id,
-      apartmentId: apartment.id,
-    }),
-    await getRequestNow()
-  );
 
   const { totalPayments, totalCharges, openingBalance, closingBalance } =
     getPaymentSummary(payment);

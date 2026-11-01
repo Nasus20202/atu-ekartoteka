@@ -38,6 +38,13 @@ export type HomeownersAssociationSummaryDtoSource = Pick<
 export type HomeownersAssociationSummaryDto =
   HomeownersAssociationSummaryDtoSource;
 
+export type HomeownersAssociationNoticeDtoSource =
+  HomeownersAssociationSummaryDtoSource &
+    Pick<HomeownersAssociation, 'header' | 'footer'>;
+
+export type HomeownersAssociationNoticeDto =
+  HomeownersAssociationNoticeDtoSource;
+
 export type ApartmentAssignedUserDtoSource = Pick<
   User,
   'id' | 'name' | 'email'
@@ -100,6 +107,16 @@ export function toHomeownersAssociationSummaryDto(
     id: homeownersAssociation.id,
     externalId: homeownersAssociation.externalId,
     name: homeownersAssociation.name,
+  };
+}
+
+export function toHomeownersAssociationNoticeDto(
+  homeownersAssociation: HomeownersAssociationNoticeDtoSource
+): HomeownersAssociationNoticeDto {
+  return {
+    ...toHomeownersAssociationSummaryDto(homeownersAssociation),
+    header: homeownersAssociation.header,
+    footer: homeownersAssociation.footer,
   };
 }
 

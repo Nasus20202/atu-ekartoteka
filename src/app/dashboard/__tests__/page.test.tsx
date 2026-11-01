@@ -85,7 +85,8 @@ describe('DashboardPage', () => {
     await expect(DashboardPage()).rejects.toThrow('redirect');
     expect(mockFindUserWithApartmentsCached).toHaveBeenCalledWith(
       'user-1',
-      2024
+      2024,
+      expect.stringMatching(/^\d{6}$/)
     );
   });
 
@@ -110,7 +111,7 @@ describe('DashboardPage', () => {
           payments: [
             {
               year: 2026,
-              closingBalance: new Prisma.Decimal('123.4500'),
+              calculatedClosingBalance: new Prisma.Decimal('123.4500'),
             },
           ],
           chargeNotifications: [

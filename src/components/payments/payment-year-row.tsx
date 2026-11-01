@@ -40,10 +40,10 @@ export function PaymentYearRow({
         <div
           className={cn(
             'text-xl font-bold tabular-nums',
-            getBalanceStatusClass(payment.closingBalance)
+            getBalanceStatusClass(payment.calculatedClosingBalance)
           )}
         >
-          {formatCurrency(payment.closingBalance)}
+          {formatCurrency(payment.calculatedClosingBalance)}
         </div>
         <div className="text-sm text-muted-foreground">Saldo końcowe</div>
       </div>

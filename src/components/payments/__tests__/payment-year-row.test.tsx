@@ -15,7 +15,7 @@ vi.mock('@/components/pdf/download-payment-pdf-button', () => ({
   DownloadPaymentPdfButton: () => <button>PDF</button>,
 }));
 
-function makePayment(closingBalance: string): PaymentListItemDto {
+function makePayment(calculatedClosingBalance: string): PaymentListItemDto {
   return {
     id: 'pay-1',
     apartmentId: 'apt-1',
@@ -25,17 +25,17 @@ function makePayment(closingBalance: string): PaymentListItemDto {
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-01T00:00:00.000Z',
     ...Object.fromEntries(PAYMENT_AMOUNT_FIELD_KEYS.map((key) => [key, '0'])),
-    closingBalance,
+    calculatedClosingBalance,
   } as PaymentListItemDto;
 }
 
-function renderRow(closingBalance: string) {
+function renderRow(calculatedClosingBalance: string) {
   return render(
     <PaymentYearRow
       apartmentId="apt-1"
       apartmentLabel="A-1"
       hoaName="Wspólnota"
-      payment={makePayment(closingBalance)}
+      payment={makePayment(calculatedClosingBalance)}
       dateFromLabel="01.01.2024"
       dateToLabel="31.12.2024"
     />

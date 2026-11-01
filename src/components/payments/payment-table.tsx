@@ -54,7 +54,7 @@ export function PaymentTable({
     return rows;
   }, []);
   const { totalPayments, totalCharges } = getPaymentTotals(payment);
-  const closingBalance = toDecimal(payment.closingBalance);
+  const closingBalance = toDecimal(payment.calculatedClosingBalance);
 
   return (
     <div className="overflow-x-auto">
