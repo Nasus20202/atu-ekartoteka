@@ -1,16 +1,16 @@
 'use client';
 
 import type { AccountPreview } from '@/app/admin/users/management/account-previews';
+import { Button } from '@/components/ui/button';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface ConfirmCreateDialogProps {
   previews: AccountPreview[] | null;
@@ -24,20 +24,20 @@ export function ConfirmCreateDialog({
   onConfirm,
 }: ConfirmCreateDialogProps) {
   return (
-    <AlertDialog
+    <Dialog
       open={previews !== null}
       onOpenChange={(open) => {
         if (!open) onCancel();
       }}
     >
-      <AlertDialogContent className="max-w-lg">
-        <AlertDialogHeader>
-          <AlertDialogTitle>Potwierdź tworzenie kont</AlertDialogTitle>
-          <AlertDialogDescription>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Potwierdź tworzenie kont</DialogTitle>
+          <DialogDescription>
             Zostanie utworzonych <strong>{previews?.length ?? 0}</strong> nowych
             kont. Każde konto otrzyma e-mail z tymczasowym hasłem.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
+          </DialogDescription>
+        </DialogHeader>
         <div className="max-h-64 overflow-y-auto rounded-md border text-sm">
           {previews?.map((preview) => (
             <div key={preview.email} className="border-b p-3 last:border-0">
@@ -61,13 +61,13 @@ export function ConfirmCreateDialog({
             </div>
           ))}
         </div>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Anuluj</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>
-            Potwierdź i utwórz
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Anuluj</Button>
+          </DialogClose>
+          <Button onClick={onConfirm}>Potwierdź i utwórz</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

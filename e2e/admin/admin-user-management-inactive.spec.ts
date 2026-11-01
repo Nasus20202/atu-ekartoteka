@@ -50,7 +50,7 @@ test.describe('Admin Account Management - inactive apartments', () => {
     const inactiveCheckbox = await openTestHoa(adminPage);
 
     await inactiveCheckbox.click();
-    const dialog = adminPage.getByRole('alertdialog');
+    const dialog = adminPage.getByRole('dialog');
     await expect(dialog).toContainText('Nieaktywne mieszkanie');
 
     await dialog.getByRole('button', { name: 'Kontynuuj' }).click();

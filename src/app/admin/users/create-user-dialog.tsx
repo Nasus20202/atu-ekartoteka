@@ -4,12 +4,17 @@ import { ROLE_OPTIONS, STATUS_OPTIONS } from '@/app/admin/users/constants';
 import type { NewUserFormData } from '@/app/admin/users/types';
 import { Button } from '@/components/ui/button';
 import {
-  Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
@@ -32,18 +37,23 @@ export function CreateUserDialog({
   onSubmit,
   open,
 }: CreateUserDialogProps) {
-  if (!open) {
-    return null;
-  }
-
   return (
-    <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <Card className="animate-scale-in w-full max-w-md">
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) onCancel();
+      }}
+    >
+      <DialogContent className="max-w-md gap-0 p-0">
         <CardHeader>
-          <CardTitle>Dodaj nowego użytkownika</CardTitle>
-          <CardDescription>
-            Wypełnij formularz aby utworzyć nowe konto użytkownika
-          </CardDescription>
+          <DialogTitle asChild>
+            <CardTitle>Dodaj nowego użytkownika</CardTitle>
+          </DialogTitle>
+          <DialogDescription asChild>
+            <CardDescription>
+              Wypełnij formularz aby utworzyć nowe konto użytkownika
+            </CardDescription>
+          </DialogDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -132,7 +142,7 @@ export function CreateUserDialog({
             </div>
           </div>
         </CardContent>
-      </Card>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

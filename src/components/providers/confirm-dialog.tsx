@@ -2,16 +2,16 @@
 
 import { createContext, useContext, useState } from 'react';
 
+import { Button } from '@/components/ui/button';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 export interface ConfirmOptions {
   title?: string;
@@ -63,33 +63,34 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
   return (
     <ConfirmContext.Provider value={{ confirm }}>
       {children}
-      <AlertDialog open={open} onOpenChange={setOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {options.title || 'Potwierdź akcję'}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {options.description}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleCancel}>
-              {options.cancelText || 'Anuluj'}
-            </AlertDialogCancel>
-            <AlertDialogAction
+      <Dialog
+        open={open}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) handleCancel();
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{options.title || 'Potwierdź akcję'}</DialogTitle>
+            <DialogDescription>{options.description}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">
+                {options.cancelText || 'Anuluj'}
+              </Button>
+            </DialogClose>
+            <Button
               onClick={handleConfirm}
-              className={
-                options.variant === 'destructive'
-                  ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
-                  : ''
+              variant={
+                options.variant === 'destructive' ? 'destructive' : 'default'
               }
             >
               {options.confirmText || 'Potwierdź'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </ConfirmContext.Provider>
   );
 }

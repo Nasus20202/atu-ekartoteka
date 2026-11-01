@@ -37,7 +37,7 @@ describe('InactiveApartmentDialog', () => {
         onClose={vi.fn()}
       />
     );
-    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('does not confirm after the first step', async () => {

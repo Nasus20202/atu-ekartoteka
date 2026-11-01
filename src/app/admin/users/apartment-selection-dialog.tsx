@@ -7,14 +7,20 @@ import { isApartmentMatchingUser } from '@/app/admin/users/utils';
 import { useConfirm } from '@/components/providers/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import {
-  Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useRetainedValue } from '@/hooks/use-retained-value';
 import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
 import type { UserDto } from '@/lib/types/dto/user-dto';
 
@@ -50,13 +56,15 @@ export function ApartmentSelectionDialog({
   selectedUser,
 }: ApartmentSelectionDialogProps) {
   const confirm = useConfirm();
+  // The parent clears the user and mode on close; keep them while the dialog animates out
+  const user = useRetainedValue(selectedUser);
+  const mode = useRetainedValue(editMode);
 
-  if (!open || !selectedUser) {
+  if (!user) {
     return null;
   }
 
-  const isApprovalMode =
-    editMode === 'approve' || editMode === 'assign-apartment';
+  const isApprovalMode = mode === 'approve' || mode === 'assign-apartment';
 
   async function handleApartmentCheckedChange(
     apartment: ApartmentSummaryDto,
@@ -85,24 +93,31 @@ export function ApartmentSelectionDialog({
   }
 
   return (
-    <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <Card className="animate-scale-in max-h-[80vh] w-full max-w-2xl overflow-auto">
+    <Dialog
+      open={open && selectedUser !== null}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) onCancel();
+      }}
+    >
+      <DialogContent className="max-h-[80vh] max-w-2xl gap-0 overflow-auto p-0">
         <CardHeader>
-          <CardTitle>
-            {editMode === 'approve' && 'Zatwierdź konto'}
-            {editMode === 'assign-apartment' && 'Przypisz mieszkanie'}
-            {editMode === 'change-status' && 'Zmień status użytkownika'}
-          </CardTitle>
-          <CardDescription>
-            {selectedUser.name || selectedUser.email}
-          </CardDescription>
+          <DialogTitle asChild>
+            <CardTitle>
+              {mode === 'approve' && 'Zatwierdź konto'}
+              {mode === 'assign-apartment' && 'Przypisz mieszkanie'}
+              {mode === 'change-status' && 'Zmień status użytkownika'}
+            </CardTitle>
+          </DialogTitle>
+          <DialogDescription asChild>
+            <CardDescription>{user.name || user.email}</CardDescription>
+          </DialogDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {isApprovalMode && (
             <>
               <div>
                 <Label htmlFor="apartment-search">
-                  {editMode === 'approve'
+                  {mode === 'approve'
                     ? 'Przypisz mieszkanie (opcjonalne)'
                     : 'Wybierz mieszkanie'}
                 </Label>
@@ -124,7 +139,7 @@ export function ApartmentSelectionDialog({
                     key={apartment.id}
                     apartment={apartment}
                     selected={selectedApartments.includes(apartment.id)}
-                    matching={isApartmentMatchingUser(apartment, selectedUser)}
+                    matching={isApartmentMatchingUser(apartment, user)}
                     onCheckedChange={(checked) => {
                       void handleApartmentCheckedChange(apartment, checked);
                     }}
@@ -145,7 +160,7 @@ export function ApartmentSelectionDialog({
                   className="flex-1"
                 >
                   <Check className="mr-1 h-4 w-4" />
-                  {editMode === 'approve'
+                  {mode === 'approve'
                     ? 'Zatwierdź'
                     : `Przypisz (${selectedApartments.length})`}
                 </Button>
@@ -160,9 +175,9 @@ export function ApartmentSelectionDialog({
             </>
           )}
 
-          {editMode === 'change-status' && (
+          {mode === 'change-status' && (
             <StatusChangePanel
-              status={selectedUser.status}
+              status={user.status}
               actionLoading={actionLoading}
               onSetApproved={onSetApproved}
               onReject={onReject}
@@ -170,7 +185,7 @@ export function ApartmentSelectionDialog({
             />
           )}
         </CardContent>
-      </Card>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

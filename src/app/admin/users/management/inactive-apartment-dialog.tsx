@@ -6,16 +6,16 @@ import {
   aptLabel,
   type UnassignedApartment,
 } from '@/app/admin/users/management/apartment-row';
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 type ConfirmStep = 'warning' | 'final';
 
@@ -48,32 +48,34 @@ export function InactiveApartmentDialog({
   }
 
   return (
-    <AlertDialog
+    <Dialog
       open={apartment !== null}
       onOpenChange={(open) => {
         if (!open) close();
       }}
     >
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>
             {step === 'warning'
               ? 'Nieaktywne mieszkanie'
               : 'Potwierdź wybór nieaktywnego mieszkania'}
-          </AlertDialogTitle>
-          <AlertDialogDescription>
+          </DialogTitle>
+          <DialogDescription>
             {step === 'warning'
               ? 'To mieszkanie jest oznaczone jako nieaktywne. Czy na pewno chcesz uwzględnić je przy tworzeniu konta użytkownika?'
               : `${apartment ? aptLabel(apartment) : ''} zostanie zaznaczone mimo że jest nieaktywne. Potwierdź ponownie, aby kontynuować.`}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Anuluj</AlertDialogCancel>
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Anuluj</Button>
+          </DialogClose>
           <Button onClick={handleContinue}>
             {step === 'warning' ? 'Kontynuuj' : 'Tak, zaznacz'}
           </Button>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
