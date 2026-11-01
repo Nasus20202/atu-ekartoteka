@@ -23,6 +23,8 @@ export function createAdminUser({
       name,
       role,
       status,
+      // The admin chose this password, so it must not stay valid forever.
+      mustChangePassword: true,
     },
     select: {
       id: true,
