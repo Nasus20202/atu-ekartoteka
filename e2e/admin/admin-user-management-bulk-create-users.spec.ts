@@ -54,7 +54,7 @@ test.describe.serial('Admin Bulk User Creation', () => {
     ).toBeVisible();
 
     await expect(
-      adminPage.getByRole('button', { name: /Utwórz konta/i })
+      adminPage.getByRole('button', { name: /Zaproś użytkowników/i })
     ).toBeDisabled();
   });
 
@@ -77,7 +77,7 @@ test.describe.serial('Admin Bulk User Creation', () => {
     await hoaCheckbox.click();
 
     await expect(
-      adminPage.getByRole('button', { name: /Utwórz konta/i })
+      adminPage.getByRole('button', { name: /Zaproś użytkowników/i })
     ).toBeEnabled();
 
     await expect(adminPage.getByText(/Wybrano \d+ z \d+/i)).toBeVisible();
@@ -102,16 +102,23 @@ test.describe.serial('Admin Bulk User Creation', () => {
     await apartmentCheckboxes.first().click();
 
     const confirmButton = adminPage.getByRole('button', {
-      name: /Utwórz konta/i,
+      name: /Zaproś użytkowników/i,
     });
     await expect(confirmButton).toBeEnabled();
 
     await confirmButton.click();
 
-    // Confirmation dialog appears — click confirm
-    await expect(
-      adminPage.getByRole('button', { name: /Potwierdź i utwórz/i })
-    ).toBeVisible({ timeout: 5000 });
+    // Confirmation dialog appears — the first step lists the accounts
+    await expect(adminPage.getByRole('button', { name: 'Dalej' })).toBeVisible({
+      timeout: 5000,
+    });
+    await adminPage.getByRole('button', { name: 'Dalej' }).click();
+
+    // The second step asks once more before the invitations are sent
+    const finalConfirm = adminPage
+      .getByRole('dialog')
+      .getByRole('button', { name: 'Zaproś użytkowników' });
+    await expect(finalConfirm).toBeVisible();
 
     await Promise.all([
       adminPage.waitForResponse(
@@ -119,7 +126,7 @@ test.describe.serial('Admin Bulk User Creation', () => {
           resp.url().includes('/api/admin/users/bulk-create') &&
           resp.status() === 200
       ),
-      adminPage.getByRole('button', { name: /Potwierdź i utwórz/i }).click(),
+      finalConfirm.click(),
     ]);
 
     await expect(adminPage.getByText(/Utworzono \d+ kont/i)).toBeVisible({

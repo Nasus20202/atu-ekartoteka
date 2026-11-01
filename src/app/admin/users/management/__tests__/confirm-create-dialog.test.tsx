@@ -32,10 +32,45 @@ describe('ConfirmCreateDialog', () => {
     expect(screen.getByText(/Bud\. 12, Mieszkanie 3/)).toBeInTheDocument();
     expect(screen.getByText('(nieaktywne)')).toBeInTheDocument();
 
+    await userEvent.click(screen.getByRole('button', { name: 'Dalej' }));
+    expect(onConfirm).not.toHaveBeenCalled();
+
     await userEvent.click(
-      screen.getByRole('button', { name: 'Potwierdź i utwórz' })
+      screen.getByRole('button', { name: 'Zaproś użytkowników' })
     );
     expect(onConfirm).toHaveBeenCalledOnce();
+  });
+
+  it('returns to the account list from the final step', async () => {
+    const onConfirm = vi.fn();
+    render(
+      <ConfirmCreateDialog
+        previews={previews}
+        onCancel={vi.fn()}
+        onConfirm={onConfirm}
+      />
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Dalej' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Wstecz' }));
+
+    expect(screen.getByText('Jan Kowalski')).toBeInTheDocument();
+    expect(onConfirm).not.toHaveBeenCalled();
+  });
+
+  it('cancels from the first step', async () => {
+    const onCancel = vi.fn();
+    render(
+      <ConfirmCreateDialog
+        previews={previews}
+        onCancel={onCancel}
+        onConfirm={vi.fn()}
+      />
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Anuluj' }));
+
+    expect(onCancel).toHaveBeenCalledOnce();
   });
 
   it('cancels when the dialog closes', async () => {
