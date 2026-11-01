@@ -1,3 +1,4 @@
+import { isAdminRole } from '@/lib/auth/admin-access';
 import { AccountStatus, UserRole } from '@/lib/types';
 import type { SortDirection, UserSortKey } from '@/lib/utils/sort';
 
@@ -44,7 +45,7 @@ export function parseUsersQuery(
   const statusParam = searchParams.get('status');
 
   if (
-    role !== UserRole.ADMIN &&
+    !isAdminRole(role) &&
     statusParam &&
     !Object.values(AccountStatus).includes(statusParam as AccountStatus)
   ) {
@@ -64,8 +65,7 @@ export function parseUsersQuery(
   return {
     query: {
       role,
-      status:
-        role === UserRole.ADMIN ? null : (statusParam as AccountStatus | null),
+      status: isAdminRole(role) ? null : (statusParam as AccountStatus | null),
       page: parsePositiveInteger(searchParams.get('page'), 1),
       limit: Math.min(
         MAX_PAGE_SIZE,

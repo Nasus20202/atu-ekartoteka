@@ -2,6 +2,7 @@ import { Check, X } from 'lucide-react';
 
 import { UserStatusBadge } from '@/app/admin/users/user-status-badge';
 import { Button } from '@/components/ui/button';
+import { isApprovedStatus } from '@/lib/auth/account-access';
 import { AccountStatus } from '@/lib/types';
 
 interface StatusChangePanelProps {
@@ -27,10 +28,10 @@ export function StatusChangePanel({
         </p>
         <div className="space-y-2">
           <Button
-            variant={status === AccountStatus.APPROVED ? 'default' : 'outline'}
+            variant={isApprovedStatus(status) ? 'default' : 'outline'}
             className="w-full justify-start"
             onClick={onSetApproved}
-            disabled={actionLoading || status === AccountStatus.APPROVED}
+            disabled={actionLoading || isApprovedStatus(status)}
           >
             <Check className="mr-2 h-4 w-4" />
             Zatwierdzony

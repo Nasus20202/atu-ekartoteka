@@ -14,6 +14,7 @@ vi.mock('@/lib/import/import-handler', () => ({
 
 vi.mock('@/lib/auth/admin-access', () => ({
   hasAdminAccess: vi.fn().mockResolvedValue(true),
+  isAdminRole: (role: string | null | undefined) => role === 'ADMIN',
 }));
 
 vi.mock('@/lib/logger', () => ({

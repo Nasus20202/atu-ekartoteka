@@ -2,9 +2,8 @@ import { NextResponse } from 'next/server';
 import type { Session } from 'next-auth';
 
 import { auth } from '@/auth';
-import { hasAdminAccess } from '@/lib/auth/admin-access';
+import { hasAdminAccess, isAdminRole } from '@/lib/auth/admin-access';
 import { createLogger } from '@/lib/logger';
-import { UserRole } from '@/lib/types';
 
 const logger = createLogger('auth:require-admin');
 
@@ -21,7 +20,7 @@ type AdminCheck =
 export async function requireAdmin(attempt?: string): Promise<AdminCheck> {
   const session = await auth();
 
-  if (session?.user?.role === UserRole.ADMIN) {
+  if (session && isAdminRole(session.user.role)) {
     // The token role only gets us this far; the database has the final say.
     if (await hasAdminAccess(session.user.id)) {
       return { session };

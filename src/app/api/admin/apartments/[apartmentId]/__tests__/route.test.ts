@@ -29,6 +29,7 @@ vi.mock('@/lib/database/prisma', () => ({
 
 vi.mock('@/lib/auth/admin-access', () => ({
   hasAdminAccess: vi.fn().mockResolvedValue(true),
+  isAdminRole: (role: string | null | undefined) => role === 'ADMIN',
 }));
 
 vi.mock('@/lib/logger', () => ({

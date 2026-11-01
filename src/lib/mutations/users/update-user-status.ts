@@ -1,3 +1,4 @@
+import { isApprovedStatus } from '@/lib/auth/account-access';
 import { prisma } from '@/lib/database/prisma';
 import { AccountStatus } from '@/lib/types';
 
@@ -15,7 +16,7 @@ export function updateUserStatus({
   const apartmentsUpdate =
     apartmentIds === undefined
       ? undefined
-      : status === AccountStatus.APPROVED && apartmentIds.length > 0
+      : isApprovedStatus(status) && apartmentIds.length > 0
         ? { set: apartmentIds.map((id) => ({ id })) }
         : { set: [] };
 

@@ -6,15 +6,16 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import { isApprovedStatus } from '@/lib/auth/account-access';
 import { AccountStatus } from '@/lib/types';
 
 interface UserStatusSectionProps {
   name: string | null;
   email: string;
-  status: string;
+  status: AccountStatus;
 }
 
-const statusMap = {
+const statusMap: Record<AccountStatus, string> = {
   APPROVED: 'Zatwierdzony',
   PENDING: 'Oczekujący',
   REJECTED: 'Odrzucony',
@@ -25,7 +26,7 @@ export function UserStatusSection({
   email,
   status,
 }: UserStatusSectionProps) {
-  const isApproved = status === AccountStatus.APPROVED;
+  const isApproved = isApprovedStatus(status);
 
   return (
     <Card>
@@ -47,11 +48,11 @@ export function UserStatusSection({
                   Status zatwierdzenia
                 </p>
                 <div className="mt-1 flex items-center gap-2">
-                  {status === AccountStatus.APPROVED && (
+                  {isApproved && (
                     <>
                       <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
                       <span className="font-medium text-green-600 dark:text-green-400">
-                        {statusMap[status as keyof typeof statusMap]}
+                        {statusMap[status]}
                       </span>
                     </>
                   )}
@@ -59,7 +60,7 @@ export function UserStatusSection({
                     <>
                       <Clock className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
                       <span className="font-medium text-yellow-600 dark:text-yellow-400">
-                        {statusMap[status as keyof typeof statusMap]}
+                        {statusMap[status]}
                       </span>
                     </>
                   )}
@@ -67,7 +68,7 @@ export function UserStatusSection({
                     <>
                       <X className="h-4 w-4 text-red-600 dark:text-red-400" />
                       <span className="font-medium text-red-600 dark:text-red-400">
-                        {statusMap[status as keyof typeof statusMap]}
+                        {statusMap[status]}
                       </span>
                     </>
                   )}
