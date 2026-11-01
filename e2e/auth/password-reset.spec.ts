@@ -21,7 +21,9 @@ test.describe.serial('Password Reset', () => {
 
     // Should be on forgot password page
     await expect(page).toHaveURL(/\/forgot-password/);
-    await expect(page.getByText('Przywracanie hasła')).toBeVisible();
+    await expect(
+      page.getByText('Przywracanie hasła', { exact: true })
+    ).toBeVisible();
   });
 
   test('user can request password reset', async ({ page }) => {
@@ -49,7 +51,9 @@ test.describe.serial('Password Reset', () => {
     await page.goto(`/reset-password?token=${RESET_TOKEN}`);
 
     // Should see reset password form
-    await expect(page.getByText('Ustaw nowe hasło')).toBeVisible();
+    await expect(
+      page.getByText('Ustaw nowe hasło', { exact: true })
+    ).toBeVisible();
 
     // Fill new password (use the same password to keep tests working)
     await page.getByLabel('Nowe hasło').fill(USER_PASSWORD);
