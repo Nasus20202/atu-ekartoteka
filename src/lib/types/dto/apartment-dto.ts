@@ -72,6 +72,7 @@ export type ApartmentDetailDtoSource = ApartmentSummaryDtoSource & {
   chargeNotifications: ChargeNotificationDtoSource[];
   payments: PaymentPdfDto[];
   validFrom: Date | null;
+  validTo: Date | null;
 };
 
 export type ApartmentDetailDto = ApartmentSummaryDto & {
@@ -81,6 +82,7 @@ export type ApartmentDetailDto = ApartmentSummaryDto & {
   chargeNotifications: ChargeNotificationDto[];
   payments: PaymentPdfDto[];
   validFrom: string | null;
+  validTo: string | null;
 };
 
 export function toApartmentSummaryDto(
@@ -159,5 +161,6 @@ export function toApartmentDetailDto(
     ),
     payments: apartment.payments,
     validFrom: apartment.validFrom ? toIsoString(apartment.validFrom) : null,
+    validTo: apartment.validTo ? toIsoString(apartment.validTo) : null,
   };
 }

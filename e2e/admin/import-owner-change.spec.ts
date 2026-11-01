@@ -72,7 +72,7 @@ test.describe('Admin Import Owner Change', () => {
     ).toBeVisible();
   });
 
-  test('import marks the former owner inactive and shows the current owner start date', async ({
+  test('import marks the former owner inactive and shows owner periods', async ({
     adminPage,
   }) => {
     // TEST06 lok.txt: the former owner ended on 2020-01-31 and the current
@@ -95,8 +95,17 @@ test.describe('Admin Import Owner Change', () => {
     );
     await expect(
       adminPage
-        .getByText('Właściciel od', { exact: true })
+        .getByText('Okres własności', { exact: true })
         .locator('xpath=following-sibling::p[1]')
-    ).toHaveText('01.02.2020');
+    ).toHaveText('od 01.02.2020');
+
+    await adminPage.goto(
+      `/admin/apartments/${former?.homeownersAssociationId}/${former?.id}`
+    );
+    await expect(
+      adminPage
+        .getByText('Okres własności', { exact: true })
+        .locator('xpath=following-sibling::p[1]')
+    ).toHaveText('od 01.01.2020 do 31.01.2020');
   });
 });
