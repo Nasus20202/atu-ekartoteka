@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 
 import {
@@ -20,6 +21,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { getPaymentsYearTitle } from '@/lib/metadata/page-titles';
 import { findApartmentPaymentYearsCached } from '@/lib/queries/apartments/find-apartment-payment-years';
 import { findApartmentWithPaymentsByYearCached } from '@/lib/queries/apartments/find-apartment-with-payments-by-year';
 import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
@@ -38,6 +40,15 @@ interface PaymentDetailsPageProps {
     apartmentId: string;
     year: string;
   }>;
+}
+
+export async function generateMetadata({
+  params,
+}: PaymentDetailsPageProps): Promise<Metadata> {
+  const { apartmentId, year } = await params;
+  return {
+    title: await getPaymentsYearTitle(apartmentId, parsePaymentYear(year)),
+  };
 }
 
 export default async function PaymentDetailsPage({

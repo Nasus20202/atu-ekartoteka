@@ -7,6 +7,12 @@ import { startTransition, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { logger } from '@/lib/logger';
+import {
+  formatDocumentTitle,
+  PAGE_TITLES,
+} from '@/lib/metadata/document-title';
+
+const PAGE_TITLE = PAGE_TITLES.appError;
 
 export default function Error({
   error,
@@ -27,11 +33,12 @@ export default function Error({
 
   return (
     <div className="min-h-screen bg-background">
+      <title>{formatDocumentTitle(PAGE_TITLE)}</title>
       <main className="flex min-h-screen items-center justify-center p-8">
         <Card className="w-full max-w-md">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <AlertTriangle className="mb-4 h-16 w-16 text-destructive" />
-            <h1 className="mb-2 text-2xl font-bold">Coś poszło nie tak!</h1>
+            <h1 className="mb-2 text-2xl font-bold">{PAGE_TITLE}</h1>
             <p className="mb-6 text-center text-muted-foreground">
               Wystąpił nieoczekiwany błąd. Spróbuj ponownie.
             </p>

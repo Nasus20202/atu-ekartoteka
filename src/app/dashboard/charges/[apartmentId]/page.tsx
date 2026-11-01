@@ -1,4 +1,5 @@
 import { Building2 } from 'lucide-react';
+import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 
 import {
@@ -11,6 +12,7 @@ import { ChargesDisplay } from '@/components/charges/charges-display';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
+import { getChargesTitle } from '@/lib/metadata/page-titles';
 import { findApartmentWithChargesCached } from '@/lib/queries/apartments/find-apartment-with-charges';
 import { findUserByIdCached } from '@/lib/queries/users/find-user-by-id';
 import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
@@ -18,6 +20,15 @@ import { AccountStatus } from '@/lib/types';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 import { dateToPeriod } from '@/lib/utils/period';
 import { getRequestNow } from '@/lib/utils/request-now';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ apartmentId: string }>;
+}): Promise<Metadata> {
+  const { apartmentId } = await params;
+  return { title: await getChargesTitle(apartmentId) };
+}
 
 export default async function ApartmentChargesPage({
   params,
@@ -60,7 +71,7 @@ export default async function ApartmentChargesPage({
   return (
     <Page maxWidth="4xl">
       <PageHeader
-        title={formatApartmentLabel(apartment)}
+        title={apartmentLabel}
         description={`${apartment.postalCode} ${apartment.city}`}
       />
 

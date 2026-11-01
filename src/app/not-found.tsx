@@ -1,8 +1,12 @@
 import { FileQuestion } from 'lucide-react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { PAGE_TITLES } from '@/lib/metadata/document-title';
+
+export const metadata: Metadata = { title: PAGE_TITLES.notFound };
 
 export default function NotFound() {
   return (
