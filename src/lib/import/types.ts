@@ -5,6 +5,8 @@ export type TransactionClient = Prisma.TransactionClient;
 export interface ImportOptions {
   cleanImport?: boolean;
   skipValidation?: boolean;
+  // Import time, used to decide which owner periods have ended
+  now?: Date;
 }
 
 export interface ImportFileGroup {

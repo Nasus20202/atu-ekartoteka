@@ -20,3 +20,18 @@ export function parseDecimalValue(value: string): Prisma.Decimal {
 export async function decodeBuffer(buffer: Buffer): Promise<string> {
   return iconv.decode(buffer, 'iso-8859-2');
 }
+
+const YYYYMMDD_PATTERN = /^(\d{4})(\d{2})(\d{2})$/;
+
+/** Parses a YYYYMMDD string into a midnight UTC Date. Returns null unless it is a real calendar date. */
+export function parseYyyymmdd(value: string): Date | null {
+  const match = YYYYMMDD_PATTERN.exec(value.trim());
+  if (!match) return null;
+  const [year, month, day] = match.slice(1).map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  const isRealDate =
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day;
+  return isRealDate ? date : null;
+}

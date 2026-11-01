@@ -98,9 +98,7 @@ describe('parseWmbDate', () => {
   it('should return undefined for invalid date values', async () => {
     const buffer = Buffer.from('20241399'); // month 13, day 99
     const result = await parseWmbDate(buffer);
-    // Date.UTC with invalid month/day still produces a valid Date in JS
-    // so we just verify it doesn't throw
-    expect(result === undefined || result instanceof Date).toBe(true);
+    expect(result).toBeUndefined();
   });
 });
 

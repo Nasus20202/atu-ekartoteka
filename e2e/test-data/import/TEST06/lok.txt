@@ -1,0 +1,2 @@
+W60001#Former Owner##TEST06-TEST06-00000-00001M#ul. Testowa#1#1#00-001#Warszawa#former@test.com#20200101#20200131#50.5#1000
+W60002#Current Owner##TEST06-TEST06-00000-00001M#ul. Testowa#1#1#00-001#Warszawa#current@test.com#20200201##50.5#1000

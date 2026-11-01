@@ -6,6 +6,7 @@ import {
   EXISTING_APARTMENT_SELECT,
   type ExistingApartment,
   hasApartmentChanged,
+  isOwnershipEnded,
 } from '@/lib/import/importers/apartment-data';
 import {
   ApartmentMap,
@@ -22,7 +23,8 @@ export async function importApartments(
   hoa: HOAContext,
   apartments: ApartmentEntry[],
   stats: EntityStats,
-  errors: string[]
+  errors: string[],
+  now: Date = new Date()
 ): Promise<ApartmentMap> {
   const ownerApartmentKeys = apartments.map(
     (a) => `${a.externalOwnerId}#${a.externalApartmentId}`
@@ -61,7 +63,7 @@ export async function importApartments(
     const key = `${apartment.externalOwnerId}#${apartment.externalApartmentId}`;
     const existing = existingMap.get(key);
     if (existing) {
-      if (hasApartmentChanged(existing, apartment, hoa.id)) {
+      if (hasApartmentChanged(existing, apartment, hoa.id, now)) {
         toUpdate.push({ entry: apartment, id: existing.id });
       }
       // If not changed, skip (don't count as updated)
@@ -90,7 +92,9 @@ export async function importApartments(
               city: a.city,
               shareNumerator: a.shareNumerator,
               shareDenominator: a.shareDenominator,
-              isActive: true,
+              validFrom: a.validFrom,
+              validTo: a.validTo,
+              isActive: !isOwnershipEnded(a.validTo, now),
               homeownersAssociationId: hoa.id,
             })),
             skipDuplicates: true,
@@ -119,7 +123,9 @@ export async function importApartments(
           city: entry.city,
           shareNumerator: entry.shareNumerator,
           shareDenominator: entry.shareDenominator,
-          isActive: true,
+          validFrom: entry.validFrom,
+          validTo: entry.validTo,
+          isActive: !isOwnershipEnded(entry.validTo, now),
           homeownersAssociationId: hoa.id,
         },
       });

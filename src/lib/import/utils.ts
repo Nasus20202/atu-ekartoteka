@@ -1,5 +1,5 @@
 import { EntityStats, ImportError, ImportFileGroup } from '@/lib/import/types';
-import { decodeBuffer } from '@/lib/parsers/parser-utils';
+import { decodeBuffer, parseYyyymmdd } from '@/lib/parsers/parser-utils';
 import { getErrorMessage } from '@/lib/utils/error-message';
 
 type TxtFileField = keyof Pick<
@@ -62,12 +62,7 @@ export async function parseFileToBuffer(file: File): Promise<Buffer> {
 
 /** Parses a YYYYMMDD date string from a WMB file buffer. Returns midnight UTC Date or undefined. */
 export async function parseWmbDate(buffer: Buffer): Promise<Date | undefined> {
-  const raw = (await decodeBuffer(buffer)).trim();
-  if (!/^\d{8}$/.test(raw)) return undefined;
-  const year = parseInt(raw.slice(0, 4), 10);
-  const month = parseInt(raw.slice(4, 6), 10) - 1;
-  const day = parseInt(raw.slice(6, 8), 10);
-  return new Date(Date.UTC(year, month, day));
+  return parseYyyymmdd(await decodeBuffer(buffer)) ?? undefined;
 }
 
 export function groupFilesByHOA(

@@ -62,6 +62,8 @@ describe('import-handler', () => {
           shareNumerator: 1,
           shareDenominator: 100,
           isOwner: true,
+          validFrom: null,
+          validTo: null,
         },
       ];
 
@@ -234,6 +236,8 @@ describe('import-handler', () => {
           shareNumerator: 1,
           shareDenominator: 100,
           isOwner: true,
+          validFrom: null,
+          validTo: null,
         },
       ];
 
@@ -663,6 +667,8 @@ describe('import-handler', () => {
           shareNumerator: 50,
           shareDenominator: 100,
           isOwner: true,
+          validFrom: null,
+          validTo: null,
         },
         {
           externalOwnerId: 'W002',
@@ -677,6 +683,8 @@ describe('import-handler', () => {
           shareNumerator: 50,
           shareDenominator: 100,
           isOwner: true,
+          validFrom: null,
+          validTo: null,
         },
       ];
 

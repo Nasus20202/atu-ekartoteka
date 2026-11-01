@@ -39,6 +39,8 @@ function createApartmentEntry(
     shareNumerator: 1,
     shareDenominator: 100,
     isOwner: true,
+    validFrom: null,
+    validTo: null,
     ...overrides,
   };
 }
@@ -111,6 +113,8 @@ describe('importApartments', () => {
       city: 'Warsaw',
       shareNumerator: 1,
       shareDenominator: 100,
+      validFrom: null,
+      validTo: null,
       isActive: true,
       homeownersAssociationId: 'hoa-1',
     };
@@ -150,6 +154,8 @@ describe('importApartments', () => {
       city: 'Warsaw',
       shareNumerator: 1,
       shareDenominator: 100,
+      validFrom: null,
+      validTo: null,
       isActive: true,
       homeownersAssociationId: 'hoa-1',
     };
@@ -183,6 +189,8 @@ describe('importApartments', () => {
         city: 'Warsaw',
         shareNumerator: 1,
         shareDenominator: 100,
+        validFrom: null,
+        validTo: null,
         isActive: true,
         homeownersAssociationId: 'hoa-1',
       },
@@ -257,6 +265,8 @@ describe('importApartments', () => {
       city: 'Warsaw',
       shareNumerator: 1,
       shareDenominator: 100,
+      validFrom: null,
+      validTo: null,
       isActive: true,
       homeownersAssociationId: 'hoa-1',
     };
@@ -292,6 +302,8 @@ describe('importApartments', () => {
       city: 'Warsaw',
       shareNumerator: 1,
       shareDenominator: 100,
+      validFrom: null,
+      validTo: null,
       isActive: true,
       homeownersAssociationId: 'hoa-1',
     };
@@ -325,6 +337,8 @@ describe('importApartments', () => {
       city: 'Warsaw',
       shareNumerator: 1,
       shareDenominator: 100,
+      validFrom: null,
+      validTo: null,
       isActive: true,
       homeownersAssociationId: 'hoa-1',
     };
@@ -358,6 +372,8 @@ describe('importApartments', () => {
       city: 'Warsaw',
       shareNumerator: 1,
       shareDenominator: 100,
+      validFrom: null,
+      validTo: null,
       isActive: true,
       homeownersAssociationId: 'hoa-1',
     };
@@ -391,6 +407,8 @@ describe('importApartments', () => {
       city: 'Warsaw',
       shareNumerator: 1,
       shareDenominator: 100,
+      validFrom: null,
+      validTo: null,
       isActive: true,
       homeownersAssociationId: 'hoa-1',
     };
@@ -424,6 +442,8 @@ describe('importApartments', () => {
       city: 'Warsaw',
       shareNumerator: 1,
       shareDenominator: 100,
+      validFrom: null,
+      validTo: null,
       isActive: true,
       homeownersAssociationId: 'hoa-1',
     };
@@ -457,6 +477,8 @@ describe('importApartments', () => {
       city: 'Warsaw',
       shareNumerator: 1,
       shareDenominator: 100,
+      validFrom: null,
+      validTo: null,
       isActive: true,
       homeownersAssociationId: 'hoa-1',
     };
@@ -490,6 +512,8 @@ describe('importApartments', () => {
       city: 'Warsaw',
       shareNumerator: 1,
       shareDenominator: 100,
+      validFrom: null,
+      validTo: null,
       isActive: true,
       homeownersAssociationId: 'hoa-1',
     };
@@ -523,6 +547,8 @@ describe('importApartments', () => {
       city: 'Warsaw',
       shareNumerator: 1,
       shareDenominator: 100,
+      validFrom: null,
+      validTo: null,
       isActive: true,
       homeownersAssociationId: 'hoa-1',
     };
@@ -556,6 +582,8 @@ describe('importApartments', () => {
       city: 'Warsaw',
       shareNumerator: 1,
       shareDenominator: 100,
+      validFrom: null,
+      validTo: null,
       isActive: false,
       homeownersAssociationId: 'hoa-1',
     };
@@ -589,6 +617,8 @@ describe('importApartments', () => {
       city: 'Warsaw',
       shareNumerator: 1,
       shareDenominator: 100,
+      validFrom: null,
+      validTo: null,
       isActive: true,
       homeownersAssociationId: 'different-hoa',
     };
@@ -659,6 +689,8 @@ describe('importApartments', () => {
       city: 'Warsaw',
       shareNumerator: 1,
       shareDenominator: 100,
+      validFrom: null,
+      validTo: null,
       isActive: true,
       homeownersAssociationId: 'hoa-1',
     };
@@ -723,6 +755,8 @@ describe('importApartments', () => {
           city: null,
           shareNumerator: 1,
           shareDenominator: 100,
+          validFrom: null,
+          validTo: null,
           isActive: true,
           homeownersAssociationId: 'hoa-1',
         },

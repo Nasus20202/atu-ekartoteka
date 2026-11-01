@@ -83,7 +83,8 @@ export async function importHoaInTransaction(
     hoa,
     apartments,
     result.apartments,
-    result.errors
+    result.errors,
+    options.now
   );
 
   if (chargeEntries && result.charges) {
