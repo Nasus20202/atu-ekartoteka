@@ -245,6 +245,7 @@ describe('Admin Users Create API', () => {
           name: null,
           role: UserRole.TENANT,
           status: AccountStatus.PENDING,
+          mustChangePassword: true,
         },
         select: expect.any(Object),
       });

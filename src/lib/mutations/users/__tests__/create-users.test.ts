@@ -14,6 +14,7 @@ vi.mock('@/lib/database/prisma', () => ({
   prisma: { user: { create: mockUserCreate }, $transaction: mockTransaction },
 }));
 
+import { createAdminUser } from '@/lib/mutations/users/create-admin-user';
 import { createGoogleUser } from '@/lib/mutations/users/create-google-user';
 import { createUserWithApartments } from '@/lib/mutations/users/create-user-with-apartments';
 
@@ -90,5 +91,33 @@ describe('createUserWithApartments', () => {
     });
 
     expect(mockUserCreate.mock.calls[0][0].data.name).toBeNull();
+  });
+});
+
+describe('createAdminUser', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('forces a password change for the admin-chosen password', async () => {
+    await createAdminUser({
+      email: 'jan@example.com',
+      hashedPassword: 'hash',
+      name: 'Jan',
+      role: UserRole.TENANT,
+      status: AccountStatus.APPROVED,
+    });
+
+    expect(mockUserCreate).toHaveBeenCalledWith({
+      data: {
+        email: 'jan@example.com',
+        password: 'hash',
+        name: 'Jan',
+        role: UserRole.TENANT,
+        status: AccountStatus.APPROVED,
+        mustChangePassword: true,
+      },
+      select: expect.any(Object),
+    });
   });
 });
