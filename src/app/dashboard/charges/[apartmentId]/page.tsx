@@ -12,11 +12,11 @@ import { ChargesDisplay } from '@/components/charges/charges-display';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
+import { isApprovedAccount } from '@/lib/auth/account-access';
 import { getChargesTitle } from '@/lib/metadata/page-titles';
 import { findApartmentWithChargesCached } from '@/lib/queries/apartments/find-apartment-with-charges';
 import { findUserByIdCached } from '@/lib/queries/users/find-user-by-id';
 import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
-import { AccountStatus } from '@/lib/types';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 import { dateToPeriod } from '@/lib/utils/period';
 import { getRequestNow } from '@/lib/utils/request-now';
@@ -47,7 +47,7 @@ export default async function ApartmentChargesPage({
 
   const userData = await findUserByIdCached(session.user.id);
 
-  if (!userData || userData.status !== AccountStatus.APPROVED) {
+  if (!userData || !isApprovedAccount(userData)) {
     redirect('/dashboard');
   }
 
