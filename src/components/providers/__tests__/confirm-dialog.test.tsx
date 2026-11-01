@@ -1,4 +1,10 @@
-import { render, renderHook, screen, waitFor } from '@testing-library/react';
+import {
+  fireEvent,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -63,7 +69,7 @@ describe('ConfirmDialog', () => {
         </ConfirmProvider>
       );
 
-      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
   });
 
@@ -94,7 +100,7 @@ describe('ConfirmDialog', () => {
       await user.click(screen.getByText('Default Confirm'));
 
       await waitFor(() => {
-        expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
 
       expect(screen.getByText('Potwierdź akcję')).toBeInTheDocument();
@@ -117,7 +123,7 @@ describe('ConfirmDialog', () => {
       await user.click(screen.getByText('Custom Confirm'));
 
       await waitFor(() => {
-        expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
 
       expect(screen.getByText('Custom Title')).toBeInTheDocument();
@@ -138,7 +144,7 @@ describe('ConfirmDialog', () => {
       await user.click(screen.getByText('Destructive Confirm'));
 
       await waitFor(() => {
-        expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
 
       const confirmButton = screen.getByText('Potwierdź');
@@ -173,7 +179,7 @@ describe('ConfirmDialog', () => {
       await user.click(screen.getByText('Open'));
 
       await waitFor(() => {
-        expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
 
       await user.click(screen.getByText('Potwierdź'));
@@ -208,7 +214,7 @@ describe('ConfirmDialog', () => {
       await user.click(screen.getByText('Open'));
 
       await waitFor(() => {
-        expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
 
       await user.click(screen.getByText('Anuluj'));
@@ -230,13 +236,13 @@ describe('ConfirmDialog', () => {
       await user.click(screen.getByText('Default Confirm'));
 
       await waitFor(() => {
-        expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
 
       await user.click(screen.getByText('Potwierdź'));
 
       await waitFor(() => {
-        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       });
     });
 
@@ -252,13 +258,13 @@ describe('ConfirmDialog', () => {
       await user.click(screen.getByText('Default Confirm'));
 
       await waitFor(() => {
-        expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
 
       await user.click(screen.getByText('Anuluj'));
 
       await waitFor(() => {
-        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       });
     });
   });
@@ -308,6 +314,70 @@ describe('ConfirmDialog', () => {
 
       await waitFor(() => {
         expect(results).toEqual([true, false]);
+      });
+    });
+  });
+
+  describe('Dismissal', () => {
+    async function openDialog() {
+      const user = userEvent.setup();
+      const outcome: { result?: boolean } = {};
+
+      function TestWithResult() {
+        const confirm = useConfirm();
+
+        const handleClick = async () => {
+          outcome.result = await confirm({ description: 'Test description' });
+        };
+
+        return <button onClick={handleClick}>Open</button>;
+      }
+
+      render(
+        <ConfirmProvider>
+          <TestWithResult />
+        </ConfirmProvider>
+      );
+
+      await user.click(screen.getByText('Open'));
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      return { user, outcome };
+    }
+
+    it('should resolve with false when the close button is clicked', async () => {
+      const { user, outcome } = await openDialog();
+
+      await user.click(screen.getByRole('button', { name: 'Zamknij okno' }));
+
+      await waitFor(() => {
+        expect(outcome.result).toBe(false);
+      });
+    });
+
+    it('should resolve with false when clicking outside the dialog', async () => {
+      const { outcome } = await openDialog();
+
+      // Radix attaches its outside-press listener after a timer tick, ignores the
+      // press until the click completes, and disables pointer events outside the modal
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      fireEvent.pointerDown(document.body, { button: 0 });
+      fireEvent.click(document.body);
+
+      await waitFor(() => {
+        expect(outcome.result).toBe(false);
+      });
+    });
+
+    it('should resolve with false when Escape is pressed', async () => {
+      const { user, outcome } = await openDialog();
+
+      await user.keyboard('{Escape}');
+
+      await waitFor(() => {
+        expect(outcome.result).toBe(false);
       });
     });
   });

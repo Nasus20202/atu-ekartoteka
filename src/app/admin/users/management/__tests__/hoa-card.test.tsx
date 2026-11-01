@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { cloneElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { HoaCard, type HoaGroup } from '@/app/admin/users/management/hoa-card';
@@ -46,11 +47,11 @@ vi.mock('@/components/ui/collapsible', () => ({
   ),
 }));
 
-vi.mock('@/components/ui/alert-dialog', () => {
+vi.mock('@/components/ui/dialog', () => {
   let latestOnOpenChange: ((open: boolean) => void) | undefined;
 
   return {
-    AlertDialog: ({
+    Dialog: ({
       children,
       open,
       onOpenChange,
@@ -63,44 +64,25 @@ vi.mock('@/components/ui/alert-dialog', () => {
 
       return open ? <div role="dialog">{children}</div> : null;
     },
-    AlertDialogContent: ({ children }: { children: React.ReactNode }) => (
+    DialogContent: ({ children }: { children: React.ReactNode }) => (
       <div>{children}</div>
     ),
-    AlertDialogHeader: ({ children }: { children: React.ReactNode }) => (
+    DialogHeader: ({ children }: { children: React.ReactNode }) => (
       <div>{children}</div>
     ),
-    AlertDialogFooter: ({ children }: { children: React.ReactNode }) => (
+    DialogFooter: ({ children }: { children: React.ReactNode }) => (
       <div>{children}</div>
     ),
-    AlertDialogTitle: ({ children }: { children: React.ReactNode }) => (
+    DialogTitle: ({ children }: { children: React.ReactNode }) => (
       <h2>{children}</h2>
     ),
-    AlertDialogDescription: ({ children }: { children: React.ReactNode }) => (
+    DialogDescription: ({ children }: { children: React.ReactNode }) => (
       <p>{children}</p>
     ),
-    AlertDialogCancel: ({
-      children,
-      onClick,
-    }: {
-      children: React.ReactNode;
-      onClick?: () => void;
-    }) => (
-      <button
-        onClick={() => {
-          onClick?.();
-          latestOnOpenChange?.(false);
-        }}
-      >
-        {children}
-      </button>
-    ),
-    AlertDialogAction: ({
-      children,
-      onClick,
-    }: {
-      children: React.ReactNode;
-      onClick: () => void;
-    }) => <button onClick={onClick}>{children}</button>,
+    DialogClose: ({ children }: { children: React.ReactElement<object> }) =>
+      cloneElement(children, {
+        onClick: () => latestOnOpenChange?.(false),
+      } as object),
   };
 });
 

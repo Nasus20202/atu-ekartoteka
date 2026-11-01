@@ -62,6 +62,6 @@ describe('ConfirmCreateDialog', () => {
       />
     );
 
-    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });
