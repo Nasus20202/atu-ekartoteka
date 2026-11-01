@@ -107,7 +107,7 @@ export function YearBalanceGrid({ results }: { results: ImportResult[] }) {
                       'z-10 bg-background px-3 py-2'
                     )}
                   >
-                    <span className="inline-flex items-center gap-2 font-medium">
+                    <span className="flex items-center justify-between gap-2 font-medium">
                       {hoaName}
                       <ValidationBadge ok={hoaOk} />
                     </span>
