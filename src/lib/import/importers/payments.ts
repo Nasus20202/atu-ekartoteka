@@ -5,7 +5,11 @@ import {
   hasPaymentChanged,
   makePaymentKey,
 } from '@/lib/import/importers/payment-data';
-import { EntityStats, TransactionClient } from '@/lib/import/types';
+import {
+  EntityStats,
+  ImportErrorItem,
+  TransactionClient,
+} from '@/lib/import/types';
 import { processInBatches } from '@/lib/import/utils';
 import { PaymentEntry } from '@/lib/parsers/wplaty-parser';
 import { getErrorMessage } from '@/lib/utils/error-message';
@@ -15,7 +19,7 @@ export async function importPayments(
   apartmentMap: Map<string, string>,
   entries: PaymentEntry[],
   stats: EntityStats,
-  errors: string[]
+  errors: ImportErrorItem[]
 ): Promise<void> {
   // Filter entries with valid apartment IDs (using combined key: externalOwnerId#externalApartmentId)
   const validEntries: Array<{ entry: PaymentEntry; apartmentId: string }> = [];
@@ -122,7 +126,10 @@ export async function importPayments(
       );
       stats.created = toCreate.length;
     } catch (error) {
-      errors.push(`Błąd tworzenia płatności: ${getErrorMessage(error)}`);
+      errors.push({
+        kind: 'database',
+        message: `Błąd tworzenia płatności: ${getErrorMessage(error)}`,
+      });
       stats.skipped += toCreate.length;
     }
   }
@@ -136,9 +143,10 @@ export async function importPayments(
       });
       stats.updated++;
     } catch (error) {
-      errors.push(
-        `Błąd aktualizacji płatności ${entry.externalId}/${entry.year}: ${getErrorMessage(error)}`
-      );
+      errors.push({
+        kind: 'database',
+        message: `Błąd aktualizacji płatności ${entry.externalId}/${entry.year}: ${getErrorMessage(error)}`,
+      });
       stats.skipped++;
     }
   }

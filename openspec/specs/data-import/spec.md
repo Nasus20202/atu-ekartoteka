@@ -447,7 +447,7 @@ The system SHALL let an administrator run, from the import page, the import vali
 
 ### Requirement: Naliczenia Import Validation Severity
 
-The system SHALL validate each entry in `nal_czynsz.txt` before committing to the database. The Wplaty closing-balance check SHALL abort the HOA import on failure. The cross-file charge check SHALL compare charges per owner, apartment and billing period against the monthly charges imported from `wplaty.txt`; because those imported columns are known to be unreliable and are no longer used for display, a mismatch SHALL be reported as a warning and SHALL NOT abort the import. Each such warning SHALL state that the field from the files is ignored by the application. Mismatches SHALL be rolled up into one warning per owner, apartment and year that lists each differing month with both values, and states when a month's difference equals the sum of its `Wyrównanie` lines. The line-total identity check (`totalAmount ≈ quantity × unitPrice`) SHALL be reported as a warning only and SHALL NOT abort the import.
+The system SHALL validate each entry in `nal_czynsz.txt` before committing to the database. The Wplaty closing-balance check SHALL abort the HOA import on failure. The cross-file charge check SHALL compare charges per owner, apartment and billing period against the monthly charges imported from `wplaty.txt`; because those imported columns are known to be unreliable and are no longer used for display, a mismatch SHALL be reported as a warning and SHALL NOT abort the import. Each such warning SHALL state that the field from the files is ignored by the application. Mismatches SHALL be rolled up into one warning per owner, apartment and year that lists each differing month with both values, and states when a month's difference equals the sum of its `Wyrównanie` lines; otherwise it states the unexplained difference. The line-total identity check (`totalAmount ≈ quantity × unitPrice`) SHALL be reported as a warning only and SHALL NOT abort the import.
 
 #### Scenario: Line total mismatch reported as warning, import continues
 
@@ -496,6 +496,12 @@ The system SHALL validate each entry in `nal_czynsz.txt` before committing to th
 - **GIVEN** a month where the `nal_czynsz.txt` sum exceeds or falls short of the `wplaty` charge by exactly the sum of that month's `Wyrównanie` lines
 - **WHEN** import validation runs
 - **THEN** the warning states that the difference equals the settlement lines
+
+#### Scenario: Unexplained difference stated
+
+- **GIVEN** a month where the `nal_czynsz.txt` sum differs from the `wplaty` charge and the difference is not equal to the sum of that month's `Wyrównanie` lines
+- **WHEN** import validation runs
+- **THEN** the warning states the unexplained difference in brackets after the two values
 
 #### Scenario: Import result UI surfaces warnings
 
@@ -790,3 +796,25 @@ A calculated closing balance SHALL be marked as mismatching when the next stored
 - **GIVEN** stored data with no warnings or errors
 - **WHEN** validation runs
 - **THEN** the table is still shown
+
+### Requirement: Import Warning Grouping
+
+Each import warning SHALL carry a kind from a fixed set: `line-total`, `charges-mismatch`, `opening-balance-file`, `opening-balance-calculated` or `skipped-records`. The import result card SHALL group the warnings by kind under a heading that shows the kind's title and the number of warnings, with a one-sentence description. Groups SHALL appear in the order charges-mismatch, opening-balance-file, opening-balance-calculated, line-total, skipped-records. Groups without warnings SHALL NOT be shown.
+
+#### Scenario: Warnings grouped by kind
+
+- **GIVEN** an import whose result has a `line-total` warning and a `skipped-records` warning, in that order
+- **WHEN** the admin views the import result card
+- **THEN** the card shows a heading with the title and count for each kind, the `line-total` group above the `skipped-records` group
+
+#### Scenario: Empty groups hidden
+
+- **GIVEN** an import whose warnings all have the kind `charges-mismatch`
+- **WHEN** the admin views the import result card
+- **THEN** only the charges-mismatch group is shown
+
+#### Scenario: Order kept within a group
+
+- **GIVEN** two `line-total` warnings for apartments A and B, produced in that order
+- **WHEN** the admin views the import result card
+- **THEN** the two warnings are listed under the line-total heading in the order A, then B

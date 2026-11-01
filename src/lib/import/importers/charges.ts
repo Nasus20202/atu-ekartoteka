@@ -1,6 +1,10 @@
 import { Prisma } from '@/generated/prisma/client';
 import { IMPORT_CREATE_BATCH_SIZE } from '@/lib/import/constants';
-import { EntityStats, TransactionClient } from '@/lib/import/types';
+import {
+  EntityStats,
+  ImportErrorItem,
+  TransactionClient,
+} from '@/lib/import/types';
 import { processInBatches } from '@/lib/import/utils';
 import { NalCzynszEntry } from '@/lib/parsers/nal-czynsz-parser';
 import { decimalEqualsStored } from '@/lib/utils/decimal';
@@ -47,7 +51,7 @@ export async function importCharges(
   apartmentMap: Map<string, string>,
   chargeEntries: NalCzynszEntry[],
   stats: EntityStats,
-  errors: string[]
+  errors: ImportErrorItem[]
 ): Promise<void> {
   // Filter entries with valid apartment IDs (using combined key: externalOwnerId#externalApartmentId)
   const validEntries: Array<{ entry: NalCzynszEntry; apartmentId: string }> =
@@ -146,7 +150,10 @@ export async function importCharges(
       );
       stats.created = toCreate.length;
     } catch (error) {
-      errors.push(`Błąd tworzenia naliczeń: ${getErrorMessage(error)}`);
+      errors.push({
+        kind: 'database',
+        message: `Błąd tworzenia naliczeń: ${getErrorMessage(error)}`,
+      });
       stats.skipped += toCreate.length;
     }
   }
@@ -168,9 +175,10 @@ export async function importCharges(
       });
       stats.updated++;
     } catch (error) {
-      errors.push(
-        `Błąd aktualizacji naliczenia ${entry.id}: ${getErrorMessage(error)}`
-      );
+      errors.push({
+        kind: 'database',
+        message: `Błąd aktualizacji naliczenia ${entry.id}: ${getErrorMessage(error)}`,
+      });
       stats.skipped++;
     }
   }

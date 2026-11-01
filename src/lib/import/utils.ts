@@ -97,8 +97,9 @@ export function groupFilesByHOA(
       filesByHOA.set(hoaId, entry);
     } catch (error) {
       errors.push({
+        kind: 'file-error',
         file: file.name,
-        error: getErrorMessage(error),
+        message: getErrorMessage(error),
       });
     }
   }

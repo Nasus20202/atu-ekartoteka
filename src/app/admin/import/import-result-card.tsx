@@ -1,5 +1,7 @@
 import { Download, XCircle } from 'lucide-react';
 
+import { groupErrors } from '@/app/admin/import/error-groups';
+import { GroupedIssues } from '@/app/admin/import/grouped-issues';
 import { ImportWarnings } from '@/app/admin/import/import-warnings';
 import type { EntityStats, ImportResult } from '@/app/admin/import/types';
 import { Button } from '@/components/ui/button';
@@ -144,11 +146,11 @@ export function ImportResultCard({ result }: ImportResultCardProps) {
               Błędy walidacji ({result.errors.length}) — wspólnota nie została
               zaimportowana
             </div>
-            <ul className="space-y-1 text-sm text-destructive/80 dark:text-red-400">
-              {result.errors.map((error, idx) => (
-                <li key={idx}>• {error}</li>
-              ))}
-            </ul>
+            <GroupedIssues
+              groups={groupErrors(result.errors)}
+              tone="error"
+              formatItem={({ message }) => message}
+            />
           </div>
         )}
 

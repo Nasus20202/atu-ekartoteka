@@ -198,7 +198,12 @@ describe('buildYearBalanceRows', () => {
 });
 
 function warning(fields: Partial<ImportWarning>): ImportWarning {
-  return { apartmentExternalId: 'apt-1', message: 'uwaga', ...fields };
+  return {
+    kind: 'charges-mismatch',
+    apartmentExternalId: 'apt-1',
+    message: 'uwaga',
+    ...fields,
+  };
 }
 
 describe('withYearStatus', () => {
@@ -271,13 +276,23 @@ describe('withYearStatus', () => {
   });
 
   it('marks every year as error when the HOA has errors', () => {
-    const rows = withYearStatus(summaries, ['błąd'], [], []);
+    const rows = withYearStatus(
+      summaries,
+      [{ kind: 'balance-mismatch', message: 'błąd' }],
+      [],
+      []
+    );
 
     expect(rows.map(({ status }) => status)).toEqual(['error', 'error']);
   });
 
   it('marks only the year of an error that names a year', () => {
-    const rows = withYearStatus(summaries, ['błąd 2025'], [2025], []);
+    const rows = withYearStatus(
+      summaries,
+      [{ kind: 'balance-mismatch', message: 'błąd 2025' }],
+      [2025],
+      []
+    );
 
     expect(rows.map(({ status }) => status)).toEqual(['ok', 'error']);
   });

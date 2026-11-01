@@ -2,7 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Prisma } from '@/generated/prisma/browser';
 import { importCharges } from '@/lib/import/importers/charges';
-import { EntityStats, TransactionClient } from '@/lib/import/types';
+import {
+  EntityStats,
+  ImportErrorItem,
+  TransactionClient,
+} from '@/lib/import/types';
 import { NalCzynszEntry } from '@/lib/parsers/nal-czynsz-parser';
 import type { DecimalLike } from '@/lib/utils/decimal';
 
@@ -50,7 +54,7 @@ function createChargeEntry(
 describe('importCharges', () => {
   let mockTx: ReturnType<typeof createMockTx>;
   let stats: EntityStats;
-  let errors: string[];
+  let errors: ImportErrorItem[];
   let apartmentMap: Map<string, string>;
 
   beforeEach(() => {
@@ -265,7 +269,7 @@ describe('importCharges', () => {
     await importCharges(mockTx, apartmentMap, entries, stats, errors);
 
     expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain('Błąd tworzenia naliczeń');
+    expect(errors[0].message).toContain('Błąd tworzenia naliczeń');
     expect(stats.skipped).toBe(1);
   });
 
@@ -280,8 +284,8 @@ describe('importCharges', () => {
     await importCharges(mockTx, apartmentMap, entries, stats, errors);
 
     expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain('Błąd tworzenia naliczeń');
-    expect(errors[0]).toContain('Nieznany błąd');
+    expect(errors[0].message).toContain('Błąd tworzenia naliczeń');
+    expect(errors[0].message).toContain('Nieznany błąd');
     expect(stats.skipped).toBe(1);
   });
 
@@ -312,7 +316,7 @@ describe('importCharges', () => {
     await importCharges(mockTx, apartmentMap, entries, stats, errors);
 
     expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain('Błąd aktualizacji naliczenia');
+    expect(errors[0].message).toContain('Błąd aktualizacji naliczenia');
     expect(stats.skipped).toBe(1);
   });
 
@@ -343,8 +347,8 @@ describe('importCharges', () => {
     await importCharges(mockTx, apartmentMap, entries, stats, errors);
 
     expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain('Błąd aktualizacji naliczenia');
-    expect(errors[0]).toContain('Nieznany błąd');
+    expect(errors[0].message).toContain('Błąd aktualizacji naliczenia');
+    expect(errors[0].message).toContain('Nieznany błąd');
     expect(stats.skipped).toBe(1);
   });
 

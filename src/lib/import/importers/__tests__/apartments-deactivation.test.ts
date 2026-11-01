@@ -12,12 +12,12 @@ import {
   STARTED_ON,
 } from '@/lib/import/importers/__tests__/apartment-validity-mocks';
 import { importApartments } from '@/lib/import/importers/apartments';
-import { EntityStats } from '@/lib/import/types';
+import { EntityStats, ImportErrorItem } from '@/lib/import/types';
 
 describe('importApartments former owner deactivation', () => {
   let mockTx: ReturnType<typeof createMockTx>;
   let stats: EntityStats;
-  let errors: string[];
+  let errors: ImportErrorItem[];
 
   beforeEach(() => {
     vi.clearAllMocks();

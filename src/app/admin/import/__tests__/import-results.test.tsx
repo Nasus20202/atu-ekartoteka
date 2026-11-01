@@ -8,7 +8,7 @@ import type { ImportResponse, ImportResult } from '@/app/admin/import/types';
 
 const response: ImportResponse = {
   success: true,
-  errors: [{ file: 'plik.txt', error: 'Błąd pliku' }],
+  errors: [{ kind: 'file-error', file: 'plik.txt', message: 'Błąd pliku' }],
   results: [
     {
       hoaId: 'HOA-1',
@@ -43,9 +43,13 @@ const response: ImportResponse = {
       apartmentsDataDate: '2024-01-02T00:00:00.000Z',
       chargesDataDate: '2024-01-03T00:00:00.000Z',
       notificationsDataDate: '2024-01-04T00:00:00.000Z',
-      errors: ['Walidacja 1', 'Walidacja 2'],
+      errors: [
+        { kind: 'balance-mismatch', message: 'Walidacja 1' },
+        { kind: 'balance-mismatch', message: 'Walidacja 2' },
+      ],
       warnings: [
         {
+          kind: 'line-total',
           apartmentExternalId: 'APT-1',
           period: '202401',
           lineNo: 4,
@@ -98,7 +102,7 @@ const resultWithErrors: ImportResult = {
     deleted: 0,
     total: 0,
   },
-  errors: ['Błąd A'],
+  errors: [{ kind: 'balance-mismatch', message: 'Błąd A' }],
   warnings: [],
 };
 
@@ -114,6 +118,7 @@ const resultWithWarnings: ImportResult = {
   errors: [],
   warnings: [
     {
+      kind: 'line-total',
       apartmentExternalId: 'APT-1',
       period: '202401',
       lineNo: 1,
@@ -249,7 +254,9 @@ describe('error downloads', () => {
       <ImportResults
         response={{
           ...successResponseOnly,
-          errors: [{ hoaId: 'HOA-9', error: 'Brak plików' }],
+          errors: [
+            { kind: 'missing-files', hoaId: 'HOA-9', message: 'Brak plików' },
+          ],
         }}
       />
     );

@@ -49,7 +49,7 @@ describe('processBatchImport with several files of one kind', () => {
       makeFile('hoa1/wplaty2.txt'),
     ]);
 
-    expect(results[0].errors).toEqual([]);
+    expect(results[0].errors.map(({ message }) => message)).toEqual([]);
     expect(results[0].payments?.total).toBe(2);
     expect(mockValidateWplaty).toHaveBeenCalledWith([
       payment('A1', 2025),
@@ -68,7 +68,7 @@ describe('processBatchImport with several files of one kind', () => {
       { skipValidation: true }
     );
 
-    expect(results[0].errors).toEqual([
+    expect(results[0].errors.map(({ message }) => message)).toEqual([
       'Zduplikowane rekordy w plikach wplaty1.txt i wplaty2.txt (1): W001#A1|2025',
     ]);
     expect(mockTransaction).not.toHaveBeenCalled();

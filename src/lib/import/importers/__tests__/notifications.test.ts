@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { importNotifications } from '@/lib/import/importers/notifications';
-import { EntityStats, HOAContext, TransactionClient } from '@/lib/import/types';
+import {
+  EntityStats,
+  HOAContext,
+  ImportErrorItem,
+  TransactionClient,
+} from '@/lib/import/types';
 import { ParseResult } from '@/lib/parsers/parser-utils';
 import { ChargeNotificationEntry } from '@/lib/parsers/pow-czynsz-parser';
 import { toDecimal } from '@/lib/utils/decimal';
@@ -56,7 +61,7 @@ describe('importNotifications', () => {
   let mockTx: ReturnType<typeof createMockTx>;
   let hoa: HOAContext;
   let stats: EntityStats;
-  let errors: string[];
+  let errors: ImportErrorItem[];
   let apartmentMap: Map<string, string>;
 
   beforeEach(() => {
@@ -258,7 +263,7 @@ describe('importNotifications', () => {
     );
 
     expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain('Błąd tworzenia powiadomień');
+    expect(errors[0].message).toContain('Błąd tworzenia powiadomień');
     expect(stats.skipped).toBe(1);
   });
 
@@ -283,8 +288,8 @@ describe('importNotifications', () => {
     );
 
     expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain('Błąd tworzenia powiadomień');
-    expect(errors[0]).toContain('Nieznany błąd');
+    expect(errors[0].message).toContain('Błąd tworzenia powiadomień');
+    expect(errors[0].message).toContain('Nieznany błąd');
     expect(stats.skipped).toBe(1);
   });
 
@@ -320,7 +325,7 @@ describe('importNotifications', () => {
     );
 
     expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain('Błąd aktualizacji powiadomienia');
+    expect(errors[0].message).toContain('Błąd aktualizacji powiadomienia');
     expect(stats.skipped).toBe(1);
   });
 
@@ -356,8 +361,8 @@ describe('importNotifications', () => {
     );
 
     expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain('Błąd aktualizacji powiadomienia');
-    expect(errors[0]).toContain('Nieznany błąd');
+    expect(errors[0].message).toContain('Błąd aktualizacji powiadomienia');
+    expect(errors[0].message).toContain('Nieznany błąd');
     expect(stats.skipped).toBe(1);
   });
 

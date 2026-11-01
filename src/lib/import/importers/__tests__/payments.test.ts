@@ -2,7 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { buildPaymentData } from '@/lib/import/importers/payment-data';
 import { importPayments } from '@/lib/import/importers/payments';
-import { EntityStats, TransactionClient } from '@/lib/import/types';
+import {
+  EntityStats,
+  ImportErrorItem,
+  TransactionClient,
+} from '@/lib/import/types';
 import { PaymentEntry } from '@/lib/parsers/wplaty-parser';
 import type { DecimalLike } from '@/lib/utils/decimal';
 
@@ -68,7 +72,7 @@ function createPaymentEntry(
 describe('importPayments', () => {
   let mockTx: ReturnType<typeof createMockTx>;
   let stats: EntityStats;
-  let errors: string[];
+  let errors: ImportErrorItem[];
   let apartmentMap: Map<string, string>;
 
   beforeEach(() => {
@@ -349,7 +353,7 @@ describe('importPayments', () => {
     await importPayments(mockTx, apartmentMap, entries, stats, errors);
 
     expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain('Błąd tworzenia płatności');
+    expect(errors[0].message).toContain('Błąd tworzenia płatności');
     expect(stats.skipped).toBe(1);
   });
 
@@ -364,8 +368,8 @@ describe('importPayments', () => {
     await importPayments(mockTx, apartmentMap, entries, stats, errors);
 
     expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain('Błąd tworzenia płatności');
-    expect(errors[0]).toContain('Nieznany błąd');
+    expect(errors[0].message).toContain('Błąd tworzenia płatności');
+    expect(errors[0].message).toContain('Nieznany błąd');
     expect(stats.skipped).toBe(1);
   });
 
@@ -418,7 +422,7 @@ describe('importPayments', () => {
     await importPayments(mockTx, apartmentMap, entries, stats, errors);
 
     expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain('Błąd aktualizacji płatności');
+    expect(errors[0].message).toContain('Błąd aktualizacji płatności');
     expect(stats.skipped).toBe(1);
   });
 
@@ -471,8 +475,8 @@ describe('importPayments', () => {
     await importPayments(mockTx, apartmentMap, entries, stats, errors);
 
     expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain('Błąd aktualizacji płatności');
-    expect(errors[0]).toContain('Nieznany błąd');
+    expect(errors[0].message).toContain('Błąd aktualizacji płatności');
+    expect(errors[0].message).toContain('Nieznany błąd');
     expect(stats.skipped).toBe(1);
   });
 

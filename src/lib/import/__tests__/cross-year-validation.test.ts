@@ -40,6 +40,7 @@ describe('validateCrossYearBalances', () => {
 
     expect(warnings).toEqual([
       {
+        kind: 'opening-balance-file',
         apartmentExternalId: 'APT001',
         year: 2024,
         difference: '50.0000',

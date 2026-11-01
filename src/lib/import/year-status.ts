@@ -1,4 +1,5 @@
 import type {
+  ImportErrorItem,
   ImportWarning,
   YearBalanceRow,
   YearStatus,
@@ -20,7 +21,7 @@ function warningYear(warning: ImportWarning): number | undefined {
  */
 export function withYearStatus(
   rows: YearBalanceSummary[],
-  errors: string[],
+  errors: ImportErrorItem[],
   errorYears: number[],
   warnings: ImportWarning[]
 ): YearBalanceRow[] {

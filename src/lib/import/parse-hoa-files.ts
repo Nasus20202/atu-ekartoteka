@@ -1,5 +1,9 @@
 import { mergeParsedFiles, parseFiles } from '@/lib/import/merge-files';
-import type { HOAImportResult, ImportFileGroup } from '@/lib/import/types';
+import type {
+  HOAImportResult,
+  ImportErrorItem,
+  ImportFileGroup,
+} from '@/lib/import/types';
 import {
   createEmptyStats,
   parseFileToBuffer,
@@ -92,7 +96,7 @@ export async function parseHoaFiles(
     chargesWmbFiles = [],
     notificationsWmbFiles = [],
   } = fileGroup;
-  const duplicateErrors: string[] = [];
+  const duplicateErrors: ImportErrorItem[] = [];
 
   const apartmentFiles = await parseApartmentFiles(lokFiles);
   duplicateErrors.push(...apartmentFiles.errors);

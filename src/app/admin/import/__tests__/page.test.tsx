@@ -9,6 +9,7 @@ describe('ImportWarnings', () => {
       <ImportWarnings
         warnings={[
           {
+            kind: 'line-total',
             apartmentExternalId: 'APT-101',
             period: '202401',
             lineNo: 12,

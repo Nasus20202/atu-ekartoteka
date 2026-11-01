@@ -197,7 +197,7 @@ describe('groupFilesByHOA - WMB routing', () => {
 
   it('should add an error for files without HOA directory prefix', () => {
     const file = makeFile('lokal_ost_wys.wmb', '20240101');
-    const errors: { file: string; error: string }[] = [];
+    const errors: ImportError[] = [];
     groupFilesByHOA([file], errors);
 
     expect(errors).toHaveLength(1);
@@ -222,7 +222,11 @@ describe('groupFilesByHOA - other files', () => {
     groupFilesByHOA([makeFile('HOA001/notatki.txt', '')], errors);
 
     expect(errors).toEqual([
-      { file: 'HOA001/notatki.txt', error: 'Nieznany plik: notatki.txt' },
+      {
+        kind: 'file-error',
+        file: 'HOA001/notatki.txt',
+        message: 'Nieznany plik: notatki.txt',
+      },
     ]);
   });
 });

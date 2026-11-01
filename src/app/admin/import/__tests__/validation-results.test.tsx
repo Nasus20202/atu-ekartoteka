@@ -11,7 +11,12 @@ const withWarning: ImportResult = {
   apartments: emptyStats,
   errors: [],
   warnings: [
-    { apartmentExternalId: 'A1', difference: '1.00', message: 'ostrzeżenie' },
+    {
+      kind: 'charges-mismatch',
+      apartmentExternalId: 'A1',
+      difference: '1.00',
+      message: 'ostrzeżenie',
+    },
   ],
   yearBalances: [
     {

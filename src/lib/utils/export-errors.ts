@@ -1,3 +1,4 @@
+import type { ImportErrorItem } from '@/lib/import/types';
 import { formatCountPl, type PolishPluralForms } from '@/lib/utils/pluralize';
 
 const HOA_FORMS: PolishPluralForms = {
@@ -18,7 +19,7 @@ const WARNING_FORMS: PolishPluralForms = {
 
 export interface ErrorExportEntry {
   hoaId: string;
-  errors: string[];
+  errors: ImportErrorItem[];
   warnings: {
     apartmentExternalId?: string;
     period?: string;
@@ -42,7 +43,7 @@ export function serialiseErrorsToTxt(entries: ErrorExportEntry[]): string {
     parts.push(`=== Wspólnota: ${entry.hoaId} ===`);
 
     for (const error of entry.errors) {
-      parts.push(`BŁĄD|||${error}`);
+      parts.push(`BŁĄD|||${error.message}`);
     }
 
     for (const warning of entry.warnings) {

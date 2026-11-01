@@ -13,7 +13,10 @@ describe('serialiseErrorsToTxt', () => {
     const result = serialiseErrorsToTxt([
       {
         hoaId: 'TEST01',
-        errors: ['Walidacja 1', 'Walidacja 2'],
+        errors: [
+          { kind: 'balance-mismatch', message: 'Walidacja 1' },
+          { kind: 'balance-mismatch', message: 'Walidacja 2' },
+        ],
         warnings: [],
       },
     ]);
@@ -54,7 +57,12 @@ describe('serialiseErrorsToTxt', () => {
     const result = serialiseErrorsToTxt([
       {
         hoaId: 'TEST02',
-        errors: ['Saldo zamknięcia nie zgadza się'],
+        errors: [
+          {
+            kind: 'balance-mismatch',
+            message: 'Saldo zamknięcia nie zgadza się',
+          },
+        ],
         warnings: [
           {
             apartmentExternalId: 'W00106',
@@ -79,7 +87,7 @@ describe('serialiseErrorsToTxt', () => {
     const result = serialiseErrorsToTxt([
       {
         hoaId: 'TEST02',
-        errors: ['Błąd A'],
+        errors: [{ kind: 'balance-mismatch', message: 'Błąd A' }],
         warnings: [
           {
             apartmentExternalId: 'W001',
@@ -90,7 +98,10 @@ describe('serialiseErrorsToTxt', () => {
       },
       {
         hoaId: 'TEST01',
-        errors: ['Błąd B', 'Błąd C'],
+        errors: [
+          { kind: 'balance-mismatch', message: 'Błąd B' },
+          { kind: 'balance-mismatch', message: 'Błąd C' },
+        ],
         warnings: [],
       },
     ]);

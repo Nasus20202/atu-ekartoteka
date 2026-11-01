@@ -14,8 +14,9 @@ function hoaResult(
   return {
     hoaId,
     apartments: emptyStats,
-    errors,
+    errors: errors.map((message) => ({ kind: 'balance-mismatch', message })),
     warnings: Array.from({ length: warningCount }, (_, index) => ({
+      kind: 'charges-mismatch',
       apartmentExternalId: `A${index}`,
       difference: '1.00',
       message: 'ostrzeżenie',

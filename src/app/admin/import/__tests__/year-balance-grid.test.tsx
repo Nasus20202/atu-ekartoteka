@@ -174,7 +174,13 @@ describe('YearBalanceGrid', () => {
                 status: 'warning',
               },
             ]),
-            warnings: [{ apartmentExternalId: 'A1', message: 'uwaga' }],
+            warnings: [
+              {
+                kind: 'charges-mismatch',
+                apartmentExternalId: 'A1',
+                message: 'uwaga',
+              },
+            ],
           },
         ]}
       />

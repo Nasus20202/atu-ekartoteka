@@ -12,6 +12,7 @@ import {
   ApartmentMap,
   EntityStats,
   HOAContext,
+  ImportErrorItem,
   TransactionClient,
 } from '@/lib/import/types';
 import { processInBatches } from '@/lib/import/utils';
@@ -23,7 +24,7 @@ export async function importApartments(
   hoa: HOAContext,
   apartments: ApartmentEntry[],
   stats: EntityStats,
-  errors: string[],
+  errors: ImportErrorItem[],
   now: Date = new Date()
 ): Promise<ApartmentMap> {
   const ownerApartmentKeys = apartments.map(
@@ -103,7 +104,10 @@ export async function importApartments(
       );
       stats.created = toCreate.length;
     } catch (error) {
-      errors.push(`Błąd tworzenia mieszkań: ${getErrorMessage(error)}`);
+      errors.push({
+        kind: 'database',
+        message: `Błąd tworzenia mieszkań: ${getErrorMessage(error)}`,
+      });
       stats.skipped += toCreate.length;
     }
   }
@@ -131,9 +135,10 @@ export async function importApartments(
       });
       stats.updated++;
     } catch (error) {
-      errors.push(
-        `Błąd aktualizacji mieszkania ${entry.externalOwnerId}#${entry.externalApartmentId}: ${getErrorMessage(error)}`
-      );
+      errors.push({
+        kind: 'database',
+        message: `Błąd aktualizacji mieszkania ${entry.externalOwnerId}#${entry.externalApartmentId}: ${getErrorMessage(error)}`,
+      });
       stats.skipped++;
     }
   }

@@ -62,6 +62,7 @@ export async function validateCrossYearBalances(
     );
     if (difference.abs().greaterThan(WPLATY_BALANCE_TOLERANCE)) {
       warnings.push({
+        kind: 'opening-balance-file',
         apartmentExternalId: entry.apartmentCode,
         year: entry.year,
         difference: difference.abs().toFixed(4),

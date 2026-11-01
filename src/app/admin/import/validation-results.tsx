@@ -1,5 +1,7 @@
 import { ChevronDown, Download, XCircle } from 'lucide-react';
 
+import { groupErrors } from '@/app/admin/import/error-groups';
+import { GroupedIssues } from '@/app/admin/import/grouped-issues';
 import { ImportWarnings } from '@/app/admin/import/import-warnings';
 import type { ImportResponse, ImportResult } from '@/app/admin/import/types';
 import { ValidationBanner } from '@/app/admin/import/validation-banner';
@@ -35,11 +37,11 @@ function HoaFindings({ result }: { result: ImportResult }) {
               <XCircle className="h-4 w-4" />
               Błędy ({result.errors.length})
             </div>
-            <ul className="space-y-1 text-sm text-destructive/80 dark:text-red-400">
-              {result.errors.map((error, idx) => (
-                <li key={idx}>• {error}</li>
-              ))}
-            </ul>
+            <GroupedIssues
+              groups={groupErrors(result.errors)}
+              tone="error"
+              formatItem={({ message }) => message}
+            />
           </div>
         )}
         {hasYearToYearWarning && (
