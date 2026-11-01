@@ -13,9 +13,9 @@ import { ApartmentsSection } from '@/components/dashboard/apartments-section';
 import { ChargesSummaryCard } from '@/components/dashboard/charges-summary-card';
 import { NotificationsSidebar } from '@/components/dashboard/notifications-sidebar';
 import { PaymentsSummaryCard } from '@/components/dashboard/payments-summary-card';
+import { isApprovedAccount } from '@/lib/auth/account-access';
 import { findUserWithApartmentsCached } from '@/lib/queries/users/find-user-with-apartments';
 import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
-import { AccountStatus } from '@/lib/types';
 import { dateToPeriod } from '@/lib/utils/period';
 import { getRequestNow } from '@/lib/utils/request-now';
 import { sumDecimals } from '@/lib/utils/sum';
@@ -76,15 +76,14 @@ export default async function DashboardPage() {
           </h1>
 
           <div
-            className={`grid grid-cols-1 gap-6 ${allNotifications.length > 0 && userData.status === AccountStatus.APPROVED ? 'lg:grid-cols-[minmax(0,1fr)_350px] lg:items-start' : ''}`}
+            className={`grid grid-cols-1 gap-6 ${allNotifications.length > 0 && isApprovedAccount(userData) ? 'lg:grid-cols-[minmax(0,1fr)_350px] lg:items-start' : ''}`}
           >
             {/* Sidebar - shows first on mobile, second on desktop */}
-            {userData.status === AccountStatus.APPROVED &&
-              allNotifications.length > 0 && (
-                <aside className="lg:order-2 lg:self-start lg:sticky lg:top-20">
-                  <NotificationsSidebar notifications={allNotifications} />
-                </aside>
-              )}
+            {isApprovedAccount(userData) && allNotifications.length > 0 && (
+              <aside className="lg:order-2 lg:self-start lg:sticky lg:top-20">
+                <NotificationsSidebar notifications={allNotifications} />
+              </aside>
+            )}
 
             {/* Main Content - shows second on mobile, first on desktop */}
             <div className="space-y-6 lg:order-1">
@@ -96,13 +95,12 @@ export default async function DashboardPage() {
               />
 
               {/* Payments Summary */}
-              {userData.status === AccountStatus.APPROVED &&
-                apartmentBalances.length > 0 && (
-                  <PaymentsSummaryCard apartmentBalances={apartmentBalances} />
-                )}
+              {isApprovedAccount(userData) && apartmentBalances.length > 0 && (
+                <PaymentsSummaryCard apartmentBalances={apartmentBalances} />
+              )}
 
               {/* Charges Card */}
-              {userData.status === AccountStatus.APPROVED &&
+              {isApprovedAccount(userData) &&
                 userData.apartments.length > 0 && (
                   <ChargesSummaryCard
                     currentPeriod={currentPeriod}
@@ -117,7 +115,7 @@ export default async function DashboardPage() {
                 )}
 
               {/* Apartments Card */}
-              {userData.status === AccountStatus.APPROVED && (
+              {isApprovedAccount(userData) && (
                 <ApartmentsSection apartments={userData.apartments} />
               )}
             </div>

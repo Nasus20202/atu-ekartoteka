@@ -1,3 +1,4 @@
+import { isApprovedAccount } from '@/lib/auth/account-access';
 import { createLogger } from '@/lib/logger';
 import { findUserSessionFields } from '@/lib/queries/users/find-user-session-fields';
 import { AccountStatus, UserRole } from '@/lib/types';
@@ -10,9 +11,7 @@ interface AdminCandidate {
 }
 
 export function isApprovedAdmin(user: AdminCandidate | null): boolean {
-  return (
-    user?.role === UserRole.ADMIN && user.status === AccountStatus.APPROVED
-  );
+  return isApprovedAccount(user) && user?.role === UserRole.ADMIN;
 }
 
 /**

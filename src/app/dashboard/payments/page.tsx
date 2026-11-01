@@ -13,10 +13,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { isApprovedAccount } from '@/lib/auth/account-access';
 import { PAGE_TITLES } from '@/lib/metadata/document-title';
 import { findUserWithApartmentPaymentsCached } from '@/lib/queries/users/find-user-with-apartment-payments';
 import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
-import { AccountStatus } from '@/lib/types';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 import { dateToPeriod } from '@/lib/utils/period';
 import { getRequestNow } from '@/lib/utils/request-now';
@@ -37,7 +37,7 @@ export default async function PaymentsPage() {
     dateToPeriod(await getRequestNow())
   );
 
-  if (!userData || userData.status !== AccountStatus.APPROVED) {
+  if (!userData || !isApprovedAccount(userData)) {
     redirect('/dashboard');
   }
 

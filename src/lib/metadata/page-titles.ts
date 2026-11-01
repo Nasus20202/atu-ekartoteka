@@ -1,6 +1,7 @@
 import { cache } from 'react';
 
 import { auth } from '@/auth';
+import { isApprovedAccount } from '@/lib/auth/account-access';
 import {
   formatAdminApartmentTitle,
   formatChargesTitle,
@@ -13,7 +14,7 @@ import {
 } from '@/lib/queries/apartments/find-apartment-label';
 import { findHoaName } from '@/lib/queries/hoa/find-hoa-name';
 import { findUserByIdCached } from '@/lib/queries/users/find-user-by-id';
-import { AccountStatus, UserRole } from '@/lib/types';
+import { UserRole } from '@/lib/types';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 
 /** One session lookup per request, shared by the layout and page metadata. */
@@ -32,7 +33,7 @@ async function getOwnedApartmentLabel(
   if (!session) return null;
 
   const user = await findUserByIdCached(session.user.id);
-  if (user?.status !== AccountStatus.APPROVED) return null;
+  if (!isApprovedAccount(user)) return null;
 
   const apartment = await findOwnedApartmentLabel(apartmentId, session.user.id);
   return apartment ? formatApartmentLabel(apartment) : null;
