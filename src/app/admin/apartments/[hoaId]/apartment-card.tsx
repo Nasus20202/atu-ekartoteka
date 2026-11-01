@@ -27,7 +27,7 @@ export function ApartmentCard({
 }) {
   return (
     <Card
-      className={`transition-all duration-300 hover:shadow-lg ${!apartment.isActive ? 'opacity-60 grayscale' : ''} ${isDuplicate ? 'border-amber-400 dark:border-amber-600' : ''}`}
+      className={`transition-all duration-300 ${!apartment.isActive ? 'opacity-60 grayscale' : ''} ${isDuplicate ? 'border-amber-400 dark:border-amber-600' : ''}`}
     >
       <CardHeader>
         <div className="flex items-start justify-between">
