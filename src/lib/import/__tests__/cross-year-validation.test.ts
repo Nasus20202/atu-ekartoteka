@@ -41,6 +41,7 @@ describe('validateCrossYearBalances', () => {
     expect(warnings).toEqual([
       {
         apartmentExternalId: 'APT001',
+        year: 2024,
         difference: '50.0000',
         message: `Lokal APT001, rok 2024: saldo otwarcia 100 ≠ saldo zamknięcia roku 2023 z pliku 50. ${CLOSING_BALANCE_IGNORED_NOTE}`,
       },

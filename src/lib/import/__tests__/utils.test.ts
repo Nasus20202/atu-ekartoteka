@@ -105,37 +105,60 @@ describe('parseWmbDate', () => {
 });
 
 describe('groupFilesByHOA - WMB routing', () => {
-  it('should route lokal_ost_wys.wmb to apartmentsWmbFile', () => {
+  it('should route lokal_ost_wys.wmb to apartmentsWmbFiles', () => {
     const file = makeFile('HOA001/lokal_ost_wys.wmb', '20240101');
     const errors: never[] = [];
     const result = groupFilesByHOA([file], errors);
 
     expect(errors).toHaveLength(0);
-    expect(result.get('HOA001')?.apartmentsWmbFile).toBe(file);
-    expect(result.get('HOA001')?.chargesWmbFile).toBeUndefined();
-    expect(result.get('HOA001')?.notificationsWmbFile).toBeUndefined();
+    expect(result.get('HOA001')?.apartmentsWmbFiles).toEqual([file]);
+    expect(result.get('HOA001')?.chargesWmbFiles).toBeUndefined();
+    expect(result.get('HOA001')?.notificationsWmbFiles).toBeUndefined();
   });
 
-  it('should route nalicz_ost_wys.wmb to chargesWmbFile', () => {
+  it('should route nalicz_ost_wys.wmb to chargesWmbFiles', () => {
     const file = makeFile('HOA001/nalicz_ost_wys.wmb', '20240101');
     const errors: never[] = [];
     const result = groupFilesByHOA([file], errors);
 
     expect(errors).toHaveLength(0);
-    expect(result.get('HOA001')?.chargesWmbFile).toBe(file);
-    expect(result.get('HOA001')?.apartmentsWmbFile).toBeUndefined();
-    expect(result.get('HOA001')?.notificationsWmbFile).toBeUndefined();
+    expect(result.get('HOA001')?.chargesWmbFiles).toEqual([file]);
+    expect(result.get('HOA001')?.apartmentsWmbFiles).toBeUndefined();
+    expect(result.get('HOA001')?.notificationsWmbFiles).toBeUndefined();
   });
 
-  it('should route pow_czynsz_ost_wys.wmb to notificationsWmbFile', () => {
+  it('should route pow_czynsz_ost_wys.wmb to notificationsWmbFiles', () => {
     const file = makeFile('HOA001/pow_czynsz_ost_wys.wmb', '20240101');
     const errors: never[] = [];
     const result = groupFilesByHOA([file], errors);
 
     expect(errors).toHaveLength(0);
-    expect(result.get('HOA001')?.notificationsWmbFile).toBe(file);
-    expect(result.get('HOA001')?.apartmentsWmbFile).toBeUndefined();
-    expect(result.get('HOA001')?.chargesWmbFile).toBeUndefined();
+    expect(result.get('HOA001')?.notificationsWmbFiles).toEqual([file]);
+    expect(result.get('HOA001')?.apartmentsWmbFiles).toBeUndefined();
+    expect(result.get('HOA001')?.chargesWmbFiles).toBeUndefined();
+  });
+
+  it('should route suffixed WMB files by the same prefixes as txt files', () => {
+    const lokWmb = makeFile('HOA001/lok2026.wmb', '20260101');
+    const chargesWmb = makeFile('HOA001/nal_czynsz_2026.wmb', '20260102');
+    const notifWmb = makeFile('HOA001/POW_CZYNSZ_2026.WMB', '20260103');
+    const errors: never[] = [];
+    const result = groupFilesByHOA([lokWmb, chargesWmb, notifWmb], errors);
+
+    expect(errors).toHaveLength(0);
+    const group = result.get('HOA001');
+    expect(group?.apartmentsWmbFiles).toEqual([lokWmb]);
+    expect(group?.chargesWmbFiles).toEqual([chargesWmb]);
+    expect(group?.notificationsWmbFiles).toEqual([notifWmb]);
+  });
+
+  it('should collect every WMB file of one data type', () => {
+    const first = makeFile('HOA001/lok2025.wmb', '20250101');
+    const second = makeFile('HOA001/lok2026.wmb', '20260101');
+    const errors: never[] = [];
+    const result = groupFilesByHOA([first, second], errors);
+
+    expect(result.get('HOA001')?.apartmentsWmbFiles).toEqual([first, second]);
   });
 
   it('should route all three WMB files for the same HOA', () => {
@@ -147,9 +170,9 @@ describe('groupFilesByHOA - WMB routing', () => {
 
     expect(errors).toHaveLength(0);
     const group = result.get('HOA001');
-    expect(group?.apartmentsWmbFile).toBe(aptWmb);
-    expect(group?.chargesWmbFile).toBe(charWmb);
-    expect(group?.notificationsWmbFile).toBe(notifWmb);
+    expect(group?.apartmentsWmbFiles).toEqual([aptWmb]);
+    expect(group?.chargesWmbFiles).toEqual([charWmb]);
+    expect(group?.notificationsWmbFiles).toEqual([notifWmb]);
   });
 
   it('should route WMB files for different HOAs independently', () => {
@@ -158,8 +181,8 @@ describe('groupFilesByHOA - WMB routing', () => {
     const errors: never[] = [];
     const result = groupFilesByHOA([file1, file2], errors);
 
-    expect(result.get('HOA001')?.apartmentsWmbFile).toBe(file1);
-    expect(result.get('HOA002')?.apartmentsWmbFile).toBe(file2);
+    expect(result.get('HOA001')?.apartmentsWmbFiles).toEqual([file1]);
+    expect(result.get('HOA002')?.apartmentsWmbFiles).toEqual([file2]);
   });
 
   it('should route standard txt files alongside WMB files', () => {
@@ -171,7 +194,7 @@ describe('groupFilesByHOA - WMB routing', () => {
     expect(errors).toHaveLength(0);
     const group = result.get('HOA001');
     expect(group?.lokFiles).toEqual([lokFile]);
-    expect(group?.apartmentsWmbFile).toBe(wmbFile);
+    expect(group?.apartmentsWmbFiles).toEqual([wmbFile]);
   });
 
   it('should add an error for files without HOA directory prefix', () => {

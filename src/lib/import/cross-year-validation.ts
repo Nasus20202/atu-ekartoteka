@@ -63,6 +63,7 @@ export async function validateCrossYearBalances(
     if (difference.abs().greaterThan(WPLATY_BALANCE_TOLERANCE)) {
       warnings.push({
         apartmentExternalId: entry.apartmentCode,
+        year: entry.year,
         difference: difference.abs().toFixed(4),
         message:
           `Lokal ${entry.apartmentCode}, rok ${entry.year}: saldo otwarcia ${entry.openingBalance} ≠ ` +

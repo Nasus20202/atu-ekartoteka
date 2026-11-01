@@ -22,7 +22,8 @@ export async function parsePowCzynszFile(
   buffer: Buffer
 ): Promise<ParseResult<ChargeNotificationEntry>> {
   const content = await decodeBuffer(buffer);
-  const lines = content.split('\n');
+  // Legacy exports may end lines with CR only, CRLF or LF
+  const lines = content.split(/\r\n|\r|\n/);
   const entries: ChargeNotificationEntry[] = [];
   const headerLines: string[] = [];
   const footerLines: string[] = [];

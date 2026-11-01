@@ -88,6 +88,7 @@ export async function validateBalanceDrift(
     if (difference.abs().greaterThan(WPLATY_BALANCE_TOLERANCE)) {
       warnings.push({
         apartmentExternalId: entry.apartmentCode,
+        year: entry.year,
         difference: difference.abs().toFixed(4),
         message:
           `Lokal ${entry.apartmentCode} (właściciel ${entry.externalId}), rok ${entry.year}: ` +

@@ -536,14 +536,19 @@ describe('import-handler additional coverage', () => {
     });
 
     it('stores every WMB date on the HOA', async () => {
+      mockParseApartmentBuffer.mockResolvedValue([]);
+      mockGetUniqueApartments.mockReturnValue([]);
       mockParseNalCzynszBuffer.mockResolvedValue([]);
+      mockParsePowCzynszFile.mockResolvedValue({ entries: [] });
       const tx = makeTx();
       mockTransaction.mockImplementation(async (fn: unknown) =>
         (fn as (tx: ReturnType<typeof makeTx>) => Promise<void>)(tx)
       );
 
       await processBatchImport([
+        makeFile('hoa1/lok.txt'),
         makeFile('hoa1/nal_czynsz.txt'),
+        makeFile('hoa1/pow_czynsz.txt'),
         makeFile('hoa1/lokal_ost_wys.wmb', '20250101'),
         makeFile('hoa1/nalicz_ost_wys.wmb', '20250201'),
         makeFile('hoa1/pow_czynsz_ost_wys.wmb', '20250301'),
@@ -557,6 +562,48 @@ describe('import-handler additional coverage', () => {
             notificationsDataDate: new Date('2025-03-01T00:00:00.000Z'),
           },
         })
+      );
+    });
+
+    it('stores the newest WMB date when several files cover one data type', async () => {
+      mockParseApartmentBuffer.mockResolvedValue([]);
+      mockGetUniqueApartments.mockReturnValue([]);
+      const tx = makeTx();
+      mockTransaction.mockImplementation(async (fn: unknown) =>
+        (fn as (tx: ReturnType<typeof makeTx>) => Promise<void>)(tx)
+      );
+
+      await processBatchImport([
+        makeFile('hoa1/lok2026.txt'),
+        makeFile('hoa1/lok2026.wmb', '20260301'),
+        makeFile('hoa1/lok2025.wmb', '20250101'),
+      ]);
+
+      expect(tx.homeownersAssociation.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          update: {
+            apartmentsDataDate: new Date('2026-03-01T00:00:00.000Z'),
+          },
+        })
+      );
+    });
+
+    it('keeps stored WMB dates whose data is not in the import', async () => {
+      mockParseWplatyFile.mockResolvedValue({ entries: [] });
+      const tx = makeTx();
+      mockTransaction.mockImplementation(async (fn: unknown) =>
+        (fn as (tx: ReturnType<typeof makeTx>) => Promise<void>)(tx)
+      );
+
+      await processBatchImport([
+        makeFile('hoa1/wplaty.txt'),
+        makeFile('hoa1/lokal_ost_wys.wmb', '20250101'),
+        makeFile('hoa1/nalicz_ost_wys.wmb', '20250201'),
+        makeFile('hoa1/pow_czynsz_ost_wys.wmb', '20250301'),
+      ]);
+
+      expect(tx.homeownersAssociation.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({ update: {} })
       );
     });
   });

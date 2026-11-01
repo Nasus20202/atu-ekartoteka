@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { validateNalCzynsz, validateWplaty } from '@/lib/import/validators';
+import {
+  paymentErrorYears,
+  validateNalCzynsz,
+  validateWplaty,
+} from '@/lib/import/validators';
 import { NalCzynszEntry } from '@/lib/parsers/nal-czynsz-parser';
 import { PaymentEntry } from '@/lib/parsers/wplaty-parser';
 import type { DecimalLike } from '@/lib/utils/decimal';
@@ -242,5 +246,30 @@ describe('validateWplaty', () => {
     ];
     const errors = validateWplaty(entries);
     expect(errors).toHaveLength(2);
+  });
+});
+
+describe('paymentErrorYears', () => {
+  it('returns the year of each entry that fails the balance identity', () => {
+    const valid = makePaymentEntry({
+      year: 2024,
+      openingBalance: 0,
+      monthlyCharges: [100, ...Array(11).fill(0)],
+      monthlyPayments: [100, ...Array(11).fill(0)],
+      closingBalance: 0,
+    });
+    const invalid = makePaymentEntry({
+      year: 2025,
+      openingBalance: 0,
+      monthlyCharges: [100, ...Array(11).fill(0)],
+      monthlyPayments: [100, ...Array(11).fill(0)],
+      closingBalance: 50,
+    });
+
+    expect(paymentErrorYears([valid, invalid])).toEqual([2025]);
+  });
+
+  it('returns no years when there are no entries', () => {
+    expect(paymentErrorYears([])).toEqual([]);
   });
 });
