@@ -11,6 +11,10 @@ vi.mock('@/auth', () => ({ auth: mockAuth }));
 vi.mock('@/lib/queries/admin/get-dashboard-stats', () => ({
   getDashboardStats: mockGetDashboardStats,
 }));
+vi.mock('@/lib/auth/admin-access', () => ({
+  hasAdminAccess: vi.fn().mockResolvedValue(true),
+}));
+
 vi.mock('@/lib/logger', () => ({
   createLogger: () => ({ error: vi.fn() }),
 }));
