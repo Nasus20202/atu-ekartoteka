@@ -17,6 +17,8 @@ export const createMockApartment = (
     isActive?: boolean;
     user?: unknown;
     userId?: string | null;
+    validFrom?: Date | null;
+    validTo?: Date | null;
   } = {}
 ) => ({
   id: 'apt1',
@@ -32,7 +34,7 @@ export const createMockApartment = (
   city: 'Warsaw',
   shareNumerator: 55.5,
   shareDenominator: 2.7,
-  validFrom: null,
+  validFrom: new Date('2025-02-10T00:00:00.000Z'),
   validTo: null,
   isActive: true,
   createdAt: new Date(),
