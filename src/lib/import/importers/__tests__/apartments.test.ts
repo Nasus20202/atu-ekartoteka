@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { importApartments } from '@/lib/import/importers/apartments';
-import { EntityStats, HOAContext, TransactionClient } from '@/lib/import/types';
+import {
+  EntityStats,
+  HOAContext,
+  ImportErrorItem,
+  TransactionClient,
+} from '@/lib/import/types';
 import { ApartmentEntry } from '@/lib/parsers/apartment-parser';
 
 function createMockTx() {
@@ -49,7 +54,7 @@ describe('importApartments', () => {
   let mockTx: ReturnType<typeof createMockTx>;
   let hoa: HOAContext;
   let stats: EntityStats;
-  let errors: string[];
+  let errors: ImportErrorItem[];
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -245,7 +250,7 @@ describe('importApartments', () => {
     await importApartments(mockTx, hoa, apartments, stats, errors);
 
     expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain('Błąd tworzenia mieszkań');
+    expect(errors[0].message).toContain('Błąd tworzenia mieszkań');
     expect(stats.skipped).toBe(1);
   });
 
@@ -282,7 +287,7 @@ describe('importApartments', () => {
     await importApartments(mockTx, hoa, apartments, stats, errors);
 
     expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain('Błąd aktualizacji mieszkania');
+    expect(errors[0].message).toContain('Błąd aktualizacji mieszkania');
     expect(stats.skipped).toBe(1);
   });
 
@@ -798,8 +803,14 @@ describe('importApartments', () => {
     );
 
     expect(errors).toEqual([
-      'Błąd tworzenia mieszkań: Nieznany błąd',
-      'Błąd aktualizacji mieszkania W001#APT001: Nieznany błąd',
+      {
+        kind: 'database',
+        message: 'Błąd tworzenia mieszkań: Nieznany błąd',
+      },
+      {
+        kind: 'database',
+        message: 'Błąd aktualizacji mieszkania W001#APT001: Nieznany błąd',
+      },
     ]);
   });
 });

@@ -5,7 +5,7 @@ import {
   SETTLEMENT_DESCRIPTION_PREFIX,
   WPLATY_BALANCE_TOLERANCE,
 } from '@/lib/import/constants';
-import type { ImportWarning } from '@/lib/import/types';
+import type { ImportErrorItem, ImportWarning } from '@/lib/import/types';
 import { NalCzynszEntry } from '@/lib/parsers/nal-czynsz-parser';
 import { PaymentEntry } from '@/lib/parsers/wplaty-parser';
 import { toDecimal } from '@/lib/utils/decimal';
@@ -22,6 +22,7 @@ export function validateNalCzynsz(entries: NalCzynszEntry[]): ImportWarning[] {
     const delta = totalAmount.sub(expected).abs();
     if (delta.greaterThan(NAL_AMOUNT_TOLERANCE)) {
       warnings.push({
+        kind: 'line-total',
         apartmentExternalId: entry.apartmentExternalId,
         period: entry.period,
         lineNo: entry.lineNo,
@@ -55,18 +56,20 @@ function checkPaymentIdentity(entry: PaymentEntry) {
   };
 }
 
-export function validateWplaty(entries: PaymentEntry[]): string[] {
-  const errors: string[] = [];
+export function validateWplaty(entries: PaymentEntry[]): ImportErrorItem[] {
+  const errors: ImportErrorItem[] = [];
 
   for (const entry of entries) {
     const check = checkPaymentIdentity(entry);
     if (check.mismatch) {
-      errors.push(
-        `Wpłata ${entry.externalId} (lokal ${entry.apartmentCode}, rok ${entry.year}): ` +
+      errors.push({
+        kind: 'balance-mismatch',
+        message:
+          `Wpłata ${entry.externalId} (lokal ${entry.apartmentCode}, rok ${entry.year}): ` +
           `saldo zamknięcia ${check.closingBalance.toFixed(4)} ≠ ` +
           `${check.openingBalance.toFixed(4)} + ${check.totalPayments.toFixed(2)} - ${check.totalCharges.toFixed(2)} = ${check.computed.toFixed(2)} ` +
-          `(różnica ${check.delta.toFixed(4)})`
-      );
+          `(różnica ${check.delta.toFixed(4)})`,
+      });
     }
   }
 
@@ -144,22 +147,22 @@ export function validateChargesCrossFile(
       if (!delta.greaterThan(CROSS_CHARGES_TOLERANCE)) continue;
 
       const settlement = settlementSums.get(key) ?? toDecimal(0);
+      const unexplained = nalSum.minus(settlement).minus(monthlyCharge);
       const equalsSettlement =
         !settlement.isZero() &&
-        nalSum
-          .minus(settlement)
-          .minus(monthlyCharge)
-          .abs()
-          .lessThanOrEqualTo(CROSS_CHARGES_TOLERANCE);
+        unexplained.abs().lessThanOrEqualTo(CROSS_CHARGES_TOLERANCE);
       months.push(
         `${period}: suma naliczeń ${nalSum.toFixed(2)} ≠ naliczenia z wpłat ${monthlyCharge.toFixed(2)}` +
-          (equalsSettlement ? ' (różnica równa wyrównaniom)' : '')
+          (equalsSettlement
+            ? ' (różnica równa wyrównaniom)'
+            : ` (niewyjaśniona różnica ${unexplained.toFixed(2)})`)
       );
       totalDifference = totalDifference.plus(delta);
     }
 
     if (months.length > 0) {
       warnings.push({
+        kind: 'charges-mismatch',
         apartmentExternalId: payment.apartmentCode,
         year: payment.year,
         difference: totalDifference.toFixed(4),

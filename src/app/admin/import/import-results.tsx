@@ -1,5 +1,7 @@
 import { AlertCircle, Download, XCircle } from 'lucide-react';
 
+import { groupErrors } from '@/app/admin/import/error-groups';
+import { GroupedIssues } from '@/app/admin/import/grouped-issues';
 import { ImportResultCard } from '@/app/admin/import/import-result-card';
 import type { ImportResponse } from '@/app/admin/import/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -35,7 +37,7 @@ export function ImportResults({ response }: ImportResultsProps) {
               {failedHoas.map((result) => (
                 <li key={result.hoaId}>
                   • <span className="font-medium">{result.hoaId}</span>:{' '}
-                  {result.errors[0]}
+                  {result.errors[0].message}
                   {result.errors.length > 1 &&
                     ` (+${result.errors.length - 1} więcej)`}
                 </li>
@@ -54,13 +56,13 @@ export function ImportResults({ response }: ImportResultsProps) {
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Błędy plików ({response.errors.length})</AlertTitle>
           <AlertDescription>
-            <ul className="mt-1 space-y-1">
-              {response.errors.map((error, idx) => (
-                <li key={idx}>
-                  • {error.file || error.hoaId}: {error.error}
-                </li>
-              ))}
-            </ul>
+            <GroupedIssues
+              groups={groupErrors(response.errors)}
+              tone="error"
+              formatItem={(error) =>
+                `${error.file || error.hoaId}: ${error.message}`
+              }
+            />
           </AlertDescription>
         </Alert>
       )}

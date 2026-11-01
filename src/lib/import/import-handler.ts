@@ -41,7 +41,10 @@ async function importSingleHOA(
   const { lokFiles, chargesFiles, notificationsFiles, paymentsFiles } =
     fileGroup;
   if (!lokFiles && !chargesFiles && !notificationsFiles && !paymentsFiles) {
-    result.errors.push(`Brak plików do importu dla wspólnoty ${hoaId}.`);
+    result.errors.push({
+      kind: 'missing-files',
+      message: `Brak plików do importu dla wspólnoty ${hoaId}.`,
+    });
     return result;
   }
 
@@ -73,7 +76,10 @@ async function importSingleHOA(
   } catch (error) {
     const errorMsg = getErrorMessage(error);
     logger.error({ hoaId, error: errorMsg }, 'Transaction failed for HOA');
-    result.errors.push(`Błąd transakcji: ${errorMsg}`);
+    result.errors.push({
+      kind: 'transaction',
+      message: `Błąd transakcji: ${errorMsg}`,
+    });
   }
 
   return result;
@@ -96,7 +102,9 @@ export async function processBatchImport(
 
   for (const result of results) {
     if (result.errors.length > 0 && result.apartments.total === 0) {
-      errors.push({ hoaId: result.hoaId, error: result.errors.join('; ') });
+      errors.push(
+        ...result.errors.map((error) => ({ ...error, hoaId: result.hoaId }))
+      );
     }
   }
 

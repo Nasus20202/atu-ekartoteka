@@ -215,12 +215,16 @@ describe('import-handler additional coverage', () => {
       const paymentsFile = makeFile('hoa1/wplaty.txt');
 
       mockParseWplatyFile.mockResolvedValue({ entries: [{}] });
-      mockValidateWplaty.mockReturnValue(['balance mismatch']);
+      mockValidateWplaty.mockReturnValue([
+        { kind: 'balance-mismatch', message: 'balance mismatch' },
+      ]);
 
       const result = await processBatchImport([paymentsFile]);
 
       expect(result.success).toBe(false);
-      expect(result.results[0].errors).toContain('balance mismatch');
+      expect(result.results[0].errors.map(({ message }) => message)).toContain(
+        'balance mismatch'
+      );
     });
 
     it('reports cross-file mismatches as warnings and still imports', async () => {
@@ -241,7 +245,9 @@ describe('import-handler additional coverage', () => {
       const result = await processBatchImport([chargesFile, paymentsFile]);
 
       expect(result.success).toBe(true);
-      expect(result.results[0].errors).toEqual([]);
+      expect(result.results[0].errors.map(({ message }) => message)).toEqual(
+        []
+      );
       expect(result.results[0].warnings).toContainEqual({
         apartmentExternalId: 'APT001',
         message: 'cross mismatch',
@@ -324,8 +330,10 @@ describe('import-handler additional coverage', () => {
 
       expect(result.success).toBe(false);
       expect(result.results).toHaveLength(1);
-      expect(result.results[0].errors[0]).toContain('Błąd transakcji');
-      expect(result.results[0].errors[0]).toContain('Unexpected parse error');
+      expect(result.results[0].errors[0].message).toContain('Błąd transakcji');
+      expect(result.results[0].errors[0].message).toContain(
+        'Unexpected parse error'
+      );
     });
 
     it('returns non-Error thrown values as "Nieznany błąd" in transaction error', async () => {
@@ -337,7 +345,7 @@ describe('import-handler additional coverage', () => {
       const result = await processBatchImport([lokFile]);
 
       expect(result.success).toBe(false);
-      expect(result.results[0].errors[0]).toContain('Nieznany błąd');
+      expect(result.results[0].errors[0].message).toContain('Nieznany błąd');
     });
   });
 
@@ -514,7 +522,9 @@ describe('import-handler additional coverage', () => {
 
       const result = await processBatchImport([paymentsFile]);
 
-      expect(result.results[0].errors).toEqual([]);
+      expect(result.results[0].errors.map(({ message }) => message)).toEqual(
+        []
+      );
       const [warning] = result.results[0].warnings;
       expect(warning.message).toContain('saldo otwarcia');
       expect(warning.message).toContain('≠');
@@ -529,7 +539,7 @@ describe('import-handler additional coverage', () => {
         makeFile('hoa1/lokal_ost_wys.wmb', '20250131'),
       ]);
 
-      expect(result.results[0].errors).toEqual([
+      expect(result.results[0].errors.map(({ message }) => message)).toEqual([
         'Brak plików do importu dla wspólnoty hoa1.',
       ]);
       expect(mockTransaction).not.toHaveBeenCalled();

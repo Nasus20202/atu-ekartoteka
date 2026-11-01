@@ -18,6 +18,7 @@ describe('buildSkippedRecordWarnings', () => {
 
     expect(warnings).toEqual([
       {
+        kind: 'skipped-records',
         apartmentExternalId: 'HOA-STELES',
         message:
           'Pominięto 2 naliczenia, 1 powiadomienie, 1 wpłatę dla N00001: ' +
@@ -33,6 +34,7 @@ describe('buildSkippedRecordWarnings', () => {
 
     expect(warnings).toEqual([
       {
+        kind: 'skipped-records',
         apartmentExternalId: 'HOA-00009M',
         message:
           'Pominięto 1 wpłatę dla W00097: brak właściciela w lok.txt i w bazie',

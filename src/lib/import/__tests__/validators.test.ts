@@ -174,7 +174,7 @@ describe('validateWplaty', () => {
     });
     const errors = validateWplaty([entry]);
     expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain('W001');
+    expect(errors[0].message).toContain('W001');
   });
 
   it('should handle positive opening balance', () => {

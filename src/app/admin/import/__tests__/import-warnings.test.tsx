@@ -14,6 +14,7 @@ describe('ImportWarnings', () => {
       <ImportWarnings
         warnings={[
           {
+            kind: 'line-total',
             apartmentExternalId: 'APT001',
             period: '202501',
             lineNo: 3,
@@ -37,6 +38,7 @@ describe('ImportWarnings', () => {
       <ImportWarnings
         warnings={[
           {
+            kind: 'skipped-records',
             apartmentExternalId: 'APT-STELES',
             message: 'Pominięto 1 wpłatę dla N00001',
           },
@@ -46,6 +48,42 @@ describe('ImportWarnings', () => {
 
     expect(
       screen.getByText('• Lokal APT-STELES: Pominięto 1 wpłatę dla N00001')
+    ).toBeInTheDocument();
+  });
+
+  it('groups warnings under a heading for each kind', () => {
+    render(
+      <ImportWarnings
+        warnings={[
+          {
+            kind: 'line-total',
+            apartmentExternalId: 'APT001',
+            message: 'suma niezgodna',
+          },
+          {
+            kind: 'skipped-records',
+            apartmentExternalId: 'APT-STELES',
+            message: 'Pominięto 1 wpłatę dla N00001',
+          },
+          {
+            kind: 'line-total',
+            apartmentExternalId: 'APT002',
+            message: 'kolejna suma',
+          },
+        ]}
+      />
+    );
+
+    expect(
+      screen.getByRole('heading', { name: 'Kwoty linii naliczeń (2)' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Pominięte rekordy (1)' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Kwota linii w nal_czynsz.txt nie równa się ilości pomnożonej przez cenę jednostkową.'
+      )
     ).toBeInTheDocument();
   });
 });

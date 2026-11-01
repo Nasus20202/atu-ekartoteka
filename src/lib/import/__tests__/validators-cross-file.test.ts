@@ -238,5 +238,22 @@ describe('validateChargesCrossFile rollup', () => {
     const [warning] = validateChargesCrossFile(nalEntries, paymentEntries);
 
     expect(warning.message).not.toContain('równa wyrównaniom');
+    expect(warning.message).toContain('(niewyjaśniona różnica 50.00)');
+  });
+
+  it('states the part of the difference that settlement lines do not explain', () => {
+    const nalEntries = [
+      makeNal(OWNER, 'APT001', '202512', 500),
+      makeSettlement('202512', -80),
+      makeNal(OWNER, 'APT001', '202512', -20),
+    ];
+    const paymentEntries = [
+      makePayment(OWNER, 'APT001', 2025, [...Array(11).fill(0), 500]),
+    ];
+
+    const [warning] = validateChargesCrossFile(nalEntries, paymentEntries);
+
+    expect(warning.message).not.toContain('równa wyrównaniom');
+    expect(warning.message).toContain('(niewyjaśniona różnica -20.00)');
   });
 });

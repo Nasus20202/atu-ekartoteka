@@ -14,7 +14,7 @@ describe('mergeParsedFiles', () => {
       byId
     );
 
-    expect(merged.errors).toEqual([]);
+    expect(merged.errors.map(({ message }) => message)).toEqual([]);
     expect(merged.entries.map(byId)).toEqual(['a', 'b', 'c']);
   });
 
@@ -27,7 +27,7 @@ describe('mergeParsedFiles', () => {
       byId
     );
 
-    expect(merged.errors).toEqual([
+    expect(merged.errors.map(({ message }) => message)).toEqual([
       'Zduplikowane rekordy w plikach wplaty1.txt i wplaty2.txt (1): b',
     ]);
   });
@@ -38,7 +38,7 @@ describe('mergeParsedFiles', () => {
       byId
     );
 
-    expect(merged.errors).toEqual([]);
+    expect(merged.errors.map(({ message }) => message)).toEqual([]);
   });
 
   it('shortens long duplicate lists', () => {
@@ -51,7 +51,7 @@ describe('mergeParsedFiles', () => {
       byId
     );
 
-    expect(merged.errors).toEqual([
+    expect(merged.errors.map(({ message }) => message)).toEqual([
       'Zduplikowane rekordy w plikach a.txt i b.txt (6): 1, 2, 3, 4, 5, …',
     ]);
   });

@@ -1,6 +1,11 @@
 import { Prisma } from '@/generated/prisma/client';
 import { IMPORT_CREATE_BATCH_SIZE } from '@/lib/import/constants';
-import { EntityStats, HOAContext, TransactionClient } from '@/lib/import/types';
+import {
+  EntityStats,
+  HOAContext,
+  ImportErrorItem,
+  TransactionClient,
+} from '@/lib/import/types';
 import { processInBatches } from '@/lib/import/utils';
 import { ParseResult } from '@/lib/parsers/parser-utils';
 import { ChargeNotificationEntry } from '@/lib/parsers/pow-czynsz-parser';
@@ -44,7 +49,7 @@ export async function importNotifications(
   apartmentMap: Map<string, string>,
   notificationData: ParseResult<ChargeNotificationEntry>,
   stats: EntityStats,
-  errors: string[]
+  errors: ImportErrorItem[]
 ): Promise<void> {
   const { entries, header, footer } = notificationData;
 
@@ -165,7 +170,10 @@ export async function importNotifications(
       );
       stats.created = toCreate.length;
     } catch (error) {
-      errors.push(`Błąd tworzenia powiadomień: ${getErrorMessage(error)}`);
+      errors.push({
+        kind: 'database',
+        message: `Błąd tworzenia powiadomień: ${getErrorMessage(error)}`,
+      });
       stats.skipped += toCreate.length;
     }
   }
@@ -185,9 +193,10 @@ export async function importNotifications(
       });
       stats.updated++;
     } catch (error) {
-      errors.push(
-        `Błąd aktualizacji powiadomienia ${entry.externalId}: ${getErrorMessage(error)}`
-      );
+      errors.push({
+        kind: 'database',
+        message: `Błąd aktualizacji powiadomienia ${entry.externalId}: ${getErrorMessage(error)}`,
+      });
       stats.skipped++;
     }
   }

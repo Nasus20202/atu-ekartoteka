@@ -70,6 +70,7 @@ export function buildSkippedRecordWarnings(
       .join(', ');
 
     return {
+      kind: 'skipped-records',
       apartmentExternalId: apartmentId,
       message: `Pominięto ${skipped} dla ${ownerId}: ${describeReason(ownerId)}`,
     };

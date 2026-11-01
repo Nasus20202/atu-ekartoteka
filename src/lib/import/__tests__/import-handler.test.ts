@@ -136,7 +136,7 @@ describe('import-handler', () => {
 
       expect(result.success).toBe(false);
       expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].error).toContain('Nieprawidłowa struktura');
+      expect(result.errors[0].message).toContain('Nieprawidłowa struktura');
     });
 
     it('should reject unknown file names', async () => {
@@ -146,7 +146,7 @@ describe('import-handler', () => {
 
       expect(result.success).toBe(false);
       expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].error).toContain('Nieznany plik');
+      expect(result.errors[0].message).toContain('Nieznany plik');
     });
 
     it('should handle transaction errors gracefully', async () => {
@@ -160,7 +160,7 @@ describe('import-handler', () => {
 
       expect(result.success).toBe(false);
       expect(result.results).toHaveLength(1);
-      expect(result.results[0].errors).toContain(
+      expect(result.results[0].errors.map(({ message }) => message)).toContain(
         'Błąd transakcji: Database error'
       );
     });

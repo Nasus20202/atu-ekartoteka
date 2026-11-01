@@ -1,3 +1,4 @@
+import type { ImportErrorItem } from '@/lib/import/types';
 import { parseFileToBuffer } from '@/lib/import/utils';
 
 const MAX_DUPLICATE_EXAMPLES = 5;
@@ -9,7 +10,7 @@ export interface ParsedFile<T> {
 
 export interface MergedEntries<T> {
   entries: T[];
-  errors: string[];
+  errors: ImportErrorItem[];
 }
 
 function baseName(file: File): string {
@@ -51,7 +52,10 @@ export function mergeParsedFiles<T>(
   const errors = Array.from(duplicates, ([pair, keys]) => {
     const examples = keys.slice(0, MAX_DUPLICATE_EXAMPLES).join(', ');
     const more = keys.length > MAX_DUPLICATE_EXAMPLES ? ', …' : '';
-    return `Zduplikowane rekordy w plikach ${pair} (${keys.length}): ${examples}${more}`;
+    return {
+      kind: 'duplicate-records' as const,
+      message: `Zduplikowane rekordy w plikach ${pair} (${keys.length}): ${examples}${more}`,
+    };
   });
 
   return {
