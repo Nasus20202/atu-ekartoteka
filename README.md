@@ -127,7 +127,7 @@ The application provides health check endpoints for monitoring:
 
 Admins upload the legacy export in the admin panel, one folder per HOA. Then:
 
-1. **Files are grouped by HOA** and recognised by name: `lok*.txt` (apartments and owners), `nal_czynsz*.txt` (charges), `pow_czynsz*.txt` (current charge notices, HOA header and footer), `wplaty*.txt` (payments and balances) and the three `.wmb` files (the date each export was made).
+1. **Files are grouped by HOA** and recognised by name: `lok*.txt` (apartments and owners), `nal_czynsz*.txt` (charges), `pow_czynsz*.txt` (current charge notices, HOA header and footer), `wplaty*.txt` (payments and balances) and `.wmb` files (the date each export was made). A `.wmb` file goes to the data type of its name prefix (`lok*.wmb`, `nal_czynsz*.wmb`, `pow_czynsz*.wmb`, or the legacy `lokal_ost_wys.wmb`, `nalicz_ost_wys.wmb`, `pow_czynsz_ost_wys.wmb`). Its date is stored only when that type's `.txt` files are in the same import, and the newest date is used when there are several.
 2. **Files are validated.** Money values, balances across years and duplicate records are checked, and problems are reported per file.
 3. **Each HOA is written in one transaction**, in parallel with the others. Existing records are updated, or wiped first with the clean import option. If anything fails, that HOA is not changed at all.
 4. **The result shows** how many records were created, updated, skipped or failed, plus the `.wmb` dates.
