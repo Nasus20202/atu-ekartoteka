@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.9] - 2026-11-01
+
+- build(lint): forbid unarchived openspec changes
+- test(lint): split local rule tests into one file per rule
+- refactor(app): split the import and register pages
+- docs(openspec): archive the session and lint changes
+- build(lint): enforce access helpers and forbid raw SQL
+- refactor(auth): route access checks through shared predicates
+- fix(auth): consume reset and verification tokens atomically
+- fix(auth): force a password change for admin-created users
+- fix(payments): replace history entry when switching payment year
+- refactor(auth): centralise the approved-account check
+- refactor(auth): use the sub claim for the user id
+- refactor(types): type Session.user.role as UserRole
+- fix(auth): resolve admin rights from the database
+- refactor(users): fetch role, status and password flag in one query
+- fix(api): read mustChangePassword from the database
+- fix(auth): sign out when the session user no longer exists
+- test(e2e): retry the HOA card check without waiting on a missing sentinel
+
 ## [0.8.8] - 2026-11-01
 
 - docs(openspec): specify the lok date columns and reimport behaviour
