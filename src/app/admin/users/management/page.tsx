@@ -149,7 +149,7 @@ export default function BulkCreateUsersPage() {
         <TabsContent value="create">
           <ApartmentList
             {...sharedProps}
-            submitLabel={submitting ? 'Tworzenie...' : 'Utwórz konta'}
+            submitLabel={submitting ? 'Zapraszanie...' : 'Zaproś użytkowników'}
             onSubmit={() =>
               setConfirmPreviews(buildAccountPreviews(hoas, selectedIds))
             }

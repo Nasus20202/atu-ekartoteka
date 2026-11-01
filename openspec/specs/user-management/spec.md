@@ -196,8 +196,28 @@ The system SHALL allow admins to create multiple tenant accounts at once for apa
 #### Scenario: Bulk create accounts
 
 - **GIVEN** an authenticated admin selects one or more unassigned apartments in the "create" tab
-- **WHEN** they confirm the bulk creation
+- **WHEN** they press "Zaproś użytkowników" and confirm both steps of the dialog
 - **THEN** one account per unique email is created with `role: TENANT`, `status: APPROVED`, `emailVerified: true`, `mustChangePassword: true`, all matching apartments are assigned, and an activation email with a temporary password is sent to each new user
+
+#### Scenario: Invite button label
+
+- **GIVEN** an authenticated admin on the "create" tab with apartments selected
+- **WHEN** the submit button is shown
+- **THEN** it reads "Zaproś użytkowników" and shows "Zapraszanie..." while the request runs
+
+#### Scenario: Invitation needs two confirmations
+
+- **GIVEN** an admin presses "Zaproś użytkowników" on the "create" tab
+- **WHEN** the first step of the dialog is shown
+- **THEN** the step lists every account to be created, with its email, owner and apartments
+- **AND** no request is sent until the admin presses "Dalej" and then "Zaproś użytkowników" in the second step
+
+#### Scenario: Back or cancel sends nothing
+
+- **GIVEN** the admin is on the second step of the invitation dialog
+- **WHEN** they press "Wstecz", or close the dialog
+- **THEN** no request is sent
+- **AND** "Wstecz" returns to the account list
 
 #### Scenario: Email deduplication on create
 

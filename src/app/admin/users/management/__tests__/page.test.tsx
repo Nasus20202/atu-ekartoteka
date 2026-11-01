@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -156,7 +162,7 @@ describe('BulkCreateUsersPage', () => {
       expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
     });
 
-    const button = screen.getByRole('button', { name: /utwórz konta/i });
+    const button = screen.getByRole('button', { name: /zaproś użytkowników/i });
     expect(button).toBeDisabled();
   });
 
@@ -176,7 +182,7 @@ describe('BulkCreateUsersPage', () => {
       expect(screen.getByText(/Wybrano 1 z 3/i)).toBeInTheDocument();
     });
 
-    const button = screen.getByRole('button', { name: /utwórz konta/i });
+    const button = screen.getByRole('button', { name: /zaproś użytkowników/i });
     expect(button).not.toBeDisabled();
   });
 
@@ -211,7 +217,7 @@ describe('BulkCreateUsersPage', () => {
     const checkbox = screen.getByLabelText(/mieszkanie 10/i);
     fireEvent.click(checkbox);
 
-    const button = screen.getByRole('button', { name: /utwórz konta/i });
+    const button = screen.getByRole('button', { name: /zaproś użytkowników/i });
     fireEvent.click(button);
 
     await waitFor(() => {
@@ -248,14 +254,17 @@ describe('BulkCreateUsersPage', () => {
     );
     fireEvent.click(hoaCheckbox);
 
-    const button = screen.getByRole('button', { name: /utwórz konta/i });
+    const button = screen.getByRole('button', { name: /zaproś użytkowników/i });
     fireEvent.click(button);
 
     await waitFor(() => {
       expect(screen.getByText(/Potwierdź tworzenie kont/i)).toBeInTheDocument();
     });
+    fireEvent.click(screen.getByRole('button', { name: 'Dalej' }));
     fireEvent.click(
-      screen.getByRole('button', { name: /Potwierdź i utwórz/i })
+      within(screen.getByRole('dialog')).getByRole('button', {
+        name: /Zaproś użytkowników/i,
+      })
     );
 
     await waitFor(() => {
@@ -291,14 +300,17 @@ describe('BulkCreateUsersPage', () => {
     const checkbox = screen.getByLabelText(/mieszkanie 10/i);
     fireEvent.click(checkbox);
 
-    const button = screen.getByRole('button', { name: /utwórz konta/i });
+    const button = screen.getByRole('button', { name: /zaproś użytkowników/i });
     fireEvent.click(button);
 
     await waitFor(() => {
       expect(screen.getByText(/Potwierdź tworzenie kont/i)).toBeInTheDocument();
     });
+    fireEvent.click(screen.getByRole('button', { name: 'Dalej' }));
     fireEvent.click(
-      screen.getByRole('button', { name: /Potwierdź i utwórz/i })
+      within(screen.getByRole('dialog')).getByRole('button', {
+        name: /Zaproś użytkowników/i,
+      })
     );
 
     await waitFor(() => {
