@@ -19,7 +19,9 @@ test.describe.serial('Change Password', () => {
   }) => {
     await page.waitForURL('**/change-password**', { timeout: 10000 });
 
-    await expect(page.getByText('Ustaw nowe hasło')).toBeVisible();
+    await expect(
+      page.getByText('Ustaw nowe hasło', { exact: true })
+    ).toBeVisible();
     await expect(
       page.getByText('Musisz ustawić nowe hasło przed kontynuowaniem.')
     ).toBeVisible();

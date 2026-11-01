@@ -2,6 +2,8 @@
  * PDF download E2E tests - admin flows
  */
 
+import type { Page } from '@playwright/test';
+
 import { expect, test } from '../fixtures';
 import { CURRENT_MONTH_YEAR } from '../utils/date-utils';
 
@@ -17,30 +19,25 @@ async function expandCurrentChargesMonth(
     .click();
 }
 
-async function navigateToApartmentDetail(
-  adminPage: import('@playwright/test').Page
-) {
+async function navigateToApartmentDetail(adminPage: Page) {
   await adminPage.goto('/admin/apartments');
 
-  await expect(adminPage.getByText('TEST01')).toBeVisible();
-
-  const hoaCard = adminPage
+  // Open the resolved links directly: the list cards overflow narrow viewports
+  // and their buttons are unreliable click targets on mobile.
+  const hoaHref = await adminPage
     .locator('.text-card-foreground')
-    .filter({ hasText: 'TEST01' });
-  await hoaCard.getByRole('button', { name: /Zobacz mieszkania/i }).click();
+    .filter({ hasText: 'TEST01' })
+    .getByRole('link', { name: /Zobacz mieszkania/i })
+    .getAttribute('href');
 
-  await adminPage.waitForURL(/\/admin\/apartments\/[a-f0-9-]+$/, {
-    timeout: 10000,
-  });
+  await adminPage.goto(hoaHref!);
 
-  await adminPage
-    .getByRole('button', { name: /Zobacz szczegóły/i })
+  const apartmentHref = await adminPage
+    .getByRole('link', { name: /Zobacz szczegóły/i })
     .first()
-    .click();
+    .getAttribute('href');
 
-  await adminPage.waitForURL(/\/admin\/apartments\/[a-f0-9-]+\/[a-f0-9-]+$/, {
-    timeout: 10000,
-  });
+  await adminPage.goto(apartmentHref!);
 }
 
 test.describe('PDF Download - Admin', () => {
