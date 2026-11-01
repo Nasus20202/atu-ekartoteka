@@ -5,14 +5,19 @@ import { AuthMethod } from '@/lib/types';
 
 const {
   mockPasswordResetFindUnique,
-  mockPasswordResetUpdate,
+  mockPasswordResetUpdateMany,
   mockUserUpdate,
   mockTransaction,
 } = vi.hoisted(() => ({
   mockPasswordResetFindUnique: vi.fn(),
-  mockPasswordResetUpdate: vi.fn(),
+  mockPasswordResetUpdateMany: vi.fn(),
   mockUserUpdate: vi.fn(),
-  mockTransaction: vi.fn((operations) => Promise.all(operations)),
+  mockTransaction: vi.fn(async (callback) =>
+    callback({
+      passwordReset: { updateMany: mockPasswordResetUpdateMany },
+      user: { update: mockUserUpdate },
+    })
+  ),
 }));
 
 // Mock dependencies
@@ -26,7 +31,6 @@ vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     passwordReset: {
       findUnique: mockPasswordResetFindUnique,
-      update: mockPasswordResetUpdate,
     },
     user: {
       update: mockUserUpdate,
@@ -53,6 +57,7 @@ import { POST } from '@/app/api/reset-password/route';
 describe('POST /api/reset-password', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockPasswordResetUpdateMany.mockResolvedValue({ count: 1 });
   });
 
   it('should return 400 if token or password is missing', async () => {
@@ -210,10 +215,6 @@ describe('POST /api/reset-password', () => {
     };
 
     mockPasswordResetFindUnique.mockResolvedValue(validToken);
-    mockTransaction.mockResolvedValue([
-      { ...validToken.user, password: 'new-hashed' },
-      { ...validToken, used: true },
-    ]);
 
     const req = new NextRequest('http://localhost:3000/api/reset-password', {
       method: 'POST',
@@ -229,7 +230,44 @@ describe('POST /api/reset-password', () => {
 
     expect(response.status).toBe(200);
     expect(data.message).toBe('Hasło zostało zmienione pomyślnie');
-    expect(mockTransaction).toHaveBeenCalled();
+    expect(mockPasswordResetUpdateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ id: 'reset-123', used: false }),
+        data: { used: true },
+      })
+    );
+    expect(mockUserUpdate).toHaveBeenCalledWith({
+      where: { id: 'user-123' },
+      data: { password: 'hashed-password' },
+    });
+  });
+
+  it('should not change the password when the token was consumed concurrently', async () => {
+    mockPasswordResetFindUnique.mockResolvedValue({
+      id: 'reset-123',
+      userId: 'user-123',
+      expiresAt: new Date(Date.now() + 3600000),
+      used: false,
+      user: { id: 'user-123', authMethod: AuthMethod.CREDENTIALS },
+    });
+    mockPasswordResetUpdateMany.mockResolvedValue({ count: 0 });
+
+    const req = new NextRequest('http://localhost:3000/api/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({
+        token: 'valid-token',
+        password: 'newpass123',
+        turnstileToken: 'test-turnstile-token',
+      }),
+    });
+
+    const response = await POST(req);
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: 'Token został już użyty',
+    });
+    expect(mockUserUpdate).not.toHaveBeenCalled();
   });
 
   it('should block OAuth users from resetting password via token', async () => {
@@ -278,7 +316,7 @@ describe('POST /api/reset-password', () => {
 
     // Ensure no password update was attempted
     expect(mockUserUpdate).not.toHaveBeenCalled();
-    expect(mockPasswordResetUpdate).not.toHaveBeenCalled();
+    expect(mockPasswordResetUpdateMany).not.toHaveBeenCalled();
   });
 
   it('should allow credentials users to reset password via token', async () => {
@@ -307,9 +345,6 @@ describe('POST /api/reset-password', () => {
     };
 
     mockPasswordResetFindUnique.mockResolvedValue(mockResetToken);
-    mockTransaction.mockImplementation(() => {
-      return Promise.resolve([{}, {}]);
-    });
 
     const req = new NextRequest('http://localhost:3000/api/reset-password', {
       method: 'POST',

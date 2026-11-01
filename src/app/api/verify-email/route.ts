@@ -66,7 +66,21 @@ export async function POST(req: NextRequest) {
     }
 
     // Update user and verification record
-    await verifyEmailTransaction(verification.userId, verification.id);
+    const consumed = await verifyEmailTransaction(
+      verification.userId,
+      verification.id
+    );
+
+    if (!consumed) {
+      logger.info(
+        { userId: verification.userId },
+        'Verification token consumed by a concurrent request'
+      );
+      return NextResponse.json(
+        { error: 'Ten token został już użyty' },
+        { status: 400 }
+      );
+    }
 
     logger.info(
       { userId: verification.userId, email: verification.user.email },

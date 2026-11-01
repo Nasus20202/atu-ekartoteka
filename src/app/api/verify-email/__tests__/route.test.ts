@@ -50,6 +50,7 @@ describe('POST /api/verify-email', () => {
     vi.clearAllMocks();
     mocks.findVerificationByCode.mockResolvedValue(verification);
     mocks.isVerificationExpired.mockReturnValue(false);
+    mocks.verifyEmailTransaction.mockResolvedValue(true);
   });
 
   it('requires a token', async () => {
@@ -101,6 +102,18 @@ describe('POST /api/verify-email', () => {
       'verification-1'
     );
     expect(mocks.recordEmailVerification).toHaveBeenCalledWith('success');
+  });
+
+  it('rejects a token consumed by a concurrent request', async () => {
+    mocks.verifyEmailTransaction.mockResolvedValue(false);
+
+    const response = await POST(postRequest({ token: 'abc' }));
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: 'Ten token został już użyty',
+    });
+    expect(mocks.recordEmailVerification).not.toHaveBeenCalled();
   });
 
   it('returns 500 and records a failure when verification throws', async () => {

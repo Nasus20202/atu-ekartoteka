@@ -91,11 +91,22 @@ export async function POST(req: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, BCRYPT_COST);
 
     // Update password and mark token as used
-    await resetPasswordTransaction(
+    const consumed = await resetPasswordTransaction(
       resetToken.userId,
       hashedPassword,
       resetToken.id
     );
+
+    if (!consumed) {
+      logger.warn(
+        { userId: resetToken.userId },
+        'Password reset token was consumed by a concurrent request'
+      );
+      return NextResponse.json(
+        { error: 'Token został już użyty' },
+        { status: 400 }
+      );
+    }
 
     logger.info(
       { email: resetToken.user.email, userId: resetToken.userId },
