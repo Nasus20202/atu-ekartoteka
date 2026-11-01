@@ -4,10 +4,10 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { PaymentYearSelect } from '@/components/payments/payment-year-select';
 
-const { mockPush } = vi.hoisted(() => ({ mockPush: vi.fn() }));
+const { mockReplace } = vi.hoisted(() => ({ mockReplace: vi.fn() }));
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: mockPush }),
+  useRouter: () => ({ replace: mockReplace }),
 }));
 
 describe('PaymentYearSelect', () => {
@@ -21,7 +21,7 @@ describe('PaymentYearSelect', () => {
     );
   });
 
-  it('navigates to the chosen payment year', async () => {
+  it('replaces the history entry when navigating to the chosen payment year', async () => {
     render(
       <PaymentYearSelect apartmentId="apt-1" year={2025} years={[2025, 2024]} />
     );
@@ -31,6 +31,6 @@ describe('PaymentYearSelect', () => {
       await screen.findByRole('menuitemradio', { name: 'Rok 2024' })
     );
 
-    expect(mockPush).toHaveBeenCalledWith('/dashboard/payments/apt-1/2024');
+    expect(mockReplace).toHaveBeenCalledWith('/dashboard/payments/apt-1/2024');
   });
 });

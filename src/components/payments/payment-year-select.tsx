@@ -25,7 +25,7 @@ export function PaymentYearSelect({
       value={String(year)}
       options={years.map((y) => ({ label: `Rok ${y}`, value: String(y) }))}
       onValueChange={(next) =>
-        router.push(getPaymentYearHref(apartmentId, next))
+        router.replace(getPaymentYearHref(apartmentId, next))
       }
     />
   );
