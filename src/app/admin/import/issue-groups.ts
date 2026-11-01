@@ -6,6 +6,8 @@ export interface IssueGroupInfo {
 export interface IssueGroup<K extends string, T> extends IssueGroupInfo {
   kind: K;
   items: T[];
+  // Lines shown under the description, e.g. totals per year
+  summary?: string[];
 }
 
 /** Groups items by kind, in the key order of `groups`; empty groups are left out. */
