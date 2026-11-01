@@ -92,4 +92,16 @@ W00163#hoa1-hoa1-00000-00002M#2025#01/01/2025#30/11/2025#0#300#0#0#318#310#318#3
     expect(result.entries[0].totalCharges.toNumber()).toBe(0);
     expect(result.entries[0].closingBalance.toNumber()).toBe(10);
   });
+
+  it('parses CR-only exports', async () => {
+    const months = Array(24).fill('0').join('#');
+    const content = [
+      `W1#APT1#2025#01/01/2025#31/12/2025#0#0#0#0#${months}#10,00`,
+      `W2#APT2#2025#01/01/2025#31/12/2025#0#0#0#0#${months}#20,00`,
+    ].join('\r');
+
+    const result = await parseWplatyFile(iconv.encode(content, 'iso-8859-2'));
+
+    expect(result.entries).toHaveLength(2);
+  });
 });

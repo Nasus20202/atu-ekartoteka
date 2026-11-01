@@ -26,7 +26,10 @@ export async function parseNalCzynszBuffer(
   buffer: Buffer
 ): Promise<NalCzynszEntry[]> {
   const content = await decodeBuffer(buffer);
-  const lines = content.split(/\r?\n/).filter((line: string) => line.trim());
+  // Legacy exports may end lines with CR only, CRLF or LF
+  const lines = content
+    .split(/\r\n|\r|\n/)
+    .filter((line: string) => line.trim());
 
   const entries: NalCzynszEntry[] = [];
   const seen = new Map<string, number>();

@@ -22,7 +22,10 @@ export async function parseApartmentBuffer(
   buffer: Buffer
 ): Promise<ApartmentEntry[]> {
   const content = await decodeBuffer(buffer);
-  const lines = content.split('\n').filter((line: string) => line.trim());
+  // Legacy exports may end lines with CR only, CRLF or LF
+  const lines = content
+    .split(/\r\n|\r|\n/)
+    .filter((line: string) => line.trim());
 
   const entries: ApartmentEntry[] = [];
 

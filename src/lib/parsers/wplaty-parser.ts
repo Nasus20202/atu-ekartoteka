@@ -26,7 +26,8 @@ export async function parseWplatyFile(
   buffer: Buffer
 ): Promise<ParseResult<PaymentEntry>> {
   const content = await decodeBuffer(buffer);
-  const lines = content.split('\n');
+  // Legacy exports may end lines with CR only, CRLF or LF
+  const lines = content.split(/\r\n|\r|\n/);
   const entries: PaymentEntry[] = [];
 
   for (const line of lines) {
