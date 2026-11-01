@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.8] - 2026-11-01
+
+- docs(openspec): specify the lok date columns and reimport behaviour
+- test(e2e): stabilise the auth and PDF specs
+- refactor(admin): name the notices log and the shared dialog animation
+- fix(admin): keep the HOA list cards inside the mobile viewport
+- fix(dates): show stored UTC dates as calendar dates
+- fix(import): split apartment, charge and payment files on any line ending
+- refactor(import): report the year on errors and load payments once
+- test(e2e): import one shared TEST06 fixture in both import specs
+- feat(admin): show the owner period on the apartment page
+- test(e2e): update stale admin visual baselines
+- test(e2e): fix stale approve selectors, notice race and register screenshot
+- test(e2e): select the test HOA by id and compare owner dates in UTC
+- feat(import): list candidate credits and yearly totals for charge gaps
+- test(fixtures): default apartment validFrom to a date
+- style(admin): spread the HOA name and badge across the year grid row
+- feat(import): state the difference when a charge gap matches settlements
+- style(apartments): drop hover shadow from apartment and HOA cards
+- feat(users): confirm bulk invitations in two steps
+- docs(openspec): archive owner validity change and sync specs
+- feat(import): group import errors and warnings by kind
+- feat(import): track owner validity periods from lok.txt
+- feat(admin): show year balances in the import validation results
+- docs(openspec): specify year balance validation
+- feat(import): validate year balances across imported years
+- feat(admin): show HOA headers and footers in a dialog
+- refactor(ui): replace alert dialog with dialog and popover primitives
+- docs(openspec): specify page title rules
+- feat(metadata): set a browser title on every page
+- chore(deps): update dependency nodemailer to v10.3.1 (#834)
+- chore(deps): update dependency nodemailer to v10.3.0 (#832)
+- chore(deps): update dependency lucide-react to v1.64.0 (#831)
+
 ## [0.8.7] - 2026-11-01
 
 - feat(payments): calculate monthly charges and balances from charge records (#830)
