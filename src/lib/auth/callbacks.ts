@@ -9,7 +9,6 @@ import { findUserSessionFields } from '@/lib/queries/users/find-user-session-fie
 import { UserRole } from '@/lib/types';
 
 interface ExtendedUser {
-  id: string;
   email: string;
   name: string | null;
   role: UserRole;
@@ -22,17 +21,16 @@ export const callbacks: NextAuthConfig['callbacks'] = {
   async jwt({ token, user, trigger }) {
     if (user) {
       const extendedUser = user as ExtendedUser;
-      token.id = extendedUser.id;
       token.role = extendedUser.role;
       token.mustChangePassword = extendedUser.mustChangePassword;
     }
 
-    if (trigger === 'update' && token.id) {
-      const freshUser = await findUserSessionFields(token.id as string);
+    if (trigger === 'update' && token.sub) {
+      const freshUser = await findUserSessionFields(token.sub);
 
       if (!freshUser) {
         logger.warn(
-          { userId: token.id },
+          { userId: token.sub },
           'Session refresh failed: user no longer exists, signing out'
         );
         return null;
@@ -46,9 +44,9 @@ export const callbacks: NextAuthConfig['callbacks'] = {
   },
 
   async session({ session, token }) {
-    if (session.user && token.id) {
+    if (session.user && token.sub) {
       Object.assign(session.user, {
-        id: token.id as string,
+        id: token.sub,
         role: token.role as UserRole,
         mustChangePassword: token.mustChangePassword as boolean,
       });
