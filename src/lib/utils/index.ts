@@ -54,6 +54,21 @@ export const formatDate = (date: Date): string => {
   });
 };
 
+/**
+ * A calendar date stored at midnight UTC, such as an owner period or a WMB
+ * export date. Formatting it in the local zone would shift the day west of UTC,
+ * so the date is read back in the zone it was written in.
+ */
+const UTC_DATE_FORMAT: Intl.DateTimeFormatOptions = {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  timeZone: 'UTC',
+};
+
+export const formatUtcDate = (date: Date): string =>
+  date.toLocaleDateString(APP_LOCALE, UTC_DATE_FORMAT);
+
 const SHARE_PERCENT_DECIMALS = 4;
 
 const sharePercentFormat = new Intl.NumberFormat(APP_LOCALE, {

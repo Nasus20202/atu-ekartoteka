@@ -6,7 +6,7 @@ import { ImportWarnings } from '@/app/admin/import/import-warnings';
 import type { EntityStats, ImportResult } from '@/app/admin/import/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatDate } from '@/lib/utils';
+import { formatUtcDate } from '@/lib/utils';
 import { downloadTextFile } from '@/lib/utils/download-file';
 import { serialiseErrorsToTxt } from '@/lib/utils/export-errors';
 
@@ -83,18 +83,18 @@ export function ImportResultCard({ result }: ImportResultCardProps) {
           <div className="mt-1 flex flex-wrap gap-3 text-xs text-muted-foreground">
             {result.apartmentsDataDate && (
               <span>
-                Mieszkania: {formatDate(new Date(result.apartmentsDataDate))}
+                Mieszkania: {formatUtcDate(new Date(result.apartmentsDataDate))}
               </span>
             )}
             {result.chargesDataDate && (
               <span>
-                Naliczenia: {formatDate(new Date(result.chargesDataDate))}
+                Naliczenia: {formatUtcDate(new Date(result.chargesDataDate))}
               </span>
             )}
             {result.notificationsDataDate && (
               <span>
                 Powiadomienia:{' '}
-                {formatDate(new Date(result.notificationsDataDate))}
+                {formatUtcDate(new Date(result.notificationsDataDate))}
               </span>
             )}
           </div>
