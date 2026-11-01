@@ -9,6 +9,8 @@ import prettierPlugin from 'eslint-plugin-prettier';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import unusedImports from 'eslint-plugin-unused-imports';
 
+import localRules from './eslint-rules/index.mjs';
+
 const eslintConfig = defineConfig([
   ...fixupConfigRules(nextVitals),
   ...fixupConfigRules(nextTs),
@@ -41,6 +43,12 @@ const eslintConfig = defineConfig([
 
       // Prevent duplicate imports and merge them
       'import/no-duplicates': ['error', { 'prefer-inline': true }],
+
+      // Keep modules small; blank lines and comments are not counted
+      'max-lines': [
+        'error',
+        { max: 200, skipBlankLines: true, skipComments: true },
+      ],
 
       // Forbid relative imports - enforce @ alias
       'no-restricted-imports': [
@@ -96,6 +104,13 @@ const eslintConfig = defineConfig([
       '@typescript-eslint/no-explicit-any': 'off',
     },
   },
+  // Test files may grow beyond the module size limit
+  {
+    files: ['**/__tests__/**', '**/*.test.ts', '**/*.test.tsx', 'e2e/**/*.ts'],
+    rules: {
+      'max-lines': 'off',
+    },
+  },
   // E2E tests - Playwright ESLint rules
   {
     files: ['e2e/**/*.ts'],
@@ -117,6 +132,38 @@ const eslintConfig = defineConfig([
   // Performance tests - k6 scripts and their seed run outside the @ alias
   {
     files: ['perf/**/*.ts'],
+    rules: {
+      'no-restricted-imports': 'off',
+    },
+  },
+  // Access checks go through the shared predicates; the comparison itself lives
+  // in the predicate modules so a change of policy cannot miss a call site.
+  {
+    files: ['src/**/*.ts', 'src/**/*.tsx'],
+    ignores: [
+      '**/__tests__/**',
+      '**/*.test.ts',
+      '**/*.test.tsx',
+      'src/lib/auth/account-access.ts',
+      'src/lib/auth/admin-access.ts',
+    ],
+    plugins: { local: localRules },
+    rules: {
+      'local/prefer-access-helpers': 'error',
+    },
+  },
+  // Raw SQL bypasses the Prisma query API and is only allowed in migrations.
+  {
+    files: ['src/**/*.ts', 'src/**/*.tsx'],
+    ignores: ['**/__tests__/**', '**/*.test.ts', '**/*.test.tsx'],
+    plugins: { local: localRules },
+    rules: {
+      'local/no-raw-sql': 'error',
+    },
+  },
+  // Local rule modules and their tests are loaded by path, not through the alias.
+  {
+    files: ['eslint-rules/**', 'eslint.config.mjs'],
     rules: {
       'no-restricted-imports': 'off',
     },
