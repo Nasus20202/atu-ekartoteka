@@ -28,14 +28,25 @@ async function findTestHoaId(): Promise<string> {
   }
 }
 
+// Short lists fit on the first API page and render no sentinel at all, so the
+// scroll below must never wait on it longer than a single load.
+const SENTINEL_SCROLL_TIMEOUT_MS = 2000;
+
 /** The HOA list loads more HOAs as the sentinel scrolls into view, so keep scrolling until the card is rendered. */
 async function revealCard(page: Page, card: Locator): Promise<void> {
   const sentinel = page.getByTestId('infinite-scroll-sentinel');
   await expect(async () => {
-    if ((await card.count()) === 0) {
-      await sentinel.scrollIntoViewIfNeeded();
+    if ((await card.count()) > 0) return;
+
+    // The list may still be loading and the sentinel may never appear, so retry
+    // the whole check instead of blocking until the test times out.
+    if ((await sentinel.count()) === 0)
       throw new Error('HOA card not loaded yet');
-    }
+
+    await sentinel.scrollIntoViewIfNeeded({
+      timeout: SENTINEL_SCROLL_TIMEOUT_MS,
+    });
+    throw new Error('HOA card not loaded yet');
   }).toPass();
 }
 
