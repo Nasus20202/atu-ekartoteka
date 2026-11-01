@@ -261,7 +261,7 @@
   animation-fill-mode: both;
 }
 
-/* Modal intro and outro, shared by every AlertDialog; the outro keeps the modal mounted until it ends */
+/* Modal intro and outro, shared by every dialog; the outro keeps the modal mounted until it ends */
 @keyframes modal-overlay-in {
   from {
     opacity: 0;

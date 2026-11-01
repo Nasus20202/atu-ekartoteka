@@ -9,7 +9,7 @@ const logger = createLogger('api:admin:hoa:notices');
 
 export async function GET() {
   try {
-    const { response } = await requireAdmin();
+    const { response } = await requireAdmin('Unauthorized HOA notices attempt');
     if (response) return response;
 
     const homeownersAssociations = await findHoaNotices();
