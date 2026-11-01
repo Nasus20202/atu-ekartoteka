@@ -160,9 +160,90 @@ describe('AdminImportPage', () => {
     expect(screen.getByLabelText(/pomiń walidację/i)).not.toBeChecked();
   });
 
-  it('cancels clean import when confirmation is rejected', async () => {
+  it('asks for double confirmation before enabling clean import', async () => {
+    const user = userEvent.setup();
+    render(<AdminImportPage />);
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith('/api/admin/stats');
+    });
+
+    await user.click(screen.getByLabelText(/czysty import/i));
+
+    await waitFor(() => {
+      expect(confirmMock).toHaveBeenCalledTimes(2);
+    });
+    expect(confirmMock.mock.calls[0][0].title).toBe(
+      'Ostrzeżenie – czysty import'
+    );
+    expect(confirmMock.mock.calls[1][0].title).toBe(
+      'Potwierdzenie – czysty import'
+    );
+
+    expect(screen.getByLabelText(/czysty import/i)).toBeChecked();
+  });
+
+  it('keeps clean import disabled when the warning is rejected', async () => {
     const user = userEvent.setup();
     confirmMock.mockResolvedValueOnce(false);
+
+    render(<AdminImportPage />);
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith('/api/admin/stats');
+    });
+
+    await user.click(screen.getByLabelText(/czysty import/i));
+
+    await waitFor(() => {
+      expect(confirmMock).toHaveBeenCalledTimes(1);
+    });
+
+    expect(screen.getByLabelText(/czysty import/i)).not.toBeChecked();
+  });
+
+  it('keeps clean import disabled when the final confirmation is rejected', async () => {
+    const user = userEvent.setup();
+    confirmMock.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
+
+    render(<AdminImportPage />);
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith('/api/admin/stats');
+    });
+
+    await user.click(screen.getByLabelText(/czysty import/i));
+
+    await waitFor(() => {
+      expect(confirmMock).toHaveBeenCalledTimes(2);
+    });
+
+    expect(screen.getByLabelText(/czysty import/i)).not.toBeChecked();
+  });
+
+  it('allows disabling clean import without confirmation', async () => {
+    const user = userEvent.setup();
+    render(<AdminImportPage />);
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith('/api/admin/stats');
+    });
+
+    await user.click(screen.getByLabelText(/czysty import/i));
+    await waitFor(() => {
+      expect(screen.getByLabelText(/czysty import/i)).toBeChecked();
+    });
+
+    confirmMock.mockClear();
+    await user.click(screen.getByLabelText(/czysty import/i));
+
+    expect(confirmMock).not.toHaveBeenCalled();
+    expect(screen.getByLabelText(/czysty import/i)).not.toBeChecked();
+  });
+
+  it('cancels the import when the clean import confirmation is rejected', async () => {
+    const user = userEvent.setup();
+    confirmMock.mockResolvedValue(true);
 
     render(<AdminImportPage />);
 
@@ -176,6 +257,12 @@ describe('AdminImportPage', () => {
 
     fireEvent.change(input, { target: { files: [file] } });
     await user.click(screen.getByLabelText(/czysty import/i));
+    await waitFor(() => {
+      expect(screen.getByLabelText(/czysty import/i)).toBeChecked();
+    });
+
+    confirmMock.mockClear();
+    confirmMock.mockResolvedValueOnce(false);
     await user.click(
       screen.getByRole('button', { name: /importuj \(z usunięciem danych\)/i })
     );
@@ -183,6 +270,9 @@ describe('AdminImportPage', () => {
     await waitFor(() => {
       expect(confirmMock).toHaveBeenCalledTimes(1);
     });
+    expect(confirmMock.mock.calls[0][0].title).toBe(
+      'Potwierdzenie czystego importu'
+    );
 
     expect(fetch).toHaveBeenCalledTimes(1);
   });

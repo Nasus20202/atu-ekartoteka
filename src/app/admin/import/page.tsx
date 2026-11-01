@@ -6,6 +6,8 @@ import { useState } from 'react';
 import { DatabaseStatsCard } from '@/app/admin/import/database-stats-card';
 import {
   CLEAN_IMPORT_CONFIRMATION,
+  CLEAN_IMPORT_FINAL_CONFIRMATION,
+  CLEAN_IMPORT_WARNING,
   SKIP_VALIDATION_CONFIRMATION,
   SKIP_VALIDATION_FINAL_CONFIRMATION,
 } from '@/app/admin/import/import-confirmations';
@@ -16,7 +18,10 @@ import { useDatabaseStats } from '@/app/admin/import/use-database-stats';
 import { ValidateDatabaseCard } from '@/app/admin/import/validate-database-card';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
-import { useConfirm } from '@/components/providers/confirm-dialog';
+import {
+  type ConfirmOptions,
+  useConfirm,
+} from '@/components/providers/confirm-dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -102,22 +107,45 @@ export default function AdminImportPage() {
     }
   }
 
-  async function handleSkipValidationChange(checked: boolean) {
-    if (checked) {
-      const first = await confirm(SKIP_VALIDATION_CONFIRMATION);
+  // Each step is shown only after the previous one is confirmed
+  async function confirmSteps(steps: ConfirmOptions[]) {
+    for (const step of steps) {
+      const confirmed = await confirm(step);
 
-      if (!first) {
-        return;
-      }
-
-      const second = await confirm(SKIP_VALIDATION_FINAL_CONFIRMATION);
-
-      if (!second) {
-        return;
+      if (!confirmed) {
+        return false;
       }
     }
 
+    return true;
+  }
+
+  async function handleSkipValidationChange(checked: boolean) {
+    if (
+      checked &&
+      !(await confirmSteps([
+        SKIP_VALIDATION_CONFIRMATION,
+        SKIP_VALIDATION_FINAL_CONFIRMATION,
+      ]))
+    ) {
+      return;
+    }
+
     setSkipValidation(checked);
+  }
+
+  async function handleCleanImportChange(checked: boolean) {
+    if (
+      checked &&
+      !(await confirmSteps([
+        CLEAN_IMPORT_WARNING,
+        CLEAN_IMPORT_FINAL_CONFIRMATION,
+      ]))
+    ) {
+      return;
+    }
+
+    setCleanImport(checked);
   }
 
   return (
@@ -159,7 +187,9 @@ export default function AdminImportPage() {
             <Checkbox
               id="cleanImport"
               checked={cleanImport}
-              onCheckedChange={(checked) => setCleanImport(checked === true)}
+              onCheckedChange={(checked) => {
+                void handleCleanImportChange(checked === true);
+              }}
               disabled={loading}
             />
             <Label

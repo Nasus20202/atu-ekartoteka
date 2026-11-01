@@ -14,12 +14,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { getErrorMessage } from '@/lib/utils/error-message';
 
 const VALIDATION_FAILED_MESSAGE = 'Walidacja danych nie powiodła się';
 
 export function ValidateDatabaseCard() {
   const [loading, setLoading] = useState(false);
+  const [skipFullValidation, setSkipFullValidation] = useState(false);
   const [response, setResponse] = useState<ImportResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,6 +34,8 @@ export function ValidateDatabaseCard() {
     try {
       const res = await fetch('/api/admin/import/validate', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ skipFullValidation }),
       });
       const data = await res.json();
 
@@ -51,11 +56,28 @@ export function ValidateDatabaseCard() {
       <CardHeader>
         <CardTitle>Waliduj dane w bazie</CardTitle>
         <CardDescription>
-          Uruchamia te same kontrole co przy imporcie na danych zapisanych w
-          bazie. Żadne dane nie są zmieniane.
+          Sprawdza salda lat i dane zapisane w bazie. Żadne dane nie są
+          zmieniane.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="skipFullValidation"
+            checked={skipFullValidation}
+            onCheckedChange={(checked) =>
+              setSkipFullValidation(checked === true)
+            }
+            disabled={loading}
+          />
+          <Label
+            htmlFor="skipFullValidation"
+            className="cursor-pointer text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            Pomiń pełną walidację
+          </Label>
+        </div>
+
         <Button
           onClick={() => {
             void handleValidate();
