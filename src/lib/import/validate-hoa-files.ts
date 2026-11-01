@@ -5,6 +5,39 @@ import {
   validateNalCzynsz,
   validateWplaty,
 } from '@/lib/import/validators';
+import type { NalCzynszEntry } from '@/lib/parsers/nal-czynsz-parser';
+import type { PaymentEntry } from '@/lib/parsers/wplaty-parser';
+
+/**
+ * Runs the file checks on charge and payment entries, whether parsed from
+ * files or loaded from the database. Adds warnings and blocking errors to the
+ * result; returns false when the entries must not be imported.
+ */
+export function runValidators(
+  chargeEntries: NalCzynszEntry[] | null | undefined,
+  paymentEntries: PaymentEntry[] | undefined,
+  result: HOAImportResult
+): boolean {
+  if (chargeEntries) {
+    result.warnings.push(...validateNalCzynsz(chargeEntries));
+  }
+
+  if (paymentEntries) {
+    const wplatyErrors = validateWplaty(paymentEntries);
+    if (wplatyErrors.length > 0) {
+      result.errors.push(...wplatyErrors);
+      return false;
+    }
+  }
+
+  if (chargeEntries && paymentEntries) {
+    result.warnings.push(
+      ...validateChargesCrossFile(chargeEntries, paymentEntries)
+    );
+  }
+
+  return true;
+}
 
 /**
  * Adds warnings and blocking errors to the result.
@@ -21,31 +54,9 @@ export function validateHoaFiles(
     return false;
   }
 
-  if (chargeEntries && !options.skipValidation) {
-    const nalWarnings = validateNalCzynsz(chargeEntries);
-    if (nalWarnings.length > 0) {
-      result.warnings.push(...nalWarnings);
-    }
+  if (options.skipValidation) {
+    return true;
   }
 
-  if (paymentData && !options.skipValidation) {
-    const wplatyErrors = validateWplaty(paymentData.entries);
-    if (wplatyErrors.length > 0) {
-      result.errors.push(...wplatyErrors);
-      return false;
-    }
-  }
-
-  if (chargeEntries && paymentData && !options.skipValidation) {
-    const crossErrors = validateChargesCrossFile(
-      chargeEntries,
-      paymentData.entries
-    );
-    if (crossErrors.length > 0) {
-      result.errors.push(...crossErrors);
-      return false;
-    }
-  }
-
-  return true;
+  return runValidators(chargeEntries, paymentData?.entries, result);
 }

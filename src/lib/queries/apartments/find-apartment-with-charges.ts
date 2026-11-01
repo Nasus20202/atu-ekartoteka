@@ -7,7 +7,7 @@ export function findApartmentWithCharges(
   apartmentId: string,
   userId: string,
   startYear: number,
-  cutoffPeriod: string | null
+  cutoffPeriod: string
 ) {
   return prisma.apartment.findFirst({
     where: {

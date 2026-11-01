@@ -9,7 +9,7 @@ import { createCrossYearImportFixture } from '../utils/create-cross-year-import-
 const PARTIAL_YEAR_2026_END = '2026-09-30';
 
 // We import 2027 wplaty with openingBalance=-123,00, which does not match the
-// seeded 2026 closingBalance=-444.25.
+// seeded 2026 imported closing balance of -444.25.
 async function importTest04(adminPage: Page): Promise<void> {
   const importDir = fileURLToPath(
     new URL('../test-data/import/TEST04', import.meta.url)
@@ -47,7 +47,7 @@ test.describe('Admin Import Cross-Year Validation', () => {
   // Both cases reseed the same TEST04 apartment
   test.describe.configure({ mode: 'serial' });
 
-  test('import with mismatched openingBalance fails cross-year check', async ({
+  test('import with mismatched openingBalance warns but still imports', async ({
     adminPage,
   }) => {
     // TEST04 is isolated from shared TEST01 admin fixtures and has a seeded
@@ -56,14 +56,17 @@ test.describe('Admin Import Cross-Year Validation', () => {
 
     await importTest04(adminPage);
 
-    await expect(adminPage.getByText(/Wspólnoty z błędami/i)).toBeVisible({
-      timeout: 15000,
-    });
+    await expect(
+      adminPage.getByText(/Import zakończony pomyślnie/i)
+    ).toBeVisible({ timeout: 15000 });
+    await expect(adminPage.getByText(/Wspólnoty z błędami/i)).toHaveCount(0);
     await expect(
       adminPage
-        .getByText(/Błędy walidacji/i)
+        .getByText(/Ostrzeżenia/i)
         .locator('..')
-        .getByText(/saldo otwarcia -123.*saldo zamknięcia -444.25/i)
+        .getByText(
+          /saldo otwarcia -123.*saldo zamknięcia roku 2026 z pliku -444.25/i
+        )
         .first()
     ).toBeVisible();
   });

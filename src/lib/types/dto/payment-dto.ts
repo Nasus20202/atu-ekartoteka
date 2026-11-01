@@ -2,17 +2,17 @@ import type { Payment } from '@/lib/types';
 import { toIsoString } from '@/lib/types/dto/iso-string';
 import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
 import {
-  CHARGE_MONTH_FIELD_KEYS,
+  CALCULATED_CHARGE_FIELD_KEYS,
   PAYMENT_MONTH_FIELD_KEYS,
 } from '@/lib/utils/payment-months';
 
 export const PAYMENT_AMOUNT_FIELD_KEYS = [
   'openingBalance',
-  'closingBalance',
+  'calculatedClosingBalance',
   'openingDebt',
   'openingSurplus',
   ...PAYMENT_MONTH_FIELD_KEYS,
-  ...CHARGE_MONTH_FIELD_KEYS,
+  ...CALCULATED_CHARGE_FIELD_KEYS,
 ] as const;
 
 type PaymentAmountFieldKey = (typeof PAYMENT_AMOUNT_FIELD_KEYS)[number];

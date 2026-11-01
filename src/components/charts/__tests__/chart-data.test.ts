@@ -17,8 +17,8 @@ describe('finance chart helpers', () => {
     const data = getPaymentMonthlyChartData(
       makePayment({
         januaryPayments: new Prisma.Decimal('50.0000'),
-        januaryCharges: new Prisma.Decimal('10.0000'),
-        marchCharges: new Prisma.Decimal('90.0000'),
+        calculatedJanuaryCharges: new Prisma.Decimal('10.0000'),
+        calculatedMarchCharges: new Prisma.Decimal('90.0000'),
       })
     );
 
@@ -44,7 +44,7 @@ describe('finance chart helpers', () => {
     const data = getPaymentMonthlyChartData(
       makePayment({
         aprilPayments: new Prisma.Decimal('24.9375'),
-        aprilCharges: new Prisma.Decimal('149.8750'),
+        calculatedAprilCharges: new Prisma.Decimal('149.8750'),
       })
     );
 

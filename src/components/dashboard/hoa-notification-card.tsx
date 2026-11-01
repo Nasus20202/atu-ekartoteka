@@ -87,16 +87,19 @@ function ApartmentSection({ group }: { group: ApartmentNotificationGroup }) {
 export function HoaNotificationCard({
   hoaName,
   hoaHeader,
+  hoaFooter = null,
   notifications,
 }: {
   hoaName: string | null;
   hoaHeader: string | null;
+  hoaFooter?: string | null;
   notifications: NotificationItem[];
 }) {
   const apartments = groupByApartment(notifications);
   const [single] = apartments;
   const isSingleApartment = apartments.length === 1;
-  const notice = hoaHeader && <HoaNotice header={hoaHeader} />;
+  const notice = hoaHeader && <HoaNotice text={hoaHeader} />;
+  const footerNotice = hoaFooter && <HoaNotice text={hoaFooter} />;
 
   return (
     <article className="overflow-hidden rounded-lg border">
@@ -114,6 +117,7 @@ export function HoaNotificationCard({
               notification={notification}
             />
           ))}
+          {footerNotice}
         </>
       ) : (
         <>
@@ -125,6 +129,7 @@ export function HoaNotificationCard({
           {apartments.map((group) => (
             <ApartmentSection key={group.address} group={group} />
           ))}
+          {footerNotice}
         </>
       )}
     </article>

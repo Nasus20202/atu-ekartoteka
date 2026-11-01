@@ -23,13 +23,13 @@ import {
 } from '@/lib/utils/balance-class';
 import { toDecimal } from '@/lib/utils/decimal';
 import {
-  CHARGE_MONTH_FIELD_KEYS,
+  CALCULATED_CHARGE_FIELD_KEYS,
   PAYMENT_MONTH_FIELD_KEYS,
 } from '@/lib/utils/payment-months';
 import { sumDecimals } from '@/lib/utils/sum';
 
 type PaymentMonthKey = (typeof PAYMENT_MONTH_FIELD_KEYS)[number];
-type ChargeMonthKey = (typeof CHARGE_MONTH_FIELD_KEYS)[number];
+type ChargeMonthKey = (typeof CALCULATED_CHARGE_FIELD_KEYS)[number];
 
 interface AdminPaymentsListProps {
   payments: PaymentDtoSource[];
@@ -68,9 +68,9 @@ function PaymentYearSection({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const openingBalance = toDecimal(payment.openingBalance);
-  const closingBalance = toDecimal(payment.closingBalance);
+  const closingBalance = toDecimal(payment.calculatedClosingBalance);
   const totalPayments = sumMonths(payment, PAYMENT_MONTH_FIELD_KEYS);
-  const totalCharges = sumMonths(payment, CHARGE_MONTH_FIELD_KEYS);
+  const totalCharges = sumMonths(payment, CALCULATED_CHARGE_FIELD_KEYS);
   const monthlyChartData = getPaymentMonthlyChartData(payment);
   const paymentPdfDto = toPaymentPdfDto(payment);
 

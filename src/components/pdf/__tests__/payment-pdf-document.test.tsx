@@ -7,7 +7,7 @@ import { Prisma } from '@/generated/prisma/browser';
 import type { Payment } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
 import {
-  CHARGE_MONTH_FIELD_KEYS,
+  CALCULATED_CHARGE_FIELD_KEYS,
   PAYMENT_MONTH_FIELD_KEYS,
 } from '@/lib/utils/payment-months';
 
@@ -32,14 +32,17 @@ function monthlyAmounts(payment: number, charge: number): Partial<Payment> {
       key,
       new Prisma.Decimal(payment),
     ]),
-    ...CHARGE_MONTH_FIELD_KEYS.map((key) => [key, new Prisma.Decimal(charge)]),
+    ...CALCULATED_CHARGE_FIELD_KEYS.map((key) => [
+      key,
+      new Prisma.Decimal(charge),
+    ]),
   ]);
 }
 
 function makePayment(overrides: Partial<Payment> = {}): Payment {
   return createMockPayment({
     ...monthlyAmounts(MONTHLY_PAYMENT, MONTHLY_CHARGE),
-    closingBalance: new Prisma.Decimal(-100),
+    calculatedClosingBalance: new Prisma.Decimal(-100),
     ...overrides,
   });
 }
@@ -76,7 +79,7 @@ describe('PaymentPdfDocument', () => {
       ...SAMPLE_PROPS,
       payment: makePayment({
         openingBalance: new Prisma.Decimal(100),
-        closingBalance: new Prisma.Decimal(500),
+        calculatedClosingBalance: new Prisma.Decimal(500),
       }),
     });
 

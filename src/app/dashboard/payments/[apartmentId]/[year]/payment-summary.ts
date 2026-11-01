@@ -1,6 +1,6 @@
 import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
 import {
-  CHARGE_MONTH_FIELD_KEYS,
+  CALCULATED_CHARGE_FIELD_KEYS,
   PAYMENT_MONTH_FIELD_KEYS,
 } from '@/lib/utils/payment-months';
 import { sumDecimals } from '@/lib/utils/sum';
@@ -10,9 +10,9 @@ const MAX_PAYMENT_YEAR = 2100;
 
 type PaymentAmounts = Record<
   | (typeof PAYMENT_MONTH_FIELD_KEYS)[number]
-  | (typeof CHARGE_MONTH_FIELD_KEYS)[number]
+  | (typeof CALCULATED_CHARGE_FIELD_KEYS)[number]
   | 'openingBalance'
-  | 'closingBalance',
+  | 'calculatedClosingBalance',
   DecimalLike
 >;
 
@@ -34,9 +34,9 @@ export function getPaymentSummary(payment: PaymentAmounts) {
       PAYMENT_MONTH_FIELD_KEYS.map((key) => payment[key])
     ),
     totalCharges: sumDecimals(
-      CHARGE_MONTH_FIELD_KEYS.map((key) => payment[key])
+      CALCULATED_CHARGE_FIELD_KEYS.map((key) => payment[key])
     ),
     openingBalance: toDecimal(payment.openingBalance),
-    closingBalance: toDecimal(payment.closingBalance),
+    closingBalance: toDecimal(payment.calculatedClosingBalance),
   };
 }

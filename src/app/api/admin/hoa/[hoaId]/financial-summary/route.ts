@@ -4,7 +4,10 @@ import { Prisma } from '@/generated/prisma/client';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { prisma } from '@/lib/database/prisma';
 import { createLogger } from '@/lib/logger';
+import { findDerivedClosingTotal } from '@/lib/queries/payments/find-derived-closing-total';
 import { getErrorMessage } from '@/lib/utils/error-message';
+import { dateToPeriod } from '@/lib/utils/period';
+import { getRequestNow } from '@/lib/utils/request-now';
 
 const logger = createLogger('api:admin:hoa:financial-summary');
 
@@ -42,20 +45,10 @@ export async function GET(
       apartmentsByYear.set(year, apartmentIds);
     }
 
-    const closingAggregate =
-      apartmentsByYear.size > 0
-        ? await prisma.payment.aggregate({
-            where: {
-              OR: Array.from(apartmentsByYear, ([year, apartmentIds]) => ({
-                year,
-                apartmentId: { in: apartmentIds },
-              })),
-            },
-            _sum: { closingBalance: true },
-          })
-        : null;
-    const totalClosingBalance =
-      closingAggregate?._sum.closingBalance ?? new Prisma.Decimal(0);
+    const totalClosingBalance = await findDerivedClosingTotal(
+      apartmentsByYear,
+      dateToPeriod(await getRequestNow())
+    );
     const totalChargesDue =
       chargesAggregate._sum.totalAmount ?? new Prisma.Decimal(0);
 

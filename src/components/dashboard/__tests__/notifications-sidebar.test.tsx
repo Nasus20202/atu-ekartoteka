@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
 import { NotificationsSidebar } from '@/components/dashboard/notifications-sidebar';
@@ -86,6 +87,85 @@ describe('NotificationsSidebar', () => {
       render(<NotificationsSidebar notifications={[notification]} />);
 
       expect(screen.getByText('Numer konta: 12 3456 7890')).toBeInTheDocument();
+    });
+  });
+
+  describe('HOA footer and mobile collapse', () => {
+    it('shows hoaFooter under the notifications', () => {
+      const notification = {
+        ...makeNotification('n1', '100'),
+        hoaFooter: 'Terminy płatności: do 10-go',
+      };
+
+      render(<NotificationsSidebar notifications={[notification]} />);
+
+      expect(
+        screen
+          .getByText('Naliczenie n1')
+          .compareDocumentPosition(
+            screen.getByText('Terminy płatności: do 10-go')
+          ) & Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy();
+    });
+
+    it('keeps the total visible and collapses the details by default', () => {
+      render(
+        <NotificationsSidebar notifications={[makeNotification('n1', '100')]} />
+      );
+
+      const toggle = screen.getByRole('button', {
+        name: 'Pokaż szczegóły powiadomień',
+      });
+      expect(toggle).toHaveAttribute('aria-expanded', 'false');
+      expect(toggle.className).toContain('lg:hidden');
+      expect(toggle).toHaveAttribute(
+        'aria-controls',
+        screen.getByRole('article').parentElement?.parentElement?.parentElement
+          ?.id
+      );
+      expect(screen.getByText('Łączna kwota do zapłaty')).toBeVisible();
+      expect(
+        screen.getByRole('article').parentElement?.parentElement?.parentElement
+      ).toHaveAttribute('data-state', 'closed');
+    });
+
+    it('expands the details on request and collapses them again', async () => {
+      render(
+        <NotificationsSidebar notifications={[makeNotification('n1', '100')]} />
+      );
+
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Pokaż szczegóły powiadomień' })
+      );
+
+      expect(
+        screen.getByRole('button', { name: 'Ukryj szczegóły powiadomień' })
+      ).toHaveAttribute('aria-expanded', 'true');
+      expect(
+        screen.getByRole('article').parentElement?.parentElement?.parentElement
+      ).toHaveAttribute('data-state', 'open');
+
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Ukryj szczegóły powiadomień' })
+      );
+
+      expect(
+        screen.getByRole('article').parentElement?.parentElement?.parentElement
+      ).toHaveAttribute('data-state', 'closed');
+    });
+
+    it('stays open on large screens and animates without measured heights', () => {
+      render(
+        <NotificationsSidebar notifications={[makeNotification('n1', '100')]} />
+      );
+
+      const classes =
+        screen.getByRole('article').parentElement?.parentElement?.parentElement
+          ?.className;
+      expect(classes).toContain('lg:data-[state=closed]:grid-rows-[1fr]');
+      expect(classes).toContain('lg:data-[state=closed]:visible');
+      expect(classes).toContain('data-[state=closed]:grid-rows-[0fr]');
+      expect(classes).toContain('transition-[grid-template-rows,visibility]');
     });
   });
 

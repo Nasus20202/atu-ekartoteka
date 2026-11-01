@@ -1,23 +1,18 @@
-import { monthIndexToPeriod } from '@/lib/utils/period';
-
-const FIRST_MONTH_INDEX = 0;
+import { yearStartPeriod } from '@/lib/utils/period';
 
 export function getHistoryStartYear(now: Date, yearsBack: number): number {
   return now.getFullYear() - yearsBack;
 }
 
 export function chargesFromYear(startYear: number) {
-  return { period: { gte: monthIndexToPeriod(startYear, FIRST_MONTH_INDEX) } };
+  return { period: { gte: yearStartPeriod(startYear) } };
 }
 
-export function chargesInWindow(
-  startYear: number,
-  cutoffPeriod: string | null
-) {
+export function chargesInWindow(startYear: number, cutoffPeriod: string) {
   return {
     period: {
       ...chargesFromYear(startYear).period,
-      ...(cutoffPeriod ? { lte: cutoffPeriod } : {}),
+      lte: cutoffPeriod,
     },
   };
 }

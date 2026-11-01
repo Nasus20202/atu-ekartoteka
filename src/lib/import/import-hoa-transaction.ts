@@ -1,3 +1,4 @@
+import { validateBalanceDrift } from '@/lib/import/balance-drift-validation';
 import { validateCrossYearBalances } from '@/lib/import/cross-year-validation';
 import {
   importApartments,
@@ -111,8 +112,17 @@ export async function importHoaInTransaction(
       tx,
       apartmentMap,
       paymentData.entries,
-      result.errors
+      result.warnings
     );
+
+    if (!options.skipValidation) {
+      await validateBalanceDrift(
+        tx,
+        apartmentMap,
+        paymentData.entries,
+        result.warnings
+      );
+    }
 
     await importPayments(
       tx,

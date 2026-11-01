@@ -1,8 +1,8 @@
 /**
  * Seed an approved tenant with a single apartment and a payment year that mixes
- * zero and non-zero months. Used to verify empty-month filtering in E2E;
- * yearsAgo adds the same payment year (and January charges) that many years
- * before the current one.
+ * zero and non-zero months (charge records in January, May and July). Used to
+ * verify empty-month filtering in E2E; yearsAgo adds the same payment year
+ * (and its charge records) that many years before the current one.
  */
 
 import bcrypt from 'bcrypt';
@@ -10,6 +10,15 @@ import * as pg from 'pg';
 
 import { loadSql } from './load-sql';
 import { USER_PASSWORD } from './test-credentials';
+
+// The imported monthly charges and closing balance in the payment record are
+// deliberately wrong; the charge records below are what the app must present
+// January has a zero line so the year always has a charge record to list
+const MIXED_CHARGES = [
+  { monthIndex: 0, lineNo: 1, amount: 0 },
+  { monthIndex: 4, lineNo: 2, amount: 100 },
+  { monthIndex: 6, lineNo: 3, amount: 149.875 },
+];
 
 export async function createMixedPaymentsUser({
   yearsAgo = [],
@@ -114,12 +123,16 @@ export async function createMixedPaymentsUser({
           new Date(paymentYear, 11, 31),
         ]
       );
-      await client.query(loadSql('insert-charges.sql'), [
-        apartmentId,
-        new Date(paymentYear, 0, 1),
-        new Date(paymentYear, 0, 31),
-        `${paymentYear}01`,
-      ]);
+      for (const charge of MIXED_CHARGES) {
+        await client.query(loadSql('insert-charge-line.sql'), [
+          apartmentId,
+          new Date(paymentYear, charge.monthIndex, 1),
+          new Date(paymentYear, charge.monthIndex + 1, 0),
+          `${paymentYear}${String(charge.monthIndex + 1).padStart(2, '0')}`,
+          charge.lineNo,
+          charge.amount,
+        ]);
+      }
     }
 
     return { email, year, apartmentId, hoaId };

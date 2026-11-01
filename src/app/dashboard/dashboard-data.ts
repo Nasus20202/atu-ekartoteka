@@ -3,7 +3,6 @@ import { getSeriesColor } from '@/components/charts/chart-colors';
 import type { ApartmentBalance } from '@/components/dashboard/payments-summary-card';
 import type { findUserWithApartments } from '@/lib/queries/users/find-user-with-apartments';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
-import { getChargeCutoffPeriod } from '@/lib/utils/charge-cutoff';
 import { getPaymentYearHref } from '@/lib/utils/dashboard-links';
 import { toDecimal } from '@/lib/utils/decimal';
 import { dateToPeriod, periodToDate } from '@/lib/utils/period';
@@ -13,15 +12,8 @@ type DashboardUser = NonNullable<
 >;
 type DashboardApartment = DashboardUser['apartments'][number];
 
-export function getDashboardPeriods(
-  apartments: DashboardApartment[],
-  now: Date
-) {
-  const currentPeriod =
-    getChargeCutoffPeriod(
-      apartments.flatMap((apt) => apt.payments),
-      now
-    ) ?? dateToPeriod(now);
+export function getDashboardPeriods(now: Date) {
+  const currentPeriod = dateToPeriod(now);
   const prevMonth = periodToDate(currentPeriod);
   prevMonth.setMonth(prevMonth.getMonth() - 1);
 
@@ -70,7 +62,7 @@ export function buildApartmentBalances(
         apartmentId: apt.id,
         apartmentLabel: formatApartmentLabel(apt),
         hoaName: apt.homeownersAssociation?.name ?? null,
-        closingBalance: toDecimal(latestPayment.closingBalance),
+        closingBalance: toDecimal(latestPayment.calculatedClosingBalance),
         href: getPaymentYearHref(apt.id, latestPayment.year),
         color: getSeriesColor(index),
         history: getBalanceHistory(apt.payments, endPeriod),

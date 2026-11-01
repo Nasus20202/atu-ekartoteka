@@ -24,11 +24,10 @@ describe('history window', () => {
     expect(chargesFromYear(2025)).toEqual({ period: { gte: '202501' } });
   });
 
-  it('ends the charge window at the cutoff period when there is one', () => {
+  it('ends the charge window at the cutoff period', () => {
     expect(chargesInWindow(2025, '202608')).toEqual({
       period: { gte: '202501', lte: '202608' },
     });
-    expect(chargesInWindow(2025, null)).toEqual({ period: { gte: '202501' } });
   });
 
   it('starts the payment window at the start year', () => {

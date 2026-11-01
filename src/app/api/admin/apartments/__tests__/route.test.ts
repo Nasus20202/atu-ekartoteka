@@ -90,6 +90,8 @@ describe('Admin Apartments API', () => {
       id: 'hoa-1',
       externalId: 'EXT-001',
       name: 'Wspólnota A',
+      header: 'Nagłówek',
+      footer: null,
     };
 
     it('should return 401 when not authenticated', async () => {
@@ -259,7 +261,13 @@ describe('Admin Apartments API', () => {
       );
       expect(mockHoaFindUnique).toHaveBeenCalledWith({
         where: { id: 'hoa-1' },
-        select: { id: true, externalId: true, name: true },
+        select: {
+          id: true,
+          externalId: true,
+          name: true,
+          header: true,
+          footer: true,
+        },
       });
     });
 
@@ -451,6 +459,7 @@ describe('Admin Apartments API', () => {
         expires: new Date().toISOString(),
       });
       mockApartmentRows(mockApartments);
+      mockHoaFindUnique.mockReset();
       mockHoaFindUnique.mockResolvedValueOnce(mockHOA);
 
       const { GET } = await import('../route');
@@ -460,12 +469,18 @@ describe('Admin Apartments API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data).toHaveProperty('hoa');
+      expect(data.hoa).toEqual(mockHOA);
       expect(data).toHaveProperty('apartments');
       expect(data).toHaveProperty('pagination');
       expect(mockHoaFindUnique).toHaveBeenCalledWith({
         where: { id: 'hoa-1' },
-        select: { id: true, externalId: true, name: true },
+        select: {
+          id: true,
+          externalId: true,
+          name: true,
+          header: true,
+          footer: true,
+        },
       });
     });
 

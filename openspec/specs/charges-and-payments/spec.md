@@ -137,6 +137,8 @@ The system SHALL present charge periods in a collapsible year/month structure ra
 - **WHEN** the page loads
 - **THEN** the year of that month is expanded and that month is expanded, highlighted and scrolled into view below the sticky header
 
+---
+
 ### Requirement: Opening Balance Colour Coding
 
 The system SHALL display the opening balance (`Saldo początkowe`) in a colour that reflects whether it is negative or non-negative.
@@ -237,6 +239,8 @@ The system SHALL render payment year rows as collapsible groups on the payments 
 - **GIVEN** an apartment with payment years 2024, 2025 and 2026 and the current date in 2027
 - **WHEN** an admin opens the apartment detail page
 - **THEN** the 2026 section is expanded and the 2025 and 2024 sections are collapsed
+
+---
 
 ### Requirement: HOA Header in Dashboard Apartment List
 
@@ -372,6 +376,8 @@ The system SHALL hide month rows where both the charge value and the payment val
 - **WHEN** the table renders
 - **THEN** the `Bilans otwarcia` row is rendered with its actual `openingDebt` and `openingSurplus` values regardless of the empty-month filter
 
+---
+
 ### Requirement: Razem Totals Include Opening Balance
 
 The system SHALL compute the `Razem` row of the payment table, in both the web view and the PDF, so that `Wpłaty` is the `Bilans otwarcia` wpłaty value (`openingSurplus`) plus all twelve monthly payments, `Naliczenia` is the `Bilans otwarcia` naliczenia value (`openingDebt`) plus all twelve monthly charges, and `Wpłaty − Naliczenia` equals the `Saldo` shown in that row.
@@ -464,6 +470,8 @@ The system SHALL display the ownership share percentage, formatted from the apar
 - **WHEN** any view renders the share
 - **THEN** the share is shown as `0%`
 
+---
+
 ### Requirement: Dashboard Per-Apartment Charge Trend Chart
 
 The system SHALL display a compact per-apartment area trend chart on the tenant dashboard using the tenant's existing apartment charge data, with a visible 12-month window that can be shifted through history, and SHALL let the tenant open a month's charges from the chart.
@@ -511,6 +519,8 @@ The system SHALL display a compact per-apartment area trend chart on the tenant 
 - **WHEN** the tenant clicks a month on the chart
 - **THEN** they are taken to that month's charges, on the apartment's charges page when there is a single apartment series, otherwise on the combined charges page
 
+---
+
 ### Requirement: Dashboard Apartment Balances
 
 The system SHALL show, in the dashboard `Saldo wpłat` card, the latest closing balance of each assigned apartment with payment data, and SHALL link each balance to that apartment's latest payment year.
@@ -527,6 +537,8 @@ The system SHALL show, in the dashboard `Saldo wpłat` card, the latest closing 
 - **GIVEN** the `Saldo wpłat` card lists an apartment
 - **WHEN** the tenant clicks its row
 - **THEN** they are taken to `/dashboard/payments/<apartmentId>/<latest year>`
+
+---
 
 ### Requirement: Dashboard Monthly Balance Chart
 
@@ -563,6 +575,8 @@ The system SHALL display one monthly balance bar chart in the dashboard `Saldo w
 - **WHEN** the tenant clicks a bar
 - **THEN** they are taken to the payment year page of that bar's apartment and year
 
+---
+
 ### Requirement: Dashboard Recent Charges Link to Month
 
 The system SHALL make the current and previous month tiles in the dashboard charges card link to the combined charges page with that month opened.
@@ -573,6 +587,8 @@ The system SHALL make the current and previous month tiles in the dashboard char
 - **WHEN** the tenant clicks it
 - **THEN** they are taken to `/dashboard/charges?month=YYYY-MM`
 - **AND** that month is expanded, highlighted and scrolled into view
+
+---
 
 ### Requirement: Payment Year Switcher
 
@@ -596,6 +612,8 @@ The system SHALL let a tenant switch between the payment years of an apartment t
 - **WHEN** the tenant views its payment detail page
 - **THEN** no year switcher is shown
 
+---
+
 ### Requirement: Admin Charge History Grouped by Year
 
 The system SHALL group the admin apartment detail charge list into collapsible year sections, newest first, each containing that year's collapsible month sections. The newest year SHALL start expanded with its months collapsed, and every older year SHALL start collapsed.
@@ -618,6 +636,8 @@ The system SHALL group the admin apartment detail charge list into collapsible y
 - **WHEN** the admin clicks its header
 - **THEN** that year's months are listed and each month can be expanded to show its line items and PDF button
 
+---
+
 ### Requirement: Quantity Formatting
 
 The system SHALL display charge and notice quantities with a Polish decimal comma and their full stored precision, in tenant views, admin views and PDFs.
@@ -634,62 +654,218 @@ The system SHALL display charge and notice quantities with a Polish decimal comm
 - **WHEN** it is shown
 - **THEN** the quantity reads `1 szt`
 
+---
+
 ### Requirement: Tenant Charge Cutoff
 
-The system SHALL hide, in tenant views, months whose period is after the tenant's charge cutoff: the latest month with a non-zero charge in the payment records of the apartment (or of any of the tenant's apartments in combined views), never later than the current month. The HOA `chargesDataDate` SHALL NOT filter any view.
+The system SHALL hide, in tenant views, months whose period is after the current month. The HOA `chargesDataDate` and the contents of payment records SHALL NOT influence which months are visible.
 
 #### Scenario: Future month hidden beyond data date
 
-- **GIVEN** an apartment whose payment records have a non-zero charge up to August 2026 and charge records that also exist for September 2026
-- **WHEN** the tenant views the charges overview or the apartment's charges page
-- **THEN** no month after August 2026 is listed
+- **GIVEN** charge records exist for a month after the current month
+- **WHEN** the tenant views the charges overview, an apartment's charges page, or any payments list
+- **THEN** no month after the current month is listed
 
 #### Scenario: HOA snapshot date no longer filters
 
-- **GIVEN** a HOA with `chargesDataDate` set to 2026-05-31 and payment records with a non-zero charge in August 2026
+- **GIVEN** a HOA with `chargesDataDate` set to 2026-05-31
 - **WHEN** the tenant views charges or payments for that HOA
-- **THEN** months up to August 2026 are displayed
+- **THEN** months up to the current month are displayed
 
 #### Scenario: Cutoff capped at the current month
 
-- **GIVEN** payment records with a non-zero charge in a month after the current month
+- **GIVEN** today is in October 2026 and charge records exist up to August 2026
 - **WHEN** the tenant views any charges or payments list
-- **THEN** months after the current month are not displayed
+- **THEN** months with data up to August 2026 are listed and no month after October 2026 appears
 
 #### Scenario: All months shown when data date is null
 
-- **GIVEN** an apartment with no payment records, whatever its HOA's `chargesDataDate`
+- **GIVEN** an apartment with no payment records
 - **WHEN** the tenant views its charges
-- **THEN** no cutoff filtering is applied and all existing charge months are shown
+- **THEN** all existing charge months up to the current month are shown
 
 #### Scenario: Combined view uses the latest cutoff
 
-- **GIVEN** a tenant with two apartments whose latest charged months are July and August 2026
+- **GIVEN** a tenant with two apartments
 - **WHEN** they view the combined charges page
-- **THEN** months up to August 2026 are listed
+- **THEN** both apartments use the same cutoff, the current month
 
 #### Scenario: Admin views ignore the cutoff
 
 - **GIVEN** an admin viewing an apartment's charges and payments
 - **WHEN** the pages render
-- **THEN** months after the cutoff are displayed as before
+- **THEN** months after the current month are displayed as before
 
 ---
 
 ### Requirement: Dashboard Cards Follow the Charge Cutoff
 
-The system SHALL anchor the tenant dashboard on the tenant's charge cutoff instead of today's date: the current and previous month tiles, the charge trend chart and the balance chart SHALL all end at the cutoff month. When no cutoff exists, the current month is used.
+The system SHALL anchor the tenant dashboard on the current month: the current and previous month tiles, the charge trend chart and the balance chart SHALL all end at the current month.
 
 #### Scenario: Dashboard matches charges list
 
-- **GIVEN** a tenant whose latest charged month in payments is August 2026 and today is in October 2026
-- **WHEN** they view the dashboard
-- **THEN** the `Naliczenia` tiles show August 2026 and July 2026
-- **AND** the charge trend and balance charts end with August 2026
-- **AND** the charges overview page lists August 2026 as its newest month
+- **GIVEN** today is in October 2026
+- **WHEN** a tenant views the dashboard
+- **THEN** the `Naliczenia` tiles show October 2026 and September 2026
+- **AND** the charge trend and balance charts end with October 2026
 
 #### Scenario: Fallback to the current month
 
 - **GIVEN** a tenant whose apartments have no payment records
 - **WHEN** they view the dashboard
 - **THEN** the tiles and charts end with the current month
+
+---
+
+### Requirement: Monthly Charges Calculated from Charge Records
+
+The system SHALL calculate the monthly charge of a payment year as the sum of `totalAmount` of the apartment's charge records whose period falls in that month. Every payment table, summary, chart, dashboard tile and PDF SHALL use these calculated values and SHALL NOT use the monthly charge values imported from `wplaty.txt`, which remain stored unchanged. Months after the current month SHALL NOT count toward any total or balance.
+
+#### Scenario: Sum of charge records
+
+- **GIVEN** an apartment with charge records of 100.00 and 50.50 in period 202603 and a payment record for 2026
+- **WHEN** the tenant opens the payment page for 2026
+- **THEN** March shows a charge of 150.50 regardless of the imported March charge value
+
+#### Scenario: Settlement lines included
+
+- **GIVEN** an apartment with regular charges of 500.00 and a `Wyrównanie zaliczek CW` line of -80.00 in April, and an imported April charge of 500.00
+- **WHEN** the payment page renders
+- **THEN** April shows a charge of 420.00
+
+#### Scenario: Month without charge records
+
+- **GIVEN** a payment record and no charge records for a month
+- **WHEN** the payment page renders
+- **THEN** that month's charge is zero
+
+#### Scenario: Future months not counted
+
+- **GIVEN** charge records exist for months after the current month
+- **WHEN** the payment page, dashboard or PDF is rendered
+- **THEN** those months are not part of any total, closing balance or running balance
+
+#### Scenario: Legacy values kept
+
+- **WHEN** a payment file is imported
+- **THEN** the imported monthly charge values are stored in the legacy columns and are not displayed anywhere
+
+---
+
+### Requirement: Balances Derived from Opening Balance
+
+The system SHALL derive the closing balance and the monthly running balance of each payment year as the imported opening balance plus the year's imported payments minus the calculated charges, counting months up to the current month. The imported opening balance SHALL be shown unchanged, and years SHALL NOT be chained: each year starts from its own imported opening balance. The `Razem` row, the summary tiles, the dashboard `Saldo wpłat` card and balance chart, and the admin HOA total closing balance SHALL use the derived closing balance.
+
+#### Scenario: Derived closing balance
+
+- **GIVEN** a payment year with opening balance 100.00, payments summing to 1200.00 and calculated charges summing to 1500.00
+- **WHEN** the tenant views the year
+- **THEN** the closing balance is -200.00 regardless of the imported closing balance
+
+#### Scenario: Running balance follows calculated charges
+
+- **GIVEN** a payment year with calculated charges and imported payments
+- **WHEN** the monthly balance chart is built
+- **THEN** each month's balance is the opening balance plus cumulative payments minus cumulative calculated charges up to that month
+
+#### Scenario: Opening balance not recalculated
+
+- **GIVEN** a year whose imported opening balance differs from the previous year's derived closing balance
+- **WHEN** the tenant views the year
+- **THEN** the year starts from its imported opening balance
+
+#### Scenario: Razem row consistent
+
+- **GIVEN** any payment year
+- **WHEN** the payment table renders
+- **THEN** the `Razem` `Wpłaty` value minus the `Razem` `Naliczenia` value equals the derived `Saldo`
+
+#### Scenario: Admin HOA total
+
+- **GIVEN** a HOA whose apartments have payment records
+- **WHEN** an admin opens the HOA financial summary
+- **THEN** the total closing balance is the sum of the derived closing balances of each apartment's latest payment year
+
+---
+
+### Requirement: HOA Header and Footer for Admin
+
+The system SHALL display the HOA header and footer text (parsed from `pow_czynsz.txt`) on the admin HOA apartments page, above the apartment search, in a card that is collapsed by default.
+
+#### Scenario: Collapsed by default
+
+- **GIVEN** a HOA with non-null `header` and `footer`
+- **WHEN** an admin opens the apartments page of that HOA
+- **THEN** the card is shown collapsed and neither text is visible
+
+#### Scenario: Header and footer shown when expanded
+
+- **GIVEN** the collapsed card of a HOA with `header` and `footer`
+- **WHEN** the admin expands it
+- **THEN** the header and the footer are shown, each with its label
+
+#### Scenario: Only existing text shown
+
+- **GIVEN** a HOA with a `header` and `footer: null`
+- **WHEN** an admin expands the card
+- **THEN** only the header is shown
+
+#### Scenario: No card without header and footer
+
+- **GIVEN** a HOA with `header: null` and `footer: null`
+- **WHEN** an admin opens its apartments page
+- **THEN** no header or footer card is rendered
+
+---
+
+### Requirement: HOA Footer in Dashboard Notifications
+
+The system SHALL display the HOA footer text under the notifications of that HOA in the tenant dashboard notifications card, below the charge items and in the same style as the header.
+
+#### Scenario: Footer shown under the notifications
+
+- **GIVEN** a tenant whose HOA has a non-null `footer`
+- **WHEN** they view the dashboard notifications
+- **THEN** the footer is shown below that HOA's notification items
+
+#### Scenario: No footer without text
+
+- **GIVEN** a HOA with `footer: null`
+- **WHEN** the tenant views the dashboard notifications
+- **THEN** no footer is rendered for that HOA
+
+---
+
+### Requirement: Collapsible Dashboard Notifications on Mobile
+
+The system SHALL let the tenant collapse the itemised notifications on narrow screens: below the `lg` breakpoint the per-HOA details are collapsed by default behind a toggle while the total amount due and the PDF download stay visible, and from the `lg` breakpoint up the details are always shown and the toggle is hidden.
+
+#### Scenario: Collapsed on mobile
+
+- **GIVEN** a tenant with notifications on a narrow screen
+- **WHEN** they view the dashboard
+- **THEN** the total amount and the PDF button are visible and the notification details are hidden behind `Pokaż szczegóły powiadomień`
+
+#### Scenario: Expand and collapse
+
+- **GIVEN** the collapsed details on a narrow screen
+- **WHEN** the tenant uses the toggle
+- **THEN** the details expand with a smooth transition and the toggle reads `Ukryj szczegóły powiadomień`, and using it again collapses them
+
+#### Scenario: Always open on large screens
+
+- **GIVEN** a large screen
+- **WHEN** the tenant views the dashboard
+- **THEN** the details are shown and no toggle is displayed
+
+---
+
+### Requirement: Single Charge Month Uses Full Width
+
+The system SHALL show the recent charge months of the dashboard `Naliczenia` card side by side only when both months have charges, and SHALL let a single month use the full width.
+
+#### Scenario: One month with charges
+
+- **GIVEN** only one of the two recent months has charges
+- **WHEN** the tenant views the dashboard
+- **THEN** that month's tile spans the full width of the card

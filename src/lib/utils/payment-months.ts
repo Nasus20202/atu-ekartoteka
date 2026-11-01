@@ -10,7 +10,7 @@ export type NonEmptyMonth = {
 
 export type PaymentMonthFieldsLike = Record<
   | (typeof PAYMENT_MONTH_FIELD_KEYS)[number]
-  | (typeof CHARGE_MONTH_FIELD_KEYS)[number],
+  | (typeof CALCULATED_CHARGE_FIELD_KEYS)[number],
   DecimalLike
 >;
 
@@ -29,19 +29,41 @@ export const PAYMENT_MONTH_FIELD_KEYS = [
   'decemberPayments',
 ] as const;
 
-export const CHARGE_MONTH_FIELD_KEYS = [
-  'januaryCharges',
-  'februaryCharges',
-  'marchCharges',
-  'aprilCharges',
-  'mayCharges',
-  'juneCharges',
-  'julyCharges',
-  'augustCharges',
-  'septemberCharges',
-  'octoberCharges',
-  'novemberCharges',
-  'decemberCharges',
+export const CALCULATED_CHARGE_FIELD_KEYS = [
+  'calculatedJanuaryCharges',
+  'calculatedFebruaryCharges',
+  'calculatedMarchCharges',
+  'calculatedAprilCharges',
+  'calculatedMayCharges',
+  'calculatedJuneCharges',
+  'calculatedJulyCharges',
+  'calculatedAugustCharges',
+  'calculatedSeptemberCharges',
+  'calculatedOctoberCharges',
+  'calculatedNovemberCharges',
+  'calculatedDecemberCharges',
+] as const;
+
+// Stored as imported from wplaty.txt; the exporter omits settlement lines, so
+// these are only for import code (see the `legacy` ESLint restriction).
+export const LEGACY_CHARGE_FIELD_KEYS = [
+  'legacyJanuaryCharges',
+  'legacyFebruaryCharges',
+  'legacyMarchCharges',
+  'legacyAprilCharges',
+  'legacyMayCharges',
+  'legacyJuneCharges',
+  'legacyJulyCharges',
+  'legacyAugustCharges',
+  'legacySeptemberCharges',
+  'legacyOctoberCharges',
+  'legacyNovemberCharges',
+  'legacyDecemberCharges',
+] as const;
+
+export const LEGACY_PAYMENT_FIELD_KEYS = [
+  ...LEGACY_CHARGE_FIELD_KEYS,
+  'legacyClosingBalance',
 ] as const;
 
 export function getNonEmptyMonths<T extends PaymentMonthFieldsLike>(
@@ -50,7 +72,9 @@ export function getNonEmptyMonths<T extends PaymentMonthFieldsLike>(
 ): NonEmptyMonth[] {
   return PAYMENT_MONTH_FIELD_KEYS.flatMap((paymentKey, monthIndex) => {
     const payments = toDecimal(payment[paymentKey]);
-    const charges = toDecimal(payment[CHARGE_MONTH_FIELD_KEYS[monthIndex]]);
+    const charges = toDecimal(
+      payment[CALCULATED_CHARGE_FIELD_KEYS[monthIndex]]
+    );
 
     if (payments.isZero() && charges.isZero()) {
       return [];
@@ -82,7 +106,7 @@ export function getPaymentTotals(
     PAYMENT_MONTH_FIELD_KEYS.map((key) => payment[key])
   );
   const yearCharges = sumDecimals(
-    CHARGE_MONTH_FIELD_KEYS.map((key) => payment[key])
+    CALCULATED_CHARGE_FIELD_KEYS.map((key) => payment[key])
   );
 
   return {

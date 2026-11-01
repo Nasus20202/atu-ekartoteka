@@ -5,7 +5,7 @@ import {
   mergeBalanceHistories,
 } from '@/components/charts/balance-history-data';
 import {
-  CHARGE_MONTH_FIELD_KEYS,
+  CALCULATED_CHARGE_FIELD_KEYS,
   PAYMENT_MONTH_FIELD_KEYS,
 } from '@/lib/utils/payment-months';
 
@@ -21,7 +21,8 @@ function payment(
 
   PAYMENT_MONTH_FIELD_KEYS.forEach((key, monthIndex) => {
     fields[key] = months[monthIndex]?.[0] ?? 0;
-    fields[CHARGE_MONTH_FIELD_KEYS[monthIndex]] = months[monthIndex]?.[1] ?? 0;
+    fields[CALCULATED_CHARGE_FIELD_KEYS[monthIndex]] =
+      months[monthIndex]?.[1] ?? 0;
   });
 
   return { ...fields, year, openingBalance } as PaymentSource;

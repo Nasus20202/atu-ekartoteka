@@ -1,7 +1,11 @@
 import { prisma } from '@/lib/database/prisma';
+import { deriveApartmentPayments } from '@/lib/queries/payments/derive-apartment-payments';
 
-export function findApartmentDetail(apartmentId: string) {
-  return prisma.apartment.findUnique({
+export async function findApartmentDetail(
+  apartmentId: string,
+  maxPeriod: string
+) {
+  const apartment = await prisma.apartment.findUnique({
     where: { id: apartmentId },
     include: {
       homeownersAssociation: {
@@ -29,4 +33,11 @@ export function findApartmentDetail(apartmentId: string) {
       },
     },
   });
+
+  if (!apartment) {
+    return null;
+  }
+
+  const [derived] = await deriveApartmentPayments([apartment], maxPeriod);
+  return derived;
 }

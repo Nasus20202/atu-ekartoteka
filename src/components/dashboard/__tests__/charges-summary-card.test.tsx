@@ -109,6 +109,46 @@ describe('ChargesSummaryCard', () => {
     expect(screen.getByText('2 naliczenia')).toBeInTheDocument();
   });
 
+  it('lets a single month use the full width', () => {
+    render(
+      <ChargesSummaryCard
+        currentPeriod="202501"
+        previousPeriod="202412"
+        currentMonthCharges={mockCharges}
+        previousMonthCharges={[]}
+        currentMonthTotal={600}
+        previousMonthTotal={0}
+        trendData={trendData}
+        trendSeries={trendSeries}
+      />
+    );
+
+    const grid = screen.getByRole('link', {
+      name: /Styczeń 2025/,
+    }).parentElement;
+    expect(grid?.className).not.toContain('sm:grid-cols-2');
+  });
+
+  it('puts two months side by side', () => {
+    render(
+      <ChargesSummaryCard
+        currentPeriod="202501"
+        previousPeriod="202412"
+        currentMonthCharges={mockCharges}
+        previousMonthCharges={mockCharges}
+        currentMonthTotal={600}
+        previousMonthTotal={600}
+        trendData={trendData}
+        trendSeries={trendSeries}
+      />
+    );
+
+    const grid = screen.getByRole('link', {
+      name: /Styczeń 2025/,
+    }).parentElement;
+    expect(grid?.className).toContain('sm:grid-cols-2');
+  });
+
   it('links each recent month to its charges', () => {
     render(
       <ChargesSummaryCard

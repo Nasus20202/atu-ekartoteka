@@ -1,11 +1,12 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { Prisma } from '@/generated/prisma/client';
 import { UserRole } from '@/lib/types';
 
 const mockAuth = vi.fn();
 const mockPaymentGroupBy = vi.fn();
-const mockPaymentAggregate = vi.fn();
+const mockFindDerivedClosingTotal = vi.fn();
 const mockChargeNotificationAggregate = vi.fn();
 
 vi.mock('@/auth', () => ({
@@ -16,12 +17,15 @@ vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     payment: {
       groupBy: mockPaymentGroupBy,
-      aggregate: mockPaymentAggregate,
     },
     chargeNotification: {
       aggregate: mockChargeNotificationAggregate,
     },
   },
+}));
+
+vi.mock('@/lib/queries/payments/find-derived-closing-total', () => ({
+  findDerivedClosingTotal: mockFindDerivedClosingTotal,
 }));
 
 vi.mock('@/lib/logger', () => ({
@@ -79,6 +83,7 @@ describe('GET /api/admin/hoa/[hoaId]/financial-summary', () => {
   it('returns zeros when HOA has no payments or notifications', async () => {
     mockAuth.mockResolvedValueOnce(adminSession);
     mockPaymentGroupBy.mockResolvedValueOnce([]);
+    mockFindDerivedClosingTotal.mockResolvedValueOnce(new Prisma.Decimal(0));
     mockChargeNotificationAggregate.mockResolvedValueOnce({
       _sum: { totalAmount: null },
     });
@@ -92,19 +97,17 @@ describe('GET /api/admin/hoa/[hoaId]/financial-summary', () => {
     expect(response.status).toBe(200);
     expect(data.totalClosingBalance).toBe(0);
     expect(data.totalChargesDue).toBe(0);
-    expect(mockPaymentAggregate).not.toHaveBeenCalled();
+    expect(mockFindDerivedClosingTotal.mock.calls[0][0].size).toBe(0);
   });
 
-  it('sums the closing balance of each apartment latest year in the database', async () => {
+  it('totals the derived closing balance of each apartment latest year', async () => {
     mockAuth.mockResolvedValueOnce(adminSession);
     mockPaymentGroupBy.mockResolvedValueOnce([
       { apartmentId: 'apt-1', _max: { year: 2025 } },
       { apartmentId: 'apt-2', _max: { year: 2024 } },
       { apartmentId: 'apt-3', _max: { year: 2025 } },
     ]);
-    mockPaymentAggregate.mockResolvedValueOnce({
-      _sum: { closingBalance: 50 },
-    });
+    mockFindDerivedClosingTotal.mockResolvedValueOnce(new Prisma.Decimal(50));
     mockChargeNotificationAggregate.mockResolvedValueOnce({
       _sum: { totalAmount: 300 },
     });
@@ -123,15 +126,13 @@ describe('GET /api/admin/hoa/[hoaId]/financial-summary', () => {
       where: inHoa,
       _max: { year: true },
     });
-    expect(mockPaymentAggregate).toHaveBeenCalledWith({
-      where: {
-        OR: [
-          { year: 2025, apartmentId: { in: ['apt-1', 'apt-3'] } },
-          { year: 2024, apartmentId: { in: ['apt-2'] } },
-        ],
-      },
-      _sum: { closingBalance: true },
-    });
+    expect(mockFindDerivedClosingTotal).toHaveBeenCalledWith(
+      new Map([
+        [2025, ['apt-1', 'apt-3']],
+        [2024, ['apt-2']],
+      ]),
+      expect.stringMatching(/^\d{6}$/)
+    );
     expect(mockChargeNotificationAggregate).toHaveBeenCalledWith({
       where: inHoa,
       _sum: { totalAmount: true },

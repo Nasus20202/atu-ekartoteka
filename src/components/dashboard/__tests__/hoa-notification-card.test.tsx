@@ -110,6 +110,36 @@ describe('HoaNotificationCard', () => {
     ).toBeTruthy();
   });
 
+  it.each([
+    ['one apartment', [makeNotification('n1', '100')]],
+    [
+      'several apartments',
+      [
+        makeNotification('n1', '100', ADDRESS_A),
+        makeNotification('n2', '200', ADDRESS_B),
+      ],
+    ],
+  ])('shows the HOA footer below the charges for %s', (_, notifications) => {
+    render(
+      <HoaNotificationCard
+        hoaName={HOA_NAME}
+        hoaHeader={null}
+        hoaFooter="Stopka wspólnoty"
+        notifications={notifications}
+      />
+    );
+
+    expect(
+      screen.getByRole('note', { name: 'Zawiadomienie wspólnoty' })
+    ).toHaveTextContent('Stopka wspólnoty');
+    expect(
+      screen
+        .getByText('Naliczenie n1')
+        .compareDocumentPosition(screen.getByText('Stopka wspólnoty')) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
+
   it('omits the notice section when the HOA has no header', () => {
     renderCard([makeNotification('n1', '100')]);
 

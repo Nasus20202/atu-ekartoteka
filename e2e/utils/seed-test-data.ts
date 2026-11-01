@@ -89,7 +89,7 @@ export async function seedTestData(connectionString?: string) {
     console.log('  - Created charge notifications');
 
     // Create payments record for current year
-    await client.query(loadSql('insert-payment.sql'), [
+    await client.query(loadSql('insert-unpaid-payment.sql'), [
       `${apartmentId}-${currentYear}`,
       apartmentId,
       currentYear,

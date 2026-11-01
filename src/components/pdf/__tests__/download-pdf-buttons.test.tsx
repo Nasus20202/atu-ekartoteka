@@ -57,7 +57,7 @@ function makePayment(): PaymentPdfDto {
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-01T00:00:00.000Z',
     ...Object.fromEntries(PAYMENT_AMOUNT_FIELD_KEYS.map((key) => [key, '0'])),
-    closingBalance: '-12.5',
+    calculatedClosingBalance: '-12.5',
   } as PaymentPdfDto;
 }
 
@@ -133,10 +133,10 @@ describe('PDF download buttons', () => {
 
     expect(file).toEqual({ blob: PDF_BLOB, fileName: 'wplaty-A-1-2024.pdf' });
     const payment = renderedDocumentProps().payment as {
-      closingBalance: { toNumber(): number };
+      calculatedClosingBalance: { toNumber(): number };
       dateFrom: Date;
     };
-    expect(payment.closingBalance.toNumber()).toBe(-12.5);
+    expect(payment.calculatedClosingBalance.toNumber()).toBe(-12.5);
     expect(payment.dateFrom).toEqual(new Date('2024-01-01T00:00:00.000Z'));
   });
 

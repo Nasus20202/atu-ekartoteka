@@ -12,7 +12,7 @@ function makePayment(overrides: Partial<Payment> = {}): Payment {
     dateFrom: new Date('2024-01-01'),
     dateTo: new Date('2024-12-31'),
     openingBalance: new Prisma.Decimal('1.2300'),
-    closingBalance: new Prisma.Decimal('-4.5600'),
+    calculatedClosingBalance: new Prisma.Decimal('-4.5600'),
     openingDebt: new Prisma.Decimal('0.0000'),
     openingSurplus: new Prisma.Decimal('7.8900'),
     januaryPayments: new Prisma.Decimal('10.0000'),
@@ -27,18 +27,18 @@ function makePayment(overrides: Partial<Payment> = {}): Payment {
     octoberPayments: new Prisma.Decimal('0.0000'),
     novemberPayments: new Prisma.Decimal('0.0000'),
     decemberPayments: new Prisma.Decimal('0.0000'),
-    januaryCharges: new Prisma.Decimal('2.5000'),
-    februaryCharges: new Prisma.Decimal('0.0000'),
-    marchCharges: new Prisma.Decimal('0.0000'),
-    aprilCharges: new Prisma.Decimal('0.0000'),
-    mayCharges: new Prisma.Decimal('0.0000'),
-    juneCharges: new Prisma.Decimal('0.0000'),
-    julyCharges: new Prisma.Decimal('0.0000'),
-    augustCharges: new Prisma.Decimal('0.0000'),
-    septemberCharges: new Prisma.Decimal('0.0000'),
-    octoberCharges: new Prisma.Decimal('0.0000'),
-    novemberCharges: new Prisma.Decimal('0.0000'),
-    decemberCharges: new Prisma.Decimal('0.0000'),
+    calculatedJanuaryCharges: new Prisma.Decimal('2.5000'),
+    calculatedFebruaryCharges: new Prisma.Decimal('0.0000'),
+    calculatedMarchCharges: new Prisma.Decimal('0.0000'),
+    calculatedAprilCharges: new Prisma.Decimal('0.0000'),
+    calculatedMayCharges: new Prisma.Decimal('0.0000'),
+    calculatedJuneCharges: new Prisma.Decimal('0.0000'),
+    calculatedJulyCharges: new Prisma.Decimal('0.0000'),
+    calculatedAugustCharges: new Prisma.Decimal('0.0000'),
+    calculatedSeptemberCharges: new Prisma.Decimal('0.0000'),
+    calculatedOctoberCharges: new Prisma.Decimal('0.0000'),
+    calculatedNovemberCharges: new Prisma.Decimal('0.0000'),
+    calculatedDecemberCharges: new Prisma.Decimal('0.0000'),
     createdAt: new Date('2024-01-15T12:00:00.000Z'),
     updatedAt: new Date('2024-02-15T12:00:00.000Z'),
     ...overrides,
@@ -52,10 +52,10 @@ describe('toPaymentPdfDto', () => {
     const dto = toPaymentPdfDto(payment);
 
     expect(dto.openingBalance).toBe('1.23');
-    expect(dto.closingBalance).toBe('-4.56');
+    expect(dto.calculatedClosingBalance).toBe('-4.56');
     expect(dto.openingSurplus).toBe('7.89');
     expect(dto.januaryPayments).toBe('10');
-    expect(dto.januaryCharges).toBe('2.5');
+    expect(dto.calculatedJanuaryCharges).toBe('2.5');
     expect(dto.dateFrom).toBe('2024-01-01T00:00:00.000Z');
     expect(dto.updatedAt).toBe('2024-02-15T12:00:00.000Z');
   });

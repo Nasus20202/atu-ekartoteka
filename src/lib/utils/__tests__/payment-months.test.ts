@@ -16,7 +16,7 @@ describe('getNonEmptyMonths', () => {
   it('returns only non-empty months in order', () => {
     const payment = createMockPayment({
       januaryPayments: new Prisma.Decimal('100.0000'),
-      marchCharges: new Prisma.Decimal('50.0000'),
+      calculatedMarchCharges: new Prisma.Decimal('50.0000'),
     });
 
     expect(getNonEmptyMonths(payment).map((month) => month.monthIndex)).toEqual(
@@ -26,7 +26,7 @@ describe('getNonEmptyMonths', () => {
 
   it('preserves sub-grosz values', () => {
     const payment = createMockPayment({
-      aprilCharges: new Prisma.Decimal('42.0725'),
+      calculatedAprilCharges: new Prisma.Decimal('42.0725'),
     });
 
     expect(getNonEmptyMonths(payment)[0].charges.toFixed(4)).toBe('42.0725');
@@ -35,7 +35,7 @@ describe('getNonEmptyMonths', () => {
   it('treats Decimal 0.0000 as zero', () => {
     const payment = createMockPayment({
       januaryPayments: new Prisma.Decimal('0.0000'),
-      januaryCharges: new Prisma.Decimal('0.0000'),
+      calculatedJanuaryCharges: new Prisma.Decimal('0.0000'),
       februaryPayments: new Prisma.Decimal('0.0001'),
     });
 
@@ -122,7 +122,7 @@ describe('getPaymentTotals', () => {
       createMockPayment({
         openingSurplus: new Prisma.Decimal('80.65'),
         januaryPayments: new Prisma.Decimal('800.00'),
-        januaryCharges: new Prisma.Decimal('889.20'),
+        calculatedJanuaryCharges: new Prisma.Decimal('889.20'),
       })
     );
 
@@ -136,7 +136,7 @@ describe('getPaymentTotals', () => {
     const totals = getPaymentTotals(
       createMockPayment({
         openingDebt: new Prisma.Decimal('120.00'),
-        marchCharges: new Prisma.Decimal('1000.00'),
+        calculatedMarchCharges: new Prisma.Decimal('1000.00'),
       })
     );
 
@@ -149,14 +149,14 @@ describe('getPaymentTotals', () => {
     const payment = createMockPayment({
       openingSurplus: new Prisma.Decimal('80.65'),
       januaryPayments: new Prisma.Decimal('800.00'),
-      januaryCharges: new Prisma.Decimal('889.20'),
-      octoberCharges: new Prisma.Decimal('945.78'),
-      closingBalance: new Prisma.Decimal('-954.33'),
+      calculatedJanuaryCharges: new Prisma.Decimal('889.20'),
+      calculatedOctoberCharges: new Prisma.Decimal('945.78'),
+      calculatedClosingBalance: new Prisma.Decimal('-954.33'),
     });
     const totals = getPaymentTotals(payment);
 
     expect(totals.totalPayments.minus(totals.totalCharges).toFixed(2)).toBe(
-      payment.closingBalance.toFixed(2)
+      payment.calculatedClosingBalance.toFixed(2)
     );
   });
 });

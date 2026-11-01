@@ -10,6 +10,7 @@ import {
 } from '@/app/admin/apartments/[hoaId]/apartment-list-utils';
 import { ApartmentSearchForm } from '@/app/admin/apartments/[hoaId]/apartment-search-form';
 import { ApartmentTable } from '@/app/admin/apartments/[hoaId]/apartment-table';
+import { HoaNoticeCard } from '@/app/admin/apartments/[hoaId]/hoa-notice-card';
 import { useHoaApartments } from '@/app/admin/apartments/[hoaId]/use-hoa-apartments';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
@@ -88,6 +89,8 @@ export default function HOAApartmentsPage() {
           </div>
         }
       />
+
+      {hoa && <HoaNoticeCard header={hoa.header} footer={hoa.footer} />}
 
       <Card className="mb-6">
         <CardHeader>

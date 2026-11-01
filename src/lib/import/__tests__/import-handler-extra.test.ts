@@ -223,20 +223,29 @@ describe('import-handler additional coverage', () => {
       expect(result.results[0].errors).toContain('balance mismatch');
     });
 
-    it('returns errors when cross-file validation fails without skipValidation', async () => {
+    it('reports cross-file mismatches as warnings and still imports', async () => {
       const chargesFile = makeFile('hoa1/nal_czynsz.txt');
       const paymentsFile = makeFile('hoa1/wplaty.txt');
 
       mockParseNalCzynszBuffer.mockResolvedValue([]);
-      mockParseWplatyFile.mockResolvedValue({ entries: [{}] });
+      mockParseWplatyFile.mockResolvedValue({ entries: [] });
       mockValidateNalCzynsz.mockReturnValue([]);
       mockValidateWplaty.mockReturnValue([]);
-      mockValidateChargesCrossFile.mockReturnValue(['cross mismatch']);
+      mockValidateChargesCrossFile.mockReturnValue([
+        { apartmentExternalId: 'APT001', message: 'cross mismatch' },
+      ]);
+      mockTransaction.mockImplementation(async (fn: unknown) =>
+        (fn as (tx: ReturnType<typeof makeTx>) => Promise<void>)(makeTx())
+      );
 
       const result = await processBatchImport([chargesFile, paymentsFile]);
 
-      expect(result.success).toBe(false);
-      expect(result.results[0].errors).toContain('cross mismatch');
+      expect(result.success).toBe(true);
+      expect(result.results[0].errors).toEqual([]);
+      expect(result.results[0].warnings).toContainEqual({
+        apartmentExternalId: 'APT001',
+        message: 'cross mismatch',
+      });
     });
   });
 
@@ -420,7 +429,7 @@ describe('import-handler additional coverage', () => {
           findMany: vi.fn().mockResolvedValue([]),
           findFirst: vi.fn().mockResolvedValue({
             id: 'payment-2023',
-            closingBalance: 100,
+            legacyClosingBalance: 100,
             dateTo: new Date(2023, 11, 31),
           }),
           createMany: vi.fn().mockResolvedValue({ count: 1 }),
@@ -449,7 +458,7 @@ describe('import-handler additional coverage', () => {
       expect(result.results[0].errors).toHaveLength(0);
     });
 
-    it('fails when opening balance does not match previous year closing balance', async () => {
+    it('warns when opening balance does not match previous year closing balance', async () => {
       const paymentsFile = makeFile('hoa1/wplaty.txt');
 
       mockParseWplatyFile.mockResolvedValue({
@@ -480,7 +489,7 @@ describe('import-handler additional coverage', () => {
           findMany: vi.fn().mockResolvedValue([]),
           findFirst: vi.fn().mockResolvedValue({
             id: 'payment-2023',
-            closingBalance: 100,
+            legacyClosingBalance: 100,
             dateTo: new Date(2023, 11, 31),
           }),
           createMany: vi.fn().mockResolvedValue({ count: 0 }),
@@ -505,11 +514,12 @@ describe('import-handler additional coverage', () => {
 
       const result = await processBatchImport([paymentsFile]);
 
-      expect(result.success).toBe(false);
-      expect(result.results[0].errors[0]).toContain('saldo otwarcia');
-      expect(result.results[0].errors[0]).toContain('≠');
-      expect(result.results[0].errors[0]).toContain('APT001');
-      expect(result.results[0].errors[0]).toContain('2024');
+      expect(result.results[0].errors).toEqual([]);
+      const [warning] = result.results[0].warnings;
+      expect(warning.message).toContain('saldo otwarcia');
+      expect(warning.message).toContain('≠');
+      expect(warning.message).toContain('APT001');
+      expect(warning.message).toContain('2024');
     });
   });
 

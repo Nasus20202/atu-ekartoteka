@@ -2,7 +2,7 @@ import { Prisma } from '@/generated/prisma/browser';
 import type { Payment } from '@/lib/types';
 import type { PaymentDtoSource } from '@/lib/types/dto/payment-dto';
 import {
-  CHARGE_MONTH_FIELD_KEYS,
+  CALCULATED_CHARGE_FIELD_KEYS,
   PAYMENT_MONTH_FIELD_KEYS,
 } from '@/lib/utils/payment-months';
 
@@ -12,10 +12,9 @@ export const createMockPayment = (
   overrides: Partial<PaymentDtoSource> = {}
 ): Payment => {
   const monthAmounts = Object.fromEntries(
-    [...PAYMENT_MONTH_FIELD_KEYS, ...CHARGE_MONTH_FIELD_KEYS].map((key) => [
-      key,
-      zero(),
-    ])
+    [...PAYMENT_MONTH_FIELD_KEYS, ...CALCULATED_CHARGE_FIELD_KEYS].map(
+      (key) => [key, zero()]
+    )
   );
 
   return {
@@ -25,7 +24,7 @@ export const createMockPayment = (
     dateFrom: new Date('2024-01-01'),
     dateTo: new Date('2024-12-31'),
     openingBalance: zero(),
-    closingBalance: zero(),
+    calculatedClosingBalance: zero(),
     openingDebt: zero(),
     openingSurplus: zero(),
     createdAt: new Date('2024-01-01'),

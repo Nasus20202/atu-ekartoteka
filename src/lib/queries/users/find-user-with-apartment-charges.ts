@@ -6,7 +6,7 @@ import { chargesInWindow } from '@/lib/utils/history-window';
 export function findUserWithApartmentCharges(
   id: string,
   startYear: number,
-  cutoffPeriod: string | null
+  cutoffPeriod: string
 ) {
   return prisma.user.findUnique({
     where: { id },

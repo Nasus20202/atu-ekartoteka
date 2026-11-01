@@ -2,6 +2,7 @@
  * E2E tests for hiding empty months on payment details.
  */
 
+import { FIXED_NOW_HEADER } from '../../src/lib/utils/fixed-now';
 import { expect, login, test } from '../fixtures';
 import { createMixedPaymentsUser } from '../utils/create-mixed-payments-user';
 import { deleteUserAndApartmentsByEmail } from '../utils/delete-user-and-apartments-by-email';
@@ -24,6 +25,10 @@ test.describe.serial('Payments Empty Months', () => {
   test('tenant sees only non-empty months while yearly totals stay exact', async ({
     page,
   }) => {
+    // Charges from May and July only show once the current month has passed
+    await page.setExtraHTTPHeaders({
+      [FIXED_NOW_HEADER]: `${year}-12-31T12:00:00Z`,
+    });
     await login(page, email, USER_PASSWORD);
 
     await page.goto('/dashboard/payments');

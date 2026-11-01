@@ -1,10 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { mockFindFirst, mockFindMany, mockCount } = vi.hoisted(() => ({
-  mockFindFirst: vi.fn(),
-  mockFindMany: vi.fn(),
-  mockCount: vi.fn(),
-}));
+const { mockFindFirst, mockFindMany, mockCount, mockGroupBy } = vi.hoisted(
+  () => ({
+    mockFindFirst: vi.fn(),
+    mockFindMany: vi.fn(),
+    mockCount: vi.fn(),
+    mockGroupBy: vi.fn().mockResolvedValue([]),
+  })
+);
 
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
@@ -13,6 +16,7 @@ vi.mock('@/lib/database/prisma', () => ({
       findMany: mockFindMany,
       count: mockCount,
     },
+    charge: { groupBy: mockGroupBy },
   },
 }));
 
@@ -42,22 +46,16 @@ describe('apartment queries', () => {
     );
   });
 
-  it('does not limit charges without a cutoff', async () => {
-    await findApartmentWithCharges('apt-1', 'user-1', 2025, null);
-
-    expect(mockFindFirst).toHaveBeenCalledWith(
-      expect.objectContaining({
-        include: expect.objectContaining({
-          charges: expect.objectContaining({
-            where: { period: { gte: '202501' } },
-          }),
-        }),
-      })
-    );
-  });
-
   it('finds an apartment with payments of a single year for its owner', async () => {
-    await findApartmentWithPaymentsByYear('apt-1', 'user-1', 2025, 2025);
+    mockFindFirst.mockResolvedValueOnce(null);
+
+    await findApartmentWithPaymentsByYear(
+      'apt-1',
+      'user-1',
+      2025,
+      2025,
+      '202611'
+    );
 
     expect(mockFindFirst).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -72,9 +70,62 @@ describe('apartment queries', () => {
 
   it('returns null without querying for a year before the window', async () => {
     await expect(
-      findApartmentWithPaymentsByYear('apt-1', 'user-1', 2024, 2025)
+      findApartmentWithPaymentsByYear('apt-1', 'user-1', 2024, 2025, '202611')
     ).resolves.toBeNull();
     expect(mockFindFirst).not.toHaveBeenCalled();
+  });
+
+  it('derives monthly charges and the closing balance from charge records', async () => {
+    const months = Object.fromEntries(
+      [
+        'january',
+        'february',
+        'march',
+        'april',
+        'may',
+        'june',
+        'july',
+        'august',
+        'september',
+        'october',
+        'november',
+        'december',
+      ].map((month) => [`${month}Payments`, 0])
+    );
+    mockFindFirst.mockResolvedValueOnce({
+      id: 'apt-1',
+      payments: [
+        {
+          year: 2025,
+          openingBalance: 100,
+          legacyClosingBalance: 999,
+          legacyJanuaryCharges: 1,
+          ...months,
+          januaryPayments: 50,
+        },
+      ],
+    });
+    mockGroupBy.mockResolvedValueOnce([
+      { apartmentId: 'apt-1', period: '202501', _sum: { totalAmount: 120 } },
+    ]);
+
+    const apartment = await findApartmentWithPaymentsByYear(
+      'apt-1',
+      'user-1',
+      2025,
+      2025,
+      '202611'
+    );
+
+    expect(apartment?.payments[0].calculatedJanuaryCharges.toNumber()).toBe(
+      120
+    );
+    expect(apartment?.payments[0].calculatedClosingBalance.toNumber()).toBe(30);
+    expect(apartment?.payments[0]).not.toHaveProperty('legacyClosingBalance');
+    expect(mockGroupBy.mock.calls[0][0].where).toEqual({
+      apartmentId: { in: ['apt-1'] },
+      period: { gte: '202501', lte: '202611' },
+    });
   });
 
   it('counts existing and foreign-owned apartments in the database', async () => {

@@ -1,6 +1,8 @@
 import {
   CROSS_CHARGES_TOLERANCE,
+  MONTHLY_CHARGES_IGNORED_NOTE,
   NAL_AMOUNT_TOLERANCE,
+  SETTLEMENT_DESCRIPTION_PREFIX,
   WPLATY_BALANCE_TOLERANCE,
 } from '@/lib/import/constants';
 import type { ImportWarning } from '@/lib/import/types';
@@ -66,30 +68,47 @@ function makeCrossFileKey(
   return `${ownerId}#${apartmentId}|${period}`;
 }
 
+type Money = ReturnType<typeof toDecimal>;
+
+function addTo(map: Map<string, Money>, key: string, amount: Money): void {
+  map.set(key, (map.get(key) ?? toDecimal(0)).plus(amount));
+}
+
+function isSettlementLine(entry: NalCzynszEntry): boolean {
+  return entry.description
+    .trim()
+    .toLowerCase()
+    .startsWith(SETTLEMENT_DESCRIPTION_PREFIX);
+}
+
+// One warning per owner, apartment and year listing every differing month
 export function validateChargesCrossFile(
   nalEntries: NalCzynszEntry[],
   paymentEntries: PaymentEntry[]
-): string[] {
-  const errors: string[] = [];
+): ImportWarning[] {
+  const warnings: ImportWarning[] = [];
 
-  const nalSums = new Map<string, ReturnType<typeof toDecimal>>();
+  const nalSums = new Map<string, Money>();
+  const settlementSums = new Map<string, Money>();
   for (const entry of nalEntries) {
     const key = makeCrossFileKey(
       entry.id,
       entry.apartmentExternalId,
       entry.period
     );
-    nalSums.set(
-      key,
-      (nalSums.get(key) ?? toDecimal(0)).plus(entry.totalAmount)
-    );
+    addTo(nalSums, key, toDecimal(entry.totalAmount));
+    if (isSettlementLine(entry)) {
+      addTo(settlementSums, key, toDecimal(entry.totalAmount));
+    }
   }
 
   for (const payment of paymentEntries) {
+    const months: string[] = [];
+    let totalDifference = toDecimal(0);
+
     for (let i = 0; i < payment.monthlyCharges.length; i++) {
       const monthlyCharge = toDecimal(payment.monthlyCharges[i]);
-      const month = String(i + 1).padStart(2, '0');
-      const period = `${payment.year}${month}`;
+      const period = `${payment.year}${String(i + 1).padStart(2, '0')}`;
       const key = makeCrossFileKey(
         payment.externalId,
         payment.apartmentCode,
@@ -101,16 +120,34 @@ export function validateChargesCrossFile(
       if (monthlyCharge.isZero() && nalSum.isZero()) continue;
 
       const delta = monthlyCharge.sub(nalSum).abs();
+      if (!delta.greaterThan(CROSS_CHARGES_TOLERANCE)) continue;
 
-      if (delta.greaterThan(CROSS_CHARGES_TOLERANCE)) {
-        errors.push(
-          `Lokal ${payment.apartmentCode} (właściciel ${payment.externalId}), okres ${period}: ` +
-            `suma naliczeń ${nalSum.toFixed(2)} ≠ naliczenia z wpłat ${monthlyCharge.toFixed(2)} ` +
-            `(różnica ${delta.toFixed(4)})`
-        );
-      }
+      const settlement = settlementSums.get(key) ?? toDecimal(0);
+      const equalsSettlement =
+        !settlement.isZero() &&
+        nalSum
+          .minus(settlement)
+          .minus(monthlyCharge)
+          .abs()
+          .lessThanOrEqualTo(CROSS_CHARGES_TOLERANCE);
+      months.push(
+        `${period}: suma naliczeń ${nalSum.toFixed(2)} ≠ naliczenia z wpłat ${monthlyCharge.toFixed(2)}` +
+          (equalsSettlement ? ' (różnica równa wyrównaniom)' : '')
+      );
+      totalDifference = totalDifference.plus(delta);
+    }
+
+    if (months.length > 0) {
+      warnings.push({
+        apartmentExternalId: payment.apartmentCode,
+        difference: totalDifference.toFixed(4),
+        message:
+          `Lokal ${payment.apartmentCode} (właściciel ${payment.externalId}), rok ${payment.year}: ` +
+          `${months.length} mies. z różnicą — ${months.join('; ')}. ` +
+          MONTHLY_CHARGES_IGNORED_NOTE,
+      });
     }
   }
 
-  return errors;
+  return warnings;
 }

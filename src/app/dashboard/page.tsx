@@ -16,6 +16,7 @@ import { PaymentsSummaryCard } from '@/components/dashboard/payments-summary-car
 import { findUserWithApartmentsCached } from '@/lib/queries/users/find-user-with-apartments';
 import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
 import { AccountStatus } from '@/lib/types';
+import { dateToPeriod } from '@/lib/utils/period';
 import { getRequestNow } from '@/lib/utils/request-now';
 import { sumDecimals } from '@/lib/utils/sum';
 
@@ -27,20 +28,18 @@ export default async function DashboardPage() {
   }
 
   const startYear = await getTenantHistoryStartYear();
+  const now = await getRequestNow();
   const userData = await findUserWithApartmentsCached(
     session.user.id,
-    startYear
+    startYear,
+    dateToPeriod(now)
   );
 
   if (!userData) {
     redirect('/login');
   }
 
-  const now = await getRequestNow();
-  const { currentPeriod, previousPeriod } = getDashboardPeriods(
-    userData.apartments,
-    now
-  );
+  const { currentPeriod, previousPeriod } = getDashboardPeriods(now);
 
   const currentMonthCharges = getChargesForPeriod(
     userData.apartments,
