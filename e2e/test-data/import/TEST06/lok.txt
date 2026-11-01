@@ -1,2 +1,4 @@
 W60001#Former Owner##TEST06-TEST06-00000-00001M#ul. Testowa#1#1#00-001#Warszawa#former@test.com#20200101#20200131#50.5#1000
 W60002#Current Owner##TEST06-TEST06-00000-00001M#ul. Testowa#1#1#00-001#Warszawa#current@test.com#20200201##50.5#1000
+W20002#Nowy Wlasciciel##TEST06-TEST06-00000-00002M#ul. Zmianowa#5#1#00-005#Gdansk#test06@test.com###50.5#1000
+N20003#Operator Telekomunikacyjny##TEST06-00000-00000-STELES#ul. Zmianowa#5#STELE#00-005#Gdansk####0#1
