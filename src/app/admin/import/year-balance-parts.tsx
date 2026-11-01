@@ -4,7 +4,6 @@ import { formatCurrency } from '@/lib/utils';
 
 export const EMPTY_VALUE = '—';
 export const MISMATCH_MARKER = '≠';
-const ZERO_AMOUNT = '0.00';
 const MISMATCH_LABEL = 'nie zgadza się z otwarciem roku następnego';
 const OK_LABEL = 'OK';
 const ERROR_LABEL = 'Błąd';
@@ -50,5 +49,5 @@ export function hasRedValue(row: YearBalanceRow): boolean {
 }
 
 export function hasNewRecords(row: YearBalanceRow): boolean {
-  return row.newRecordsOpening !== ZERO_AMOUNT;
+  return row.records.some(({ isNew }) => isNew);
 }

@@ -4,13 +4,14 @@ import { IMPORT_HOA_CONCURRENCY } from '@/lib/import/constants';
 import { validateCrossYearBalances } from '@/lib/import/cross-year-validation';
 import {
   loadChargeEntries,
-  loadPaymentEntries,
+  loadPaymentRows,
+  toBalanceSources,
+  toPaymentEntries,
 } from '@/lib/import/load-stored-entries';
 import { loadYearBalances } from '@/lib/import/load-year-balances';
 import type { BatchImportResult, HOAImportResult } from '@/lib/import/types';
 import { createEmptyStats, mapWithConcurrency } from '@/lib/import/utils';
 import { runValidators } from '@/lib/import/validate-hoa-files';
-import { paymentErrorYears } from '@/lib/import/validators';
 import { withYearStatus } from '@/lib/import/year-status';
 
 type ApartmentKeys = { externalOwnerId: string; externalApartmentId: string };
@@ -35,21 +36,22 @@ async function validateHoa(
   };
 
   if (skipFullValidation) {
-    const yearBalances = await loadYearBalances(hoa.id);
-    result.yearBalances = withYearStatus(yearBalances, [], [], []);
+    const paymentRows = await loadPaymentRows(hoa.id);
+    const yearBalances = await loadYearBalances(toBalanceSources(paymentRows));
+    result.yearBalances = withYearStatus(yearBalances, [], []);
     return result;
   }
 
-  const [chargeEntries, paymentEntries, apartments, yearBalances] =
-    await Promise.all([
-      loadChargeEntries(hoa.id),
-      loadPaymentEntries(hoa.id),
-      prisma.apartment.findMany({
-        where: { homeownersAssociationId: hoa.id },
-        select: { id: true, externalOwnerId: true, externalApartmentId: true },
-      }),
-      loadYearBalances(hoa.id),
-    ]);
+  const [chargeEntries, paymentRows, apartments] = await Promise.all([
+    loadChargeEntries(hoa.id),
+    loadPaymentRows(hoa.id),
+    prisma.apartment.findMany({
+      where: { homeownersAssociationId: hoa.id },
+      select: { id: true, externalOwnerId: true, externalApartmentId: true },
+    }),
+  ]);
+  const paymentEntries = toPaymentEntries(paymentRows);
+  const yearBalances = await loadYearBalances(toBalanceSources(paymentRows));
   const apartmentMap = new Map(
     apartments.map((apartment) => [apartmentKey(apartment), apartment.id])
   );
@@ -67,11 +69,9 @@ async function validateHoa(
     paymentEntries,
     result.warnings
   );
-  result.yearErrors = paymentErrorYears(paymentEntries);
   result.yearBalances = withYearStatus(
     yearBalances,
     result.errors,
-    result.yearErrors,
     result.warnings
   );
 

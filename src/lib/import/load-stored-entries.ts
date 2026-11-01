@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/database/prisma';
+import type { BalancePaymentSource } from '@/lib/import/year-balance-overview';
 import type { NalCzynszEntry } from '@/lib/parsers/nal-czynsz-parser';
 import type { PaymentEntry } from '@/lib/parsers/wplaty-parser';
+import type { DecimalLike } from '@/lib/utils/decimal';
 import {
   LEGACY_CHARGE_FIELD_KEYS,
   PAYMENT_MONTH_FIELD_KEYS,
@@ -34,16 +36,19 @@ export async function loadChargeEntries(
   }));
 }
 
-export async function loadPaymentEntries(
-  hoaId: string
-): Promise<PaymentEntry[]> {
-  const payments = await prisma.payment.findMany({
+/** Payment rows of one HOA, loaded once and mapped into both checks that need them. */
+export function loadPaymentRows(hoaId: string) {
+  return prisma.payment.findMany({
     where: { apartment: { homeownersAssociationId: hoaId } },
     include: { apartment: APARTMENT_KEYS_SELECT },
     orderBy: [{ apartmentId: 'asc' }, { year: 'asc' }],
   });
+}
 
-  return payments.map((payment) => {
+export type PaymentRow = Awaited<ReturnType<typeof loadPaymentRows>>[number];
+
+export function toPaymentEntries(rows: PaymentRow[]): PaymentEntry[] {
+  return rows.map((payment) => {
     const monthlyCharges = LEGACY_CHARGE_FIELD_KEYS.map((key) => payment[key]);
 
     return {
@@ -61,4 +66,23 @@ export async function loadPaymentEntries(
       closingBalance: payment.legacyClosingBalance,
     };
   });
+}
+
+export function toBalanceSources(rows: PaymentRow[]): BalancePaymentSource[] {
+  return rows.map(({ apartment, ...payment }) => ({
+    ...monthlyPayments(payment),
+    year: payment.year,
+    openingBalance: payment.openingBalance,
+    apartmentId: payment.apartmentId,
+    apartmentLabel: apartment.externalApartmentId,
+    ownerId: apartment.externalOwnerId,
+  }));
+}
+
+function monthlyPayments(
+  payment: Omit<PaymentRow, 'apartment'>
+): Record<(typeof PAYMENT_MONTH_FIELD_KEYS)[number], DecimalLike> {
+  return Object.fromEntries(
+    PAYMENT_MONTH_FIELD_KEYS.map((key) => [key, payment[key]])
+  ) as Record<(typeof PAYMENT_MONTH_FIELD_KEYS)[number], DecimalLike>;
 }
