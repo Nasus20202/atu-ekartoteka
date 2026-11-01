@@ -63,8 +63,19 @@ async function parsePaymentFiles(files: File[]) {
   );
 }
 
-async function parseWmbFile(file: File | undefined) {
-  return file ? parseWmbDate(await parseFileToBuffer(file)) : undefined;
+/** Returns the newest date among the WMB files of one data type, if any has a valid date. */
+async function parseWmbDates(wmbFiles: File[]) {
+  const dates = await Promise.all(
+    wmbFiles.map(async (file) => parseWmbDate(await parseFileToBuffer(file)))
+  );
+  const validDates = dates.filter((date): date is Date => date !== undefined);
+  if (validDates.length === 0) return undefined;
+  return new Date(Math.max(...validDates.map((date) => date.getTime())));
+}
+
+/** A WMB date only applies to the data it describes, so it is ignored without that data's .txt files. */
+async function parseWmbDatesFor(txtFiles: File[], wmbFiles: File[]) {
+  return txtFiles.length > 0 ? parseWmbDates(wmbFiles) : undefined;
 }
 
 /** Parses and merges one HOA's files and records totals and WMB dates on the result. */
@@ -77,6 +88,9 @@ export async function parseHoaFiles(
     chargesFiles = [],
     notificationsFiles = [],
     paymentsFiles = [],
+    apartmentsWmbFiles = [],
+    chargesWmbFiles = [],
+    notificationsWmbFiles = [],
   } = fileGroup;
   const duplicateErrors: string[] = [];
 
@@ -116,10 +130,17 @@ export async function parseHoaFiles(
     };
   }
 
-  result.apartmentsDataDate = await parseWmbFile(fileGroup.apartmentsWmbFile);
-  result.chargesDataDate = await parseWmbFile(fileGroup.chargesWmbFile);
-  result.notificationsDataDate = await parseWmbFile(
-    fileGroup.notificationsWmbFile
+  result.apartmentsDataDate = await parseWmbDatesFor(
+    lokFiles,
+    apartmentsWmbFiles
+  );
+  result.chargesDataDate = await parseWmbDatesFor(
+    chargesFiles,
+    chargesWmbFiles
+  );
+  result.notificationsDataDate = await parseWmbDatesFor(
+    notificationsFiles,
+    notificationsWmbFiles
   );
 
   return {

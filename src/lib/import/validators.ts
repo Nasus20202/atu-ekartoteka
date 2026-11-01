@@ -36,27 +36,48 @@ export function validateNalCzynsz(entries: NalCzynszEntry[]): ImportWarning[] {
   return warnings;
 }
 
+function checkPaymentIdentity(entry: PaymentEntry) {
+  const openingBalance = toDecimal(entry.openingBalance);
+  const closingBalance = toDecimal(entry.closingBalance);
+  const totalPayments = sumDecimals(entry.monthlyPayments);
+  const totalCharges = sumDecimals(entry.monthlyCharges);
+  const computed = openingBalance.plus(totalPayments).minus(totalCharges);
+  const delta = closingBalance.sub(computed).abs();
+
+  return {
+    openingBalance,
+    closingBalance,
+    totalPayments,
+    totalCharges,
+    computed,
+    delta,
+    mismatch: delta.greaterThan(WPLATY_BALANCE_TOLERANCE),
+  };
+}
+
 export function validateWplaty(entries: PaymentEntry[]): string[] {
   const errors: string[] = [];
 
   for (const entry of entries) {
-    const openingBalance = toDecimal(entry.openingBalance);
-    const closingBalance = toDecimal(entry.closingBalance);
-    const totalPayments = sumDecimals(entry.monthlyPayments);
-    const totalCharges = sumDecimals(entry.monthlyCharges);
-    const computed = openingBalance.plus(totalPayments).minus(totalCharges);
-    const delta = closingBalance.sub(computed).abs();
-    if (delta.greaterThan(WPLATY_BALANCE_TOLERANCE)) {
+    const check = checkPaymentIdentity(entry);
+    if (check.mismatch) {
       errors.push(
         `Wpłata ${entry.externalId} (lokal ${entry.apartmentCode}, rok ${entry.year}): ` +
-          `saldo zamknięcia ${closingBalance.toFixed(4)} ≠ ` +
-          `${openingBalance.toFixed(4)} + ${totalPayments.toFixed(2)} - ${totalCharges.toFixed(2)} = ${computed.toFixed(2)} ` +
-          `(różnica ${delta.toFixed(4)})`
+          `saldo zamknięcia ${check.closingBalance.toFixed(4)} ≠ ` +
+          `${check.openingBalance.toFixed(4)} + ${check.totalPayments.toFixed(2)} - ${check.totalCharges.toFixed(2)} = ${check.computed.toFixed(2)} ` +
+          `(różnica ${check.delta.toFixed(4)})`
       );
     }
   }
 
   return errors;
+}
+
+/** Year of each payment entry that fails the balance identity, in entry order. */
+export function paymentErrorYears(entries: PaymentEntry[]): number[] {
+  return entries
+    .filter((entry) => checkPaymentIdentity(entry).mismatch)
+    .map(({ year }) => year);
 }
 
 // Same owner#apartment identity as the importers, plus the YYYYMM period
@@ -140,6 +161,7 @@ export function validateChargesCrossFile(
     if (months.length > 0) {
       warnings.push({
         apartmentExternalId: payment.apartmentCode,
+        year: payment.year,
         difference: totalDifference.toFixed(4),
         message:
           `Lokal ${payment.apartmentCode} (właściciel ${payment.externalId}), rok ${payment.year}: ` +

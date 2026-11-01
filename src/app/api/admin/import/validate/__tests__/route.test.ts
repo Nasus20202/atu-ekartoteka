@@ -1,3 +1,4 @@
+import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { UserRole } from '@/lib/types';
@@ -22,6 +23,16 @@ const { auth } = await import('@/auth');
 const { validateDatabase } = await import('@/lib/import/validate-database');
 const { POST } = await import('../route');
 
+const ENDPOINT = 'http://localhost/api/admin/import/validate';
+
+function postRequest(body?: unknown): NextRequest {
+  return new NextRequest(ENDPOINT, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+}
+
 const adminSession = {
   user: { id: 'admin-id', email: 'admin@example.com', role: UserRole.ADMIN },
   expires: new Date().toISOString(),
@@ -35,7 +46,7 @@ describe('POST /api/admin/import/validate', () => {
   it('rejects unauthenticated requests', async () => {
     vi.mocked(auth).mockResolvedValueOnce(null as never);
 
-    const response = await POST();
+    const response = await POST(postRequest());
 
     expect(response.status).toBe(401);
     expect(validateDatabase).not.toHaveBeenCalled();
@@ -47,7 +58,7 @@ describe('POST /api/admin/import/validate', () => {
       expires: new Date().toISOString(),
     } as never);
 
-    const response = await POST();
+    const response = await POST(postRequest());
 
     expect(response.status).toBe(401);
     expect(validateDatabase).not.toHaveBeenCalled();
@@ -59,15 +70,51 @@ describe('POST /api/admin/import/validate', () => {
       success: true,
       results: [],
       errors: [],
+      fullValidationSkipped: false,
     });
 
-    const response = await POST();
+    const response = await POST(postRequest());
 
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
       success: true,
       results: [],
       errors: [],
+      fullValidationSkipped: false,
+    });
+    expect(validateDatabase).toHaveBeenCalledWith({
+      skipFullValidation: false,
+    });
+  });
+
+  it('skips the full validation when the request asks for it', async () => {
+    vi.mocked(auth).mockResolvedValueOnce(adminSession as never);
+    vi.mocked(validateDatabase).mockResolvedValueOnce({
+      success: true,
+      results: [],
+      errors: [],
+      fullValidationSkipped: true,
+    });
+
+    const response = await POST(postRequest({ skipFullValidation: true }));
+
+    expect(response.status).toBe(200);
+    expect(validateDatabase).toHaveBeenCalledWith({ skipFullValidation: true });
+  });
+
+  it('runs the full validation when the body is empty', async () => {
+    vi.mocked(auth).mockResolvedValueOnce(adminSession as never);
+    vi.mocked(validateDatabase).mockResolvedValueOnce({
+      success: true,
+      results: [],
+      errors: [],
+      fullValidationSkipped: false,
+    });
+
+    await POST(postRequest());
+
+    expect(validateDatabase).toHaveBeenCalledWith({
+      skipFullValidation: false,
     });
   });
 
@@ -75,7 +122,7 @@ describe('POST /api/admin/import/validate', () => {
     vi.mocked(auth).mockResolvedValueOnce(adminSession as never);
     vi.mocked(validateDatabase).mockRejectedValueOnce(new Error('DB down'));
 
-    const response = await POST();
+    const response = await POST(postRequest());
     const data = await response.json();
 
     expect(response.status).toBe(500);

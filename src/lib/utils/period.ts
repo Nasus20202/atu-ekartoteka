@@ -9,6 +9,10 @@ export function monthIndexToPeriod(year: number, monthIndex: number): string {
   return `${year}${month}`;
 }
 
+export function periodToYear(period: string): number {
+  return Number(period.slice(0, PERIOD_YEAR_LENGTH));
+}
+
 export function yearStartPeriod(year: number): string {
   return monthIndexToPeriod(year, FIRST_MONTH_INDEX);
 }

@@ -23,24 +23,36 @@ export function getTxtFileField(fileName: string): TxtFileField | undefined {
   return TXT_FILE_PREFIXES.find(([prefix]) => name.startsWith(prefix))?.[1];
 }
 
-const WMB_FILE_MAP: Record<
-  string,
-  keyof Pick<
-    ImportFileGroup,
-    'apartmentsWmbFile' | 'chargesWmbFile' | 'notificationsWmbFile'
-  >
-> = {
-  'lokal_ost_wys.wmb': 'apartmentsWmbFile',
-  'nalicz_ost_wys.wmb': 'chargesWmbFile',
-  'pow_czynsz_ost_wys.wmb': 'notificationsWmbFile',
-};
+type WmbFileField = keyof Pick<
+  ImportFileGroup,
+  'apartmentsWmbFiles' | 'chargesWmbFiles' | 'notificationsWmbFiles'
+>;
+
+const WMB_EXTENSION = '.wmb';
+
+// Same prefixes as the .txt files, plus the legacy charges name nalicz_ost_wys.wmb
+const WMB_FILE_PREFIXES: [string, WmbFileField][] = [
+  ['nal_czynsz', 'chargesWmbFiles'],
+  ['nalicz', 'chargesWmbFiles'],
+  ['pow_czynsz', 'notificationsWmbFiles'],
+  ['lok', 'apartmentsWmbFiles'],
+];
+
+export function getWmbFileField(fileName: string): WmbFileField | undefined {
+  const name = fileName.toLowerCase();
+  if (!name.endsWith(WMB_EXTENSION)) return undefined;
+  return WMB_FILE_PREFIXES.find(([prefix]) => name.startsWith(prefix))?.[1];
+}
 
 export function createEmptyStats(): EntityStats {
   return { created: 0, updated: 0, skipped: 0, deleted: 0, total: 0 };
 }
 
 export function isKnownFile(fileName: string): boolean {
-  return getTxtFileField(fileName) !== undefined || fileName.endsWith('.wmb');
+  return (
+    getTxtFileField(fileName) !== undefined ||
+    fileName.toLowerCase().endsWith(WMB_EXTENSION)
+  );
 }
 
 export async function parseFileToBuffer(file: File): Promise<Buffer> {
@@ -78,8 +90,9 @@ export function groupFilesByHOA(
       const entry = filesByHOA.get(hoaId) ?? {};
 
       const txtField = getTxtFileField(fileName);
-      if (fileName in WMB_FILE_MAP) {
-        entry[WMB_FILE_MAP[fileName]] = file;
+      const wmbField = getWmbFileField(fileName);
+      if (wmbField) {
+        entry[wmbField] = [...(entry[wmbField] ?? []), file];
       } else if (txtField) {
         entry[txtField] = [...(entry[txtField] ?? []), file];
       } else if (!isKnownFile(fileName)) {

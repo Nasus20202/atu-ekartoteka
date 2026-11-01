@@ -13,10 +13,10 @@ export interface ImportFileGroup {
   chargesFiles?: File[];
   notificationsFiles?: File[];
   paymentsFiles?: File[];
-  // Per-data-type WMB snapshot date files
-  apartmentsWmbFile?: File;
-  chargesWmbFile?: File;
-  notificationsWmbFile?: File;
+  // Per-data-type WMB snapshot date files; the newest date among them is used
+  apartmentsWmbFiles?: File[];
+  chargesWmbFiles?: File[];
+  notificationsWmbFiles?: File[];
 }
 
 export interface EntityStats {
@@ -30,6 +30,7 @@ export interface EntityStats {
 export interface ImportWarning {
   apartmentExternalId: string;
   period?: string;
+  year?: number;
   lineNo?: number;
   difference?: string;
   message: string;
@@ -37,16 +38,44 @@ export interface ImportWarning {
 
 export interface HOAImportResult {
   hoaId: string;
+  hoaName?: string;
   apartments: EntityStats;
   charges?: EntityStats;
   notifications?: EntityStats;
   payments?: EntityStats;
   errors: string[];
+  // Year of each error in `errors` that belongs to one year; the others apply to the whole HOA
+  yearErrors?: number[];
   warnings: ImportWarning[];
   // Data-as-of dates from WMB files
   apartmentsDataDate?: Date;
   chargesDataDate?: Date;
   notificationsDataDate?: Date;
+  yearBalances?: YearBalanceRow[];
+}
+
+export type YearStatus = 'ok' | 'warning' | 'error';
+
+export interface YearRecord {
+  apartmentLabel: string;
+  ownerId: string;
+  opening: string;
+  closing: string;
+  nextOpening: string | null;
+  difference: string | null;
+  status: 'match' | 'mismatch' | 'ended' | 'last';
+  isNew: boolean;
+}
+
+export interface YearBalanceRow {
+  year: number;
+  openingBalance: string;
+  calculatedClosing: string;
+  closingMismatch: boolean;
+  issueCount: number;
+  status: YearStatus;
+  records: YearRecord[];
+  newRecordsOpening: string;
 }
 
 export interface ImportError {

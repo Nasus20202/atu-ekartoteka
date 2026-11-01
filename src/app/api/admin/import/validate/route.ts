@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { validateDatabase } from '@/lib/import/validate-database';
@@ -9,17 +9,29 @@ const logger = createLogger('api:admin:import:validate');
 
 export const runtime = 'nodejs';
 
-export async function POST() {
+async function readSkipFullValidation(req: NextRequest): Promise<boolean> {
+  const body = (await req.json().catch(() => ({}))) as {
+    skipFullValidation?: boolean;
+  };
+  return body.skipFullValidation === true;
+}
+
+export async function POST(req: NextRequest) {
   try {
     const { session, response } = await requireAdmin(
       'Unauthorized validation attempt'
     );
     if (response) return response;
 
-    const result = await validateDatabase();
+    const skipFullValidation = await readSkipFullValidation(req);
+    const result = await validateDatabase({ skipFullValidation });
 
     logger.info(
-      { email: session.user.email, hoaCount: result.results.length },
+      {
+        email: session.user.email,
+        hoaCount: result.results.length,
+        skipFullValidation,
+      },
       'Database validation completed'
     );
 

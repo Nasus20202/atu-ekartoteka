@@ -61,6 +61,16 @@ W00162#hoa1-hoa1-00000-00001M#1#Test#1#szt#100#100,00`;
     expect(result.header).toEqual(['Header line 1', 'Header line 2']);
   });
 
+  it('splits header and footer lines written with CR-only line endings', async () => {
+    const content =
+      '#\rFooter line 1\rFooter line 2\r#\rW00162#hoa1-hoa1-00000-00001M#1#Test#1#szt#100#100,00';
+
+    const result = await parsePowCzynszFile(encode(content));
+
+    expect(result.footer).toEqual(['Footer line 1', 'Footer line 2']);
+    expect(result.entries).toHaveLength(1);
+  });
+
   it('extracts footer lines between first and second # separator', async () => {
     const content = `#
 Footer line 1
