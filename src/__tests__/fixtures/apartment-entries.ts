@@ -15,6 +15,8 @@ export const createMockApartmentEntry = (
   shareNumerator: 50.5,
   shareDenominator: 2.5,
   isOwner: true,
+  validFrom: null,
+  validTo: null,
   ...overrides,
 });
 

@@ -5,6 +5,7 @@ import { requireAdmin } from '@/lib/auth/require-admin';
 import { processBatchImport } from '@/lib/import/import-handler';
 import { createLogger } from '@/lib/logger';
 import { getErrorMessage } from '@/lib/utils/error-message';
+import { getRequestNow } from '@/lib/utils/request-now';
 
 const logger = createLogger('api:admin:import');
 
@@ -77,6 +78,7 @@ export async function POST(req: NextRequest) {
     const result = await processBatchImport(files, {
       cleanImport,
       skipValidation,
+      now: await getRequestNow(),
     });
 
     logger.info(

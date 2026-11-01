@@ -92,6 +92,10 @@ model Apartment {
   // The expression is the exact text `prisma db pull` reports.
   shareRatio            Float?             @default(dbgenerated("\nCASE\n    WHEN (\"shareDenominator\" > (0)::double precision) THEN (\"shareNumerator\" / \"shareDenominator\")\n    ELSE NULL::double precision\nEND"))
   
+  // Owner period from lok.txt; validTo is null for the current owner
+  validFrom   DateTime?
+  validTo     DateTime?
+
   // Activity status
   isActive    Boolean  @default(true)  // whether apartment is in current file
   

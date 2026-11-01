@@ -32,6 +32,8 @@ export const createMockApartment = (
   city: 'Warsaw',
   shareNumerator: 55.5,
   shareDenominator: 2.7,
+  validFrom: null,
+  validTo: null,
   isActive: true,
   createdAt: new Date(),
   updatedAt: new Date(),

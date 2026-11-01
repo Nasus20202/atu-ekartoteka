@@ -166,6 +166,7 @@ describe('Admin Import API', () => {
       expect(processBatchImport).toHaveBeenCalledWith([file], {
         cleanImport: false,
         skipValidation: false,
+        now: expect.any(Date),
       });
     });
 
@@ -215,6 +216,7 @@ describe('Admin Import API', () => {
       expect(processBatchImport).toHaveBeenCalledWith([file1, file2], {
         cleanImport: false,
         skipValidation: false,
+        now: expect.any(Date),
       });
     });
 

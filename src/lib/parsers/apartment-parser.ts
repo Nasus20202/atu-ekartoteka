@@ -11,10 +11,12 @@ export interface ApartmentEntry {
   shareNumerator: number;
   shareDenominator: number;
   isOwner: boolean;
+  validFrom: Date | null; // owner period start, null when blank or invalid
+  validTo: Date | null; // owner period end, null for the current owner
 }
 
 import { isOwnerId } from '@/lib/parsers/owner-id';
-import { decodeBuffer } from '@/lib/parsers/parser-utils';
+import { decodeBuffer, parseYyyymmdd } from '@/lib/parsers/parser-utils';
 
 export async function parseApartmentBuffer(
   buffer: Buffer
@@ -57,6 +59,8 @@ export async function parseApartmentBuffer(
     const postalCode = fields[externalIdIndex + 4];
     const city = fields[externalIdIndex + 5];
     const email = fields[externalIdIndex + 6];
+    const validFrom = parseYyyymmdd(fields[externalIdIndex + 7] ?? '');
+    const validTo = parseYyyymmdd(fields[externalIdIndex + 8] ?? '');
     const areaStr = fields[externalIdIndex + 9];
     const heightStr = fields[externalIdIndex + 10];
 
@@ -80,6 +84,8 @@ export async function parseApartmentBuffer(
       shareNumerator,
       shareDenominator,
       isOwner,
+      validFrom,
+      validTo,
     });
   }
 

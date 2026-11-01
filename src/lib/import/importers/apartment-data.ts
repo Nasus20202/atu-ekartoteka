@@ -14,6 +14,8 @@ export const EXISTING_APARTMENT_SELECT = {
   city: true,
   shareNumerator: true,
   shareDenominator: true,
+  validFrom: true,
+  validTo: true,
   isActive: true,
   homeownersAssociationId: true,
 } as const;
@@ -44,10 +46,27 @@ export function buildApartmentMap(
   );
 }
 
+/** Start of the UTC day that `now` falls on; owner end dates are stored at midnight UTC. */
+export function startOfUtcDay(now: Date): Date {
+  return new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+  );
+}
+
+/** An owner whose period ended on or before the import day is no longer active. */
+export function isOwnershipEnded(validTo: Date | null, now: Date): boolean {
+  return validTo !== null && validTo.getTime() <= startOfUtcDay(now).getTime();
+}
+
+function isSameDate(a: Date | null, b: Date | null): boolean {
+  return (a?.getTime() ?? null) === (b?.getTime() ?? null);
+}
+
 export function hasApartmentChanged(
   existing: ExistingApartment,
   entry: ApartmentEntry,
-  hoaId: string
+  hoaId: string,
+  now: Date
 ): boolean {
   return (
     existing.owner !== (entry.owner || null) ||
@@ -59,7 +78,9 @@ export function hasApartmentChanged(
     existing.city !== (entry.city || null) ||
     existing.shareNumerator !== entry.shareNumerator ||
     existing.shareDenominator !== entry.shareDenominator ||
-    existing.isActive !== true ||
+    !isSameDate(existing.validFrom, entry.validFrom) ||
+    !isSameDate(existing.validTo, entry.validTo) ||
+    existing.isActive !== !isOwnershipEnded(entry.validTo, now) ||
     existing.homeownersAssociationId !== hoaId
   );
 }

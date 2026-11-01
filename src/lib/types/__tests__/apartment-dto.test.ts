@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  type ApartmentDetailDtoSource,
   toApartmentDetailDto,
   toApartmentSummaryDto,
   toHomeownersAssociationNoticeDto,
@@ -40,6 +41,31 @@ describe('toApartmentSummaryDto', () => {
     });
   });
 });
+
+function detailSourceWithoutDates(): Omit<
+  ApartmentDetailDtoSource,
+  'validFrom'
+> {
+  return {
+    id: 'apt-1',
+    externalOwnerId: 'W1',
+    externalApartmentId: 'A1',
+    owner: 'Jan Kowalski',
+    email: 'user@example.com',
+    address: 'Testowa',
+    building: '1',
+    number: '10',
+    postalCode: '00-001',
+    city: 'Warszawa',
+    shareRatio: 0.1,
+    isActive: true,
+    homeownersAssociation: { id: 'hoa-1', externalId: 'HOA-1', name: 'W' },
+    user: null,
+    charges: [],
+    chargeNotifications: [],
+    payments: [],
+  };
+}
 
 describe('toApartmentDetailDto', () => {
   it('maps nested notifications to frontend-safe dates, keeping ISO strings', () => {
@@ -81,6 +107,7 @@ describe('toApartmentDetailDto', () => {
         },
       ],
       payments: [],
+      validFrom: null,
     });
 
     expect(dto.chargeNotifications[0]).toEqual({
@@ -94,6 +121,24 @@ describe('toApartmentDetailDto', () => {
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-02T00:00:00.000Z',
     });
+  });
+
+  it('maps the owner start date to an ISO string', () => {
+    const dto = toApartmentDetailDto({
+      ...detailSourceWithoutDates(),
+      validFrom: new Date('2025-02-10T00:00:00.000Z'),
+    });
+
+    expect(dto.validFrom).toBe('2025-02-10T00:00:00.000Z');
+  });
+
+  it('maps a missing owner start date to null', () => {
+    const dto = toApartmentDetailDto({
+      ...detailSourceWithoutDates(),
+      validFrom: null,
+    });
+
+    expect(dto.validFrom).toBeNull();
   });
 
   it('maps the HOA notice with header and footer', () => {
