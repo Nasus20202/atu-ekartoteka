@@ -50,6 +50,7 @@ model HomeownersAssociation {
 
 model User {
   id             String   @id @default(cuid())
+  // Stored normalised (trimmed, lowercased) — see src/lib/auth/email.ts
   email          String   @unique
   password       String?
   // COLLATE "pl_numeric" (set in migration, not tracked by Prisma)

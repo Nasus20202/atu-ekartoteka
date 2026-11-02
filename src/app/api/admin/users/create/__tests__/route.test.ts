@@ -16,7 +16,6 @@ vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     user: {
       findUnique: mockUserFindUnique,
-      findFirst: mockUserFindUnique,
       create: mockUserCreate,
     },
   },

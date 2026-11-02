@@ -9,7 +9,6 @@ vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     user: {
       findUnique: vi.fn(),
-      findFirst: vi.fn(),
       create: vi.fn(),
     },
   },
@@ -203,7 +202,7 @@ describe('callbacks.signIn', () => {
     });
 
     expect(result).toBe(true);
-    expect(prisma.user.findFirst).not.toHaveBeenCalled();
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
   });
 
   it('creates a new user on first Google sign-in', async () => {
@@ -211,7 +210,7 @@ describe('callbacks.signIn', () => {
       ...createMockUser({ id: 'new-user-id' }),
       createdAt: new Date(),
     };
-    vi.mocked(prisma.user.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
     vi.mocked(prisma.user.create).mockResolvedValue(newDbUser as never);
 
     const googleUser = {
@@ -244,7 +243,7 @@ describe('callbacks.signIn', () => {
   it('still signs in a new Google user when notifying admins fails', async () => {
     const { notifyAdminsOfNewUser } =
       await import('@/lib/notifications/new-user-registration');
-    vi.mocked(prisma.user.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
     vi.mocked(prisma.user.create).mockResolvedValue({
       ...createMockUser({ id: 'new-user-id' }),
       name: null,
@@ -269,7 +268,7 @@ describe('callbacks.signIn', () => {
   });
 
   it('links an existing account by normalised email', async () => {
-    vi.mocked(prisma.user.findFirst).mockResolvedValue(mockUsers.tenant);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUsers.tenant);
 
     const googleUser = {
       id: undefined,
@@ -287,8 +286,8 @@ describe('callbacks.signIn', () => {
 
     expect(result).toBe(true);
     expect(prisma.user.create).not.toHaveBeenCalled();
-    expect(prisma.user.findFirst).toHaveBeenCalledWith({
-      where: { email: { equals: 'test@example.com', mode: 'insensitive' } },
+    expect(prisma.user.findUnique).toHaveBeenCalledWith({
+      where: { email: 'test@example.com' },
     });
     expect(googleUser.id).toBe('user-123');
     expect(googleUser.mustChangePassword).toBe(false);
@@ -304,12 +303,12 @@ describe('callbacks.signIn', () => {
     });
 
     expect(result).toBe(false);
-    expect(prisma.user.findFirst).not.toHaveBeenCalled();
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
     expect(prisma.user.create).not.toHaveBeenCalled();
   });
 
   it('returns false when Google sign-in throws', async () => {
-    vi.mocked(prisma.user.findFirst).mockRejectedValue(new Error('DB error'));
+    vi.mocked(prisma.user.findUnique).mockRejectedValue(new Error('DB error'));
 
     const result = await callbacks!.signIn!({
       user: { email: 'err@example.com' } as never,
