@@ -21,10 +21,14 @@ export function UserCard(actionProps: UserActionsProps) {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-start justify-between">
-          <div>
-            <CardTitle>{user.name || user.email}</CardTitle>
-            <CardDescription className="mt-1">{user.email}</CardDescription>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <CardTitle className="break-words">
+              {user.name || user.email}
+            </CardTitle>
+            <CardDescription className="mt-1 break-words">
+              {user.email}
+            </CardDescription>
             <div className="mt-2 text-xs text-muted-foreground">
               Zarejestrowano:{' '}
               {new Date(user.createdAt).toLocaleDateString(APP_LOCALE, {
@@ -36,7 +40,9 @@ export function UserCard(actionProps: UserActionsProps) {
               })}
             </div>
           </div>
-          <UserStatusBadge status={user.status} />
+          <div className="shrink-0">
+            <UserStatusBadge status={user.status} />
+          </div>
         </div>
       </CardHeader>
       <CardContent>

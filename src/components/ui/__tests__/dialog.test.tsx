@@ -53,7 +53,19 @@ describe('Dialog', () => {
 
       expect(screen.getByTestId('dialog-footer')).toHaveClass(
         'flex',
-        'flex-col-reverse'
+        'flex-col-reverse',
+        'gap-2'
+      );
+    });
+
+    it('keeps the dialog inside the mobile viewport and scrollable', () => {
+      renderDialog(true);
+
+      expect(screen.getByRole('dialog')).toHaveClass(
+        'max-h-[calc(100dvh-2rem)]',
+        'w-[calc(100%-2rem)]',
+        'overflow-y-auto',
+        'rounded-lg'
       );
     });
   });

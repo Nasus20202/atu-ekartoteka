@@ -47,4 +47,29 @@ describe('UserFilters', () => {
 
     expect(screen.getByRole('button', { name })).toHaveClass('bg-primary');
   });
+
+  it('stacks the filters on mobile and keeps the action on its own row', () => {
+    const { container } = render(
+      <UserFilters
+        filter="ALL"
+        onChange={() => {}}
+        action={<span data-testid="view-switch" />}
+      />
+    );
+
+    const filtersRow = container.firstElementChild;
+    const filterGrid = filtersRow?.firstElementChild;
+    const actionRow = screen.getByTestId('view-switch').parentElement;
+
+    expect(filtersRow).toHaveClass('flex-col', 'sm:flex-row');
+    expect(filterGrid).toHaveClass('grid', 'grid-cols-2', 'sm:contents');
+    expect(actionRow).toHaveClass('justify-end', 'sm:ml-auto');
+    expect(screen.getByRole('button', { name: /wszyscy/i })).toHaveClass(
+      'col-span-2',
+      'sm:col-span-1'
+    );
+    expect(
+      screen.getByRole('button', { name: /administratorzy/i })
+    ).not.toHaveClass('col-span-2');
+  });
 });
