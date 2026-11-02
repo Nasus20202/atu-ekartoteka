@@ -44,7 +44,7 @@ export function CreateUserDialog({
         if (!nextOpen) onCancel();
       }}
     >
-      <DialogContent className="max-w-md gap-0 p-0">
+      <DialogContent className="max-w-md gap-0 p-0 sm:p-0">
         <CardHeader>
           <DialogTitle asChild>
             <CardTitle>Dodaj nowego użytkownika</CardTitle>
