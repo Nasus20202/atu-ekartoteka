@@ -25,6 +25,10 @@ vi.mock('next/link', () => ({
   ),
 }));
 
+vi.mock('@/components/account/use-logout', () => ({
+  useLogout: () => ({ logout: vi.fn(), pending: false }),
+}));
+
 import { DashboardNavbar } from '@/components/navigation/dashboard-navbar';
 
 describe('DashboardNavbar', () => {

@@ -4,10 +4,11 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { LogoutButton } from '@/components/account/logout-button';
 
-const mockSignOut = vi.fn();
+const mockLogout = vi.fn();
+let mockPending = false;
 
-vi.mock('next-auth/react', () => ({
-  signOut: () => mockSignOut(),
+vi.mock('@/components/account/use-logout', () => ({
+  useLogout: () => ({ logout: mockLogout, pending: mockPending }),
 }));
 
 describe('LogoutButton', () => {
@@ -18,14 +19,21 @@ describe('LogoutButton', () => {
     expect(button).toBeInTheDocument();
   });
 
-  it('calls signOut when clicked', async () => {
+  it('logs out when clicked', async () => {
     const user = userEvent.setup();
     render(<LogoutButton />);
 
-    const button = screen.getByRole('button', { name: /wyloguj/i });
-    await user.click(button);
+    await user.click(screen.getByRole('button', { name: /wyloguj/i }));
 
-    expect(mockSignOut).toHaveBeenCalledOnce();
+    expect(mockLogout).toHaveBeenCalledOnce();
+  });
+
+  it('is disabled while logging out', () => {
+    mockPending = true;
+    render(<LogoutButton />);
+
+    expect(screen.getByRole('button', { name: /wyloguj/i })).toBeDisabled();
+    mockPending = false;
   });
 
   it('has LogOut icon', () => {
