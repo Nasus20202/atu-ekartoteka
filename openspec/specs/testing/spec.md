@@ -90,7 +90,7 @@ The system SHALL store all end-to-end tests in the `e2e/` directory, organised b
 - **GIVEN** end-to-end tests covering different parts of the application
 - **WHEN** new specs are added
 - **THEN** they are placed in a subdirectory matching the feature area:
-  - `e2e/auth/` — login, registration, email verification, password reset, logout, access control
+  - `e2e/auth/` — login, registration, email verification, password reset, logout, orphaned session, access control
   - `e2e/admin/` — user management, apartment management, HOA operations, data import
   - `e2e/dashboard/` — tenant dashboard, charges, payments, profile
 
@@ -138,7 +138,7 @@ The system SHALL have end-to-end tests covering all primary user flows.
 
 - **GIVEN** the auth E2E suite
 - **WHEN** it runs
-- **THEN** it covers: credentials login, Google OAuth (where applicable), user registration, email verification, password reset, logout, and route-level access control
+- **THEN** it covers: credentials login, Google OAuth (where applicable), user registration, email verification, password reset, logout, orphaned-session sign-out, and route-level access control
 
 #### Scenario: Admin flows
 
