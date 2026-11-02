@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.10] - 2026-11-02
+
+- test(hoa): assert the logged load failure instead of leaking it to stderr
+- test(nav): stop jsdom navigation noise from navbar links
+- test: clear the remaining lint and React script-tag noise
+- test(apartments): await the initial load before asserting URL updates
+- test(logging): cover the enabled test-log destination
+- docs(agents): document components, hooks, security and OpenSpec rules
+- test(e2e): give the profile spec its own seeded user
+- fix(test): keep pino exit hooks out of Vitest VM contexts
+- feat(ui): animate alerts out before unmounting
+- build(test): switch to the vmForks pool and share the ESLint instance
+- refactor(components): rename the admin apartment card to avoid a name clash
+- refactor(auth): lift reset-password and verify-email logic into hooks
+- test: cover the untested query boundaries and import UI paths
+- build(lint): require API routes to call the auth guard, not just import it
+- fix(auth): store and match user emails in one canonical form
+- feat: harden authentication follow-ups
+- refactor(components): colocate route components and hooks by domain
+- chore(deps): update dependency lucide-react to v1.65.0 (#839)
+- chore(deps): lock file maintenance (#838)
+
 ## [0.8.9] - 2026-11-01
 
 - build(lint): forbid unarchived openspec changes
