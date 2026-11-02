@@ -5,19 +5,27 @@ const LEGACY_ACCESS =
   'export const read = (p: { legacyClosingBalance: number }) => p.legacyClosingBalance;\n';
 const RULE_ID = 'no-restricted-syntax';
 
+// Loading the flat config costs seconds; share one instance across cases.
+const eslint = new ESLint({ cwd: process.cwd() });
+
 async function lintRuleIds(filePath: string): Promise<string[]> {
-  const eslint = new ESLint({ cwd: process.cwd() });
   const [result] = await eslint.lintText(LEGACY_ACCESS, { filePath });
 
   return result.messages.map((message) => message.ruleId ?? '');
 }
 
 describe('legacy field restriction', () => {
-  it('rejects legacy identifiers in view code', async () => {
-    const ruleIds = await lintRuleIds('src/app/dashboard/legacy-use.ts');
+  // Instantiating ESLint loads the full flat config; under a parallel run this
+  // regularly exceeds the 5s default.
+  it(
+    'rejects legacy identifiers in view code',
+    { timeout: 30_000 },
+    async () => {
+      const ruleIds = await lintRuleIds('src/app/dashboard/legacy-use.ts');
 
-    expect(ruleIds).toContain(RULE_ID);
-  });
+      expect(ruleIds).toContain(RULE_ID);
+    }
+  );
 
   it.each([
     'src/lib/import/importers/legacy-use.ts',

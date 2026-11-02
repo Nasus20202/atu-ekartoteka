@@ -1,5 +1,29 @@
 import '@testing-library/jest-dom/vitest';
 
+import {
+  CompressionStream,
+  DecompressionStream,
+  ReadableStream,
+  TransformStream,
+  WritableStream,
+} from 'node:stream/web';
+
+// The VM-based pools (vmForks, vmThreads) run each file in a bare V8 context,
+// which does not inherit Node's web-stream globals. jsdom's Blob/File rely on them.
+const webStreamGlobals = {
+  ReadableStream,
+  WritableStream,
+  TransformStream,
+  CompressionStream,
+  DecompressionStream,
+};
+
+for (const [name, value] of Object.entries(webStreamGlobals)) {
+  if (!(name in globalThis)) {
+    Object.defineProperty(globalThis, name, { value, writable: true });
+  }
+}
+
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: (query: string) => ({
