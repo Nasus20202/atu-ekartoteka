@@ -1,6 +1,29 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import type { AnchorHTMLAttributes } from 'react';
+import { describe, expect, it, vi } from 'vitest';
+
+vi.mock('next/link', () => ({
+  // jsdom logs "Not implemented: navigation" when a link's default action runs;
+  // the navbar's own onClick handlers are what these tests exercise.
+  default: ({
+    href,
+    onClick,
+    children,
+    ...props
+  }: AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) => (
+    <a
+      href={href}
+      onClick={(event) => {
+        event.preventDefault();
+        onClick?.(event);
+      }}
+      {...props}
+    >
+      {children}
+    </a>
+  ),
+}));
 
 import { DashboardNavbar } from '@/components/navigation/dashboard-navbar';
 
