@@ -1,0 +1,68 @@
+name: Performance Tests
+
+on:
+  workflow_call:
+
+jobs:
+  performance:
+    name: Run
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/e2e_test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Download Docker image
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: ekartoteka-image
+          path: ${{ runner.temp }}
+
+      - name: Load Docker image
+        run: |
+          skopeo copy --override-os linux --override-arch amd64 \
+            "oci-archive:${{ runner.temp }}/ekartoteka-image.tar" \
+            docker-daemon:ekartoteka:e2e
+
+      - name: Start application and database
+        run: docker compose -f docker-compose.e2e.yaml up --no-build --wait --wait-timeout 180
+
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Seed test data
+        run: pnpm exec tsx e2e/utils/seed-test-data.ts
+
+      - name: Seed performance data
+        run: pnpm exec tsx perf/seed/seed-perf-data.ts
+
+      - name: Setup k6
+        uses: grafana/setup-k6-action@43b9fc21641a76002687994433dd586f56e791b1 # v1.2.2
+        with:
+          # renovate: datasource=github-releases depName=grafana/k6 extractVersion=^v(?<version>.+)$
+          k6-version: '2.3.0'
+
+      - name: Run performance tests
+        run: mkdir -p perf-results && k6 run perf/load-test.ts
+        env:
+          PERF_BASE_URL: http://localhost:3000
+
+      - name: Publish performance summary
+        if: always()
+        run: cat perf-results/summary.md >> "$GITHUB_STEP_SUMMARY" || true
+
+      - name: Show application logs
+        if: failure()
+        # The tail keeps the k6 summary above readable
+        run: docker compose -f docker-compose.e2e.yaml logs --tail 200 ekartoteka
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        if: always()
+        with:
+          name: performance-results
+          path: perf-results/
+          retention-days: 14

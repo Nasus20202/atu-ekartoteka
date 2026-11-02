@@ -1,0 +1,61 @@
+name: Lint & Test
+
+on:
+  workflow_call:
+
+jobs:
+  lint-and-test:
+    name: Run
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Generate Prisma Client
+        env:
+          DATABASE_URL: postgresql://user:password@localhost:5432/dbname
+        run: pnpm db:generate
+
+      - name: Restore lint and type cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: |
+            .cache
+            tsconfig.tsbuildinfo
+          key: lint-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: |
+            lint-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+            lint-cache-${{ runner.os }}-
+
+      - name: Check for unarchived OpenSpec changes
+        run: |
+          open_changes=$(find openspec/changes -mindepth 1 -maxdepth 1 -type d ! -name archive -printf '%f\n' | sort)
+          if [ -n "$open_changes" ]; then
+            echo "::error::Unarchived OpenSpec change(s): $(echo "$open_changes" | paste -sd, -). Archive them with 'openspec archive' before merging."
+            exit 1
+          fi
+
+      - name: Run ESLint
+        run: pnpm lint --cache --cache-location .cache/eslint/
+
+      - name: Check formatting
+        run: pnpm format:check --cache --cache-location .cache/prettier
+
+      - name: Run tests with coverage
+        run: pnpm test:coverage
+
+      - name: Coverage report for changed files
+        if: always() && github.event_name == 'pull_request'
+        uses: davelosert/vitest-coverage-report-action@8f86cfb56ed6d5613ea8cdc5259f207fbfd51ece # v2
+        with:
+          json-summary-path: './coverage/coverage-summary.json'
+          json-final-path: './coverage/coverage-final.json'
+          vite-config-path: './vitest.config.ts'
+          file-coverage-mode: 'changes'
+
+      - name: Run TypeScript compiler
+        run: pnpm tsc
