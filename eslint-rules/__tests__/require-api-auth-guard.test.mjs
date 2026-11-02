@@ -11,14 +11,30 @@ const rule = localRules.rules['require-api-auth-guard'];
 ruleTester.run('require-api-auth-guard', rule, {
   valid: [
     {
-      code: "import { requireUser } from '@/lib/auth/require-user';",
+      code: `import { requireUser } from '@/lib/auth/require-user';
+export async function GET() {
+  const { response } = await requireUser();
+  return response ?? Response.json({});
+}`,
       filename: 'src/app/api/user/profile/route.ts',
     },
     {
-      code: "import { requireAdmin } from '@/lib/auth/require-admin';",
+      code: `import { requireAdmin } from '@/lib/auth/require-admin';
+export async function GET() {
+  const { response } = await requireAdmin();
+  return response ?? Response.json({});
+}`,
       filename: 'src/app/api/admin/users/route.ts',
     },
     {
+      code: `import { requireUser as guard } from '@/lib/auth/require-user';
+export async function GET() {
+  return guard();
+}`,
+      filename: 'src/app/api/reports/route.ts',
+    },
+    {
+      // Public route: the NextAuth handler is allowed to import auth directly.
       code: "import { auth } from '@/auth';",
       filename: 'src/app/api/auth/[...nextauth]/route.ts',
     },
@@ -46,6 +62,20 @@ ruleTester.run('require-api-auth-guard', rule, {
     {
       code: 'export async function POST() {}',
       filename: '/home/dev/project/src/app/api/reports/monthly/route.ts',
+      errors: [{ messageId: 'missingGuard' }],
+    },
+    {
+      // Imported but never called.
+      code: `import { requireUser } from '@/lib/auth/require-user';
+export async function GET() { return Response.json({}); }`,
+      filename: 'src/app/api/reports/route.ts',
+      errors: [{ messageId: 'missingGuard' }],
+    },
+    {
+      // Importing auth directly is not a guard.
+      code: `import { auth } from '@/auth';
+export async function GET() { return Response.json({}); }`,
+      filename: 'src/app/api/reports/route.ts',
       errors: [{ messageId: 'missingGuard' }],
     },
   ],

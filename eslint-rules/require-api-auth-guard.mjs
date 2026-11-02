@@ -4,6 +4,10 @@ import path from 'node:path';
  * Requires every API route module to resolve the caller through a shared auth
  * guard, unless the route is explicitly public. Without this, a new route is
  * public by accident and no test notices.
+ *
+ * The guard must be imported *and* called: importing `auth` straight from
+ * `@/auth` is not enough, because the route can still forget to inspect the
+ * session.
  */
 
 const API_DIRECTORY_MARKER = '/src/app/api/';
@@ -12,7 +16,6 @@ const API_DIRECTORY_PREFIX = 'src/app/api/';
 const GUARD_MODULES = new Set([
   '@/lib/auth/require-user',
   '@/lib/auth/require-admin',
-  '@/auth',
 ]);
 
 const PUBLIC_ROUTES = new Set([
@@ -50,7 +53,7 @@ const requireApiAuthGuard = {
     },
     messages: {
       missingGuard:
-        'API route {{file}} imports no auth guard. Use requireUser()/requireAdmin(), or add the route to PUBLIC_ROUTES in eslint-rules/require-api-auth-guard.mjs if it is public.',
+        'API route {{file}} never calls requireUser()/requireAdmin(). Add the guard call, or add the route to PUBLIC_ROUTES in eslint-rules/require-api-auth-guard.mjs if it is public.',
     },
     schema: [],
   },
@@ -66,13 +69,28 @@ const requireApiAuthGuard = {
       return {};
     }
 
+    const guardNames = new Set();
     let guarded = false;
 
     return {
       ImportDeclaration(node) {
         if (
-          typeof node.source.value === 'string' &&
-          GUARD_MODULES.has(node.source.value)
+          typeof node.source.value !== 'string' ||
+          !GUARD_MODULES.has(node.source.value)
+        ) {
+          return;
+        }
+
+        for (const specifier of node.specifiers) {
+          if (specifier.type === 'ImportSpecifier') {
+            guardNames.add(specifier.local.name);
+          }
+        }
+      },
+      CallExpression(node) {
+        if (
+          node.callee.type === 'Identifier' &&
+          guardNames.has(node.callee.name)
         ) {
           guarded = true;
         }
