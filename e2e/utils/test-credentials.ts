@@ -10,6 +10,12 @@ export const USER_EMAIL = 'user@e2e-test.com';
 export const USER_PASSWORD = 'UserPassword123!';
 export const USER_NAME = 'E2E Test User';
 
+// Dedicated to tests that mutate their own account (name, password), so they
+// never race the shared user asserted by the login and dashboard specs.
+export const PROFILE_EMAIL = 'profile@e2e-test.com';
+export const PROFILE_PASSWORD = 'ProfilePassword123!';
+export const PROFILE_NAME = 'E2E Profile User';
+
 export const MUST_CHANGE_PASSWORD_EMAIL = 'must-change-password@e2e-test.com';
 export const MUST_CHANGE_PASSWORD_PASSWORD = 'TempPassword123!';
 export const MUST_CHANGE_PASSWORD_NEW_PASSWORD = 'NewPassword456!';
