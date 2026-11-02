@@ -47,4 +47,18 @@ describe('logger', () => {
     expect(child.bindings()).toEqual({ context: 'test-context' });
     expect(child.isLevelEnabled('info')).toBe(true);
   });
+
+  it('writes to stdout when test logs are enabled', async () => {
+    vi.stubEnv('NODE_ENV', 'test');
+    vi.stubEnv('ENABLE_TEST_LOGS', 'true');
+    const write = vi
+      .spyOn(process.stdout, 'write')
+      .mockImplementation(() => true);
+
+    const { logger } = await loadLogger();
+    logger.info('test message');
+
+    expect(write).toHaveBeenCalledWith(expect.stringContaining('test message'));
+    write.mockRestore();
+  });
 });
