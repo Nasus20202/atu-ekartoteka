@@ -2,92 +2,33 @@
 
 import { AlertCircle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
 import { AuthLoading } from '@/components/auth/auth-loading';
 import { TurnstileField } from '@/components/auth/turnstile-field';
+import { useResetPasswordForm } from '@/components/auth/use-reset-password-form';
 import { AuthLayout } from '@/components/layout/auth-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useTurnstile } from '@/hooks/use-turnstile';
-import {
-  MIN_PASSWORD_LENGTH,
-  PASSWORD_TOO_SHORT_MESSAGE,
-} from '@/lib/auth/password-rules';
-import {
-  GENERIC_ERROR_MESSAGE,
-  getErrorMessage,
-} from '@/lib/utils/error-message';
+import { MIN_PASSWORD_LENGTH } from '@/lib/auth/password-rules';
 
 function ResetPasswordContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get('token');
-
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
-  const turnstile = useTurnstile();
-
-  // Fetch turnstile configuration on mount
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (password !== confirmPassword) {
-      setError('Hasła nie są identyczne');
-      return;
-    }
-
-    if (password.length < MIN_PASSWORD_LENGTH) {
-      setError(PASSWORD_TOO_SHORT_MESSAGE);
-      return;
-    }
-
-    if (!token) {
-      setError('Brak tokenu resetowania');
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const response = await fetch('/api/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          token,
-          password,
-          turnstileToken: turnstile.token,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Wystąpił błąd');
-      }
-
-      setSuccess(true);
-      setTimeout(() => {
-        router.push('/login?reset=success');
-      }, 2000);
-    } catch (err) {
-      setError(getErrorMessage(err, GENERIC_ERROR_MESSAGE));
-    } finally {
-      setLoading(false);
-      // Reset Turnstile token after any reset attempt (success or failure)
-      turnstile.reset();
-    }
-  };
-
-  const isFormDisabled = loading || turnstile.isPending;
+  const token = useSearchParams().get('token');
+  const {
+    password,
+    setPassword,
+    confirmPassword,
+    setConfirmPassword,
+    loading,
+    success,
+    error,
+    turnstile,
+    isFormDisabled,
+    handleSubmit,
+  } = useResetPasswordForm(token);
 
   if (!token) {
     return (
