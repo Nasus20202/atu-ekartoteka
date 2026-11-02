@@ -3,9 +3,9 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { ApartmentInfoCard } from '@/app/admin/apartments/[hoaId]/[apartmentId]/apartment-info-card';
-import { AssignedUserCard } from '@/app/admin/apartments/[hoaId]/[apartmentId]/assigned-user-card';
-import { ChargeNotificationsCard } from '@/app/admin/apartments/[hoaId]/[apartmentId]/charge-notifications-card';
+import { ApartmentInfoCard } from '@/components/apartments/apartment-info-card';
+import { AssignedUserCard } from '@/components/apartments/assigned-user-card';
+import { ChargeNotificationsCard } from '@/components/apartments/charge-notifications-card';
 import { AdminChargesList } from '@/components/charges/admin-charges-list';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';

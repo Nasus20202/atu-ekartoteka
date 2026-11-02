@@ -2,11 +2,11 @@
 
 import { ShieldOff, Trash2, Upload, XCircle } from 'lucide-react';
 
-import { DatabaseStatsCard } from '@/app/admin/import/database-stats-card';
-import { ImportResults } from '@/app/admin/import/import-results';
-import { useDatabaseStats } from '@/app/admin/import/use-database-stats';
-import { useImport } from '@/app/admin/import/use-import';
-import { ValidateDatabaseCard } from '@/app/admin/import/validate-database-card';
+import { DatabaseStatsCard } from '@/components/import/database-stats-card';
+import { ImportResults } from '@/components/import/import-results';
+import { useDatabaseStats } from '@/components/import/use-database-stats';
+import { useImport } from '@/components/import/use-import';
+import { ValidateDatabaseCard } from '@/components/import/validate-database-card';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -21,8 +21,6 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-
-export { ImportWarnings } from '@/app/admin/import/import-warnings';
 
 const directoryInputProps = {
   webkitdirectory: '',

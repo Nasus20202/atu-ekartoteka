@@ -7,7 +7,7 @@ import AdminUsersPage from '@/app/admin/users/page';
 const confirmMock = vi.fn();
 const pendingCountMock = vi.hoisted(() => ({ value: 0 }));
 
-vi.mock('@/app/admin/users/use-pending-count', () => ({
+vi.mock('@/components/users/use-pending-count', () => ({
   usePendingCount: () => ({
     pendingCount: pendingCountMock.value,
     reload: () => {},

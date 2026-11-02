@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useTurnstile } from '@/lib/hooks/use-turnstile';
+import { useTurnstile } from '@/hooks/use-turnstile';
 import {
   GENERIC_ERROR_MESSAGE,
   getErrorMessage,

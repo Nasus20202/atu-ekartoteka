@@ -2,7 +2,7 @@
 
 import { Turnstile } from '@marsidev/react-turnstile';
 
-import type { TurnstileState } from '@/lib/hooks/use-turnstile';
+import type { TurnstileState } from '@/hooks/use-turnstile';
 
 export function TurnstileField({ turnstile }: { turnstile: TurnstileState }) {
   const { config, ref, setToken } = turnstile;

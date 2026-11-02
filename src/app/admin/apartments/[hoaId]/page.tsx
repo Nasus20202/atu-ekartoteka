@@ -3,15 +3,15 @@
 import { useParams } from 'next/navigation';
 import { useMemo } from 'react';
 
-import { ApartmentCard } from '@/app/admin/apartments/[hoaId]/apartment-card';
+import { ApartmentCard } from '@/components/apartments/apartment-card';
 import {
   buildAddressKey,
   computeDuplicateActiveAddresses,
-} from '@/app/admin/apartments/[hoaId]/apartment-list-utils';
-import { ApartmentSearchForm } from '@/app/admin/apartments/[hoaId]/apartment-search-form';
-import { ApartmentTable } from '@/app/admin/apartments/[hoaId]/apartment-table';
-import { HoaNoticeCard } from '@/app/admin/apartments/[hoaId]/hoa-notice-card';
-import { useHoaApartments } from '@/app/admin/apartments/[hoaId]/use-hoa-apartments';
+} from '@/components/apartments/apartment-list-utils';
+import { ApartmentSearchForm } from '@/components/apartments/apartment-search-form';
+import { ApartmentTable } from '@/components/apartments/apartment-table';
+import { HoaNoticeCard } from '@/components/apartments/hoa-notice-card';
+import { useHoaApartments } from '@/components/apartments/use-hoa-apartments';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import {
@@ -30,7 +30,7 @@ import {
   LIST_VIEW_STORAGE_KEYS,
   ListViewMode,
   useListViewMode,
-} from '@/lib/hooks/use-list-view-mode';
+} from '@/hooks/use-list-view-mode';
 import { APARTMENT_FORMS, pluralizePl } from '@/lib/utils/pluralize';
 
 export default function HOAApartmentsPage() {

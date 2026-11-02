@@ -4,24 +4,24 @@ import { CheckCircle, UserCheck, UserPlus, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import {
-  type AccountPreview,
-  buildAccountPreviews,
-} from '@/app/admin/users/management/account-previews';
-import { ApartmentList } from '@/app/admin/users/management/apartment-list';
-import {
-  type BulkMode,
-  formatBulkResult,
-  runBulkOperation,
-} from '@/app/admin/users/management/bulk-requests';
-import { ConfirmCreateDialog } from '@/app/admin/users/management/confirm-create-dialog';
-import { useHoaSelection } from '@/app/admin/users/management/use-hoa-selection';
-import { useUnassignedHoas } from '@/app/admin/users/management/use-unassigned-hoas';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  type AccountPreview,
+  buildAccountPreviews,
+} from '@/components/users/management/account-previews';
+import { ApartmentList } from '@/components/users/management/apartment-list';
+import {
+  type BulkMode,
+  formatBulkResult,
+  runBulkOperation,
+} from '@/components/users/management/bulk-requests';
+import { ConfirmCreateDialog } from '@/components/users/management/confirm-create-dialog';
+import { useHoaSelection } from '@/components/users/management/use-hoa-selection';
+import { useUnassignedHoas } from '@/components/users/management/use-unassigned-hoas';
 
 const EMPTY_MESSAGES = {
   assign: {

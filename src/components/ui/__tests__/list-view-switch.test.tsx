@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ListViewSwitch } from '@/components/ui/list-view-switch';
-import { ListViewMode } from '@/lib/hooks/use-list-view-mode';
+import { ListViewMode } from '@/hooks/use-list-view-mode';
 
 describe('ListViewSwitch', () => {
   it('offers cards and table and marks the active view as pressed', () => {

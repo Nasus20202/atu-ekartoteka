@@ -3,8 +3,8 @@
 import { Building2, FileText, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { HoaListCard } from '@/app/admin/apartments/hoa-list-card';
-import { HoaNoticesDialog } from '@/app/admin/apartments/hoa-notices-dialog';
+import { HoaListCard } from '@/components/apartments/hoa-list-card';
+import { HoaNoticesDialog } from '@/components/apartments/hoa-notices-dialog';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';

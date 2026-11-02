@@ -4,7 +4,7 @@ import {
   SegmentedControl,
   type SegmentedControlOption,
 } from '@/components/ui/segmented-control';
-import { ListViewMode } from '@/lib/hooks/use-list-view-mode';
+import { ListViewMode } from '@/hooks/use-list-view-mode';
 
 const OPTIONS = [
   { value: ListViewMode.CARDS, label: 'Kafelki', icon: LayoutGrid },
