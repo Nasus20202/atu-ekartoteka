@@ -99,7 +99,7 @@ export function ApartmentSelectionDialog({
         if (!nextOpen) onCancel();
       }}
     >
-      <DialogContent className="max-h-[80vh] max-w-2xl gap-0 overflow-auto p-0">
+      <DialogContent className="max-h-[80vh] max-w-2xl gap-0 overflow-auto p-0 sm:p-0">
         <CardHeader>
           <DialogTitle asChild>
             <CardTitle>
