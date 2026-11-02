@@ -155,17 +155,22 @@ describe('useHoaApartments', () => {
     expect(result.current.apartments).toEqual([]);
   });
 
-  it('pushes changed query params without a page and skips unchanged ones', () => {
-    stubFetch(pageBody(1, []));
+  it('pushes changed query params without a page and skips unchanged ones', async () => {
+    stubFetch(pageBody(1, []), pageBody(1, []));
     searchParams.current = new URLSearchParams('page=2&search=17');
-    const { result } = renderHook(() => useHoaApartments('hoa-1'));
+    const first = renderHook(() => useHoaApartments('hoa-1'));
+    await waitFor(() => expect(first.result.current.loading).toBe(false));
 
-    act(() => result.current.updateURL({ search: '', activeOnly: 'true' }));
+    act(() =>
+      first.result.current.updateURL({ search: '', activeOnly: 'true' })
+    );
     expect(push).toHaveBeenCalledWith('?activeOnly=true', { scroll: false });
 
     push.mockClear();
     searchParams.current = new URLSearchParams('search=17');
     const second = renderHook(() => useHoaApartments('hoa-1'));
+    await waitFor(() => expect(second.result.current.loading).toBe(false));
+
     act(() => second.result.current.updateURL({ search: '17' }));
     expect(push).not.toHaveBeenCalled();
   });
