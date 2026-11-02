@@ -15,6 +15,9 @@ import {
   ADMIN_EMAIL,
   ADMIN_NAME,
   ADMIN_PASSWORD,
+  PROFILE_EMAIL,
+  PROFILE_NAME,
+  PROFILE_PASSWORD,
   USER_EMAIL,
   USER_NAME,
   USER_PASSWORD,
@@ -35,6 +38,7 @@ export async function seedTestData(connectionString?: string) {
     // Hash passwords
     const adminPasswordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
     const userPasswordHash = await bcrypt.hash(USER_PASSWORD, 10);
+    const profilePasswordHash = await bcrypt.hash(PROFILE_PASSWORD, 10);
 
     // Create admin user
     const adminResult = await client.query(loadSql('upsert-admin-user.sql'), [
@@ -52,6 +56,13 @@ export async function seedTestData(connectionString?: string) {
     ]);
     const userId = userResult.rows[0]?.id;
     console.log('  - Created/updated regular user:', userId);
+
+    // Account used only by the profile spec, which renames and rehashes it
+    const profileResult = await client.query(
+      loadSql('upsert-regular-user.sql'),
+      [PROFILE_EMAIL, profilePasswordHash, PROFILE_NAME]
+    );
+    console.log('  - Created/updated profile user:', profileResult.rows[0]?.id);
 
     // Create HOA
     const hoaResult = await client.query(loadSql('upsert-hoa.sql'));

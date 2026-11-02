@@ -11,6 +11,8 @@ import {
   ADMIN_PASSWORD,
   MUST_CHANGE_PASSWORD_EMAIL,
   MUST_CHANGE_PASSWORD_PASSWORD,
+  PROFILE_EMAIL,
+  PROFILE_PASSWORD,
   USER_EMAIL,
   USER_PASSWORD,
   VISUAL_EMAIL,
@@ -50,6 +52,7 @@ async function freezeVisualDate(page: Page) {
 export const test = base.extend<{
   adminPage: Page;
   userPage: Page;
+  profilePage: Page;
   mustChangePasswordPage: Page;
   visualPage: Page;
   visualMultiPage: Page;
@@ -73,6 +76,17 @@ export const test = base.extend<{
     const context = await browser.newContext();
     const page = await context.newPage();
     await login(page, USER_EMAIL, USER_PASSWORD);
+    await use(page);
+    await context.close();
+  },
+
+  /**
+   * Page already logged in as the account reserved for mutating profile specs
+   */
+  profilePage: async ({ browser }, use) => {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    await login(page, PROFILE_EMAIL, PROFILE_PASSWORD);
     await use(page);
     await context.close();
   },
