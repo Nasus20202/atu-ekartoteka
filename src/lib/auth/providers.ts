@@ -4,15 +4,35 @@ import type { Provider } from 'next-auth/providers';
 import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
 
+import { BCRYPT_COST } from '@/lib/auth/bcrypt-cost';
+import { normalizeEmail } from '@/lib/auth/email';
 import { verifyRegistrationAutoLoginToken } from '@/lib/auth/registration-auto-login-token';
 import { createLogger } from '@/lib/logger';
 import { authMetrics } from '@/lib/opentelemetry/auth-metrics';
 import { findUserByEmail } from '@/lib/queries/users/find-user-by-email';
 import { isTurnstileEnabled, verifyTurnstileToken } from '@/lib/turnstile';
-import { UserRole } from '@/lib/types';
 
 const logger = createLogger('auth:providers');
 
+const TIMING_DUMMY_PASSWORD = 'timing-equalisation-placeholder';
+let dummyHashPromise: Promise<string> | undefined;
+
+function getDummyHash(): Promise<string> {
+  dummyHashPromise ??= bcrypt.hash(TIMING_DUMMY_PASSWORD, BCRYPT_COST);
+  return dummyHashPromise;
+}
+
+/**
+ * Spends the same bcrypt work as a real comparison so the response time does
+ * not reveal whether the account exists.
+ */
+async function burnPasswordComparison(password: string): Promise<void> {
+  try {
+    await bcrypt.compare(password, await getDummyHash());
+  } catch (error) {
+    logger.warn({ error }, 'Dummy password comparison failed');
+  }
+}
 function isGoogleConfigured(): boolean {
   return Boolean(
     process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
@@ -27,28 +47,26 @@ const googleProvider = Google({
 export async function credentialsAuthorize(
   credentials: Partial<Record<string, unknown>> | undefined
 ): Promise<User | null> {
-  if (!credentials?.email || !credentials?.password) {
+  const email = normalizeEmail(String(credentials?.email ?? ''));
+  const password = credentials?.password as string | undefined;
+
+  if (!email || !password) {
     return null;
   }
 
-  if (isTurnstileEnabled()) {
-    const autoLoginBypassToken = credentials.autoLoginBypassToken as
-      string | undefined;
-    const isAutoLoginBypassValid = verifyRegistrationAutoLoginToken(
-      autoLoginBypassToken,
-      credentials.email as string
-    );
+  const hasAutoLoginGrant = verifyRegistrationAutoLoginToken(
+    credentials?.autoLoginBypassToken as string | undefined,
+    email
+  );
 
-    if (isAutoLoginBypassValid) {
+  if (isTurnstileEnabled()) {
+    if (hasAutoLoginGrant) {
       logger.info(
-        { email: credentials.email },
+        { email },
         'Login Turnstile bypass accepted for post-registration auto-login'
       );
-    } else if (!credentials.turnstileToken) {
-      logger.warn(
-        { email: credentials.email },
-        'Login attempt failed: missing Turnstile token'
-      );
+    } else if (!credentials?.turnstileToken) {
+      logger.warn({ email }, 'Login attempt failed: missing Turnstile token');
       authMetrics.recordLogin('credentials', 'failure', 'missing_turnstile');
       return null;
     } else {
@@ -56,46 +74,36 @@ export async function credentialsAuthorize(
         credentials.turnstileToken as string
       );
       if (!valid) {
-        logger.warn(
-          { email: credentials.email },
-          'Login attempt failed: invalid Turnstile token'
-        );
+        logger.warn({ email }, 'Login attempt failed: invalid Turnstile token');
         authMetrics.recordLogin('credentials', 'failure', 'invalid_turnstile');
         return null;
       }
     }
   }
 
-  const user = await findUserByEmail(credentials.email as string);
+  const user = await findUserByEmail(email);
 
   if (!user) {
-    logger.warn(
-      { email: credentials.email },
-      'Failed login attempt: user not found'
-    );
+    await burnPasswordComparison(password);
+    logger.warn({ email }, 'Failed login attempt: user not found');
     authMetrics.recordLogin('credentials', 'failure', 'user_not_found');
     return null;
   }
 
   if (!user.password) {
+    await burnPasswordComparison(password);
     logger.error(
-      { email: credentials.email },
+      { email },
       'User has no password but trying to use credentials'
     );
     authMetrics.recordLogin('credentials', 'failure', 'no_password');
     return null;
   }
 
-  const passwordMatch = await bcrypt.compare(
-    credentials.password as string,
-    user.password
-  );
+  const passwordMatch = await bcrypt.compare(password, user.password);
 
   if (!passwordMatch) {
-    logger.warn(
-      { email: credentials.email },
-      'Failed login attempt: incorrect password'
-    );
+    logger.warn({ email }, 'Failed login attempt: incorrect password');
     authMetrics.recordLogin('credentials', 'failure', 'invalid_credentials');
     return null;
   }
@@ -117,7 +125,6 @@ export async function credentialsAuthorize(
     id: user.id,
     email: user.email,
     name: user.name,
-    role: user.role as UserRole,
     mustChangePassword: user.mustChangePassword,
   };
 }

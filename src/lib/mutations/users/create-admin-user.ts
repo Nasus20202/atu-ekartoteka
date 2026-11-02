@@ -1,3 +1,4 @@
+import { normalizeEmail } from '@/lib/auth/email';
 import { prisma } from '@/lib/database/prisma';
 import { AccountStatus, UserRole } from '@/lib/types';
 
@@ -18,7 +19,7 @@ export function createAdminUser({
 }: CreateAdminUserInput) {
   return prisma.user.create({
     data: {
-      email,
+      email: normalizeEmail(email),
       password: hashedPassword,
       name,
       role,

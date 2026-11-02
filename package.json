@@ -34,7 +34,6 @@
     "prisma": "^7.1.0"
   },
   "devDependencies": {
-    "@auth/prisma-adapter": "2.11.3",
     "@eslint/compat": "2.1.1",
     "@marsidev/react-turnstile": "1.6.3",
     "@opentelemetry/api": "1.10.0",

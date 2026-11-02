@@ -37,7 +37,9 @@ vi.mock(
 );
 
 vi.mock('@/lib/auth/admin-access', () => ({
-  hasAdminAccess: vi.fn().mockResolvedValue(true),
+  hasAdminAccess: vi.fn((userId: string) =>
+    Promise.resolve(userId.startsWith('admin'))
+  ),
   isAdminRole: (role: string | null | undefined) => role === 'ADMIN',
 }));
 
@@ -120,7 +122,7 @@ describe('GET /api/admin/unassigned-apartments', () => {
     const response = await GET(makeRequest());
     const data = await response.json();
 
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(403);
     expect(data.error).toBe('Brak uprawnień');
   });
 

@@ -13,7 +13,9 @@ const mockNotifyAccountApproved = vi.fn();
 vi.mock('@/auth', () => ({ auth: mockAuth }));
 
 vi.mock('@/lib/auth/admin-access', () => ({
-  hasAdminAccess: vi.fn().mockResolvedValue(true),
+  hasAdminAccess: vi.fn((userId: string) =>
+    Promise.resolve(userId.startsWith('admin'))
+  ),
   isAdminRole: (role: string | null | undefined) => role === 'ADMIN',
 }));
 
@@ -365,15 +367,24 @@ describe('/api/admin/users route', () => {
         });
 
       it.each([
-        null,
-        { user: { email: 'jan@example.com', role: UserRole.TENANT } },
-      ])('rejects a non-admin session (%o)', async (session) => {
+        [null, 401],
+        [
+          {
+            user: {
+              id: 'user-1',
+              email: 'jan@example.com',
+              role: UserRole.TENANT,
+            },
+          },
+          403,
+        ],
+      ])('rejects a non-admin session (%o)', async (session, expected) => {
         mockAuth.mockResolvedValue(session);
         const { PATCH } = await import('../route');
 
         const response = await PATCH(approve());
 
-        expect(response.status).toBe(401);
+        expect(response.status).toBe(expected);
       });
 
       it.each([
@@ -475,15 +486,24 @@ describe('/api/admin/users route', () => {
 
   describe('GET validation and errors', () => {
     it.each([
-      null,
-      { user: { email: 'jan@example.com', role: UserRole.TENANT } },
-    ])('rejects a non-admin session (%o)', async (session) => {
+      [null, 401],
+      [
+        {
+          user: {
+            id: 'user-1',
+            email: 'jan@example.com',
+            role: UserRole.TENANT,
+          },
+        },
+        403,
+      ],
+    ])('rejects a non-admin session (%o)', async (session, expected) => {
       mockAuth.mockResolvedValue(session);
       const { GET } = await import('../route');
 
       const response = await GET(makeGetRequest());
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(expected);
     });
 
     it('passes a trimmed search to the query', async () => {

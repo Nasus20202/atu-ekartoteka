@@ -29,7 +29,9 @@ vi.mock('@/lib/queries/payments/find-derived-closing-total', () => ({
 }));
 
 vi.mock('@/lib/auth/admin-access', () => ({
-  hasAdminAccess: vi.fn().mockResolvedValue(true),
+  hasAdminAccess: vi.fn((userId: string) =>
+    Promise.resolve(userId.startsWith('admin'))
+  ),
   isAdminRole: (role: string | null | undefined) => role === 'ADMIN',
 }));
 
@@ -82,7 +84,7 @@ describe('GET /api/admin/hoa/[hoaId]/financial-summary', () => {
     });
     await response.json();
 
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(403);
   });
 
   it('returns zeros when HOA has no payments or notifications', async () => {

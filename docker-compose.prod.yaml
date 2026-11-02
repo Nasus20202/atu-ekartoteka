@@ -66,10 +66,10 @@ services:
       # Database
       DATABASE_URL: postgresql://${POSTGRES_USER:-atu_user}:${POSTGRES_PASSWORD:-atu_password}@db:5432/${POSTGRES_DB:-atu_ekartoteka}?schema=public
 
-      # NextAuth
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      # Auth.js
+      AUTH_URL: ${AUTH_URL:-${NEXTAUTH_URL:-http://localhost:3000}}
       AUTH_TRUST_HOST: 'true'
-      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?NEXTAUTH_SECRET must be set}
+      AUTH_SECRET: ${AUTH_SECRET:-${NEXTAUTH_SECRET:?AUTH_SECRET must be set}}
 
       # Node Environment
       NODE_ENV: production

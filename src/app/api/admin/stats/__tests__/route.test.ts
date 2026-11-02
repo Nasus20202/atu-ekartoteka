@@ -12,7 +12,9 @@ vi.mock('@/lib/queries/admin/get-dashboard-stats', () => ({
   getDashboardStats: mockGetDashboardStats,
 }));
 vi.mock('@/lib/auth/admin-access', () => ({
-  hasAdminAccess: vi.fn().mockResolvedValue(true),
+  hasAdminAccess: vi.fn((userId: string) =>
+    Promise.resolve(userId.startsWith('admin'))
+  ),
   isAdminRole: (role: string | null | undefined) => role === 'ADMIN',
 }));
 
@@ -27,20 +29,22 @@ describe('GET /api/admin/stats', () => {
     vi.clearAllMocks();
   });
 
-  it.each([null, { user: { role: UserRole.TENANT } }])(
-    'rejects a non-admin session (%o)',
-    async (session) => {
-      mockAuth.mockResolvedValue(session);
+  it.each([
+    [null, 401],
+    [{ user: { id: 'user-1', role: UserRole.TENANT } }, 403],
+  ])('rejects a non-admin session (%o)', async (session, expected) => {
+    mockAuth.mockResolvedValue(session);
 
-      const response = await GET();
+    const response = await GET();
 
-      expect(response.status).toBe(401);
-      expect(mockGetDashboardStats).not.toHaveBeenCalled();
-    }
-  );
+    expect(response.status).toBe(expected);
+    expect(mockGetDashboardStats).not.toHaveBeenCalled();
+  });
 
   it('returns the stats to an admin', async () => {
-    mockAuth.mockResolvedValue({ user: { role: UserRole.ADMIN } });
+    mockAuth.mockResolvedValue({
+      user: { id: 'admin-id', role: UserRole.ADMIN },
+    });
     mockGetDashboardStats.mockResolvedValue({ users: 3 });
 
     const response = await GET();
@@ -50,7 +54,9 @@ describe('GET /api/admin/stats', () => {
   });
 
   it('returns 500 when loading stats fails', async () => {
-    mockAuth.mockResolvedValue({ user: { role: UserRole.ADMIN } });
+    mockAuth.mockResolvedValue({
+      user: { id: 'admin-id', role: UserRole.ADMIN },
+    });
     mockGetDashboardStats.mockRejectedValue(new Error('db down'));
 
     const response = await GET();

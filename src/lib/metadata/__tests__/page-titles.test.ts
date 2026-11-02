@@ -29,10 +29,10 @@ import {
 import { AccountStatus, UserRole } from '@/lib/types';
 
 const adminSession = {
-  user: { id: 'admin-1', role: UserRole.ADMIN },
+  user: { id: 'admin-1', mustChangePassword: false },
 };
 const ownerSession = {
-  user: { id: 'user-1', role: UserRole.TENANT },
+  user: { id: 'user-1', mustChangePassword: false },
 };
 const ownedApartment = {
   address: 'Mickiewicza',
@@ -43,6 +43,10 @@ const ownedApartment = {
 describe('admin page titles', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.findUserByIdCached.mockResolvedValue({
+      role: UserRole.ADMIN,
+      status: AccountStatus.APPROVED,
+    });
   });
 
   it('uses the HOA name for an admin', async () => {
@@ -55,6 +59,10 @@ describe('admin page titles', () => {
 
   it('uses the generic HOA title for a tenant without querying', async () => {
     mocks.auth.mockResolvedValue(ownerSession);
+    mocks.findUserByIdCached.mockResolvedValue({
+      role: UserRole.TENANT,
+      status: AccountStatus.APPROVED,
+    });
 
     await expect(getHoaApartmentsTitle('hoa-1')).resolves.toBe(
       'Mieszkania wspólnoty'
@@ -99,6 +107,10 @@ describe('admin page titles', () => {
 
   it('uses the generic apartment title for a tenant without querying', async () => {
     mocks.auth.mockResolvedValue(ownerSession);
+    mocks.findUserByIdCached.mockResolvedValue({
+      role: UserRole.TENANT,
+      status: AccountStatus.APPROVED,
+    });
 
     await expect(getApartmentTitle('apt-1')).resolves.toBe('Lokal');
     expect(mocks.findApartmentWithHoaName).not.toHaveBeenCalled();

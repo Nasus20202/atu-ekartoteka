@@ -16,6 +16,7 @@ type FailureReason =
   | 'no_password'
   | 'invalid_turnstile'
   | 'missing_turnstile'
+  | 'google_email_unverified'
   | 'google_error';
 
 const meter = metrics.getMeter(AUTH_METER_NAME);

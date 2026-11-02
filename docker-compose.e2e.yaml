@@ -30,7 +30,7 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/e2e_test
       DATABASE_REPLICA_URLS: postgresql://postgres:postgres@db:5432/e2e_test
       AUTH_SECRET: e2e-test-secret-key-for-nextauth-sessions
-      NEXTAUTH_URL: http://localhost:3000
+      AUTH_URL: http://localhost:3000
       AUTH_TRUST_HOST: 'true'
       # Disable Turnstile and SMTP for E2E tests
       TURNSTILE_SITE_KEY: ''

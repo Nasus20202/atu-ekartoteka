@@ -1,3 +1,4 @@
+import { normalizeEmail } from '@/lib/auth/email';
 import { prisma } from '@/lib/database/prisma';
 import { AccountStatus, AuthMethod, UserRole } from '@/lib/types';
 
@@ -17,7 +18,7 @@ export function createUserWithApartments({
   return prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
       data: {
-        email,
+        email: normalizeEmail(email),
         password: hashedPassword,
         name: owner ?? null,
         role: UserRole.TENANT,

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { auth } from '@/auth';
+import { requireUser } from '@/lib/auth/require-user';
 import { getEmailService } from '@/lib/email/email-service';
 import {
   generateSecureToken,
@@ -24,14 +24,10 @@ const logger = createLogger('api:resend-verification');
  */
 export async function POST() {
   try {
-    // Get session
-    const session = await auth();
+    const { session, response } = await requireUser();
 
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Musisz być zalogowany' },
-        { status: 401 }
-      );
+    if (response) {
+      return response;
     }
 
     // Find user
