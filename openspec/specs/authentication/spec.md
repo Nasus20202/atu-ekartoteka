@@ -230,7 +230,7 @@ an anonymous request SHALL receive `401`.
 - **WHEN** they call any `/api/admin/*` route
 - **THEN** the request is rejected with 403
 
-#### Scenario: Tenant never reaches the database check
+#### Scenario: Tenant is rejected after the database check
 
 - **GIVEN** a signed-in tenant
 - **WHEN** they call any `/api/admin/*` route
