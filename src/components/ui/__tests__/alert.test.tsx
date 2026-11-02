@@ -39,6 +39,22 @@ describe('Alert', () => {
     );
   });
 
+  it('animates in when open unless reduced motion is preferred', () => {
+    render(<Alert>Test</Alert>);
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveAttribute('data-state', 'open');
+    expect(alert).toHaveClass(
+      'data-[state=open]:motion-safe:animate-slide-in-top',
+      'data-[state=closed]:motion-safe:animate-slide-out-top',
+      'motion-reduce:animate-none'
+    );
+  });
+
+  it('lets the caller select the closed state for the exit animation', () => {
+    render(<Alert data-state="closed">Test</Alert>);
+    expect(screen.getByRole('alert')).toHaveAttribute('data-state', 'closed');
+  });
+
   it('accepts other HTML attributes', () => {
     render(<Alert data-testid="custom-alert">Test</Alert>);
     expect(screen.getByTestId('custom-alert')).toBeInTheDocument();

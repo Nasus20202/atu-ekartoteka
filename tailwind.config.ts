@@ -21,6 +21,10 @@ const config: Config = {
           from: { transform: 'translateY(10px)', opacity: '0' },
           to: { transform: 'translateY(0)', opacity: '1' },
         },
+        'slide-out-to-top': {
+          from: { transform: 'translateY(0)', opacity: '1' },
+          to: { transform: 'translateY(-10px)', opacity: '0' },
+        },
         'scale-in': {
           from: { transform: 'scale(0.95)', opacity: '0' },
           to: { transform: 'scale(1)', opacity: '1' },
@@ -57,6 +61,7 @@ const config: Config = {
         'fade-out': 'fade-out 0.2s ease-out',
         'slide-in-top': 'slide-in-from-top 0.3s ease-out',
         'slide-in-bottom': 'slide-in-from-bottom 0.3s ease-out',
+        'slide-out-top': 'slide-out-to-top 0.2s ease-out',
         'slide-in-left': 'slide-in-from-left 0.3s ease-out',
         'slide-in-right': 'slide-in-from-right 0.3s ease-out',
         'scale-in': 'scale-in 0.2s ease-out',

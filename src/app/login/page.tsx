@@ -10,6 +10,7 @@ import { GoogleSignIn } from '@/components/auth/google-sign-in';
 import { TurnstileField } from '@/components/auth/turnstile-field';
 import { AuthLayout } from '@/components/layout/auth-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AnimatedAlert } from '@/components/ui/animated-alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -129,11 +130,9 @@ function LoginForm() {
           </Alert>
         )}
 
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+        <AnimatedAlert show={Boolean(error)} variant="destructive">
+          {error}
+        </AnimatedAlert>
 
         <TurnstileField turnstile={turnstile} />
 
