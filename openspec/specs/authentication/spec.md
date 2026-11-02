@@ -173,6 +173,12 @@ authorization is always resolved from the database.
 - **WHEN** the session `update` trigger fires
 - **THEN** the session is cleared and the user is signed out
 
+#### Scenario: Orphaned session on a protected page
+
+- **GIVEN** a signed-in user whose user row was deleted and whose JWT has not expired
+- **WHEN** they open a dashboard page
+- **THEN** no page content is shown, the session is cleared and they land on `/login` without a full page reload
+
 #### Scenario: Session user identity
 
 - **GIVEN** a signed-in user
@@ -191,11 +197,21 @@ authorization is always resolved from the database.
 - **WHEN** they attempt to access a protected route
 - **THEN** they are redirected to `/login`
 
----
+#### Scenario: Logout without a page reload
+
+- **GIVEN** a signed-in user
+- **WHEN** they click the logout button
+- **THEN** the session is cleared, they are taken to `/login` by client-side navigation without a full page reload, and the button is disabled while the request is in flight
+
+#### Scenario: Logout failure
+
+- **GIVEN** a signed-in user whose sign-out request fails
+- **WHEN** they click the logout button
+- **THEN** they stay on the current page and the button becomes usable again
 
 ### Requirement: Forced Password Change Redirect
 
-The system SHALL redirect users who must change their password away from all routes except the change-password page.
+The system SHALL redirect users who must change their password away from all routes except the change-password page. The `mustChangePassword` value in the token SHALL be only a redirect hint: any decision that grants something because the flag is set SHALL read it from the database.
 
 #### Scenario: Redirect to change-password
 
@@ -209,7 +225,17 @@ The system SHALL redirect users who must change their password away from all rou
 - **WHEN** they navigate to `/change-password` or call `/api/user/profile`
 - **THEN** the request proceeds normally without a redirect
 
----
+#### Scenario: Stale token does not relax the password check
+
+- **GIVEN** a user whose token says `mustChangePassword: true` but whose database row says `false`
+- **WHEN** they submit a new password without the current one
+- **THEN** the request is rejected because the current password is required
+
+#### Scenario: Leaving the change-password page
+
+- **GIVEN** a user on `/change-password` who has just saved a new password
+- **WHEN** the request succeeds
+- **THEN** the session is refreshed from the database through the auth session endpoint and the user is taken to `/dashboard` by client-side navigation, without a Server Action
 
 ### Requirement: Admin Rights
 
