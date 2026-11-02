@@ -10,7 +10,7 @@ context: |
   - Language: TypeScript (strict)
   - Framework: Next.js 16, App Router, React 19
   - Database: PostgreSQL via Prisma ORM
-  - Auth: NextAuth v5 (JWT strategy) — session includes role, status, emailVerified, mustChangePassword
+  - Auth: NextAuth v5 (JWT strategy) — the JWT carries only `sub` and `mustChangePassword`; role and account status are read from the database on every check
   - Email: nodemailer (SMTP); templates are HTML+TXT files in src/lib/email/templates/ rendered with {{VARIABLE}} substitution
   - Styling: Tailwind CSS v4, shadcn/ui component library
   - Package manager: pnpm
@@ -37,7 +37,7 @@ context: |
   - User roles: ADMIN, TENANT
   - Account statuses: PENDING, APPROVED, REJECTED
   - Charges and payments are per-apartment and per-period
-  - Bulk user creation: admin creates accounts for unassigned apartments; users receive a temp password and must change it on first login (mustChangePassword flag enforced by middleware)
+  - Bulk user creation: admin creates accounts for unassigned apartments; users receive a temp password and must change it on first login (the proxy redirects on the token's mustChangePassword flag; it is a redirect hint, decisions that grant something read the database)
 
   ## Specs index
   - openspec/specs/apartment-management/spec.md — apartment CRUD, assignment, unassigned listing
