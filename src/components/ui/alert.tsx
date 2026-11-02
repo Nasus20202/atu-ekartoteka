@@ -4,7 +4,7 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 const alertVariants = cva(
-  'relative w-full rounded-lg border px-4 py-3 text-sm [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground [&>svg~*]:pl-7',
+  'relative w-full rounded-lg border px-4 py-3 text-sm [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground [&>svg~*]:pl-7 data-[state=open]:motion-safe:animate-slide-in-top data-[state=closed]:motion-safe:animate-slide-out-top motion-reduce:animate-none',
   {
     variants: {
       variant: {
@@ -21,14 +21,15 @@ const alertVariants = cva(
 
 type AlertVariants<P> = P & VariantProps<typeof alertVariants>;
 
-function Alert({
-  className,
-  variant,
-  ...props
-}: AlertVariants<React.HTMLAttributes<HTMLDivElement>>) {
+type AlertProps = AlertVariants<React.HTMLAttributes<HTMLDivElement>> & {
+  'data-state'?: 'open' | 'closed';
+};
+
+function Alert({ className, variant, ...props }: AlertProps) {
   return (
     <div
       role="alert"
+      data-state="open"
       className={cn(alertVariants({ variant }), className)}
       {...props}
     />
