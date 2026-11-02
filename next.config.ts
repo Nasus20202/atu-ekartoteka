@@ -6,9 +6,6 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   serverExternalPackages: ['pino', 'pino-pretty'],
   turbopack: {},
-  experimental: {
-    useTypeScriptCli: false,
-  },
   logging: {
     incomingRequests: {
       ignore: [/\/api\/health/],
