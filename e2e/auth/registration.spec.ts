@@ -3,6 +3,7 @@
  */
 
 import { expect, test } from '../fixtures';
+import { USER_EMAIL } from '../utils/test-credentials';
 
 test.describe('Registration', () => {
   test('new user can create an account', async ({ page }) => {
@@ -20,6 +21,21 @@ test.describe('Registration', () => {
 
     // Should automatically sign in and redirect to dashboard
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
+  });
+
+  test('an existing address in a different casing is rejected as taken', async ({
+    page,
+  }) => {
+    const password = 'SecurePassword123!';
+
+    await page.goto('/register');
+    await page.getByLabel('Email').fill(USER_EMAIL.toUpperCase());
+    await page.getByLabel('Hasło', { exact: true }).fill(password);
+    await page.getByLabel('Potwierdź hasło').fill(password);
+    await page.getByRole('button', { name: /Zarejestruj się/i }).click();
+
+    // A duplicate must surface the friendly message, not a server error
+    await expect(page.getByText(/adresem email już istnieje/i)).toBeVisible();
   });
 
   test.describe('Validation', () => {

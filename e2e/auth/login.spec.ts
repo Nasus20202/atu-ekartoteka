@@ -2,8 +2,13 @@
  * Login tests for admin and user roles
  */
 
-import { expect, test } from '../fixtures';
-import { ADMIN_NAME, USER_NAME } from '../utils/test-credentials';
+import { expect, login, test } from '../fixtures';
+import {
+  ADMIN_NAME,
+  USER_EMAIL,
+  USER_NAME,
+  USER_PASSWORD,
+} from '../utils/test-credentials';
 
 test.describe('Login', () => {
   test.describe('Admin', () => {
@@ -42,6 +47,19 @@ test.describe('Login', () => {
       // Should show welcome message
       await expect(
         userPage.getByText(new RegExp(`Witaj.*${USER_NAME}`, 'i'))
+      ).toBeVisible();
+    });
+
+    test('user can login with the email in a different casing', async ({
+      page,
+    }) => {
+      await login(page, USER_EMAIL.toUpperCase(), USER_PASSWORD);
+
+      await expect(page).toHaveURL(/\/dashboard/);
+      await expect(
+        page.getByRole('heading', {
+          name: new RegExp(`Witaj.*${USER_NAME}`, 'i'),
+        })
       ).toBeVisible();
     });
 

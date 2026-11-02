@@ -14,7 +14,7 @@ vi.mock('@/auth', () => ({ auth: mockAuth }));
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     apartment: { findMany: mockApartmentFindMany },
-    user: { findUnique: mockUserFindUnique, findFirst: mockUserFindUnique },
+    user: { findUnique: mockUserFindUnique },
     $transaction: mockTransaction,
   },
 }));

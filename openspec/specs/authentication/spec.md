@@ -252,7 +252,9 @@ an anonymous request SHALL receive `401`.
 
 The system SHALL treat an email address as a single identity regardless of case
 or surrounding whitespace: writes store the normalised form (trimmed and
-lowercased) and reads match case-insensitively.
+lowercased), the migration that backfills existing rows refuses to run when two
+addresses would collapse into one, and reads compare the normalised form
+exactly.
 
 #### Scenario: Mixed-case registration
 
