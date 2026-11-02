@@ -49,6 +49,7 @@ function renderDialog(open = true) {
 describe('HoaNoticesDialog', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('shows the header and footer of every HOA', async () => {
@@ -74,12 +75,19 @@ describe('HoaNoticesDialog', () => {
   });
 
   it('shows an error when the notices cannot be loaded', async () => {
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
     mockFetch({ ok: false, body: { error: 'Błąd' } });
 
     renderDialog();
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Nie udało się pobrać nagłówków i stopek.'
+    );
+    expect(consoleError).toHaveBeenCalledWith(
+      'Failed to fetch HOA notices:',
+      expect.any(Error)
     );
   });
 
