@@ -56,6 +56,26 @@ describe('CreateUserDialog', () => {
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
+  it('cancels when the dialog is dismissed with the close button', async () => {
+    const user = userEvent.setup();
+    const onCancel = vi.fn();
+
+    render(
+      <CreateUserDialog
+        actionLoading={false}
+        newUserData={createEmptyNewUserData()}
+        onCancel={onCancel}
+        onChange={() => {}}
+        onSubmit={() => {}}
+        open
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Zamknij okno' }));
+
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
   it('changes the role and status through the selects', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
