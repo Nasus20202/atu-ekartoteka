@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useMemo } from 'react';
 
-import { ApartmentCard } from '@/components/apartments/apartment-card';
+import { AdminApartmentCard } from '@/components/apartments/admin-apartment-card';
 import {
   buildAddressKey,
   computeDuplicateActiveAddresses,
@@ -135,7 +135,7 @@ export default function HOAApartmentsPage() {
                 apartment.isActive &&
                 duplicateActiveAddresses.has(buildAddressKey(apartment));
               return (
-                <ApartmentCard
+                <AdminApartmentCard
                   key={apartment.id}
                   apartment={apartment}
                   hoaId={hoaId}

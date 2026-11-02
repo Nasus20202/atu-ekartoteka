@@ -2,16 +2,20 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { createMockApartment } from '@/__tests__/fixtures';
-import { ApartmentCard } from '@/components/apartments/apartment-card';
+import { AdminApartmentCard } from '@/components/apartments/admin-apartment-card';
 
 const apartment = createMockApartment({
   shareRatio: 0.025,
 });
 
-describe('ApartmentCard', () => {
+describe('AdminApartmentCard', () => {
   it('shows the address, owner, share and details link', () => {
     render(
-      <ApartmentCard apartment={apartment} hoaId="hoa1" isDuplicate={false} />
+      <AdminApartmentCard
+        apartment={apartment}
+        hoaId="hoa1"
+        isDuplicate={false}
+      />
     );
 
     expect(screen.getByText('Main Street 1 A/101')).toBeInTheDocument();
@@ -27,7 +31,7 @@ describe('ApartmentCard', () => {
 
   it('marks inactive and duplicate apartments', () => {
     render(
-      <ApartmentCard
+      <AdminApartmentCard
         apartment={{ ...apartment, isActive: false }}
         hoaId="hoa1"
         isDuplicate
@@ -40,12 +44,16 @@ describe('ApartmentCard', () => {
 
   it('shows the share from the database ratio and hides an unknown one', () => {
     const { rerender } = render(
-      <ApartmentCard apartment={apartment} hoaId="hoa1" isDuplicate={false} />
+      <AdminApartmentCard
+        apartment={apartment}
+        hoaId="hoa1"
+        isDuplicate={false}
+      />
     );
     expect(screen.getByText('2,5%')).toBeInTheDocument();
 
     rerender(
-      <ApartmentCard
+      <AdminApartmentCard
         apartment={{ ...apartment, shareRatio: null }}
         hoaId="hoa1"
         isDuplicate={false}

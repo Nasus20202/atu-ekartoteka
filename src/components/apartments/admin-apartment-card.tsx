@@ -16,7 +16,7 @@ import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
 import { formatSharePercent } from '@/lib/utils';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 
-export function ApartmentCard({
+export function AdminApartmentCard({
   apartment,
   hoaId,
   isDuplicate,
