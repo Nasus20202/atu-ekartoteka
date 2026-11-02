@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import packageJson from '@/../package.json';
 import { auth } from '@/auth';
 import { EmailVerificationBanner } from '@/components/account/email-verification-banner';
+import { OrphanedSessionSignOut } from '@/components/account/orphaned-session-sign-out';
 import { DashboardNavbar } from '@/components/navigation/dashboard-navbar';
 import { isApprovedAdmin } from '@/lib/auth/admin-access';
 import { findUserByIdCached } from '@/lib/queries/users/find-user-by-id';
@@ -19,12 +20,17 @@ export default async function DashboardLayout({
   }
 
   const user = await findUserByIdCached(session.user.id);
+
+  if (!user) {
+    return <OrphanedSessionSignOut />;
+  }
+
   const isAdmin = isApprovedAdmin(user);
 
   return (
     <>
       <DashboardNavbar mode="dashboard" isAdmin={isAdmin} />
-      <EmailVerificationBanner emailVerified={user?.emailVerified ?? true} />
+      <EmailVerificationBanner emailVerified={user.emailVerified} />
       {children}
       <div className="fixed bottom-4 left-4 z-10">
         <p className="text-xs text-muted-foreground/60">

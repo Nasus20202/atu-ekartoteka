@@ -1,9 +1,9 @@
 'use client';
 
-import { isRedirectError } from 'next/dist/client/components/redirect-error';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 
-import { refreshSessionAndRedirect } from '@/app/change-password/actions';
 import { AuthLayout } from '@/components/layout/auth-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,11 @@ import {
   getErrorMessage,
 } from '@/lib/utils/error-message';
 
+const DASHBOARD_PATH = '/dashboard';
+
 export default function ChangePasswordPage() {
+  const router = useRouter();
+  const { update } = useSession();
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -53,9 +57,10 @@ export default function ChangePasswordPage() {
         throw new Error(data.error || 'Wystąpił błąd');
       }
 
-      await refreshSessionAndRedirect();
+      await update();
+      router.replace(DASHBOARD_PATH);
+      router.refresh();
     } catch (err) {
-      if (isRedirectError(err)) throw err;
       setError(getErrorMessage(err, GENERIC_ERROR_MESSAGE));
       setLoading(false);
     }

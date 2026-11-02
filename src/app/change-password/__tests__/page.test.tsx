@@ -3,12 +3,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import ChangePasswordPage from '@/app/change-password/page';
 
-vi.mock('next/dist/client/components/redirect-error', () => ({
-  isRedirectError: vi.fn(() => false),
+const mockUpdate = vi.fn();
+const mockReplace = vi.fn();
+const mockRefresh = vi.fn();
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ replace: mockReplace, refresh: mockRefresh }),
 }));
 
-vi.mock('@/app/change-password/actions', () => ({
-  refreshSessionAndRedirect: vi.fn(),
+vi.mock('next-auth/react', () => ({
+  useSession: () => ({ update: mockUpdate }),
 }));
 
 vi.mock('@/components/layout/auth-layout', () => ({
@@ -32,11 +36,9 @@ vi.mock('@/components/layout/auth-layout', () => ({
 global.fetch = vi.fn();
 
 describe('ChangePasswordPage', () => {
-  beforeEach(async () => {
+  beforeEach(() => {
     vi.clearAllMocks();
-    const { refreshSessionAndRedirect } =
-      await import('@/app/change-password/actions');
-    vi.mocked(refreshSessionAndRedirect).mockResolvedValue(undefined);
+    mockUpdate.mockResolvedValue(null);
     vi.mocked(fetch).mockResolvedValue({
       ok: true,
       json: async () => ({}),
@@ -95,9 +97,7 @@ describe('ChangePasswordPage', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it('should call API and refresh session on success', async () => {
-    const { refreshSessionAndRedirect } =
-      await import('@/app/change-password/actions');
+  it('should call API, refresh the session and navigate on success', async () => {
     const { container } = render(<ChangePasswordPage />);
 
     fireEvent.change(getNewPasswordInput(container), {
@@ -117,13 +117,13 @@ describe('ChangePasswordPage', () => {
     });
 
     await waitFor(() => {
-      expect(refreshSessionAndRedirect).toHaveBeenCalled();
+      expect(mockReplace).toHaveBeenCalledWith('/dashboard');
     });
+    expect(mockUpdate).toHaveBeenCalledOnce();
+    expect(mockRefresh).toHaveBeenCalledOnce();
   });
 
   it('should show error message on API failure', async () => {
-    const { refreshSessionAndRedirect } =
-      await import('@/app/change-password/actions');
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
       json: async () => ({ error: 'Wystąpił błąd serwera' }),
@@ -142,7 +142,8 @@ describe('ChangePasswordPage', () => {
     await waitFor(() => {
       expect(screen.getByText(/wystąpił błąd serwera/i)).toBeInTheDocument();
     });
-    expect(refreshSessionAndRedirect).not.toHaveBeenCalled();
+    expect(mockUpdate).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 
   it('should not have a skip/cancel option', () => {
