@@ -3,11 +3,11 @@
 import { Loader2, Shield } from 'lucide-react';
 import Link from 'next/link';
 
-import { RegisterSuccess } from '@/app/register/register-success';
-import { useRegisterForm } from '@/app/register/use-register-form';
-import { useSetupStatus } from '@/app/register/use-setup-status';
 import { AuthLoading } from '@/components/auth/auth-loading';
+import { RegisterSuccess } from '@/components/auth/register-success';
 import { TurnstileField } from '@/components/auth/turnstile-field';
+import { useRegisterForm } from '@/components/auth/use-register-form';
+import { useSetupStatus } from '@/components/auth/use-setup-status';
 import { AuthLayout } from '@/components/layout/auth-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';

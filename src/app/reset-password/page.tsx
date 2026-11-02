@@ -12,11 +12,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTurnstile } from '@/hooks/use-turnstile';
 import {
   MIN_PASSWORD_LENGTH,
   PASSWORD_TOO_SHORT_MESSAGE,
 } from '@/lib/auth/password-rules';
-import { useTurnstile } from '@/lib/hooks/use-turnstile';
 import {
   GENERIC_ERROR_MESSAGE,
   getErrorMessage,

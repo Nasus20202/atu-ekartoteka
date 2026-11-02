@@ -2,7 +2,7 @@ import { act, render, renderHook, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { TurnstileField } from '@/components/auth/turnstile-field';
-import { useTurnstile } from '@/lib/hooks/use-turnstile';
+import { useTurnstile } from '@/hooks/use-turnstile';
 
 const { config } = vi.hoisted(() => ({
   config: {
@@ -10,7 +10,7 @@ const { config } = vi.hoisted(() => ({
   },
 }));
 
-vi.mock('@/lib/hooks/use-turnstile-config', () => ({
+vi.mock('@/hooks/use-turnstile-config', () => ({
   useTurnstileConfig: () => config.current,
 }));
 

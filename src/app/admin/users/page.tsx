@@ -2,28 +2,28 @@
 
 import { Search } from 'lucide-react';
 
-import { ApartmentSelectionDialog } from '@/app/admin/users/apartment-selection-dialog';
-import { CreateUserDialog } from '@/app/admin/users/create-user-dialog';
-import { useAdminUsers } from '@/app/admin/users/use-admin-users';
-import { useAvailableApartments } from '@/app/admin/users/use-available-apartments';
-import { usePendingCount } from '@/app/admin/users/use-pending-count';
-import { useUserActions } from '@/app/admin/users/use-user-actions';
-import { UserActionsMenu } from '@/app/admin/users/user-actions-menu';
-import { UserFilters } from '@/app/admin/users/user-filters';
-import { UsersList } from '@/app/admin/users/users-list';
-import {
-  getPendingDescription,
-  pinSelectedAndMatching,
-} from '@/app/admin/users/utils';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import { InfiniteScrollSentinel } from '@/components/ui/infinite-scroll-sentinel';
 import { Input } from '@/components/ui/input';
 import { ListViewSwitch } from '@/components/ui/list-view-switch';
+import { ApartmentSelectionDialog } from '@/components/users/apartment-selection-dialog';
+import { CreateUserDialog } from '@/components/users/create-user-dialog';
+import { useAdminUsers } from '@/components/users/use-admin-users';
+import { useAvailableApartments } from '@/components/users/use-available-apartments';
+import { usePendingCount } from '@/components/users/use-pending-count';
+import { useUserActions } from '@/components/users/use-user-actions';
+import { UserActionsMenu } from '@/components/users/user-actions-menu';
+import { UserFilters } from '@/components/users/user-filters';
+import { UsersList } from '@/components/users/users-list';
+import {
+  getPendingDescription,
+  pinSelectedAndMatching,
+} from '@/components/users/utils';
 import {
   LIST_VIEW_STORAGE_KEYS,
   useListViewMode,
-} from '@/lib/hooks/use-list-view-mode';
+} from '@/hooks/use-list-view-mode';
 import { AccountStatus } from '@/lib/types';
 
 export default function AdminUsersPage() {

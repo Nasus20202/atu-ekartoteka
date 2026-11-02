@@ -1,9 +1,9 @@
 'use client';
 
-import { HistoryWindowForm } from '@/app/admin/settings/history-window-form';
-import { useAppSettings } from '@/app/admin/settings/use-app-settings';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
+import { HistoryWindowForm } from '@/components/settings/history-window-form';
+import { useAppSettings } from '@/components/settings/use-app-settings';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Card,

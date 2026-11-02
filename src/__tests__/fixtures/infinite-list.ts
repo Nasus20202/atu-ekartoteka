@@ -4,7 +4,7 @@ import {
   type InfinitePage,
   type PageFetcher,
   useInfiniteList,
-} from '@/lib/hooks/use-infinite-list';
+} from '@/hooks/use-infinite-list';
 
 export interface Item {
   id: string;
