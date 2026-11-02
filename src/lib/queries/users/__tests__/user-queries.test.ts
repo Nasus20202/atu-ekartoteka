@@ -1,12 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { mockFindUnique } = vi.hoisted(() => ({ mockFindUnique: vi.fn() }));
+const { mockFindUnique, mockDerivePayments } = vi.hoisted(() => ({
+  mockFindUnique: vi.fn(),
+  mockDerivePayments: vi.fn(),
+}));
 
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     user: { findUnique: mockFindUnique },
     charge: { groupBy: vi.fn().mockResolvedValue([]) },
   },
+}));
+
+vi.mock('@/lib/queries/payments/derive-apartment-payments', () => ({
+  deriveApartmentPayments: mockDerivePayments,
 }));
 
 import { findUserProfile } from '@/lib/queries/users/find-user-profile';
@@ -97,5 +104,31 @@ describe('user queries', () => {
       period: true,
       totalAmount: true,
     });
+  });
+
+  it('returns the dashboard user with payments derived from charges', async () => {
+    const apartments = [{ id: 'apt-1', payments: [] }];
+    const derived = [{ id: 'apt-1', payments: [{ year: 2025 }] }];
+    mockFindUnique.mockResolvedValueOnce({ id: 'user-1', apartments });
+    mockDerivePayments.mockResolvedValueOnce(derived);
+
+    await expect(
+      findUserWithApartments('user-1', 2025, '202611')
+    ).resolves.toEqual({ id: 'user-1', apartments: derived });
+
+    expect(mockDerivePayments).toHaveBeenCalledWith(apartments, '202611');
+  });
+
+  it('returns the profile user with payments derived from charges', async () => {
+    const apartments = [{ id: 'apt-2', payments: [] }];
+    const derived = [{ id: 'apt-2', payments: [{ year: 2024 }] }];
+    mockFindUnique.mockResolvedValueOnce({ id: 'user-2', apartments });
+    mockDerivePayments.mockResolvedValueOnce(derived);
+
+    await expect(
+      findUserWithApartmentPayments('user-2', 2025, '202611')
+    ).resolves.toEqual({ id: 'user-2', apartments: derived });
+
+    expect(mockDerivePayments).toHaveBeenCalledWith(apartments, '202611');
   });
 });

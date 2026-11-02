@@ -36,4 +36,26 @@ describe('GroupedIssues', () => {
 
     expect(container).toBeEmptyDOMElement();
   });
+
+  it('renders the summary lines of a group above its items', () => {
+    render(
+      <GroupedIssues
+        groups={[
+          {
+            kind: 'year-balance',
+            title: 'Salda lat (1)',
+            description: 'Różnice sald między latami',
+            summary: ['2024: 10,00 zł', '2025: 20,00 zł'],
+            items: [{ message: 'Błąd A' }],
+          },
+        ]}
+        tone="warning"
+        formatItem={({ message }) => message}
+      />
+    );
+
+    expect(screen.getByText('2024: 10,00 zł')).toBeInTheDocument();
+    expect(screen.getByText('2025: 20,00 zł')).toBeInTheDocument();
+    expect(screen.getByText('• Błąd A')).toBeInTheDocument();
+  });
 });
