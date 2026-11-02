@@ -1,11 +1,13 @@
 import bcrypt from 'bcrypt';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { Prisma } from '@/generated/prisma/client';
 import { BCRYPT_COST } from '@/lib/auth/bcrypt-cost';
 import {
   EMAIL_TAKEN_MESSAGE,
   validateCredentials,
 } from '@/lib/auth/credential-validation';
+import { normalizeEmail } from '@/lib/auth/email';
 import { createRegistrationAutoLoginToken } from '@/lib/auth/registration-auto-login-token';
 import { getEmailService } from '@/lib/email/email-service';
 import {
@@ -15,20 +17,30 @@ import {
 } from '@/lib/email/verification-utils';
 import { createLogger } from '@/lib/logger';
 import { createEmailVerification } from '@/lib/mutations/email-verification/create-verification';
+import { createFirstAdmin } from '@/lib/mutations/users/create-first-admin';
 import { createUser } from '@/lib/mutations/users/create-user';
 import { notifyAdminsOfNewUser } from '@/lib/notifications/new-user-registration';
 import { authMetrics } from '@/lib/opentelemetry/auth-metrics';
-import { findFirstAdmin } from '@/lib/queries/users/find-first-admin';
 import { findUserByEmail } from '@/lib/queries/users/find-user-by-email';
 import { isTurnstileEnabled, verifyTurnstileToken } from '@/lib/turnstile';
 import { AccountStatus, UserRole } from '@/lib/types';
 
 const logger = createLogger('api:register');
 
+const ADMIN_EXISTS_MESSAGE = 'Administrator już istnieje w systemie';
+const REGISTRATION_FAILED_MESSAGE = 'Nie udało się utworzyć konta';
+
+function isPrismaCode(error: unknown, code: string): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError && error.code === code
+  );
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { email, password, name, isFirstAdmin, turnstileToken } = body;
+    const { password, name, isFirstAdmin, turnstileToken } = body;
+    const email = normalizeEmail(String(body.email ?? ''));
 
     logger.info({ email, isFirstAdmin }, 'Registration attempt');
 
@@ -49,7 +61,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Check if user already exists
     const existingUser = await findUserByEmail(email);
 
     if (existingUser) {
@@ -57,42 +68,38 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: EMAIL_TAKEN_MESSAGE }, { status: 400 });
     }
 
-    // Check if this is first admin registration
-    let role: UserRole = UserRole.TENANT;
-    let status: AccountStatus = AccountStatus.PENDING;
+    const hashedPassword = await bcrypt.hash(password, BCRYPT_COST);
 
+    let user;
     if (isFirstAdmin) {
-      // Verify no admin exists
-      const adminExists = await findFirstAdmin();
+      user = await createFirstAdmin({
+        email,
+        hashedPassword,
+        name: name || null,
+      });
 
-      if (adminExists) {
+      if (!user) {
         logger.warn(
           { email },
           'Attempted first admin registration but admin already exists'
         );
         return NextResponse.json(
-          { error: 'Administrator już istnieje w systemie' },
+          { error: ADMIN_EXISTS_MESSAGE },
           { status: 400 }
         );
       }
 
-      role = UserRole.ADMIN;
-      status = AccountStatus.APPROVED;
       logger.info({ email }, 'Creating first admin user');
+    } else {
+      user = await createUser({
+        email,
+        hashedPassword,
+        name: name || null,
+        role: UserRole.TENANT,
+        status: AccountStatus.PENDING,
+        emailVerified: false,
+      });
     }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, BCRYPT_COST);
-
-    // Create user
-    const user = await createUser({
-      email,
-      hashedPassword,
-      name: name || null,
-      role,
-      status,
-      emailVerified: isFirstAdmin ? true : false,
-    });
 
     // Send verification email for non-admin users
     if (!isFirstAdmin) {
@@ -166,10 +173,14 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
+    if (isPrismaCode(error, 'P2002')) {
+      return NextResponse.json({ error: EMAIL_TAKEN_MESSAGE }, { status: 400 });
+    }
+
     logger.error({ error }, 'Registration error');
     authMetrics.recordRegistration('credentials', 'failure');
     return NextResponse.json(
-      { error: 'Nie udało się utworzyć konta' },
+      { error: REGISTRATION_FAILED_MESSAGE },
       { status: 500 }
     );
   }

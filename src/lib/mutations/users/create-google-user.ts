@@ -1,3 +1,4 @@
+import { normalizeEmail } from '@/lib/auth/email';
 import { prisma } from '@/lib/database/prisma';
 import { AuthMethod } from '@/lib/types';
 
@@ -9,7 +10,7 @@ interface CreateGoogleUserInput {
 export function createGoogleUser({ email, name }: CreateGoogleUserInput) {
   return prisma.user.create({
     data: {
-      email,
+      email: normalizeEmail(email),
       name: name ?? null,
       emailVerified: true,
       password: null,

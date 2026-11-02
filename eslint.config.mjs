@@ -152,6 +152,16 @@ const eslintConfig = defineConfig([
       'local/prefer-access-helpers': 'error',
     },
   },
+  // Every API route must resolve the caller through a shared guard unless the
+  // route is explicitly public; the allowlist lives in the rule module.
+  {
+    files: ['src/app/api/**/route.ts'],
+    ignores: ['**/__tests__/**'],
+    plugins: { local: localRules },
+    rules: {
+      'local/require-api-auth-guard': 'error',
+    },
+  },
   // Raw SQL bypasses the Prisma query API and is only allowed in migrations.
   {
     files: ['src/**/*.ts', 'src/**/*.tsx'],

@@ -5,7 +5,7 @@ import { AccountStatus, UserRole } from '@/lib/types';
 
 const {
   mockFindUserByEmail,
-  mockFindFirstAdmin,
+  mockCreateFirstAdmin,
   mockCreateUser,
   mockCreateEmailVerification,
   mockSendVerificationEmail,
@@ -16,12 +16,12 @@ const {
   mockVerifyTurnstileToken,
 } = vi.hoisted(() => ({
   mockFindUserByEmail: vi.fn(),
-  mockFindFirstAdmin: vi.fn(),
+  mockCreateFirstAdmin: vi.fn(),
   mockCreateUser: vi.fn(),
   mockCreateEmailVerification: vi.fn(),
   mockSendVerificationEmail: vi.fn(),
   mockNotifyAdminsOfNewUser: vi.fn(),
-  mockCreateRegistrationAutoLoginToken: vi.fn().mockReturnValue('mock-token'),
+  mockCreateRegistrationAutoLoginToken: vi.fn(),
   mockRecordRegistration: vi.fn(),
   mockIsTurnstileEnabled: vi.fn(),
   mockVerifyTurnstileToken: vi.fn(),
@@ -31,8 +31,8 @@ vi.mock('@/lib/queries/users/find-user-by-email', () => ({
   findUserByEmail: mockFindUserByEmail,
 }));
 
-vi.mock('@/lib/queries/users/find-first-admin', () => ({
-  findFirstAdmin: mockFindFirstAdmin,
+vi.mock('@/lib/mutations/users/create-first-admin', () => ({
+  createFirstAdmin: mockCreateFirstAdmin,
 }));
 
 vi.mock('@/lib/mutations/users/create-user', () => ({
@@ -183,11 +183,35 @@ describe('POST /api/register (route handler)', () => {
     );
   });
 
+  it('normalises the email before storing and looking it up', async () => {
+    mockFindUserByEmail.mockResolvedValue(null);
+    mockCreateUser.mockResolvedValue(makeUser());
+    mockCreateEmailVerification.mockResolvedValue({});
+    mockSendVerificationEmail.mockResolvedValue(undefined);
+    mockNotifyAdminsOfNewUser.mockResolvedValue(undefined);
+
+    const { POST } = await import('@/app/api/register/route');
+    await POST(
+      makeRequest({
+        email: '  Test@Example.COM ',
+        password: 'password123',
+      })
+    );
+
+    expect(mockFindUserByEmail).toHaveBeenCalledWith('test@example.com');
+    expect(mockCreateUser).toHaveBeenCalledWith(
+      expect.objectContaining({ email: 'test@example.com' })
+    );
+  });
+
   it('registers first admin with ADMIN role and APPROVED status', async () => {
     mockFindUserByEmail.mockResolvedValue(null);
-    mockFindFirstAdmin.mockResolvedValue(null);
-    mockCreateUser.mockResolvedValue(
-      makeUser({ role: UserRole.ADMIN, status: AccountStatus.APPROVED })
+    mockCreateFirstAdmin.mockResolvedValue(
+      makeUser({
+        role: UserRole.ADMIN,
+        status: AccountStatus.APPROVED,
+        emailVerified: true,
+      })
     );
 
     const { POST } = await import('@/app/api/register/route');
@@ -201,13 +225,17 @@ describe('POST /api/register (route handler)', () => {
     expect(res.status).toBe(201);
     const body = await res.json();
     expect(body.requiresVerification).toBe(false);
+    expect(mockCreateFirstAdmin).toHaveBeenCalledWith(
+      expect.objectContaining({ email: 'admin@example.com' })
+    );
+    expect(mockCreateUser).not.toHaveBeenCalled();
     expect(mockSendVerificationEmail).not.toHaveBeenCalled();
     expect(mockNotifyAdminsOfNewUser).not.toHaveBeenCalled();
   });
 
-  it('returns 400 when trying to register first admin but admin already exists', async () => {
+  it('returns 400 when the bootstrap finds an existing admin', async () => {
     mockFindUserByEmail.mockResolvedValue(null);
-    mockFindFirstAdmin.mockResolvedValue(makeUser({ role: UserRole.ADMIN }));
+    mockCreateFirstAdmin.mockResolvedValue(null);
 
     const { POST } = await import('@/app/api/register/route');
     const req = makeRequest({
@@ -220,6 +248,26 @@ describe('POST /api/register (route handler)', () => {
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.error).toMatch(/administrator już istnieje/i);
+  });
+
+  it('returns 400 instead of 500 when the email is taken concurrently', async () => {
+    const { Prisma } = await import('@/generated/prisma/client');
+    mockFindUserByEmail.mockResolvedValue(null);
+    mockCreateUser.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError('unique violation', {
+        code: 'P2002',
+        clientVersion: 'test',
+      })
+    );
+
+    const { POST } = await import('@/app/api/register/route');
+    const res = await POST(
+      makeRequest({ email: 'test@example.com', password: 'password123' })
+    );
+
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toMatch(/już istnieje/i);
   });
 
   it('still returns 201 when verification email fails to send', async () => {

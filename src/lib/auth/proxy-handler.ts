@@ -14,8 +14,13 @@ const ALLOWED_PREFIXES: string[] = [
   '/logout',
 ];
 
+/** Matches a path segment prefix, so `/login-anything` does not pass. */
+function matchesPrefix(pathname: string, prefix: string): boolean {
+  return pathname === prefix || pathname.startsWith(`${prefix}/`);
+}
+
 export function isAllowedPath(pathname: string): boolean {
-  return ALLOWED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+  return ALLOWED_PREFIXES.some((prefix) => matchesPrefix(pathname, prefix));
 }
 
 export function handleMustChangePassword(
@@ -33,7 +38,7 @@ export function handleMustChangePassword(
   if (
     session?.user &&
     !session.user.mustChangePassword &&
-    pathname.startsWith(CHANGE_PASSWORD_PATH)
+    matchesPrefix(pathname, CHANGE_PASSWORD_PATH)
   ) {
     const url = request.nextUrl.clone();
     url.pathname = DASHBOARD_PATH;

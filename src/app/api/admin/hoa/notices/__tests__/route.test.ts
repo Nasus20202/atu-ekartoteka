@@ -14,7 +14,9 @@ vi.mock('@/lib/queries/hoa/find-hoa-notices', () => ({
 }));
 
 vi.mock('@/lib/auth/admin-access', () => ({
-  hasAdminAccess: vi.fn().mockResolvedValue(true),
+  hasAdminAccess: vi.fn((userId: string) =>
+    Promise.resolve(userId.startsWith('admin'))
+  ),
   isAdminRole: (role: string | null | undefined) => role === 'ADMIN',
 }));
 
@@ -31,15 +33,15 @@ describe('GET /api/admin/hoa/notices', () => {
     vi.clearAllMocks();
   });
 
-  it('returns 401 when the user is not an admin', async () => {
+  it('returns 403 when the user is not an admin', async () => {
     mockAuth.mockResolvedValueOnce({
-      user: { role: UserRole.TENANT },
+      user: { id: 'user-1', role: UserRole.TENANT },
     });
 
     const { GET } = await import('../route');
     const response = await GET();
 
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(403);
     expect(mockFindHoaNotices).not.toHaveBeenCalled();
   });
 
@@ -54,7 +56,7 @@ describe('GET /api/admin/hoa/notices', () => {
       },
     ];
     mockAuth.mockResolvedValueOnce({
-      user: { role: UserRole.ADMIN },
+      user: { id: 'admin-id', role: UserRole.ADMIN },
     });
     mockFindHoaNotices.mockResolvedValueOnce(hoas);
 
@@ -67,7 +69,7 @@ describe('GET /api/admin/hoa/notices', () => {
 
   it('returns 500 when the query fails', async () => {
     mockAuth.mockResolvedValueOnce({
-      user: { role: UserRole.ADMIN },
+      user: { id: 'admin-id', role: UserRole.ADMIN },
     });
     mockFindHoaNotices.mockRejectedValueOnce(new Error('db down'));
 

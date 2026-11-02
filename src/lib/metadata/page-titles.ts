@@ -22,7 +22,10 @@ const getSession = cache(() => auth());
 
 async function isAdminSession(): Promise<boolean> {
   const session = await getSession();
-  return isAdminRole(session?.user?.role);
+  if (!session) return false;
+
+  const user = await findUserByIdCached(session.user.id);
+  return isAdminRole(user?.role);
 }
 
 /** Address label of the apartment, only for its approved owner; null otherwise. */

@@ -14,13 +14,15 @@ vi.mock('@/auth', () => ({ auth: mockAuth }));
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     apartment: { findMany: mockApartmentFindMany },
-    user: { findUnique: mockUserFindUnique },
+    user: { findUnique: mockUserFindUnique, findFirst: mockUserFindUnique },
     $transaction: mockTransaction,
   },
 }));
 
 vi.mock('@/lib/auth/admin-access', () => ({
-  hasAdminAccess: vi.fn().mockResolvedValue(true),
+  hasAdminAccess: vi.fn((userId: string) =>
+    Promise.resolve(userId.startsWith('admin'))
+  ),
   isAdminRole: (role: string | null | undefined) => role === 'ADMIN',
 }));
 
@@ -77,7 +79,7 @@ describe('POST /api/admin/users/bulk-assign', () => {
     const { POST } = await import('../route');
     const response = await POST(makeRequest({ apartmentIds: ['apt-1'] }));
 
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(403);
   });
 
   it('should return 400 when apartmentIds is empty', async () => {

@@ -8,11 +8,13 @@ Handles user identity verification, session management, and account security flo
 
 ### Requirement: Credentials Login
 
-The system SHALL allow users to log in with an email address and password.
+The system SHALL allow existing users to log in with an email address and
+password. Account status and email verification SHALL NOT block login; they
+control which tenant data the session may read and are surfaced as UI hints.
 
 #### Scenario: Successful login
 
-- **GIVEN** a user with an approved account and a verified email
+- **GIVEN** an existing account with a password
 - **WHEN** they submit valid email and password credentials
 - **THEN** a JWT session is created and the user is redirected to the dashboard
 
@@ -20,12 +22,24 @@ The system SHALL allow users to log in with an email address and password.
 
 - **GIVEN** a user exists in the system
 - **WHEN** they submit an incorrect password or non-existent email
-- **THEN** the system returns an authentication error without disclosing which field was wrong
+- **THEN** the system returns an authentication error without disclosing which field was wrong and performs the same bcrypt work in both cases
+
+#### Scenario: Unapproved account
+
+- **GIVEN** a signed-in user whose status is `PENDING` or `REJECTED`
+- **WHEN** they open a tenant data page
+- **THEN** the page hides tenant data and shows the account status instead of refusing the session
+
+#### Scenario: Unverified email
+
+- **GIVEN** a signed-in user whose email is not verified
+- **WHEN** they open the dashboard
+- **THEN** a dismissible verification banner is shown and the session remains valid
 
 #### Scenario: Turnstile validation
 
 - **GIVEN** Cloudflare Turnstile is enabled via environment variable
-- **WHEN** a login attempt is made without a valid Turnstile token
+- **WHEN** a login attempt is made without a valid Turnstile token and without a registration autologin grant
 - **THEN** the login is rejected before any credential check
 
 ---
@@ -54,9 +68,9 @@ The system SHALL allow new users to self-register with email and password.
 
 #### Scenario: Standard tenant registration
 
-- **GIVEN** no user exists with the provided email
+- **GIVEN** no user exists with the normalised provided email
 - **WHEN** a user submits a valid email, password (min 8 chars), and optional name
-- **THEN** an account is created with status `PENDING`, role `TENANT`, a verification email is sent, admins are notified, and the user is automatically signed in
+- **THEN** an account is created with status `PENDING`, role `TENANT`, a verification email is sent, admins are notified, the user is automatically signed in, and a short-lived auto-login token is returned
 
 #### Scenario: First admin registration
 
@@ -64,23 +78,31 @@ The system SHALL allow new users to self-register with email and password.
 - **WHEN** the setup check passes and a registration is submitted with `isFirstAdmin: true`
 - **THEN** an account is created with role `ADMIN`, status `APPROVED`, `emailVerified: true`, no notification is sent, and the user is automatically signed in
 
+#### Scenario: Concurrent first-admin registration
+
+- **GIVEN** no admin user exists
+- **WHEN** two requests submit `isFirstAdmin: true` at the same time
+- **THEN** at most one admin is created and the other request is rejected with the existing "administrator already exists" message
+
 #### Scenario: Duplicate email
 
-- **GIVEN** a user already exists with the same email
+- **GIVEN** a user already exists with the same email in any casing
 - **WHEN** another registration is attempted with that email
-- **THEN** the registration is rejected with an appropriate error
+- **THEN** the registration is rejected with the "email already exists" error rather than a server error
 
 ---
 
 ### Requirement: Email Verification
 
-The system SHALL require users to verify their email address before their account can be used.
+The system SHALL email a verification link to a new account and SHALL surface
+the unverified state as a dismissible UI hint. Email verification SHALL NOT gate
+login.
 
 #### Scenario: Email verification flow
 
 - **GIVEN** a new user registration (non-admin)
-- **WHEN** the user clicks the verification link in their email
-- **THEN** the `emailVerified` flag is set to `true` on the user account
+- **WHEN** the user follows the verification link in their email
+- **THEN** the `emailVerified` flag is set to `true` on the user account and the banner disappears
 
 #### Scenario: Expired verification token
 
@@ -93,6 +115,12 @@ The system SHALL require users to verify their email address before their accoun
 - **GIVEN** a user whose email is not yet verified
 - **WHEN** they request a new verification email
 - **THEN** a new token is generated and a fresh verification email is sent
+
+#### Scenario: Unverified user signs in
+
+- **GIVEN** an account with an unverified email
+- **WHEN** the user signs in with valid credentials
+- **THEN** the session is created and the verification banner is available
 
 ---
 
@@ -128,13 +156,16 @@ The system SHALL allow users to reset a forgotten password via email. A reset to
 
 ### Requirement: Session Management
 
-The system SHALL use JWT-based sessions where the JWT stores only the cached claims (`role`, `mustChangePassword`) plus the standard `sub` claim, and those values are exposed on `session.user`.
+The system SHALL use JWT-based sessions where the JWT stores only the standard
+`sub` claim plus `mustChangePassword`, and those values are exposed on
+`session.user`. The JWT SHALL NOT carry a role or any other permission claim;
+authorization is always resolved from the database.
 
 #### Scenario: Session token refresh
 
 - **GIVEN** an active session
 - **WHEN** the session `update` trigger fires
-- **THEN** the JWT is refreshed with the latest `role` and `mustChangePassword` values from the database
+- **THEN** the JWT is refreshed with the latest `mustChangePassword` value from the database
 
 #### Scenario: Account removed during an active session
 
@@ -146,7 +177,13 @@ The system SHALL use JWT-based sessions where the JWT stores only the cached cla
 
 - **GIVEN** a signed-in user
 - **WHEN** the session is read on the server
-- **THEN** `session.user.id` equals the JWT `sub` claim and `session.user.role` is typed as `UserRole`
+- **THEN** `session.user.id` equals the JWT `sub` claim, `session.user.mustChangePassword` is present, and no role claim is exposed
+
+#### Scenario: No permission claim in the token
+
+- **GIVEN** a signed-in admin
+- **WHEN** the JWT is decoded
+- **THEN** it contains no `role` claim and admin rights are resolved from the database on each check
 
 #### Scenario: Unauthenticated access
 
@@ -176,28 +213,133 @@ The system SHALL redirect users who must change their password away from all rou
 
 ### Requirement: Admin Rights
 
-Admin API routes and the `/admin` area SHALL require the signed-in user's role and account status as stored in the database, not the values cached in the session token.
+Admin API routes and the `/admin` area SHALL require the signed-in user's role
+and account status as stored in the database, not the values cached in the
+session token. An authenticated user without admin rights SHALL receive `403`;
+an anonymous request SHALL receive `401`.
 
 #### Scenario: Demoted admin
 
 - **GIVEN** a signed-in admin whose role was changed to `TENANT` in the database
 - **WHEN** they call any `/api/admin/*` route or open `/admin`
-- **THEN** the request is rejected with 401 and the page redirects to `/dashboard`
+- **THEN** the request is rejected with 403 and the page redirects to `/dashboard`
 
 #### Scenario: Unapproved admin
 
 - **GIVEN** a signed-in admin whose status is not `APPROVED`
 - **WHEN** they call any `/api/admin/*` route
-- **THEN** the request is rejected with 401
+- **THEN** the request is rejected with 403
 
 #### Scenario: Tenant never reaches the database check
 
 - **GIVEN** a signed-in tenant
 - **WHEN** they call any `/api/admin/*` route
-- **THEN** the request is rejected with 401 without a database lookup
+- **THEN** the role is resolved from the database and the request is rejected with 403 before any admin data is queried
+
+#### Scenario: Anonymous request
+
+- **GIVEN** a request without a session
+- **WHEN** it calls any `/api/admin/*` route
+- **THEN** the request is rejected with 401
 
 #### Scenario: Promoted tenant
 
 - **GIVEN** a signed-in tenant whose role was changed to `ADMIN` in the database
 - **WHEN** they call an `/api/admin/*` route
 - **THEN** the request is accepted without re-authenticating
+
+### Requirement: Email Identity
+
+The system SHALL treat an email address as a single identity regardless of case
+or surrounding whitespace: writes store the normalised form (trimmed and
+lowercased) and reads match case-insensitively.
+
+#### Scenario: Mixed-case registration
+
+- **GIVEN** no account exists for `jan@example.com`
+- **WHEN** a user registers as `Jan@Example.com `
+- **THEN** the stored address is `jan@example.com` and a second registration for
+  any casing of the same address is rejected as a duplicate
+
+#### Scenario: Sign-in with different casing
+
+- **GIVEN** an account stored as `jan@example.com`
+- **WHEN** the user submits `JAN@example.com` and the correct password
+- **THEN** the login succeeds
+
+#### Scenario: Password reset for a legacy mixed-case account
+
+- **GIVEN** an account created before normalisation whose address contains
+  uppercase letters
+- **WHEN** the user requests a password reset with the same address in any
+  casing
+- **THEN** the reset email is sent to the stored address
+
+---
+
+### Requirement: Registration Auto-Login Grant
+
+The post-registration Turnstile bypass SHALL be a stateless, short-lived token
+bound to the registered email. The token SHALL be refused after it expires or
+when it is presented for a different address.
+
+#### Scenario: Valid token
+
+- **GIVEN** a freshly registered account with a valid auto-login token
+- **WHEN** the client signs in with the correct password within the token's
+  lifetime
+- **THEN** the login succeeds without a Turnstile token
+
+#### Scenario: Wrong password
+
+- **GIVEN** a valid auto-login token
+- **WHEN** the client submits it with an incorrect password
+- **THEN** the login is rejected
+
+#### Scenario: Expired token
+
+- **GIVEN** an auto-login token older than its lifetime
+- **WHEN** it is presented
+- **THEN** the login requires a Turnstile token
+
+#### Scenario: Email mismatch
+
+- **GIVEN** a valid auto-login token issued for one address
+- **WHEN** it is presented for a different address
+- **THEN** the login requires a Turnstile token
+
+---
+
+### Requirement: API Route Authentication Guard
+
+Every API route module SHALL either resolve the caller's identity through a
+shared auth guard (`requireUser` or `requireAdmin`) or be listed as a public
+route. A module that does neither SHALL fail linting.
+
+#### Scenario: New protected route
+
+- **GIVEN** a new `src/app/api/**/route.ts` module
+- **WHEN** it imports none of the auth guards
+- **THEN** `pnpm lint` fails and names the module
+
+#### Scenario: Public route
+
+- **GIVEN** an allowlisted public module such as `/api/health/route.ts`
+- **WHEN** it is linted
+- **THEN** no guard is required
+
+---
+
+### Requirement: Google Account Linking
+
+The system SHALL link a Google sign-in to an existing account by email only when
+Google marks the address as verified. A profile explicitly flagged as unverified
+SHALL be refused.
+
+#### Scenario: Unverified Google profile
+
+- **GIVEN** a Google profile whose `email_verified` claim is `false`
+- **WHEN** the user completes the OAuth flow
+- **THEN** the sign-in is refused and no account is created or linked
+
+---

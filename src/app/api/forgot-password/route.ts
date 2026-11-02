@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { normalizeEmail } from '@/lib/auth/email';
 import { getEmailService } from '@/lib/email/email-service';
 import { generateSecureToken, hashToken } from '@/lib/email/verification-utils';
 import { createLogger } from '@/lib/logger';
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Find user
-    const user = await findUserByEmail(email.toLowerCase());
+    const user = await findUserByEmail(normalizeEmail(email));
 
     // Don't reveal if user exists or not (security)
     if (!user) {

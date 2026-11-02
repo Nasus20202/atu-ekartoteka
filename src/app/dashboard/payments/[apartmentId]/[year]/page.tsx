@@ -21,9 +21,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { isApprovedAccount } from '@/lib/auth/account-access';
 import { getPaymentsYearTitle } from '@/lib/metadata/page-titles';
 import { findApartmentPaymentYearsCached } from '@/lib/queries/apartments/find-apartment-payment-years';
 import { findApartmentWithPaymentsByYearCached } from '@/lib/queries/apartments/find-apartment-with-payments-by-year';
+import { findUserByIdCached } from '@/lib/queries/users/find-user-by-id';
 import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
 import { toPaymentPdfDto } from '@/lib/types/dto/payment-dto';
 import { formatCurrency, formatDate } from '@/lib/utils';
@@ -59,6 +61,12 @@ export default async function PaymentDetailsPage({
 
   if (!session) {
     redirect('/login');
+  }
+
+  const user = await findUserByIdCached(session.user.id);
+
+  if (!user || !isApprovedAccount(user)) {
+    redirect('/dashboard');
   }
 
   const yearNumber = parsePaymentYear(year);

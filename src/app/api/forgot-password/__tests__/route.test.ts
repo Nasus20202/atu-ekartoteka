@@ -6,11 +6,11 @@ import { AuthMethod } from '@/lib/types';
 
 // Create mock functions using vi.hoisted to ensure they're available when vi.mock runs
 const {
-  mockUserFindUnique,
+  mockUserFindFirst,
   mockPasswordResetDeleteMany,
   mockPasswordResetCreate,
 } = vi.hoisted(() => ({
-  mockUserFindUnique: vi.fn(),
+  mockUserFindFirst: vi.fn(),
   mockPasswordResetDeleteMany: vi.fn(),
   mockPasswordResetCreate: vi.fn(),
 }));
@@ -19,7 +19,7 @@ const {
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     user: {
-      findUnique: mockUserFindUnique,
+      findFirst: mockUserFindFirst,
     },
     passwordReset: {
       deleteMany: mockPasswordResetDeleteMany,
@@ -71,7 +71,7 @@ describe('POST /api/forgot-password', () => {
   });
 
   it('should return success message even if user does not exist', async () => {
-    mockUserFindUnique.mockResolvedValue(null);
+    mockUserFindFirst.mockResolvedValue(null);
 
     const req = new NextRequest('http://localhost:3000/api/forgot-password', {
       method: 'POST',
@@ -123,7 +123,7 @@ describe('POST /api/forgot-password', () => {
       updatedAt: new Date(),
     };
 
-    mockUserFindUnique.mockResolvedValue(mockUser);
+    mockUserFindFirst.mockResolvedValue(mockUser);
     mockPasswordResetDeleteMany.mockResolvedValue({ count: 0 });
     mockPasswordResetCreate.mockResolvedValue({
       id: 'reset-123',
@@ -162,7 +162,7 @@ describe('POST /api/forgot-password', () => {
     vi.mocked(getEmailService).mockReturnValueOnce({
       sendPasswordResetEmail,
     } as never);
-    mockUserFindUnique.mockResolvedValue({
+    mockUserFindFirst.mockResolvedValue({
       id: 'user-123',
       email: 'test@example.com',
       name: null,
@@ -200,7 +200,7 @@ describe('POST /api/forgot-password', () => {
       updatedAt: new Date(),
     };
 
-    mockUserFindUnique.mockResolvedValue(mockOAuthUser);
+    mockUserFindFirst.mockResolvedValue(mockOAuthUser);
 
     const req = new NextRequest('http://localhost:3000/api/forgot-password', {
       method: 'POST',
@@ -237,7 +237,7 @@ describe('POST /api/forgot-password', () => {
       updatedAt: new Date(),
     };
 
-    mockUserFindUnique.mockResolvedValue(mockCredentialsUser);
+    mockUserFindFirst.mockResolvedValue(mockCredentialsUser);
     mockPasswordResetDeleteMany.mockResolvedValue({ count: 0 });
     mockPasswordResetCreate.mockResolvedValue({
       id: 'reset-123',
@@ -271,7 +271,7 @@ describe('POST /api/forgot-password', () => {
   });
 
   it('should handle errors gracefully', async () => {
-    mockUserFindUnique.mockRejectedValue(new Error('Database error'));
+    mockUserFindFirst.mockRejectedValue(new Error('Database error'));
 
     const req = new NextRequest('http://localhost:3000/api/forgot-password', {
       method: 'POST',

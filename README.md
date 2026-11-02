@@ -34,9 +34,9 @@ Visit `http://localhost:3000/register` to create the first admin user.
   - `DATABASE_REPLICA_URLS` - Optional comma-separated list of read replica connection strings for load distribution. When configured, all read queries (e.g., `findMany`, `findUnique`) are automatically routed to replicas, while writes go to the primary database.
   - `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `POSTGRES_PORT` - Used in docker-compose for provisioning the DB container.
 
-- NextAuth / Authentication:
-  - `NEXTAUTH_URL` - App URL used by NextAuth (e.g., `http://localhost:3000` or your domain).
-  - `NEXTAUTH_SECRET` - Secret used by NextAuth for session signing; always set in production.
+- Auth.js:
+  - `AUTH_URL` - App URL used by Auth.js (e.g., `http://localhost:3000` or your domain).
+  - `AUTH_SECRET` - Secret used by Auth.js for session signing; always set in production. `NEXTAUTH_URL`/`NEXTAUTH_SECRET` are still read as a legacy fallback.
   - `AUTH_TRUST_HOST` - Optional; when set to `'true'`, trust host headers in proxied environments.
 
 - Application runtime / build:

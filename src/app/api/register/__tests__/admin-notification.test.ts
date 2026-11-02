@@ -7,6 +7,7 @@ const {
   mockUserCreate,
   mockUserCount,
   mockEmailVerificationCreate,
+  mockTransaction,
   mockNotifyAdminsOfNewUser,
 } = vi.hoisted(() => ({
   mockUserFindUnique: vi.fn(),
@@ -14,6 +15,7 @@ const {
   mockUserCreate: vi.fn(),
   mockUserCount: vi.fn(),
   mockEmailVerificationCreate: vi.fn(),
+  mockTransaction: vi.fn(),
   mockNotifyAdminsOfNewUser: vi.fn().mockResolvedValue(undefined),
 }));
 
@@ -35,6 +37,7 @@ vi.mock('@/lib/database/prisma', () => ({
     emailVerification: {
       create: mockEmailVerificationCreate,
     },
+    $transaction: mockTransaction,
   },
 }));
 
@@ -72,6 +75,11 @@ import { POST } from '@/app/api/register/route';
 describe('POST /api/register - Admin Notifications', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockTransaction.mockImplementation((callback: (tx: unknown) => unknown) =>
+      callback({
+        user: { findFirst: mockUserFindFirst, create: mockUserCreate },
+      })
+    );
   });
 
   it('should notify admins when regular user registers', async () => {

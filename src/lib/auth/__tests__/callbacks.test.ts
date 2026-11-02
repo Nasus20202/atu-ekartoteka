@@ -4,12 +4,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockUser, mockUsers } from '@/__tests__/fixtures';
 import { callbacks } from '@/lib/auth/callbacks';
 import { prisma } from '@/lib/database/prisma';
-import { UserRole } from '@/lib/types';
 
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     user: {
       findUnique: vi.fn(),
+      findFirst: vi.fn(),
       create: vi.fn(),
     },
   },
@@ -46,11 +46,10 @@ describe('callbacks.jwt', () => {
 
   it('populates token from user on first sign-in', async () => {
     const token = makeToken();
-    const user = mockUsers.tenant;
 
     const result = await callbacks!.jwt!({
       token,
-      user: user as never,
+      user: mockUsers.tenant as never,
       trigger: 'signIn',
       account: null,
       session: undefined,
@@ -59,8 +58,21 @@ describe('callbacks.jwt', () => {
     // Auth.js derives `sub` from the provider user; the callback only adds
     // the fields the application needs.
     expect(result!.sub).toBe('user-123');
-    expect(result!.role).toBe(UserRole.TENANT);
     expect(result!.mustChangePassword).toBe(false);
+  });
+
+  it('never puts a role claim in the token', async () => {
+    const token = makeToken();
+
+    const result = await callbacks!.jwt!({
+      token,
+      user: mockUsers.admin as never,
+      trigger: 'signIn',
+      account: null,
+      session: undefined,
+    });
+
+    expect(result).not.toHaveProperty('role');
   });
 
   it('sets mustChangePassword: true when user requires it', async () => {
@@ -77,8 +89,8 @@ describe('callbacks.jwt', () => {
     expect(result!.mustChangePassword).toBe(true);
   });
 
-  it('refreshes token data from DB on update trigger', async () => {
-    const token = makeToken();
+  it('refreshes the forced-change flag from the DB on update', async () => {
+    const token = makeToken({ mustChangePassword: true });
     vi.mocked(prisma.user.findUnique).mockResolvedValue(
       createMockUser({ mustChangePassword: false })
     );
@@ -103,7 +115,7 @@ describe('callbacks.jwt', () => {
   });
 
   it('returns null to sign out when the user no longer exists on update', async () => {
-    const token = makeToken({ role: UserRole.ADMIN });
+    const token = makeToken();
     vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
 
     const result = await callbacks!.jwt!({
@@ -117,11 +129,9 @@ describe('callbacks.jwt', () => {
     expect(result).toBeNull();
   });
 
-  it('does not fetch DB on signIn trigger', async () => {
-    const token = makeToken();
-
+  it('does not fetch the DB on signIn trigger', async () => {
     await callbacks!.jwt!({
-      token,
+      token: makeToken(),
       user: mockUsers.tenant as never,
       trigger: 'signIn',
       account: null,
@@ -137,15 +147,12 @@ describe('callbacks.session', () => {
     vi.clearAllMocks();
   });
 
-  it('populates session.user from JWT token', async () => {
+  it('exposes only the id and the forced-change flag', async () => {
     const session = {
       user: { name: 'Test', email: 'test@example.com', image: null },
       expires: '',
     };
-    const token = makeToken({
-      role: UserRole.TENANT,
-      mustChangePassword: false,
-    });
+    const token = makeToken({ mustChangePassword: false });
 
     const result = await callbacks!.session!({
       session: session as never,
@@ -157,9 +164,9 @@ describe('callbacks.session', () => {
 
     expect(result.user).toMatchObject({
       id: 'user-123',
-      role: UserRole.TENANT,
       mustChangePassword: false,
     });
+    expect(result.user).not.toHaveProperty('role');
   });
 
   it('returns session unchanged when the token has no subject', async () => {
@@ -186,7 +193,7 @@ describe('callbacks.signIn', () => {
     vi.clearAllMocks();
   });
 
-  it('returns true immediately for credentials provider', async () => {
+  it('returns true immediately for the credentials provider', async () => {
     const result = await callbacks!.signIn!({
       user: mockUsers.tenant as never,
       account: { provider: 'credentials' } as never,
@@ -196,15 +203,15 @@ describe('callbacks.signIn', () => {
     });
 
     expect(result).toBe(true);
-    expect(prisma.user.findUnique).not.toHaveBeenCalled();
+    expect(prisma.user.findFirst).not.toHaveBeenCalled();
   });
 
-  it('creates new user on first Google sign-in', async () => {
+  it('creates a new user on first Google sign-in', async () => {
     const newDbUser = {
       ...createMockUser({ id: 'new-user-id' }),
       createdAt: new Date(),
     };
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(null);
     vi.mocked(prisma.user.create).mockResolvedValue(newDbUser as never);
 
     const googleUser = {
@@ -237,7 +244,7 @@ describe('callbacks.signIn', () => {
   it('still signs in a new Google user when notifying admins fails', async () => {
     const { notifyAdminsOfNewUser } =
       await import('@/lib/notifications/new-user-registration');
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(null);
     vi.mocked(prisma.user.create).mockResolvedValue({
       ...createMockUser({ id: 'new-user-id' }),
       name: null,
@@ -261,12 +268,12 @@ describe('callbacks.signIn', () => {
     );
   });
 
-  it('populates user fields from existing user on subsequent Google sign-in', async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUsers.tenant);
+  it('links an existing account by normalised email', async () => {
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(mockUsers.tenant);
 
     const googleUser = {
       id: undefined,
-      email: 'test@example.com',
+      email: 'TEST@example.com',
       name: 'Test User',
     } as Record<string, unknown>;
 
@@ -280,12 +287,29 @@ describe('callbacks.signIn', () => {
 
     expect(result).toBe(true);
     expect(prisma.user.create).not.toHaveBeenCalled();
+    expect(prisma.user.findFirst).toHaveBeenCalledWith({
+      where: { email: { equals: 'test@example.com', mode: 'insensitive' } },
+    });
     expect(googleUser.id).toBe('user-123');
-    expect(googleUser.role).toBe(UserRole.TENANT);
+    expect(googleUser.mustChangePassword).toBe(false);
+  });
+
+  it('refuses a profile Google marked as unverified', async () => {
+    const result = await callbacks!.signIn!({
+      user: { email: 'unverified@gmail.com' } as never,
+      account: { provider: 'google' } as never,
+      profile: { email_verified: false } as never,
+      email: undefined,
+      credentials: undefined,
+    });
+
+    expect(result).toBe(false);
+    expect(prisma.user.findFirst).not.toHaveBeenCalled();
+    expect(prisma.user.create).not.toHaveBeenCalled();
   });
 
   it('returns false when Google sign-in throws', async () => {
-    vi.mocked(prisma.user.findUnique).mockRejectedValue(new Error('DB error'));
+    vi.mocked(prisma.user.findFirst).mockRejectedValue(new Error('DB error'));
 
     const result = await callbacks!.signIn!({
       user: { email: 'err@example.com' } as never,

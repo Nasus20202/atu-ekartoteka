@@ -90,6 +90,34 @@ describe('proxy-handler: handleMustChangePassword', () => {
     expect(result).toBeNull();
   });
 
+  it.each([
+    '/login-help',
+    '/logout-anyway',
+    '/api/user/profile-bulk',
+    '/api/authx/session',
+  ])('does not treat %s as an allowlisted prefix', (pathname) => {
+    const result = handleMustChangePassword(makeRequest(pathname, true));
+
+    expect(result).not.toBeNull();
+    expect(NextResponse.redirect).toHaveBeenCalled();
+  });
+
+  it('does allow a nested path under an allowlisted prefix', () => {
+    const result = handleMustChangePassword(
+      makeRequest('/api/user/profile/settings', true)
+    );
+
+    expect(result).toBeNull();
+  });
+
+  it('does not redirect a nested allowlisted path to /dashboard', () => {
+    const result = handleMustChangePassword(
+      makeRequest('/change-password-old', false)
+    );
+
+    expect(result).toBeNull();
+  });
+
   it('redirects /change-password to /dashboard when mustChangePassword is false', () => {
     const result = handleMustChangePassword(
       makeRequest('/change-password', false)

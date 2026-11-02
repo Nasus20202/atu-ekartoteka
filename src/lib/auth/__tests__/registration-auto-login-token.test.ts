@@ -9,9 +9,20 @@ import {
 
 const SECRET = 'test-secret-value';
 
+function sign(payload: unknown): string {
+  const payloadPart = Buffer.from(JSON.stringify(payload)).toString(
+    'base64url'
+  );
+  const signature = createHmac('sha256', SECRET)
+    .update(payloadPart)
+    .digest('base64url');
+  return `${payloadPart}.${signature}`;
+}
+
 describe('registration-auto-login-token', () => {
   beforeEach(() => {
-    vi.stubEnv('NEXTAUTH_SECRET', SECRET);
+    vi.clearAllMocks();
+    vi.stubEnv('AUTH_SECRET', SECRET);
   });
 
   afterEach(() => {
@@ -19,109 +30,130 @@ describe('registration-auto-login-token', () => {
   });
 
   describe('createRegistrationAutoLoginToken', () => {
-    it('returns a token string when secret is set', () => {
-      const token = createRegistrationAutoLoginToken('user@example.com');
+    it('returns a signed token', () => {
+      const token = createRegistrationAutoLoginToken('User@Example.com ');
+
       expect(token).toBeTypeOf('string');
       expect(token).toContain('.');
     });
 
     it('returns null when no secret is configured', () => {
       vi.unstubAllEnvs();
-      const token = createRegistrationAutoLoginToken('user@example.com');
-      expect(token).toBeNull();
+
+      expect(createRegistrationAutoLoginToken('user@example.com')).toBeNull();
     });
 
-    it('uses AUTH_SECRET as fallback when NEXTAUTH_SECRET is absent', () => {
+    it('uses NEXTAUTH_SECRET as a legacy fallback', () => {
       vi.unstubAllEnvs();
-      vi.stubEnv('AUTH_SECRET', SECRET);
-      const token = createRegistrationAutoLoginToken('user@example.com');
-      expect(token).toBeTypeOf('string');
-    });
+      vi.stubEnv('NEXTAUTH_SECRET', SECRET);
 
-    it('encodes email in the token payload', () => {
-      const email = 'encoded@example.com';
-      const token = createRegistrationAutoLoginToken(email);
-      const [payloadPart] = token!.split('.');
-      const payload = JSON.parse(
-        Buffer.from(payloadPart, 'base64url').toString('utf8')
+      expect(createRegistrationAutoLoginToken('user@example.com')).toBeTypeOf(
+        'string'
       );
-      expect(payload.email).toBe(email);
     });
 
-    it('includes a future expiry in the token payload', () => {
+    it('encodes the normalised email and a short expiry in the payload', () => {
       const before = Date.now();
-      const token = createRegistrationAutoLoginToken('user@example.com');
-      const after = Date.now();
-      const [payloadPart] = token!.split('.');
+      const token = createRegistrationAutoLoginToken(' User@Example.com ')!;
+      const [payloadPart] = token.split('.');
       const payload = JSON.parse(
         Buffer.from(payloadPart, 'base64url').toString('utf8')
       );
+
+      expect(payload.email).toBe('user@example.com');
       expect(payload.exp).toBeGreaterThan(before);
-      expect(payload.exp).toBeLessThanOrEqual(after + 15_000 + 50);
+      expect(payload.exp).toBeLessThanOrEqual(before + 15_000 + 50);
     });
   });
 
   describe('verifyRegistrationAutoLoginToken', () => {
-    it('returns true for a valid token with matching email', () => {
-      const email = 'valid@example.com';
-      const token = createRegistrationAutoLoginToken(email)!;
-      expect(verifyRegistrationAutoLoginToken(token, email)).toBe(true);
+    it('accepts a valid token with matching email', () => {
+      const token = createRegistrationAutoLoginToken('valid@example.com')!;
+
+      expect(verifyRegistrationAutoLoginToken(token, 'VALID@example.com')).toBe(
+        true
+      );
     });
 
-    it('returns false when no secret is configured', () => {
-      const email = 'user@example.com';
-      const token = createRegistrationAutoLoginToken(email)!;
+    it('rejects when no secret is configured', () => {
+      const token = createRegistrationAutoLoginToken('user@example.com')!;
       vi.unstubAllEnvs();
-      expect(verifyRegistrationAutoLoginToken(token, email)).toBe(false);
+
+      expect(verifyRegistrationAutoLoginToken(token, 'user@example.com')).toBe(
+        false
+      );
     });
 
-    it('returns false when token is undefined', () => {
+    it('rejects an undefined token', () => {
       expect(
         verifyRegistrationAutoLoginToken(undefined, 'user@example.com')
       ).toBe(false);
     });
 
-    it('returns false when token has no dot separator', () => {
+    it('rejects a token without a dot separator', () => {
       expect(
         verifyRegistrationAutoLoginToken('nodot', 'user@example.com')
       ).toBe(false);
     });
 
-    it('returns false when signature is tampered', () => {
-      const email = 'user@example.com';
-      const token = createRegistrationAutoLoginToken(email)!;
+    it('rejects a tampered signature', () => {
+      const token = createRegistrationAutoLoginToken('user@example.com')!;
       const [payload] = token.split('.');
-      const tampered = `${payload}.invalidsignature`;
-      expect(verifyRegistrationAutoLoginToken(tampered, email)).toBe(false);
+
+      expect(
+        verifyRegistrationAutoLoginToken(
+          `${payload}.invalidsignature`,
+          'user@example.com'
+        )
+      ).toBe(false);
     });
 
-    it('returns false when email does not match', () => {
+    it('rejects a mismatched email', () => {
       const token = createRegistrationAutoLoginToken('real@example.com')!;
+
       expect(verifyRegistrationAutoLoginToken(token, 'other@example.com')).toBe(
         false
       );
     });
 
-    it('returns false when token is expired', () => {
-      const email = 'user@example.com';
-      // Build a token with an already-expired timestamp
-      const payload = JSON.stringify({ email, exp: Date.now() - 1000 });
-      const payloadPart = Buffer.from(payload).toString('base64url');
-      const sig = createHmac('sha256', SECRET)
-        .update(payloadPart)
-        .digest('base64url');
-      const expiredToken = `${payloadPart}.${sig}`;
-      expect(verifyRegistrationAutoLoginToken(expiredToken, email)).toBe(false);
+    it('rejects an expired token', () => {
+      const token = sign({
+        email: 'user@example.com',
+        exp: Date.now() - 1000,
+      });
+
+      expect(verifyRegistrationAutoLoginToken(token, 'user@example.com')).toBe(
+        false
+      );
     });
 
-    it('returns false when payload is not valid JSON', () => {
+    it('rejects a payload without an email', () => {
+      const token = sign({ exp: Date.now() + 10_000 });
+
+      expect(verifyRegistrationAutoLoginToken(token, 'user@example.com')).toBe(
+        false
+      );
+    });
+
+    it('rejects a payload without an expiry', () => {
+      const token = sign({ email: 'user@example.com' });
+
+      expect(verifyRegistrationAutoLoginToken(token, 'user@example.com')).toBe(
+        false
+      );
+    });
+
+    it('rejects a payload that is not valid JSON', () => {
       const payloadPart = Buffer.from('not-json').toString('base64url');
       const sig = createHmac('sha256', SECRET)
         .update(payloadPart)
         .digest('base64url');
-      const badToken = `${payloadPart}.${sig}`;
+
       expect(
-        verifyRegistrationAutoLoginToken(badToken, 'user@example.com')
+        verifyRegistrationAutoLoginToken(
+          `${payloadPart}.${sig}`,
+          'user@example.com'
+        )
       ).toBe(false);
     });
   });

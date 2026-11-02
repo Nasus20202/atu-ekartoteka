@@ -1,12 +1,12 @@
 import bcrypt from 'bcrypt';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { auth } from '@/auth';
 import { BCRYPT_COST } from '@/lib/auth/bcrypt-cost';
 import {
   MIN_PASSWORD_LENGTH,
   PASSWORD_TOO_SHORT_MESSAGE,
 } from '@/lib/auth/password-rules';
+import { requireUser } from '@/lib/auth/require-user';
 import { createLogger } from '@/lib/logger';
 import { updateUserProfile } from '@/lib/mutations/users/update-user-profile';
 import { findUserById } from '@/lib/queries/users/find-user-by-id';
@@ -16,13 +16,10 @@ const logger = createLogger('api:user:profile');
 
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await auth();
+    const { session, response } = await requireUser();
 
-    if (!session) {
-      return NextResponse.json(
-        { error: 'Musisz być zalogowany' },
-        { status: 401 }
-      );
+    if (response) {
+      return response;
     }
 
     const body = await request.json();

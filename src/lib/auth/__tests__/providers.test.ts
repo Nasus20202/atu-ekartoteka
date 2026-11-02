@@ -3,15 +3,18 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createMockUser, mockUsers } from '@/__tests__/fixtures';
 import { buildProviders, credentialsAuthorize } from '@/lib/auth/providers';
-import { prisma } from '@/lib/database/prisma';
-import { UserRole } from '@/lib/types';
 
-vi.mock('@/lib/database/prisma', () => ({
-  prisma: {
-    user: {
-      findUnique: vi.fn(),
-    },
-  },
+const { mockFindUserByEmail, mockVerifyToken } = vi.hoisted(() => ({
+  mockFindUserByEmail: vi.fn(),
+  mockVerifyToken: vi.fn(),
+}));
+
+vi.mock('@/lib/queries/users/find-user-by-email', () => ({
+  findUserByEmail: mockFindUserByEmail,
+}));
+
+vi.mock('@/lib/auth/registration-auto-login-token', () => ({
+  verifyRegistrationAutoLoginToken: mockVerifyToken,
 }));
 
 vi.mock('bcrypt', () => ({
@@ -24,10 +27,6 @@ vi.mock('bcrypt', () => ({
 vi.mock('@/lib/turnstile', () => ({
   isTurnstileEnabled: vi.fn(() => false),
   verifyTurnstileToken: vi.fn(),
-}));
-
-vi.mock('@/lib/auth/registration-auto-login-token', () => ({
-  verifyRegistrationAutoLoginToken: vi.fn(() => false),
 }));
 
 vi.mock('@/lib/opentelemetry/auth-metrics', () => ({
@@ -46,46 +45,58 @@ vi.mock('@/lib/logger', () => ({
   }),
 }));
 
+async function mockTurnstile(enabled: boolean, valid = true) {
+  const { isTurnstileEnabled, verifyTurnstileToken } =
+    await import('@/lib/turnstile');
+  vi.mocked(isTurnstileEnabled).mockReturnValue(enabled);
+  vi.mocked(verifyTurnstileToken).mockResolvedValue(valid as never);
+}
+
 describe('credentialsAuthorize', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
-    const { isTurnstileEnabled } = await import('@/lib/turnstile');
-    const { verifyRegistrationAutoLoginToken } =
-      await import('@/lib/auth/registration-auto-login-token');
-    vi.mocked(isTurnstileEnabled).mockReturnValue(false);
-    vi.mocked(verifyRegistrationAutoLoginToken).mockReturnValue(false);
+    await mockTurnstile(false);
+    mockVerifyToken.mockReturnValue(false);
+    vi.mocked(bcrypt.hash).mockResolvedValue('dummy-hash' as never);
+    vi.mocked(bcrypt.compare).mockResolvedValue(false as never);
   });
 
   describe('input validation', () => {
     it('returns null when email is missing', async () => {
-      const result = await credentialsAuthorize({ email: '', password: 'pw' });
-      expect(result).toBeNull();
+      expect(
+        await credentialsAuthorize({ email: '', password: 'pw' })
+      ).toBeNull();
     });
 
     it('returns null when password is missing', async () => {
-      const result = await credentialsAuthorize({
-        email: 'test@example.com',
-        password: '',
-      });
-      expect(result).toBeNull();
+      expect(
+        await credentialsAuthorize({ email: 'test@example.com', password: '' })
+      ).toBeNull();
     });
 
     it('returns null when credentials are undefined', async () => {
-      const result = await credentialsAuthorize(undefined);
-      expect(result).toBeNull();
+      expect(await credentialsAuthorize(undefined)).toBeNull();
+    });
+
+    it('looks the user up by the normalised email', async () => {
+      mockFindUserByEmail.mockResolvedValue(mockUsers.tenant);
+      vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
+
+      await credentialsAuthorize({
+        email: '  Test@Example.COM ',
+        password: 'correct',
+      });
+
+      expect(mockFindUserByEmail).toHaveBeenCalledWith('test@example.com');
     });
   });
 
   describe('turnstile bypass for registration auto-login', () => {
-    it('allows login with valid auto-login bypass token when turnstile is enabled', async () => {
-      const { isTurnstileEnabled, verifyTurnstileToken } =
-        await import('@/lib/turnstile');
-      const { verifyRegistrationAutoLoginToken } =
-        await import('@/lib/auth/registration-auto-login-token');
-      vi.mocked(isTurnstileEnabled).mockReturnValue(true);
-      vi.mocked(verifyRegistrationAutoLoginToken).mockReturnValue(true);
-
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUsers.tenant);
+    it('allows login with a valid auto-login grant without Turnstile', async () => {
+      const { verifyTurnstileToken } = await import('@/lib/turnstile');
+      await mockTurnstile(true);
+      mockVerifyToken.mockReturnValue(true);
+      mockFindUserByEmail.mockResolvedValue(mockUsers.tenant);
       vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
 
       const result = await credentialsAuthorize({
@@ -96,22 +107,31 @@ describe('credentialsAuthorize', () => {
 
       expect(result).not.toBeNull();
       expect(verifyTurnstileToken).not.toHaveBeenCalled();
-      expect(verifyRegistrationAutoLoginToken).toHaveBeenCalledWith(
+      expect(mockVerifyToken).toHaveBeenCalledWith(
         'valid-bypass',
         'test@example.com'
       );
     });
 
-    it('uses Turnstile validation when bypass token is invalid', async () => {
-      const { isTurnstileEnabled, verifyTurnstileToken } =
-        await import('@/lib/turnstile');
-      const { verifyRegistrationAutoLoginToken } =
-        await import('@/lib/auth/registration-auto-login-token');
+    it('still requires the correct password with a valid grant', async () => {
+      await mockTurnstile(true);
+      mockVerifyToken.mockReturnValue(true);
+      mockFindUserByEmail.mockResolvedValue(mockUsers.tenant);
+      vi.mocked(bcrypt.compare).mockResolvedValue(false as never);
 
-      vi.mocked(isTurnstileEnabled).mockReturnValue(true);
-      vi.mocked(verifyRegistrationAutoLoginToken).mockReturnValue(false);
-      vi.mocked(verifyTurnstileToken).mockResolvedValue(true as never);
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUsers.tenant);
+      const result = await credentialsAuthorize({
+        email: 'test@example.com',
+        password: 'wrong',
+        autoLoginBypassToken: 'valid-bypass',
+      });
+
+      expect(result).toBeNull();
+    });
+
+    it('uses Turnstile validation when the grant is invalid', async () => {
+      const { verifyTurnstileToken } = await import('@/lib/turnstile');
+      await mockTurnstile(true, true);
+      mockFindUserByEmail.mockResolvedValue(mockUsers.tenant);
       vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
 
       const result = await credentialsAuthorize({
@@ -122,22 +142,15 @@ describe('credentialsAuthorize', () => {
       });
 
       expect(result).not.toBeNull();
-      expect(verifyRegistrationAutoLoginToken).toHaveBeenCalledWith(
-        'invalid-bypass',
-        'test@example.com'
-      );
       expect(verifyTurnstileToken).toHaveBeenCalledWith('turnstile-token');
     });
+
     it.each([
       ['missing', undefined, 'missing_turnstile'],
       ['invalid', 'bad-token', 'invalid_turnstile'],
     ])('rejects a %s Turnstile token', async (_, turnstileToken, reason) => {
-      const { isTurnstileEnabled, verifyTurnstileToken } =
-        await import('@/lib/turnstile');
       const { authMetrics } = await import('@/lib/opentelemetry/auth-metrics');
-
-      vi.mocked(isTurnstileEnabled).mockReturnValue(true);
-      vi.mocked(verifyTurnstileToken).mockResolvedValue(false as never);
+      await mockTurnstile(true, false);
 
       const result = await credentialsAuthorize({
         email: 'test@example.com',
@@ -146,7 +159,7 @@ describe('credentialsAuthorize', () => {
       });
 
       expect(result).toBeNull();
-      expect(prisma.user.findUnique).not.toHaveBeenCalled();
+      expect(mockFindUserByEmail).not.toHaveBeenCalled();
       expect(authMetrics.recordLogin).toHaveBeenCalledWith(
         'credentials',
         'failure',
@@ -156,8 +169,8 @@ describe('credentialsAuthorize', () => {
   });
 
   describe('user lookup', () => {
-    it('returns null when user does not exist', async () => {
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
+    it('returns null when the user does not exist and still spends bcrypt work', async () => {
+      mockFindUserByEmail.mockResolvedValue(null);
 
       const result = await credentialsAuthorize({
         email: 'nonexistent@example.com',
@@ -165,40 +178,37 @@ describe('credentialsAuthorize', () => {
       });
 
       expect(result).toBeNull();
-      expect(prisma.user.findUnique).toHaveBeenCalledWith({
-        where: { email: 'nonexistent@example.com' },
-      });
+      expect(bcrypt.compare).toHaveBeenCalledWith('pw', 'dummy-hash');
     });
 
-    it('returns null when user has no password (OAuth user)', async () => {
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(
+    it('returns null when a Google-only user has no password', async () => {
+      mockFindUserByEmail.mockResolvedValue(
         createMockUser({ password: null } as never)
       );
 
-      const result = await credentialsAuthorize({
-        email: 'test@example.com',
-        password: 'pw',
-      });
-
-      expect(result).toBeNull();
+      expect(
+        await credentialsAuthorize({
+          email: 'test@example.com',
+          password: 'pw',
+        })
+      ).toBeNull();
     });
   });
 
   describe('password verification', () => {
-    it('returns null when password does not match', async () => {
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(createMockUser());
-      vi.mocked(bcrypt.compare).mockResolvedValue(false as never);
+    it('returns null when the password does not match', async () => {
+      mockFindUserByEmail.mockResolvedValue(createMockUser());
 
-      const result = await credentialsAuthorize({
-        email: 'test@example.com',
-        password: 'wrong',
-      });
-
-      expect(result).toBeNull();
+      expect(
+        await credentialsAuthorize({
+          email: 'test@example.com',
+          password: 'wrong',
+        })
+      ).toBeNull();
     });
 
-    it('returns user when password matches', async () => {
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(createMockUser());
+    it('returns the session fields when the password matches', async () => {
+      mockFindUserByEmail.mockResolvedValue(mockUsers.tenant);
       vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
 
       const result = await credentialsAuthorize({
@@ -206,47 +216,17 @@ describe('credentialsAuthorize', () => {
         password: 'correct',
       });
 
-      expect(result).not.toBeNull();
-    });
-  });
-
-  describe('successful authentication', () => {
-    it('returns correct user object for tenant', async () => {
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUsers.tenant);
-      vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
-
-      const result = await credentialsAuthorize({
-        email: 'test@example.com',
-        password: 'correct',
-      });
-
-      expect(result).toMatchObject({
+      expect(result).toEqual({
         id: 'user-123',
         email: 'test@example.com',
         name: 'Test User',
-        role: UserRole.TENANT,
         mustChangePassword: false,
       });
-    });
-
-    it('returns correct user object for admin', async () => {
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUsers.admin);
-      vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
-
-      const result = await credentialsAuthorize({
-        email: 'admin@example.com',
-        password: 'correct',
-      });
-
-      expect(result).toMatchObject({
-        role: UserRole.ADMIN,
-      });
+      expect(result).not.toHaveProperty('role');
     });
 
     it('includes mustChangePassword: true for bulk-created users', async () => {
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(
-        mockUsers.mustChangePassword
-      );
+      mockFindUserByEmail.mockResolvedValue(mockUsers.mustChangePassword);
       vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
 
       const result = await credentialsAuthorize({
@@ -257,10 +237,8 @@ describe('credentialsAuthorize', () => {
       expect(result).toMatchObject({ mustChangePassword: true });
     });
 
-    it('handles user with null name', async () => {
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(
-        createMockUser({ name: null })
-      );
+    it('handles a user with a null name', async () => {
+      mockFindUserByEmail.mockResolvedValue(createMockUser({ name: null }));
       vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
 
       const result = await credentialsAuthorize({
@@ -274,7 +252,7 @@ describe('credentialsAuthorize', () => {
 
   describe('error handling', () => {
     it('propagates database errors', async () => {
-      vi.mocked(prisma.user.findUnique).mockRejectedValue(
+      mockFindUserByEmail.mockRejectedValue(
         new Error('Database connection error')
       );
 
@@ -284,7 +262,7 @@ describe('credentialsAuthorize', () => {
     });
 
     it('propagates bcrypt errors', async () => {
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(createMockUser());
+      mockFindUserByEmail.mockResolvedValue(createMockUser());
       vi.mocked(bcrypt.compare).mockRejectedValue(
         new Error('Bcrypt error') as never
       );
@@ -301,8 +279,7 @@ describe('buildProviders', () => {
     delete process.env.GOOGLE_CLIENT_ID;
     delete process.env.GOOGLE_CLIENT_SECRET;
 
-    const providers = buildProviders();
-    const ids = providers.map((p) => (p as { id?: string }).id);
+    const ids = buildProviders().map((p) => (p as { id?: string }).id);
 
     expect(ids).not.toContain('google');
     expect(ids).toContain('credentials');
@@ -312,8 +289,7 @@ describe('buildProviders', () => {
     process.env.GOOGLE_CLIENT_ID = 'test-client-id';
     process.env.GOOGLE_CLIENT_SECRET = 'test-client-secret';
 
-    const providers = buildProviders();
-    const ids = providers.map((p) => (p as { id?: string }).id);
+    const ids = buildProviders().map((p) => (p as { id?: string }).id);
 
     expect(ids).toContain('google');
     expect(ids).toContain('credentials');
