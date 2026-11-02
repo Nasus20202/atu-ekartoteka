@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import VerifyEmailPage from '@/app/verify-email/page';
 
 const mockPush = vi.fn();
-const mockGet = vi.fn((_key: string): string | null => 'verify-token');
+const mockGet = vi.fn((): string | null => 'verify-token');
 const mockFetch = vi.fn();
 
 vi.stubGlobal('fetch', mockFetch);

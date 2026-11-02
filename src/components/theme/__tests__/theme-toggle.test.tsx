@@ -1,12 +1,15 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { ThemeProvider } from 'next-themes';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('next-themes', () => ({
+  // ThemeProvider injects a <script>, which React 19 warns about in tests.
+  // The rendering assertions below do not need the provider.
+  useTheme: () => ({ theme: 'light', setTheme: vi.fn() }),
+}));
 
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 
-const renderWithThemeProvider = (component: React.ReactElement) => {
-  return render(<ThemeProvider attribute="class">{component}</ThemeProvider>);
-};
+const renderThemeToggle = () => render(<ThemeToggle />);
 
 describe('ThemeToggle', () => {
   beforeEach(() => {
@@ -14,7 +17,7 @@ describe('ThemeToggle', () => {
   });
 
   it('renders theme toggle button', async () => {
-    renderWithThemeProvider(<ThemeToggle />);
+    renderThemeToggle();
 
     await waitFor(() => {
       const button = screen.getByRole('button');
@@ -23,7 +26,7 @@ describe('ThemeToggle', () => {
   });
 
   it('displays sun and moon icons', async () => {
-    renderWithThemeProvider(<ThemeToggle />);
+    renderThemeToggle();
 
     await waitFor(() => {
       const button = screen.getByRole('button');
@@ -38,7 +41,7 @@ describe('ThemeToggle', () => {
   });
 
   it('has accessible label', async () => {
-    renderWithThemeProvider(<ThemeToggle />);
+    renderThemeToggle();
 
     await waitFor(() => {
       const srText = screen.getByText('Przełącz motyw');
@@ -48,7 +51,7 @@ describe('ThemeToggle', () => {
   });
 
   it('uses ghost variant and icon size for button', async () => {
-    renderWithThemeProvider(<ThemeToggle />);
+    renderThemeToggle();
 
     await waitFor(() => {
       const button = screen.getByRole('button');
