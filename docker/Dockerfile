@@ -24,6 +24,8 @@ FROM base AS builder
 COPY --from=builder-deps /app/node_modules ./node_modules
 COPY . .
 
+ARG DEPLOYMENT_ID
+ENV DEPLOYMENT_ID=$DEPLOYMENT_ID
 ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 
 # --liftoff-only: Node 26 wasm optimizer corrupts Prisma DMMF under QEMU arm64
