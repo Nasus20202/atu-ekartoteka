@@ -156,4 +156,30 @@ describe('UserCard', () => {
       screen.getAllByRole('button', { name: /mieszkania \(0\)/i })[0]
     ).toBeInTheDocument();
   });
+
+  it('keeps the status badge from shrinking next to a long name', () => {
+    render(
+      <UserCard
+        actionLoading={false}
+        onApprove={vi.fn()}
+        onAssignApartment={vi.fn()}
+        onChangeStatus={vi.fn()}
+        onReject={vi.fn()}
+        user={{
+          ...createUser(AccountStatus.APPROVED),
+          name: 'Bardzo długa nazwa użytkownika, która powinna się zawinąć',
+        }}
+      />
+    );
+
+    const title = screen.getByText(
+      'Bardzo długa nazwa użytkownika, która powinna się zawinąć'
+    );
+
+    expect(title).toHaveClass('break-words');
+    expect(title.parentElement).toHaveClass('min-w-0');
+    expect(screen.getByText('Zatwierdzony').parentElement).toHaveClass(
+      'shrink-0'
+    );
+  });
 });
