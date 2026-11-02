@@ -2,69 +2,18 @@
 
 import { CheckCircle, Loader2, XCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
 import { AuthLoading } from '@/components/auth/auth-loading';
+import { useVerifyEmail } from '@/components/auth/use-verify-email';
 import { AuthLayout } from '@/components/layout/auth-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import {
-  GENERIC_ERROR_MESSAGE,
-  getErrorMessage,
-} from '@/lib/utils/error-message';
 
 function VerifyEmailContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get('token');
-  const [verifying, setVerifying] = useState(Boolean(token));
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function verifyToken() {
-      if (!token) {
-        return;
-      }
-
-      try {
-        const response = await fetch('/api/verify-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token }),
-        });
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Weryfikacja nie powiodła się');
-        }
-
-        if (!cancelled) {
-          setSuccess(true);
-          setTimeout(() => {
-            router.push('/dashboard');
-          }, 2000);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(getErrorMessage(err, GENERIC_ERROR_MESSAGE));
-        }
-      } finally {
-        if (!cancelled) {
-          setVerifying(false);
-        }
-      }
-    }
-
-    void verifyToken();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [token, router]);
+  const token = useSearchParams().get('token');
+  const { verifying, error, success } = useVerifyEmail(token);
 
   if (verifying) {
     return (
