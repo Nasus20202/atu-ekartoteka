@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import ResetPasswordPage from '@/app/reset-password/page';
 
 const mockPush = vi.fn();
-const mockGet = vi.fn((_key: string): string | null => 'reset-token');
+const mockGet = vi.fn((): string | null => 'reset-token');
 const mockReset = vi.fn();
 const mockFetch = vi.fn();
 

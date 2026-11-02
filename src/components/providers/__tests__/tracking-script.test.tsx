@@ -2,6 +2,8 @@ import { render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('next/script', () => ({
+  // A real <script> element triggers React 19's "scripts are never executed"
+  // warning; the props are what this test verifies.
   default: ({
     id,
     strategy,
@@ -11,7 +13,7 @@ vi.mock('next/script', () => ({
     strategy: string;
     dangerouslySetInnerHTML: { __html: string };
   }) => (
-    <script
+    <div
       id={id}
       data-strategy={strategy}
       dangerouslySetInnerHTML={dangerouslySetInnerHTML}
@@ -38,7 +40,7 @@ describe('TrackingScript', () => {
     vi.stubEnv('TRACKING_SCRIPT', 'window.tracked = true;');
 
     const { container } = render(<TrackingScript />);
-    const script = container.querySelector('script#custom-tracking');
+    const script = container.querySelector('#custom-tracking');
 
     expect(script).toHaveAttribute('data-strategy', 'afterInteractive');
     expect(script?.innerHTML).toBe('window.tracked = true;');
