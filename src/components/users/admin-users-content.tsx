@@ -24,15 +24,20 @@ import {
   LIST_VIEW_STORAGE_KEYS,
   useListViewMode,
 } from '@/hooks/use-list-view-mode';
+import type { ListViewMode } from '@/lib/list-view-mode';
 import { AccountStatus } from '@/lib/types';
 import type { UserDto } from '@/lib/types/dto/user-dto';
 
 interface AdminUsersContentProps {
+  initialViewMode?: ListViewMode;
   /** Pending users, the default filter's first page, loaded on the server. */
   initialPage?: InfinitePage<UserDto>;
 }
 
-export function AdminUsersContent({ initialPage }: AdminUsersContentProps) {
+export function AdminUsersContent({
+  initialPage,
+  initialViewMode,
+}: AdminUsersContentProps) {
   const {
     users,
     loading,
@@ -74,7 +79,10 @@ export function AdminUsersContent({ initialPage }: AdminUsersContentProps) {
     handleRejectFromStatusDialog,
   } = useUserActions(refreshUsersAndCount);
   const apartments = useAvailableApartments(selectedUser, apartmentSearch);
-  const [viewMode, setViewMode] = useListViewMode(LIST_VIEW_STORAGE_KEYS.users);
+  const [viewMode, setViewMode] = useListViewMode(
+    LIST_VIEW_STORAGE_KEYS.users,
+    initialViewMode
+  );
 
   const filteredApartments = pinSelectedAndMatching(
     apartments,

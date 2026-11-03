@@ -1,9 +1,9 @@
-import { CardListSkeleton } from '@/components/skeletons/card-list-skeleton';
 import { ViewTransition } from '@/components/ui/view-transition';
 import type { EditMode } from '@/components/users/types';
 import { UserCard } from '@/components/users/user-card';
 import type { UserFilter } from '@/components/users/user-filters';
 import { UsersEmptyState } from '@/components/users/users-empty-state';
+import { UsersListSkeleton } from '@/components/users/users-page-skeleton';
 import { UsersTable } from '@/components/users/users-table';
 import { ListViewMode } from '@/hooks/use-list-view-mode';
 import type { UserDto } from '@/lib/types/dto/user-dto';
@@ -50,7 +50,7 @@ export function UsersList({
   return (
     <ViewTransition view={viewMode}>
       {loading ? (
-        <CardListSkeleton cards={3} rows={2} />
+        <UsersListSkeleton mode={viewMode} />
       ) : users.length === 0 && !error ? (
         <UsersEmptyState search={search} filter={filter} />
       ) : viewMode === ListViewMode.TABLE ? (

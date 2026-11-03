@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { HoaListContent } from '@/components/apartments/hoa-list-content';
@@ -113,6 +114,18 @@ describe('HoaListContent', () => {
     await user.click(screen.getByRole('button', { name: /zapisz/i }));
 
     expect(screen.getByDisplayValue('Wspólnota Testowa')).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('does not request the list again when effects run twice', () => {
+    render(
+      <StrictMode>
+        <HoaListContent initialHoas={[hoa]} />
+      </StrictMode>
+    );
+
+    expect(screen.getByText('Wspólnota Testowa')).toBeInTheDocument();
+    expect(screen.queryByTestId('hoa-grid-skeleton')).not.toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });

@@ -1,7 +1,7 @@
 'use client';
 
 import { Building2, Search } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { renameHoaAction } from '@/actions/hoa';
 import { HoaListCard } from '@/components/apartments/hoa-list-card';
@@ -26,7 +26,7 @@ export function HoaListContent({ initialHoas }: HoaListContentProps) {
   const [hoas, setHoas] = useState<HoaListItemDto[]>(initialHoas);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
-  const skipInitialFetch = useRef(true);
+  const [loadedSearch, setLoadedSearch] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
 
@@ -47,10 +47,8 @@ export function HoaListContent({ initialHoas }: HoaListContentProps) {
   }
 
   useEffect(() => {
-    if (skipInitialFetch.current) {
-      skipInitialFetch.current = false;
-      return;
-    }
+    // The server-provided list already matches this search
+    if (search === loadedSearch) return;
 
     let cancelled = false;
 
@@ -62,6 +60,7 @@ export function HoaListContent({ initialHoas }: HoaListContentProps) {
         const data = await response.json();
         if (!cancelled && response.ok) {
           setHoas(data.homeownersAssociations);
+          setLoadedSearch(search);
         }
       } catch (error) {
         console.error('Failed to fetch HOAs:', error);
@@ -77,7 +76,7 @@ export function HoaListContent({ initialHoas }: HoaListContentProps) {
     return () => {
       cancelled = true;
     };
-  }, [search]);
+  }, [search, loadedSearch]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
