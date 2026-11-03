@@ -1,9 +1,9 @@
 import { CheckCircle } from 'lucide-react';
 
+import { CardListSkeleton } from '@/components/skeletons/card-list-skeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { InfiniteScrollSentinel } from '@/components/ui/infinite-scroll-sentinel';
-import { LoadingCard } from '@/components/ui/loading-card';
 import { HoaCard, HoaGroup } from '@/components/users/management/hoa-card';
 
 interface ApartmentListProps {
@@ -47,7 +47,7 @@ export function ApartmentList({
   onSubmit,
   submitIcon,
 }: ApartmentListProps) {
-  if (loading) return <LoadingCard />;
+  if (loading) return <CardListSkeleton cards={2} rows={3} />;
 
   const sentinel = (
     <InfiniteScrollSentinel

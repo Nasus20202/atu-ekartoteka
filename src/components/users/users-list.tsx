@@ -1,4 +1,4 @@
-import { LoadingCard } from '@/components/ui/loading-card';
+import { CardListSkeleton } from '@/components/skeletons/card-list-skeleton';
 import { ViewTransition } from '@/components/ui/view-transition';
 import type { EditMode } from '@/components/users/types';
 import { UserCard } from '@/components/users/user-card';
@@ -50,7 +50,7 @@ export function UsersList({
   return (
     <ViewTransition view={viewMode}>
       {loading ? (
-        <LoadingCard />
+        <CardListSkeleton cards={3} rows={2} />
       ) : users.length === 0 && !error ? (
         <UsersEmptyState search={search} filter={filter} />
       ) : viewMode === ListViewMode.TABLE ? (

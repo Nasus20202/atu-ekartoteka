@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { AccountStatus } from '@/lib/types';
 
@@ -16,12 +16,21 @@ async function fetchPendingCount(): Promise<number | null> {
   return data.pagination?.total ?? 0;
 }
 
-/** Number of pending accounts, counted by the database. */
-export function usePendingCount() {
-  const [pendingCount, setPendingCount] = useState(0);
+/**
+ * Number of pending accounts, counted by the database. `initialCount` is the
+ * count the server already loaded, so the mount does not request it again.
+ */
+export function usePendingCount(initialCount?: number) {
+  const [pendingCount, setPendingCount] = useState(initialCount ?? 0);
   const [version, setVersion] = useState(0);
+  const skipMountFetch = useRef(initialCount !== undefined);
 
   useEffect(() => {
+    if (skipMountFetch.current) {
+      skipMountFetch.current = false;
+      return;
+    }
+
     let cancelled = false;
     fetchPendingCount()
       .then((count) => {

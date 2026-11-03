@@ -79,10 +79,10 @@ function renderList(overrides: Partial<Parameters<typeof UsersList>[0]> = {}) {
 }
 
 describe('UsersList', () => {
-  it('shows a loading card while loading', () => {
+  it('shows a skeleton while loading', () => {
     renderList({ loading: true });
 
-    expect(screen.getByText('Ładowanie...')).toBeInTheDocument();
+    expect(screen.getByTestId('card-list-skeleton')).toBeInTheDocument();
     expect(screen.queryByTestId('user-card')).not.toBeInTheDocument();
   });
 

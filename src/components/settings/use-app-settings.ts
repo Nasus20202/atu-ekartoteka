@@ -1,45 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 const SETTINGS_URL = '/api/admin/settings';
 const SAVE_ERROR = 'Nie udało się zapisać ustawień';
-const LOAD_ERROR = 'Nie udało się pobrać ustawień';
 
 export type SaveStatus =
   { kind: 'idle' } | { kind: 'saved' } | { kind: 'error'; message: string };
 
-export function useAppSettings() {
-  const [yearsBack, setYearsBack] = useState<number | null>(null);
+export function useAppSettings(initialYearsBack: number) {
+  const [yearsBack, setYearsBack] = useState(initialYearsBack);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<SaveStatus>({ kind: 'idle' });
-  const [loadError, setLoadError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      try {
-        const response = await fetch(SETTINGS_URL);
-        if (cancelled) return;
-        if (!response.ok) {
-          setLoadError(LOAD_ERROR);
-          return;
-        }
-        const data = await response.json();
-        setYearsBack(data.tenantHistoryYearsBack);
-      } catch (error) {
-        console.error('Failed to fetch settings:', error);
-        if (!cancelled) setLoadError(LOAD_ERROR);
-      }
-    }
-
-    void load();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   async function save(nextYearsBack: number) {
     setSaving(true);
@@ -65,5 +37,5 @@ export function useAppSettings() {
     }
   }
 
-  return { yearsBack, loadError, saving, status, setStatus, save };
+  return { yearsBack, saving, status, setStatus, save };
 }

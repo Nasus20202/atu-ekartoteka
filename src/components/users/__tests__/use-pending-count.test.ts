@@ -82,3 +82,16 @@ describe('usePendingCount', () => {
     expect(result.current.pendingCount).toBe(0);
   });
 });
+
+describe('usePendingCount with a server-provided count', () => {
+  it('starts from the count without requesting it', () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { result } = renderHook(() => usePendingCount(4));
+
+    expect(result.current.pendingCount).toBe(4);
+    expect(fetchMock).not.toHaveBeenCalled();
+    vi.unstubAllGlobals();
+  });
+});

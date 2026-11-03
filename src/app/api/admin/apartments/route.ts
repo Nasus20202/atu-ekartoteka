@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { buildApartmentsWhere } from '@/app/api/admin/apartments/apartments-where';
+import { loadApartmentsPage } from '@/app/api/admin/apartments/load-apartments-page';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { createLogger } from '@/lib/logger';
-import { findApartmentsPaginated } from '@/lib/queries/apartments/find-apartments-paginated';
-import {
-  toApartmentSummaryDto,
-  toHomeownersAssociationNoticeDto,
-} from '@/lib/types/dto/apartment-dto';
 import { getErrorMessage } from '@/lib/utils/error-message';
 import type { ApartmentSortKey, SortDirection } from '@/lib/utils/sort';
 
@@ -42,34 +37,19 @@ export async function GET(req: NextRequest) {
     const hoaId = searchParams.get('hoaId');
     const sort = parseSortKey(searchParams.get('sort'));
     const order = parseOrder(searchParams.get('order'));
-    const skip = (page - 1) * limit;
 
-    const where = buildApartmentsWhere({
-      search: searchParams.get('search')?.trim() ?? '',
-      activeOnly: searchParams.get('activeOnly') === 'true',
-      hoaId,
-      assignableTo: searchParams.get('assignableTo'),
-    });
-
-    const [apartments, total, hoa] = await findApartmentsPaginated({
-      where,
-      skip,
-      limit,
-      hoaId,
-      sort,
-      order,
-    });
-
-    return NextResponse.json({
-      apartments: apartments.map(toApartmentSummaryDto),
-      hoa: hoa ? toHomeownersAssociationNoticeDto(hoa) : null,
-      pagination: {
+    return NextResponse.json(
+      await loadApartmentsPage({
         page,
         limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-    });
+        hoaId,
+        sort,
+        order,
+        search: searchParams.get('search')?.trim() ?? '',
+        activeOnly: searchParams.get('activeOnly') === 'true',
+        assignableTo: searchParams.get('assignableTo'),
+      })
+    );
   } catch (error) {
     logger.error({ error }, 'Apartments fetch error');
     return NextResponse.json(
