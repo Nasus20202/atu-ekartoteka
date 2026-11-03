@@ -57,7 +57,9 @@ export default function ChangePasswordPage() {
         throw new Error(data.error || 'Wystąpił błąd');
       }
 
-      await update();
+      // An empty payload makes this a POST; update() alone is a GET that
+      // never refreshes the token
+      await update({});
       router.replace(DASHBOARD_PATH);
       router.refresh();
     } catch (err) {

@@ -119,7 +119,7 @@ describe('ChangePasswordPage', () => {
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith('/dashboard');
     });
-    expect(mockUpdate).toHaveBeenCalledOnce();
+    expect(mockUpdate).toHaveBeenCalledExactlyOnceWith({});
     expect(mockRefresh).toHaveBeenCalledOnce();
   });
 
