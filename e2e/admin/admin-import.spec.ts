@@ -7,6 +7,7 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 
 import { expect, test } from '../fixtures';
+import { FILE_INPUT_SELECTOR } from '../utils/file-input';
 
 test.describe('Admin Data Import', () => {
   test('admin can import HOA data and see apartments', async ({
@@ -41,13 +42,14 @@ test.describe('Admin Data Import', () => {
 
     // The file input has webkitdirectory set, which prevents Playwright from
     // uploading individual files. Remove the attribute before setting files.
-    await adminPage.evaluate(() => {
-      const input = document.querySelector('input[type="file"]');
+    await adminPage.locator(FILE_INPUT_SELECTOR).waitFor({ state: 'attached' });
+    await adminPage.evaluate((selector) => {
+      const input = document.querySelector(selector);
       input?.removeAttribute('webkitdirectory');
       input?.removeAttribute('directory');
-    });
+    }, FILE_INPUT_SELECTOR);
 
-    const fileInput = adminPage.locator('input[type="file"]');
+    const fileInput = adminPage.locator(FILE_INPUT_SELECTOR);
     await fileInput.setInputFiles(
       filePayloads.map((f) => ({
         name: `TEST02/${f.name}`,

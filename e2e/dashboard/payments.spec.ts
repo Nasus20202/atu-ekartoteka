@@ -19,14 +19,18 @@ test.describe('Payments', () => {
       await userPage.goto('/dashboard/payments');
 
       const currentYear = new Date().getFullYear();
-      await expect(userPage.getByText(`Rok ${currentYear}`)).toBeVisible();
+      await expect(
+        userPage.getByText(`Rok ${currentYear}`).filter({ visible: true })
+      ).toBeVisible();
     });
 
     test('payments page shows apartment address', async ({ userPage }) => {
       await userPage.goto('/dashboard/payments');
 
       // Should see apartment address
-      await expect(userPage.getByText('ul. Testowa 1/1A')).toBeVisible();
+      await expect(
+        userPage.getByText('ul. Testowa 1/1A').filter({ visible: true }).first()
+      ).toBeVisible();
     });
 
     test('payments page shows balance', async ({ userPage }) => {
@@ -43,12 +47,17 @@ test.describe('Payments', () => {
 
       // The collapsible trigger "Rok YYYY" should be visible
       const currentYear = new Date().getFullYear();
-      const yearTrigger = userPage.getByText(`Rok ${currentYear}`).first();
+      const yearTrigger = userPage
+        .getByText(`Rok ${currentYear}`)
+        .filter({ visible: true })
+        .first();
       await expect(yearTrigger).toBeVisible();
 
       // Because current year starts open, the payment row (with the year link) should
       // be visible without needing to click
-      await expect(userPage.getByText(/444/).first()).toBeVisible();
+      await expect(
+        userPage.getByText(/444/).filter({ visible: true }).first()
+      ).toBeVisible();
     });
 
     test('clicking year group collapses it', async ({ userPage }) => {
@@ -57,12 +66,19 @@ test.describe('Payments', () => {
       const currentYear = new Date().getFullYear();
 
       // Click the collapsible trigger to collapse the current-year section
-      await userPage.getByText(`Rok ${currentYear}`).first().click();
+      await userPage
+        .getByText(`Rok ${currentYear}`)
+        .filter({ visible: true })
+        .first()
+        .click();
 
       // After collapsing the content should be hidden — the balance amount
       // specific to the row detail should no longer be in the DOM
       // (the trigger itself stays visible but content collapses)
-      const yearTrigger = userPage.getByText(`Rok ${currentYear}`).first();
+      const yearTrigger = userPage
+        .getByText(`Rok ${currentYear}`)
+        .filter({ visible: true })
+        .first();
       await expect(yearTrigger).toBeVisible();
     });
   });
@@ -75,7 +91,11 @@ test.describe('Payments', () => {
 
       // Click on year row to see detailed payments
       const currentYear = new Date().getFullYear();
-      await userPage.getByText(`Rok ${currentYear}`).first().click();
+      await userPage
+        .getByText(`Rok ${currentYear}`)
+        .filter({ visible: true })
+        .first()
+        .click();
 
       // Should navigate to apartment payments page for that year
       await expect(userPage).toHaveURL(
@@ -90,7 +110,11 @@ test.describe('Payments', () => {
 
       // Navigate to specific apartment/year
       const currentYear = new Date().getFullYear();
-      await userPage.getByText(`Rok ${currentYear}`).first().click();
+      await userPage
+        .getByText(`Rok ${currentYear}`)
+        .filter({ visible: true })
+        .first()
+        .click();
 
       // The seeded charge is in the current month - use first() to avoid strict mode
       await expect(
@@ -104,7 +128,11 @@ test.describe('Payments', () => {
       await userPage.goto('/dashboard/payments');
 
       const currentYear = new Date().getFullYear();
-      await userPage.getByText(`Rok ${currentYear}`).first().click();
+      await userPage
+        .getByText(`Rok ${currentYear}`)
+        .filter({ visible: true })
+        .first()
+        .click();
 
       await expect(userPage.getByTestId('payment-monthly-chart')).toBeVisible();
     });
@@ -116,7 +144,11 @@ test.describe('Payments', () => {
 
       // Navigate to specific apartment/year
       const currentYear = new Date().getFullYear();
-      await userPage.getByText(`Rok ${currentYear}`).first().click();
+      await userPage
+        .getByText(`Rok ${currentYear}`)
+        .filter({ visible: true })
+        .first()
+        .click();
 
       // Should see column headers for charges and payments
       await expect(
@@ -132,7 +164,11 @@ test.describe('Payments', () => {
 
       // Navigate to specific apartment/year
       const currentYear = new Date().getFullYear();
-      await userPage.getByText(`Rok ${currentYear}`).first().click();
+      await userPage
+        .getByText(`Rok ${currentYear}`)
+        .filter({ visible: true })
+        .first()
+        .click();
 
       // Should see balance information
       await expect(
@@ -147,10 +183,16 @@ test.describe('Payments', () => {
 
       // Navigate to specific apartment/year
       const currentYear = new Date().getFullYear();
-      await userPage.getByText(`Rok ${currentYear}`).first().click();
+      await userPage
+        .getByText(`Rok ${currentYear}`)
+        .filter({ visible: true })
+        .first()
+        .click();
 
       // Should see seeded monthly amounts (444.25 for each month)
-      await expect(userPage.getByText(/444/)).toBeVisible();
+      await expect(
+        userPage.getByText(/444/).filter({ visible: true }).first()
+      ).toBeVisible();
     });
   });
 });

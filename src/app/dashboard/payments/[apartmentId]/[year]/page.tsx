@@ -1,208 +1,51 @@
 import type { Metadata } from 'next';
-import { notFound, redirect } from 'next/navigation';
+import { Suspense } from 'react';
 
-import {
-  getPaymentSummary,
-  parsePaymentYear,
-} from '@/app/dashboard/payments/[apartmentId]/[year]/payment-summary';
-import { auth } from '@/auth';
-import { getPaymentMonthlyChartData } from '@/components/charts/chart-data';
+import { parsePaymentYear } from '@/app/dashboard/payments/[apartmentId]/[year]/payment-summary';
 import { Page } from '@/components/layout/page';
-import { PageHeader } from '@/components/layout/page-header';
-import { PaymentApartmentDetailsCard } from '@/components/payments/payment-apartment-details-card';
-import { PaymentMonthlyChartCard } from '@/components/payments/payment-monthly-chart-card';
-import { PaymentTable } from '@/components/payments/payment-table';
-import { PaymentYearSelect } from '@/components/payments/payment-year-select';
-import { DownloadPaymentPdfButton } from '@/components/pdf/download-payment-pdf-button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { isApprovedAccount } from '@/lib/auth/account-access';
+import { PaymentApartmentSection } from '@/components/payments/payment-apartment-section';
+import { PaymentChartSection } from '@/components/payments/payment-chart-section';
+import { PaymentChartSkeleton } from '@/components/payments/payment-chart-skeleton';
+import { PaymentDetailsHeader } from '@/components/payments/payment-details-header';
+import type { PaymentDetailsParams } from '@/components/payments/payment-details-params';
+import { PaymentSummarySection } from '@/components/payments/payment-summary-section';
+import { PaymentSummarySkeleton } from '@/components/payments/payment-summary-skeleton';
+import { PaymentTableSection } from '@/components/payments/payment-table-section';
+import { CardListSkeleton } from '@/components/skeletons/card-list-skeleton';
+import { PageHeaderSkeleton } from '@/components/skeletons/page-header-skeleton';
+import { SkeletonCard } from '@/components/skeletons/skeleton-card';
 import { getPaymentsYearTitle } from '@/lib/metadata/page-titles';
-import { findApartmentPaymentYearsCached } from '@/lib/queries/apartments/find-apartment-payment-years';
-import { findApartmentWithPaymentsByYearCached } from '@/lib/queries/apartments/find-apartment-with-payments-by-year';
-import { findUserByIdCached } from '@/lib/queries/users/find-user-by-id';
-import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
-import { toPaymentPdfDto } from '@/lib/types/dto/payment-dto';
-import { formatCurrency, formatDate } from '@/lib/utils';
-import { formatApartmentLabel } from '@/lib/utils/apartment-label';
-import {
-  getBalanceStatusClass,
-  getSignedBalanceClass,
-} from '@/lib/utils/balance-class';
-import { dateToPeriod } from '@/lib/utils/period';
-import { getRequestNow } from '@/lib/utils/request-now';
-
-interface PaymentDetailsPageProps {
-  params: Promise<{
-    apartmentId: string;
-    year: string;
-  }>;
-}
 
 export async function generateMetadata({
   params,
-}: PaymentDetailsPageProps): Promise<Metadata> {
+}: PaymentDetailsParams): Promise<Metadata> {
   const { apartmentId, year } = await params;
   return {
     title: await getPaymentsYearTitle(apartmentId, parsePaymentYear(year)),
   };
 }
 
-export default async function PaymentDetailsPage({
-  params,
-}: PaymentDetailsPageProps) {
-  const { apartmentId, year } = await params;
-  const session = await auth();
-
-  if (!session) {
-    redirect('/login');
-  }
-
-  const user = await findUserByIdCached(session.user.id);
-
-  if (!user || !isApprovedAccount(user)) {
-    redirect('/dashboard');
-  }
-
-  const yearNumber = parsePaymentYear(year);
-  if (yearNumber === null) {
-    notFound();
-  }
-
-  const startYear = await getTenantHistoryStartYear();
-  const cutoffPeriod = dateToPeriod(await getRequestNow());
-  const [apartment, paymentYears] = await Promise.all([
-    findApartmentWithPaymentsByYearCached(
-      apartmentId,
-      session.user.id,
-      yearNumber,
-      startYear,
-      cutoffPeriod
-    ),
-    findApartmentPaymentYearsCached(apartmentId, session.user.id, startYear),
-  ]);
-
-  if (!apartment || apartment.payments.length === 0) {
-    notFound();
-  }
-
-  const payment = apartment.payments[0];
-
-  const { totalPayments, totalCharges, openingBalance, closingBalance } =
-    getPaymentSummary(payment);
-  const monthlyChartData = getPaymentMonthlyChartData(payment);
-
-  const apartmentLabel = formatApartmentLabel(apartment);
-
-  const paymentPdfDto = toPaymentPdfDto(payment);
-
+// Every section reads the same memoized queries and streams in on its own
+export default function PaymentDetailsPage({ params }: PaymentDetailsParams) {
   return (
     <Page maxWidth="4xl">
-      <PageHeader
-        title={`Wpłaty - ${apartmentLabel}`}
-        description={`Szczegóły wpłat za rok ${payment.year}`}
-        action={
-          paymentYears.length > 1 && (
-            <PaymentYearSelect
-              apartmentId={apartment.id}
-              year={payment.year}
-              years={paymentYears}
-            />
-          )
-        }
-      />
+      <Suspense fallback={<PageHeaderSkeleton />}>
+        <PaymentDetailsHeader params={params} />
+      </Suspense>
 
       <div className="space-y-6">
-        {/* Summary Card */}
-        <Card>
-          <CardHeader>
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <CardTitle>Podsumowanie roku {payment.year}</CardTitle>
-                <CardDescription>
-                  Okres: {formatDate(payment.dateFrom)} -{' '}
-                  {formatDate(payment.dateTo)}
-                </CardDescription>
-              </div>
-              <div className="shrink-0">
-                <DownloadPaymentPdfButton
-                  apartmentLabel={apartmentLabel}
-                  hoaName={apartment.homeownersAssociation.name}
-                  payment={paymentPdfDto}
-                />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="rounded-lg bg-muted p-4">
-                <div className="text-sm text-muted-foreground">
-                  Saldo początkowe
-                </div>
-                <div
-                  className={`text-2xl font-bold ${getSignedBalanceClass(openingBalance)}`}
-                >
-                  {formatCurrency(openingBalance)}
-                </div>
-              </div>
-              <div className="rounded-lg bg-muted p-4">
-                <div className="text-sm text-muted-foreground">Naliczenia</div>
-                <div className="text-2xl font-bold">
-                  {formatCurrency(totalCharges)}
-                </div>
-              </div>
-              <div className="rounded-lg bg-muted p-4">
-                <div className="text-sm text-muted-foreground">Suma wpłat</div>
-                <div className="text-2xl font-bold">
-                  {formatCurrency(totalPayments)}
-                </div>
-              </div>
-              <div className="rounded-lg bg-muted p-4">
-                <div className="text-sm text-muted-foreground">
-                  Saldo końcowe
-                </div>
-                <div
-                  className={`text-2xl font-bold ${getBalanceStatusClass(closingBalance)}`}
-                >
-                  {formatCurrency(closingBalance)}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <PaymentMonthlyChartCard data={monthlyChartData} />
-
-        {/* Monthly Payments Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Wpłaty i naliczenia miesięczne</CardTitle>
-            <CardDescription>
-              Szczegółowy wykaz wpłat i naliczeń z bilansem
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <PaymentTable
-              payment={payment}
-              apartmentId={apartment.id}
-              cutoffPeriod={cutoffPeriod}
-            />
-          </CardContent>
-        </Card>
-
-        <PaymentApartmentDetailsCard
-          address={apartment.address ?? ''}
-          building={apartment.building}
-          number={apartment.number}
-          postalCode={apartment.postalCode ?? ''}
-          city={apartment.city ?? ''}
-          shareRatio={apartment.shareRatio}
-        />
+        <Suspense fallback={<PaymentSummarySkeleton />}>
+          <PaymentSummarySection params={params} />
+        </Suspense>
+        <Suspense fallback={<PaymentChartSkeleton />}>
+          <PaymentChartSection params={params} />
+        </Suspense>
+        <Suspense fallback={<CardListSkeleton cards={1} rows={6} />}>
+          <PaymentTableSection params={params} />
+        </Suspense>
+        <Suspense fallback={<SkeletonCard description={false} />}>
+          <PaymentApartmentSection params={params} />
+        </Suspense>
       </div>
     </Page>
   );

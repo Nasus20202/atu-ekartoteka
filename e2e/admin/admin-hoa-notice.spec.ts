@@ -48,7 +48,9 @@ test.describe('HOA notification header and footer', () => {
 
     await openHoaApartments(adminPage);
 
-    await expect(adminPage.getByText('Wyszukiwanie')).toBeVisible();
+    await expect(
+      adminPage.getByText('Wyszukiwanie').filter({ visible: true })
+    ).toBeVisible();
     await expect(
       adminPage.getByText('Nagłówek i stopka powiadomień')
     ).toHaveCount(0);

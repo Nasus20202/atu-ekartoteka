@@ -58,7 +58,9 @@ test.describe('Tenant history window', () => {
     await page.goto('/dashboard/payments');
     await expect(page.getByText(`Rok ${seed.year}`)).toBeVisible();
     await expect(page.getByText(`Rok ${visibleYear}`)).toBeVisible();
-    await expect(page.getByText(`Rok ${hiddenYear}`)).toHaveCount(0);
+    await expect(
+      page.getByText(`Rok ${hiddenYear}`).filter({ visible: true })
+    ).toHaveCount(0);
 
     await page.goto(`/dashboard/payments/${seed.apartmentId}/${seed.year}`);
     await page.getByRole('button', { name: 'Rok', exact: true }).click();
@@ -109,7 +111,9 @@ test.describe('Tenant history window', () => {
 
       await tenantPage(page);
       await page.goto('/dashboard/payments');
-      await expect(page.getByText(`Rok ${hiddenYear}`)).toBeVisible();
+      await expect(
+        page.getByText(`Rok ${hiddenYear}`).filter({ visible: true })
+      ).toBeVisible();
     } finally {
       await setYearsBack(adminPage, DEFAULT_TENANT_HISTORY_YEARS_BACK);
     }

@@ -11,7 +11,10 @@ async function getApartmentIdFromPaymentsPage(
 ): Promise<string> {
   await userPage.goto('/dashboard/payments');
   const currentYear = new Date().getFullYear();
-  await userPage.getByText(`Rok ${currentYear}`).click();
+  await userPage
+    .getByText(`Rok ${currentYear}`)
+    .filter({ visible: true })
+    .click();
   await userPage.waitForURL(/\/dashboard\/payments\/[a-f0-9-]+\/\d{4}/, {
     timeout: 10000,
   });
@@ -83,7 +86,10 @@ test.describe('PDF Download - Tenant', () => {
       await userPage.goto('/dashboard/payments');
 
       const currentYear = new Date().getFullYear();
-      await userPage.getByText(`Rok ${currentYear}`).click();
+      await userPage
+        .getByText(`Rok ${currentYear}`)
+        .filter({ visible: true })
+        .click();
 
       await userPage.waitForURL(/\/dashboard\/payments\/[a-f0-9-]+\/\d{4}/, {
         timeout: 10000,
@@ -98,7 +104,10 @@ test.describe('PDF Download - Tenant', () => {
       await userPage.goto('/dashboard/payments');
 
       const currentYear = new Date().getFullYear();
-      await userPage.getByText(`Rok ${currentYear}`).click();
+      await userPage
+        .getByText(`Rok ${currentYear}`)
+        .filter({ visible: true })
+        .click();
 
       await userPage.waitForURL(/\/dashboard\/payments\/[a-f0-9-]+\/\d{4}/, {
         timeout: 10000,

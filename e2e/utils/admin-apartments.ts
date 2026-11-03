@@ -37,7 +37,10 @@ export async function openSeededApartmentDetails(page: Page) {
 
 /** Searches the HOA apartments list and waits for the response. */
 export async function searchApartments(page: Page, term: string) {
-  await page.getByPlaceholder('Wyszukaj...').fill(term);
+  await page
+    .getByPlaceholder('Wyszukaj...')
+    .filter({ visible: true })
+    .fill(term);
   const searchParam = encodeURIComponent(term.split('/')[0]);
   await Promise.all([
     page.waitForResponse(
