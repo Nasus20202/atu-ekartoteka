@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 
-import { parsePaymentYear } from '@/app/dashboard/payments/[apartmentId]/[year]/payment-summary';
 import { Page } from '@/components/layout/page';
 import { PaymentApartmentSection } from '@/components/payments/payment-apartment-section';
 import { PaymentChartSection } from '@/components/payments/payment-chart-section';
@@ -14,16 +13,9 @@ import { PaymentTableSection } from '@/components/payments/payment-table-section
 import { CardListSkeleton } from '@/components/skeletons/card-list-skeleton';
 import { PageHeaderSkeleton } from '@/components/skeletons/page-header-skeleton';
 import { SkeletonCard } from '@/components/skeletons/skeleton-card';
-import { getPaymentsYearTitle } from '@/lib/metadata/page-titles';
+import { PAGE_TITLES } from '@/lib/metadata/document-title';
 
-export async function generateMetadata({
-  params,
-}: PaymentDetailsParams): Promise<Metadata> {
-  const { apartmentId, year } = await params;
-  return {
-    title: await getPaymentsYearTitle(apartmentId, parsePaymentYear(year)),
-  };
-}
+export const metadata: Metadata = { title: PAGE_TITLES.paymentsFallback };
 
 // Every section reads the same memoized queries and streams in on its own
 export default function PaymentDetailsPage({ params }: PaymentDetailsParams) {

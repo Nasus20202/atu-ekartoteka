@@ -1,18 +1,18 @@
 /**
- * Browser document titles for tenant pages. The apartment address appears
- * in a title only for the apartment owner.
+ * Browser document titles for tenant pages. Per-apartment pages use a static
+ * title, so no address appears in it.
  */
 
 import type { Page } from '@playwright/test';
 
 import { expect, test } from '../fixtures';
-import { SEEDED_APARTMENT_LABEL } from '../utils/admin-apartments';
 import { createUnassignedApartment } from '../utils/create-unassigned-apartment';
 
 const CURRENT_YEAR = new Date().getFullYear();
 const CHARGES_LINK = /^\/dashboard\/charges\/([^/?#]+)/;
 const UNKNOWN_APARTMENT_ID = '00000000-0000-4000-8000-000000000000';
 const GENERIC_CHARGES_TITLE = 'Naliczenia mieszkania | ATU Ekartoteka';
+const GENERIC_PAYMENTS_TITLE = 'Wpłaty mieszkania | ATU Ekartoteka';
 
 /** Reads the id of the signed-in user's apartment from the dashboard. */
 async function openOwnedApartmentId(page: Page): Promise<string> {
@@ -49,26 +49,20 @@ test.describe('Tenant page titles', () => {
     await expect(userPage).toHaveTitle('Wpłaty | ATU Ekartoteka');
   });
 
-  test('owner sees the address in the charges title', async ({ userPage }) => {
+  test('owner charges title has no address', async ({ userPage }) => {
     const apartmentId = await openOwnedApartmentId(userPage);
 
     await userPage.goto(`/dashboard/charges/${apartmentId}`);
 
-    await expect(userPage).toHaveTitle(
-      `Naliczenia - ${SEEDED_APARTMENT_LABEL} | ATU Ekartoteka`
-    );
+    await expect(userPage).toHaveTitle(GENERIC_CHARGES_TITLE);
   });
 
-  test('owner sees the address in the payments year title', async ({
-    userPage,
-  }) => {
+  test('owner payments year title has no address', async ({ userPage }) => {
     const apartmentId = await openOwnedApartmentId(userPage);
 
     await userPage.goto(`/dashboard/payments/${apartmentId}/${CURRENT_YEAR}`);
 
-    await expect(userPage).toHaveTitle(
-      `Wpłaty ${CURRENT_YEAR} - ${SEEDED_APARTMENT_LABEL} | ATU Ekartoteka`
-    );
+    await expect(userPage).toHaveTitle(GENERIC_PAYMENTS_TITLE);
   });
 
   test('address is not in the title of an apartment the user does not own', async ({
@@ -99,7 +93,7 @@ test.describe('Tenant page titles', () => {
 
     await userPage.goto(`/dashboard/payments/${apartmentId}/abc`);
 
-    await expect(userPage).toHaveTitle('Wpłaty mieszkania | ATU Ekartoteka');
+    await expect(userPage).toHaveTitle(GENERIC_PAYMENTS_TITLE);
   });
 
   test('unknown route uses the not-found title', async ({ userPage }) => {
