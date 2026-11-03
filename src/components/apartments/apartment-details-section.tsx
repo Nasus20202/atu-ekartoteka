@@ -1,4 +1,5 @@
 import { ApartmentDetailsContent } from '@/components/apartments/apartment-details-content';
+import { REVEAL_CLASS } from '@/components/layout/reveal';
 import { requireAdminAccess } from '@/lib/auth/require-admin-access';
 import { loadApartmentDetail } from '@/lib/queries/apartments/load-apartment-detail';
 
@@ -18,9 +19,11 @@ export async function ApartmentDetailsSection({
   }
 
   return (
-    <ApartmentDetailsContent
-      apartmentId={apartmentId}
-      initialApartment={apartment}
-    />
+    <div className={REVEAL_CLASS}>
+      <ApartmentDetailsContent
+        apartmentId={apartmentId}
+        initialApartment={apartment}
+      />
+    </div>
   );
 }

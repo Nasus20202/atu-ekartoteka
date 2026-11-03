@@ -1,4 +1,5 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
+import { StrictMode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { getId, type Item, pageOf } from '@/__tests__/fixtures/infinite-list';
@@ -50,5 +51,25 @@ describe('useInfiniteList with an initial page', () => {
       expect(fetchPage).toHaveBeenCalledWith(1, expect.any(AbortSignal))
     );
     await waitFor(() => expect(result.current.items.map(getId)).toEqual(['x']));
+  });
+});
+
+describe('useInfiniteList initial page under strict mode', () => {
+  it('does not request the first page when effects run twice', async () => {
+    const fetchPage = vi.fn(async (page: number) => pageOf(page, ['x']));
+    const { result } = renderHook(
+      () =>
+        useInfiniteList({
+          fetchPage,
+          queryKey: 'q1',
+          getId,
+          initialPage: pageOf(1, ['a', 'b']),
+        }),
+      { wrapper: StrictMode }
+    );
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(fetchPage).not.toHaveBeenCalled();
+    expect(result.current.items.map(getId)).toEqual(['a', 'b']);
   });
 });

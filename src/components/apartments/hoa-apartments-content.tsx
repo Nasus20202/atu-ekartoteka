@@ -35,6 +35,7 @@ import {
 import { APARTMENT_FORMS, pluralizePl } from '@/lib/utils/pluralize';
 
 interface HoaApartmentsContentProps {
+  initialViewMode?: ListViewMode;
   hoaId: string;
   initial: HoaApartmentsInitialData;
 }
@@ -42,6 +43,7 @@ interface HoaApartmentsContentProps {
 export function HoaApartmentsContent({
   hoaId,
   initial,
+  initialViewMode,
 }: HoaApartmentsContentProps) {
   const {
     apartments,
@@ -59,7 +61,8 @@ export function HoaApartmentsContent({
     setSort,
   } = useHoaApartments(hoaId, initial);
   const [viewMode, setViewMode] = useListViewMode(
-    LIST_VIEW_STORAGE_KEYS.apartments
+    LIST_VIEW_STORAGE_KEYS.apartments,
+    initialViewMode
   );
 
   const duplicateActiveAddresses = useMemo(
@@ -126,7 +129,7 @@ export function HoaApartmentsContent({
 
       <ViewTransition view={viewMode}>
         {loading ? (
-          <ApartmentListSkeleton />
+          <ApartmentListSkeleton mode={viewMode} />
         ) : viewMode === ListViewMode.TABLE ? (
           <ApartmentTable
             apartments={apartments}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { AccountStatus } from '@/lib/types';
 
@@ -23,13 +23,10 @@ async function fetchPendingCount(): Promise<number | null> {
 export function usePendingCount(initialCount?: number) {
   const [pendingCount, setPendingCount] = useState(initialCount ?? 0);
   const [version, setVersion] = useState(0);
-  const skipMountFetch = useRef(initialCount !== undefined);
 
   useEffect(() => {
-    if (skipMountFetch.current) {
-      skipMountFetch.current = false;
-      return;
-    }
+    // The server already counted them for the first render
+    if (initialCount !== undefined && version === 0) return;
 
     let cancelled = false;
     fetchPendingCount()
@@ -42,7 +39,7 @@ export function usePendingCount(initialCount?: number) {
     return () => {
       cancelled = true;
     };
-  }, [version]);
+  }, [version, initialCount]);
 
   const reload = useCallback(() => setVersion((current) => current + 1), []);
 

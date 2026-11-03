@@ -79,7 +79,11 @@ export function useInfiniteList<T>({
         }
       : EMPTY_STATE
   );
-  const skipMountFetchRef = useRef(initialPage !== undefined);
+  // The query whose first page is already loaded: it is not requested again,
+  // also when an effect runs twice (React strict mode) or the query returns
+  const loadedKeyRef = useRef<string | null>(
+    initialPage !== undefined ? queryKey : null
+  );
   const [loadingMore, setLoadingMore] = useState(false);
   const fetchRef = useRef(fetchPage);
   const getIdRef = useRef(getId);
@@ -96,6 +100,7 @@ export function useInfiniteList<T>({
       try {
         const result = await fetchRef.current(page, signal);
         if (signal.aborted) return;
+        loadedKeyRef.current = key;
         setState((previous) => ({
           key,
           items: mergeUnique(
@@ -140,8 +145,7 @@ export function useInfiniteList<T>({
 
   useEffect(() => {
     const controller = replaceController();
-    if (skipMountFetchRef.current) {
-      skipMountFetchRef.current = false;
+    if (loadedKeyRef.current === queryKey) {
       return () => controller.abort();
     }
     requestingRef.current = true;

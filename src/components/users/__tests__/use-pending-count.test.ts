@@ -1,4 +1,5 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
+import { StrictMode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { usePendingCount } from '@/components/users/use-pending-count';
@@ -91,6 +92,18 @@ describe('usePendingCount with a server-provided count', () => {
     const { result } = renderHook(() => usePendingCount(4));
 
     expect(result.current.pendingCount).toBe(4);
+    expect(fetchMock).not.toHaveBeenCalled();
+    vi.unstubAllGlobals();
+  });
+});
+
+describe('usePendingCount under strict mode', () => {
+  it('does not request the count the server already loaded', () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    renderHook(() => usePendingCount(4), { wrapper: StrictMode });
+
     expect(fetchMock).not.toHaveBeenCalled();
     vi.unstubAllGlobals();
   });

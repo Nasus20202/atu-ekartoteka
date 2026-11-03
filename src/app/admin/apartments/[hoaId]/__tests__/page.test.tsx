@@ -5,6 +5,11 @@ import { describe, expect, it, vi } from 'vitest';
 import HoaApartmentsPage from '@/app/admin/apartments/[hoaId]/page';
 
 const pending = vi.hoisted(() => ({ section: false }));
+const modeMock = vi.hoisted(() => ({ value: 'cards' }));
+
+vi.mock('@/lib/list-view-mode-server', () => ({
+  getListViewMode: () => Promise.resolve(modeMock.value),
+}));
 
 vi.mock('@/components/apartments/hoa-apartments-section', () => ({
   HoaApartmentsSection: () => {
@@ -13,28 +18,40 @@ vi.mock('@/components/apartments/hoa-apartments-section', () => ({
   },
 }));
 
-function renderPage() {
+async function renderPage() {
   return render(
-    <HoaApartmentsPage
-      params={Promise.resolve({ hoaId: 'hoa-1' })}
-      searchParams={Promise.resolve({})}
-    />
+    await HoaApartmentsPage({
+      params: Promise.resolve({ hoaId: 'hoa-1' }),
+      searchParams: Promise.resolve({}),
+    })
   );
 }
 
 describe('HoaApartmentsPage', () => {
-  it('renders the list when its data is ready', () => {
+  it('renders the list when its data is ready', async () => {
     pending.section = false;
-    renderPage();
+    await renderPage();
 
     expect(screen.getByText('apartments-loaded')).toBeInTheDocument();
   });
 
-  it('shows a skeleton while the list loads', () => {
+  it('shows a skeleton while the list loads', async () => {
     pending.section = true;
-    renderPage();
+    await renderPage();
 
     expect(screen.queryByText('apartments-loaded')).not.toBeInTheDocument();
     expect(screen.getByTestId('apartment-list-skeleton')).toBeInTheDocument();
+  });
+
+  it('shows a table skeleton when the user chose the table view', async () => {
+    pending.section = true;
+    modeMock.value = 'table';
+    await renderPage();
+
+    expect(screen.getByTestId('apartment-list-skeleton')).toBeInTheDocument();
+    expect(screen.getByTestId('apartment-list-skeleton')).toHaveAttribute(
+      'aria-hidden',
+      'true'
+    );
   });
 });

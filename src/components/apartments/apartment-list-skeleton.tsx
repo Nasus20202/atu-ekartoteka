@@ -1,10 +1,28 @@
 import { PageHeaderSkeleton } from '@/components/skeletons/page-header-skeleton';
 import { SkeletonCard } from '@/components/skeletons/skeleton-card';
+import { TableSkeleton } from '@/components/skeletons/table-skeleton';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ListViewMode } from '@/lib/list-view-mode';
 
 const APARTMENT_CARDS = 6;
 
-export function ApartmentListSkeleton() {
+interface ApartmentListSkeletonProps {
+  mode?: ListViewMode;
+}
+
+export function ApartmentListSkeleton({
+  mode = ListViewMode.CARDS,
+}: ApartmentListSkeletonProps) {
+  if (mode === ListViewMode.TABLE) {
+    return (
+      <TableSkeleton
+        columns={5}
+        rows={8}
+        data-testid="apartment-list-skeleton"
+      />
+    );
+  }
+
   return (
     <div
       className="grid gap-4 md:grid-cols-2"
@@ -20,14 +38,16 @@ export function ApartmentListSkeleton() {
   );
 }
 
-export function HoaApartmentsSkeleton() {
+export function HoaApartmentsSkeleton({
+  mode = ListViewMode.CARDS,
+}: ApartmentListSkeletonProps) {
   return (
     <div className="space-y-6">
       <PageHeaderSkeleton />
       <SkeletonCard titleWidth="w-32">
         <Skeleton className="h-10 w-full" />
       </SkeletonCard>
-      <ApartmentListSkeleton />
+      <ApartmentListSkeleton mode={mode} />
     </div>
   );
 }

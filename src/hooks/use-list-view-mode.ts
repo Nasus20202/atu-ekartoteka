@@ -1,34 +1,25 @@
 'use client';
 
-import { useCallback, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useSyncExternalStore } from 'react';
 
-export enum ListViewMode {
-  CARDS = 'cards',
-  TABLE = 'table',
-}
+import {
+  LIST_VIEW_COOKIE_MAX_AGE_SECONDS,
+  listViewCookieName,
+  ListViewMode,
+  parseListViewMode,
+} from '@/lib/list-view-mode';
 
-const VALID_MODES: readonly string[] = Object.values(ListViewMode);
-
-export const LIST_VIEW_STORAGE_KEYS = {
-  apartments: 'atu:list-view:apartments',
-  users: 'atu:list-view:users',
-} as const;
+export { LIST_VIEW_STORAGE_KEYS, ListViewMode } from '@/lib/list-view-mode';
 
 // Used when the browser refuses site storage, so the switch still works
 const memoryFallback = new Map<string, ListViewMode>();
 const listeners = new Set<() => void>();
 
-function parseMode(value: string | null): ListViewMode {
-  return value && VALID_MODES.includes(value)
-    ? (value as ListViewMode)
-    : ListViewMode.CARDS;
-}
-
 function readMode(storageKey: string): ListViewMode {
   const fallback = memoryFallback.get(storageKey);
   if (fallback) return fallback;
   try {
-    return parseMode(window.localStorage.getItem(storageKey));
+    return parseListViewMode(window.localStorage.getItem(storageKey));
   } catch {
     return ListViewMode.CARDS;
   }
@@ -43,14 +34,26 @@ function subscribe(listener: () => void) {
   };
 }
 
-const getServerMode = () => ListViewMode.CARDS;
+// The server reads the same choice from this cookie, so the first paint already
+// shows the chosen view instead of the default one
+function writeCookie(storageKey: string, mode: ListViewMode) {
+  document.cookie = `${listViewCookieName(storageKey)}=${mode}; path=/; max-age=${LIST_VIEW_COOKIE_MAX_AGE_SECONDS}; samesite=lax`;
+}
 
-export function useListViewMode(storageKey: string) {
+export function useListViewMode(
+  storageKey: string,
+  initialMode: ListViewMode = ListViewMode.CARDS
+) {
   const mode = useSyncExternalStore(
     subscribe,
     () => readMode(storageKey),
-    getServerMode
+    () => initialMode
   );
+
+  // A choice made before the cookie existed still reaches the server
+  useEffect(() => {
+    writeCookie(storageKey, mode);
+  }, [storageKey, mode]);
 
   const setMode = useCallback(
     (next: ListViewMode) => {
@@ -60,6 +63,7 @@ export function useListViewMode(storageKey: string) {
       } catch {
         memoryFallback.set(storageKey, next);
       }
+      writeCookie(storageKey, next);
       listeners.forEach((listener) => listener());
     },
     [storageKey]

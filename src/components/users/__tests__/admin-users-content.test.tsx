@@ -5,6 +5,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AdminUsersContent } from '@/components/users/admin-users-content';
 
 const confirmMock = vi.fn();
+const actionMock = vi.hoisted(() => ({
+  updateUserStatusAction: vi.fn(),
+  createUserAction: vi.fn(),
+}));
+
+vi.mock('@/actions/users', () => actionMock);
 const pendingCountMock = vi.hoisted(() => ({ value: 0 }));
 
 vi.mock('@/components/users/use-pending-count', () => ({
@@ -396,8 +402,8 @@ describe('AdminUsersContent', () => {
     const user = userEvent.setup();
     vi.mocked(fetch)
       .mockResolvedValueOnce(usersResponse([]))
-      .mockResolvedValueOnce({ ok: true, json: async () => ({}) } as Response)
       .mockResolvedValueOnce(usersResponse([approvedUser]));
+    actionMock.createUserAction.mockResolvedValueOnce({ ok: true, data: {} });
 
     render(<AdminUsersContent />);
 
@@ -413,9 +419,8 @@ describe('AdminUsersContent', () => {
     await user.click(screen.getByRole('button', { name: /^utwórz$/i }));
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith(
-        '/api/admin/users/create',
-        expect.objectContaining({ method: 'POST' })
+      expect(actionMock.createUserAction).toHaveBeenCalledWith(
+        expect.objectContaining({ email: 'new@example.com' })
       );
     });
 
@@ -426,12 +431,12 @@ describe('AdminUsersContent', () => {
 
   it('shows api error when create user fails', async () => {
     const user = userEvent.setup();
-    vi.mocked(fetch)
-      .mockResolvedValueOnce(usersResponse([]))
-      .mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({ error: 'User exists' }),
-      } as Response);
+    vi.mocked(fetch).mockResolvedValueOnce(usersResponse([]));
+    actionMock.createUserAction.mockResolvedValueOnce({
+      ok: false,
+      error: 'User exists',
+      code: 'invalid',
+    });
 
     render(<AdminUsersContent />);
 
@@ -461,8 +466,11 @@ describe('AdminUsersContent', () => {
         ok: true,
         json: async () => ({ apartments: [] }),
       } as Response)
-      .mockResolvedValueOnce({ ok: true } as Response)
       .mockResolvedValueOnce(usersResponse([approvedUser]));
+    actionMock.updateUserStatusAction.mockResolvedValueOnce({
+      ok: true,
+      data: {},
+    });
 
     render(<AdminUsersContent />);
 
@@ -478,9 +486,8 @@ describe('AdminUsersContent', () => {
     await user.click(screen.getByRole('button', { name: /^zatwierdzony$/i }));
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith(
-        '/api/admin/users',
-        expect.objectContaining({ method: 'PATCH' })
+      expect(actionMock.updateUserStatusAction).toHaveBeenCalledWith(
+        expect.objectContaining({ status: 'APPROVED' })
       );
     });
   });
@@ -493,7 +500,6 @@ describe('AdminUsersContent', () => {
         ok: true,
         json: async () => ({ apartments: [] }),
       } as Response)
-      .mockResolvedValueOnce({ ok: true } as Response)
       .mockResolvedValueOnce(usersResponse([]));
 
     render(<AdminUsersContent />);

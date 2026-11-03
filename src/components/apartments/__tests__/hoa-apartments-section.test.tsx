@@ -9,6 +9,9 @@ const mocks = vi.hoisted(() => ({
   content: vi.fn(),
 }));
 
+vi.mock('@/lib/list-view-mode-server', () => ({
+  getListViewMode: () => Promise.resolve('table'),
+}));
 vi.mock('@/lib/auth/require-admin-access', () => ({
   requireAdminAccess: mocks.requireAdminAccess,
 }));
@@ -59,6 +62,7 @@ describe('HoaApartmentsSection', () => {
         hoa: { id: 'hoa-1' },
         page: { items: [{ id: 'a1' }], ...pagination },
       },
+      initialViewMode: 'table',
     });
   });
 
