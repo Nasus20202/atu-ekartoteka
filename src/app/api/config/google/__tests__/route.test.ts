@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('next/server', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/server')>()),
+  connection: vi.fn().mockResolvedValue(undefined),
+}));
+
 describe('GET /api/config/google', () => {
   beforeEach(() => {
     vi.resetModules();

@@ -1,6 +1,9 @@
-import { NextResponse } from 'next/server';
+import { connection, NextResponse } from 'next/server';
 
 export async function GET() {
+  // Runtime env must not be frozen into a build-time prerender
+  await connection();
+
   const siteKey = process.env.TURNSTILE_SITE_KEY;
   const secretKey = process.env.TURNSTILE_SECRET_KEY;
 
