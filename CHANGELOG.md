@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.11] - 2026-11-03
+
+- fix(auth): send a payload when refreshing the session after a password change
+- chore: update openspec
+- test(auth): cover the orphaned-session sign-out end to end
+- fix(users): remove responsive padding from user dialogs
+- ci: name the composite action file action.yaml
+- docs(openspec): archive harden-session-lifecycle and sync the specs
+- ci: split Test & Build into reusable workflows
+- build(lint): drop the unarchived OpenSpec changes ESLint rule
+- feat(next): set deploymentId from the DEPLOYMENT_ID build arg
+- fix(auth): end orphaned sessions and navigate on the client
+- fix(ui): keep admin user controls usable on mobile
+- chore(next): remove obsolete useTypeScriptCli flag
+- chore(deps): update dependency eslint to v10.14.0 (#841)
+
 ## [0.8.10] - 2026-11-02
 
 - test(hoa): assert the logged load failure instead of leaking it to stderr
