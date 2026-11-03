@@ -169,6 +169,16 @@ const eslintConfig = defineConfig([
       'local/require-api-auth-guard': 'error',
     },
   },
+  // Server Actions are public endpoints: guard every 'use server' module and
+  // keep actions at module level (no captured, encrypted closures).
+  {
+    files: ['src/**/*.ts', 'src/**/*.tsx'],
+    ignores: ['**/__tests__/**', '**/*.test.ts', '**/*.test.tsx'],
+    plugins: { local: localRules },
+    rules: {
+      'local/require-action-auth-guard': 'error',
+    },
+  },
   // Raw SQL bypasses the Prisma query API and is only allowed in migrations.
   {
     files: ['src/**/*.ts', 'src/**/*.tsx'],
