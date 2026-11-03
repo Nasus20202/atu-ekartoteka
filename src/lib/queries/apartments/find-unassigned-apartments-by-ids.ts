@@ -1,19 +1,21 @@
 import { prisma } from '@/lib/database/prisma';
-import { hasEmail } from '@/lib/queries/apartments/has-email';
 
 export function findUnassignedApartmentsByIds(ids: string[]) {
-  return prisma.apartment
-    .findMany({
-      where: {
-        id: { in: ids },
-        userId: null,
-        email: { not: null },
-      },
-      select: {
-        id: true,
-        email: true,
-        owner: true,
-      },
-    })
-    .then((rows) => rows.filter(hasEmail));
+  return (
+    prisma.apartment
+      .findMany({
+        where: {
+          id: { in: ids },
+          userId: null,
+          email: { not: null },
+        },
+        select: {
+          id: true,
+          email: true,
+          owner: true,
+        },
+      })
+      // The where clause already excludes null emails; Prisma cannot narrow the type.
+      .then((rows) => rows as Array<(typeof rows)[number] & { email: string }>)
+  );
 }
