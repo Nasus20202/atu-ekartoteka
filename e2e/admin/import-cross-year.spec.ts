@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 
 import { expect, test } from '../fixtures';
 import { createCrossYearImportFixture } from '../utils/create-cross-year-import-fixture';
+import { FILE_INPUT_SELECTOR } from '../utils/file-input';
 
 const PARTIAL_YEAR_2026_END = '2026-09-30';
 
@@ -25,13 +26,15 @@ async function importTest04(adminPage: Page): Promise<void> {
 
   await adminPage.goto('/admin/import');
 
-  await adminPage.evaluate(() => {
-    const input = document.querySelector('input[type="file"]');
+  await adminPage.locator(FILE_INPUT_SELECTOR).waitFor({ state: 'attached' });
+
+  await adminPage.evaluate((selector) => {
+    const input = document.querySelector(selector);
     input?.removeAttribute('webkitdirectory');
     input?.removeAttribute('directory');
-  });
+  }, FILE_INPUT_SELECTOR);
 
-  await adminPage.locator('input[type="file"]').setInputFiles(filePayloads);
+  await adminPage.locator(FILE_INPUT_SELECTOR).setInputFiles(filePayloads);
 
   await Promise.all([
     adminPage.waitForResponse(

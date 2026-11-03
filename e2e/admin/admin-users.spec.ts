@@ -10,7 +10,9 @@ test.describe.serial('Admin user list', () => {
   test('admin can view users list', async ({ adminPage }) => {
     await openAllUsers(adminPage);
 
-    await expect(adminPage.getByText(USER_EMAIL)).toBeVisible({
+    await expect(
+      adminPage.getByText(USER_EMAIL).filter({ visible: true })
+    ).toBeVisible({
       timeout: 10000,
     });
   });
@@ -19,7 +21,9 @@ test.describe.serial('Admin user list', () => {
     await openAllUsers(adminPage);
 
     await searchUsers(adminPage, USER_EMAIL);
-    await expect(adminPage.getByText(USER_EMAIL)).toBeVisible({
+    await expect(
+      adminPage.getByText(USER_EMAIL).filter({ visible: true })
+    ).toBeVisible({
       timeout: 5000,
     });
 

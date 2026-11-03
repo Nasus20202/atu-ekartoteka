@@ -42,7 +42,9 @@ test.describe('Email Verification', () => {
       timeout: 10000,
     });
 
-    const banner = page.getByText('Twój adres email wymaga weryfikacji');
+    const banner = page
+      .getByText('Twój adres email wymaga weryfikacji')
+      .filter({ visible: true });
     await page.goto('/dashboard');
     await expect(banner).toBeVisible();
 

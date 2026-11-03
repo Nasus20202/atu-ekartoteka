@@ -22,7 +22,9 @@ test.describe.serial('Password Reset', () => {
     // Should be on forgot password page
     await expect(page).toHaveURL(/\/forgot-password/);
     await expect(
-      page.getByText('Przywracanie hasła', { exact: true })
+      page
+        .getByText('Przywracanie hasła', { exact: true })
+        .filter({ visible: true })
     ).toBeVisible();
   });
 

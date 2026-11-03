@@ -14,7 +14,9 @@ test.describe('Dashboard Home', () => {
       await userPage.goto('/dashboard');
 
       await expect(
-        userPage.getByText(new RegExp(`Witaj.*${USER_NAME}`, 'i'))
+        userPage
+          .getByText(new RegExp(`Witaj.*${USER_NAME}`, 'i'))
+          .filter({ visible: true })
       ).toBeVisible();
     });
 
@@ -135,7 +137,10 @@ test.describe('Dashboard Home', () => {
       await userPage.goto('/dashboard');
 
       await expect(
-        userPage.getByText(/Naliczenia z ostatnich 12 miesięcy/i)
+        userPage
+          .getByText(/Naliczenia z ostatnich 12 miesięcy/i)
+          .filter({ visible: true })
+          .first()
       ).toBeVisible();
     });
   });
@@ -146,14 +151,21 @@ test.describe('Dashboard Home', () => {
 
       // Should see payments/balance section
       await expect(
-        userPage.getByText(/Zobacz wszystkie wpłaty/i)
+        userPage
+          .getByText(/Zobacz wszystkie wpłaty/i)
+          .filter({ visible: true })
+          .first()
       ).toBeVisible();
     });
 
     test('user can click to view all payments', async ({ userPage }) => {
       await userPage.goto('/dashboard');
 
-      await userPage.getByText(/Zobacz wszystkie wpłaty/i).click();
+      await userPage
+        .getByText(/Zobacz wszystkie wpłaty/i)
+        .filter({ visible: true })
+        .first()
+        .click();
 
       await expect(userPage).toHaveURL(/\/dashboard\/payments/);
     });
@@ -181,7 +193,10 @@ test.describe('Dashboard Home', () => {
 
       // Should see "Łączna kwota do zapłaty"
       await expect(
-        userPage.getByText(/Łączna kwota do zapłaty/i)
+        userPage
+          .getByText(/Łączna kwota do zapłaty/i)
+          .filter({ visible: true })
+          .first()
       ).toBeVisible();
       await expect(userPage.getByText('444,25 zł').first()).toBeVisible();
     });
@@ -198,7 +213,10 @@ test.describe('Dashboard Home', () => {
 
       // The total is shown as a single block (not per-HOA subtotals)
       await expect(
-        userPage.getByText(/Łączna kwota do zapłaty/i)
+        userPage
+          .getByText(/Łączna kwota do zapłaty/i)
+          .filter({ visible: true })
+          .first()
       ).toBeVisible();
 
       // Individual charge descriptions should appear in flat list

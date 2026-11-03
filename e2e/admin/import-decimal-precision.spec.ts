@@ -8,6 +8,7 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 
 import { expect, test } from '../fixtures';
+import { FILE_INPUT_SELECTOR } from '../utils/file-input';
 
 const FUND_LINE =
   'W10001#TEST02-TEST02-00000-00001M#01/01/2025#31/01/2025#202501#3#Fundusz remontowy#50,4#m2#2,50#126,00';
@@ -47,13 +48,15 @@ async function importFiles(
     adminPage.getByRole('heading', { name: /Import danych/i })
   ).toBeVisible();
 
-  await adminPage.evaluate(() => {
-    const input = document.querySelector('input[type="file"]');
+  await adminPage.locator(FILE_INPUT_SELECTOR).waitFor({ state: 'attached' });
+
+  await adminPage.evaluate((selector) => {
+    const input = document.querySelector(selector);
     input?.removeAttribute('webkitdirectory');
     input?.removeAttribute('directory');
-  });
+  }, FILE_INPUT_SELECTOR);
 
-  await adminPage.locator('input[type="file"]').setInputFiles(files);
+  await adminPage.locator(FILE_INPUT_SELECTOR).setInputFiles(files);
 
   await Promise.all([
     adminPage.waitForResponse(

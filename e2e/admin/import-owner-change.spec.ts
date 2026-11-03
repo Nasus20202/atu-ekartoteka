@@ -4,6 +4,7 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 
 import { expect, test } from '../fixtures';
+import { FILE_INPUT_SELECTOR } from '../utils/file-input';
 import { readOwnerRows } from '../utils/owner-validity';
 
 const OWNER_VALIDITY_HOA = 'TEST06';
@@ -20,13 +21,15 @@ async function importFolder(adminPage: Page, folder: string) {
 
   await adminPage.goto('/admin/import');
 
-  await adminPage.evaluate(() => {
-    const input = document.querySelector('input[type="file"]');
+  await adminPage.locator(FILE_INPUT_SELECTOR).waitFor({ state: 'attached' });
+
+  await adminPage.evaluate((selector) => {
+    const input = document.querySelector(selector);
     input?.removeAttribute('webkitdirectory');
     input?.removeAttribute('directory');
-  });
+  }, FILE_INPUT_SELECTOR);
 
-  await adminPage.locator('input[type="file"]').setInputFiles(filePayloads);
+  await adminPage.locator(FILE_INPUT_SELECTOR).setInputFiles(filePayloads);
 
   await Promise.all([
     adminPage.waitForResponse(

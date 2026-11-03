@@ -4,6 +4,7 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 
 import { expect, test } from '../fixtures';
+import { FILE_INPUT_SELECTOR } from '../utils/file-input';
 
 const HOA_ID = 'TEST06';
 const IMPORT_DIR = fileURLToPath(
@@ -27,12 +28,13 @@ function wplatyLines(): string[] {
 
 async function importFiles(adminPage: Page, files: ImportFile[]) {
   await adminPage.goto('/admin/import');
-  await adminPage.evaluate(() => {
-    const input = document.querySelector('input[type="file"]');
+  await adminPage.locator(FILE_INPUT_SELECTOR).waitFor({ state: 'attached' });
+  await adminPage.evaluate((selector) => {
+    const input = document.querySelector(selector);
     input?.removeAttribute('webkitdirectory');
     input?.removeAttribute('directory');
-  });
-  await adminPage.locator('input[type="file"]').setInputFiles(
+  }, FILE_INPUT_SELECTOR);
+  await adminPage.locator(FILE_INPUT_SELECTOR).setInputFiles(
     files.map(({ name, content }) => ({
       name: `${HOA_ID}/${name}`,
       mimeType: 'text/plain',

@@ -40,7 +40,7 @@ test.describe.serial('Profile', () => {
     // Reload and verify the name persisted
     await profilePage.reload();
     await expect(
-      profilePage.locator(`input[value="${newName}"]`)
+      profilePage.locator(`input[value="${newName}"]`).filter({ visible: true })
     ).toBeVisible();
   });
 
