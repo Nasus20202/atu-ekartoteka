@@ -21,6 +21,10 @@ vi.mock('next/script', () => ({
   ),
 }));
 
+vi.mock('next/server', () => ({
+  connection: vi.fn().mockResolvedValue(undefined),
+}));
+
 import { TrackingScript } from '@/components/providers/tracking-script';
 
 describe('TrackingScript', () => {
@@ -28,18 +32,18 @@ describe('TrackingScript', () => {
     vi.unstubAllEnvs();
   });
 
-  it('renders nothing without a tracking script', () => {
+  it('renders nothing without a tracking script', async () => {
     vi.stubEnv('TRACKING_SCRIPT', '');
 
-    const { container } = render(<TrackingScript />);
+    const { container } = render(await TrackingScript());
 
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('injects the configured script after the page is interactive', () => {
+  it('injects the configured script after the page is interactive', async () => {
     vi.stubEnv('TRACKING_SCRIPT', 'window.tracked = true;');
 
-    const { container } = render(<TrackingScript />);
+    const { container } = render(await TrackingScript());
     const script = container.querySelector('#custom-tracking');
 
     expect(script).toHaveAttribute('data-strategy', 'afterInteractive');

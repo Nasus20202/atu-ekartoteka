@@ -9,8 +9,6 @@ import { getRequestNow } from '@/lib/utils/request-now';
 
 const logger = createLogger('api:admin:import');
 
-export const runtime = 'nodejs';
-
 export async function POST(req: NextRequest) {
   try {
     // Check authentication first

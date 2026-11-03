@@ -7,8 +7,6 @@ import { getErrorMessage } from '@/lib/utils/error-message';
 
 const logger = createLogger('api:admin:import:validate');
 
-export const runtime = 'nodejs';
-
 async function readSkipFullValidation(req: NextRequest): Promise<boolean> {
   const body = (await req.json().catch(() => ({}))) as {
     skipFullValidation?: boolean;

@@ -1,264 +1,72 @@
 import { render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { use } from 'react';
+import { describe, expect, it, vi } from 'vitest';
 
 import DashboardPage from '@/app/dashboard/page';
-import { Prisma } from '@/generated/prisma/browser';
-import { AccountStatus } from '@/lib/types';
 
-const {
-  mockAuth,
-  mockRedirect,
-  mockFindUserWithApartmentsCached,
-  mockFindChargeTotalsByPeriod,
-  mockFindMonthlyChargeSums,
-  mockGetChargeTrendByApartment,
-  mockChargesSummaryCard,
-  mockNotificationsSidebar,
-} = vi.hoisted(() => ({
-  mockAuth: vi.fn(),
-  mockRedirect: vi.fn(),
-  mockFindUserWithApartmentsCached: vi.fn(),
-  mockFindChargeTotalsByPeriod: vi.fn(),
-  mockFindMonthlyChargeSums: vi.fn(),
-  mockGetChargeTrendByApartment: vi.fn(),
-  mockChargesSummaryCard: vi.fn(),
-  mockNotificationsSidebar: vi.fn(),
+const pending = vi.hoisted(() => ({ section: '' }));
+
+function section(name: string, label: string) {
+  return function Section() {
+    if (pending.section === name) {
+      use(new Promise<never>(() => {}));
+    }
+
+    return <div>{label}</div>;
+  };
+}
+
+vi.mock('@/components/dashboard/sections/dashboard-greeting', () => ({
+  DashboardGreeting: section('greeting', 'greeting-loaded'),
+}));
+vi.mock('@/components/dashboard/sections/account-status-section', () => ({
+  AccountStatusSection: section('status', 'status-loaded'),
+}));
+vi.mock('@/components/dashboard/sections/payments-section', () => ({
+  PaymentsSection: section('payments', 'payments-loaded'),
+}));
+vi.mock('@/components/dashboard/sections/charges-section', () => ({
+  ChargesSection: section('charges', 'charges-loaded'),
+}));
+vi.mock('@/components/dashboard/sections/apartments-list-section', () => ({
+  ApartmentsListSection: section('apartments', 'apartments-loaded'),
+}));
+vi.mock('@/components/dashboard/sections/notifications-section', () => ({
+  NotificationsSection: section('notifications', 'notifications-loaded'),
 }));
 
-vi.mock('@/auth', () => ({
-  auth: mockAuth,
-}));
-
-vi.mock('next/navigation', () => ({
-  redirect: mockRedirect,
-}));
-
-vi.mock('@/lib/queries/users/find-user-with-apartments', () => ({
-  findUserWithApartmentsCached: mockFindUserWithApartmentsCached,
-}));
-
-vi.mock('@/lib/queries/charges/find-charge-totals-by-period', () => ({
-  findChargeTotalsByPeriod: mockFindChargeTotalsByPeriod,
-}));
-
-vi.mock('@/lib/queries/payments/find-monthly-charge-sums', () => ({
-  findMonthlyChargeSums: mockFindMonthlyChargeSums,
-}));
-
-vi.mock('@/lib/settings/tenant-history', () => ({
-  getTenantHistoryStartYear: vi.fn().mockResolvedValue(2024),
-}));
-
-vi.mock('@/components/charts/balance-history-data', () => ({
-  getBalanceHistory: () => [],
-}));
-
-vi.mock('@/components/charts/chart-data', () => ({
-  getChargeTrendByApartment: mockGetChargeTrendByApartment,
-}));
-
-vi.mock('@/components/account/user-status-section', () => ({
-  UserStatusSection: ({ email }: { email: string }) => <div>{email}</div>,
-}));
-
-vi.mock('@/components/dashboard/apartments-section', () => ({
-  ApartmentsSection: () => <div>Mieszkania</div>,
-}));
-
-vi.mock('@/components/dashboard/charges-summary-card', () => ({
-  ChargesSummaryCard: (props: unknown) => {
-    mockChargesSummaryCard(props);
-    return <div>Naliczenia</div>;
-  },
-}));
-
-vi.mock('@/components/dashboard/payments-summary-card', () => ({
-  PaymentsSummaryCard: () => <div>Wpłaty</div>,
-}));
-
-vi.mock('@/components/dashboard/notifications-sidebar', () => ({
-  NotificationsSidebar: (props: unknown) => {
-    mockNotificationsSidebar(props);
-    return <div>Powiadomienia</div>;
-  },
-}));
+const SECTIONS = [
+  'greeting',
+  'status',
+  'payments',
+  'charges',
+  'apartments',
+  'notifications',
+];
 
 describe('DashboardPage', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockGetChargeTrendByApartment.mockReturnValue({
-      data: [],
-      series: [],
-    });
-    mockAuth.mockResolvedValue({ user: { id: 'user-1' } });
-    mockFindChargeTotalsByPeriod.mockResolvedValue(new Map());
-    mockFindMonthlyChargeSums.mockResolvedValue(new Map());
+  it('renders every section once its data is ready', () => {
+    pending.section = '';
+
+    render(<DashboardPage />);
+
+    for (const name of SECTIONS) {
+      expect(screen.getByText(`${name}-loaded`)).toBeInTheDocument();
+    }
   });
 
-  it('loads dashboard data within the tenant history window', async () => {
-    mockFindUserWithApartmentsCached.mockResolvedValue(null);
-    mockRedirect.mockImplementation(() => {
-      throw new Error('redirect');
-    });
+  it.each(SECTIONS)(
+    'keeps the other sections visible while %s is still loading',
+    (name) => {
+      pending.section = name;
 
-    await expect(DashboardPage()).rejects.toThrow('redirect');
-    expect(mockFindUserWithApartmentsCached).toHaveBeenCalledWith(
-      'user-1',
-      2024,
-      expect.stringMatching(/^\d{6}$/)
-    );
-  });
+      const { container } = render(<DashboardPage />);
 
-  it('passes the database charge counts and totals to the summary card', async () => {
-    mockFindUserWithApartmentsCached.mockResolvedValue({
-      id: 'user-1',
-      name: 'Jan',
-      email: 'jan@example.com',
-      status: AccountStatus.APPROVED,
-      apartments: [
-        {
-          id: 'apt-1',
-          number: '10',
-          address: 'Testowa',
-          building: '1',
-          city: 'Warszawa',
-          postalCode: '00-001',
-          owner: 'Jan',
-          shareNumerator: 1,
-          shareDenominator: 10,
-          charges: [],
-          payments: [],
-          chargeNotifications: [],
-          homeownersAssociation: {
-            id: 'hoa-1',
-            name: 'Wspólnota',
-            header: null,
-          },
-        },
-      ],
-    });
-    mockFindChargeTotalsByPeriod.mockImplementation(
-      async (_userId: string, _startYear: number, periods: string[]) =>
-        new Map(
-          periods.map((period) => [
-            period,
-            { count: 4, total: new Prisma.Decimal(800) },
-          ])
-        )
-    );
-
-    render(await DashboardPage());
-
-    expect(mockChargesSummaryCard.mock.calls[0][0]).toMatchObject({
-      currentMonthCount: 4,
-      previousMonthCount: 4,
-      currentMonthTotal: new Prisma.Decimal(800),
-      previousMonthTotal: new Prisma.Decimal(800),
-    });
-  });
-
-  it('passes stringified notification decimals to the sidebar', async () => {
-    mockFindUserWithApartmentsCached.mockResolvedValue({
-      id: 'user-1',
-      name: 'Jan',
-      email: 'jan@example.com',
-      status: AccountStatus.APPROVED,
-      apartments: [
-        {
-          id: 'apt-1',
-          number: '10',
-          address: 'Testowa',
-          building: '1',
-          city: 'Warszawa',
-          postalCode: '00-001',
-          owner: 'Jan',
-          shareNumerator: 1,
-          shareDenominator: 10,
-          charges: [],
-          payments: [
-            {
-              year: 2026,
-              calculatedClosingBalance: new Prisma.Decimal('123.4500'),
-            },
-          ],
-          chargeNotifications: [
-            {
-              id: 'notif-1',
-              lineNo: 1,
-              description: 'Fundusz remontowy',
-              quantity: new Prisma.Decimal('50.5000'),
-              unit: 'm2',
-              unitPrice: new Prisma.Decimal('2.5000'),
-              totalAmount: new Prisma.Decimal('126.2500'),
-              createdAt: new Date('2026-04-01T00:00:00.000Z'),
-              updatedAt: new Date('2026-04-01T00:00:00.000Z'),
-            },
-          ],
-          homeownersAssociation: {
-            id: 'hoa-1',
-            name: 'Wspólnota Test',
-            header: 'Header',
-          },
-        },
-      ],
-    });
-
-    render(await DashboardPage());
-
-    expect(screen.getByText('Powiadomienia')).toBeInTheDocument();
-    expect(mockNotificationsSidebar).toHaveBeenCalledTimes(1);
-    expect(mockNotificationsSidebar.mock.calls[0][0]).toMatchObject({
-      notifications: [
-        expect.objectContaining({
-          id: 'notif-1',
-          quantity: '50.5',
-          unitPrice: '2.5',
-          totalAmount: '126.25',
-          apartmentNumber: '10',
-          apartmentAddress: 'Testowa 1/10',
-          hoaId: 'hoa-1',
-          hoaName: 'Wspólnota Test',
-          hoaHeader: 'Header',
-        }),
-      ],
-    });
-  });
-
-  it('redirects to login when session is missing', async () => {
-    mockAuth.mockResolvedValue(null);
-    mockRedirect.mockImplementation(() => {
-      throw new Error('redirect');
-    });
-
-    await expect(DashboardPage()).rejects.toThrow('redirect');
-
-    expect(mockRedirect).toHaveBeenCalledWith('/login');
-  });
-
-  it('redirects to login when user data is missing', async () => {
-    mockFindUserWithApartmentsCached.mockResolvedValue(null);
-    mockRedirect.mockImplementation(() => {
-      throw new Error('redirect');
-    });
-
-    await expect(DashboardPage()).rejects.toThrow('redirect');
-
-    expect(mockRedirect).toHaveBeenCalledWith('/login');
-  });
-
-  it('does not render approved-only sections for pending user', async () => {
-    mockFindUserWithApartmentsCached.mockResolvedValue({
-      id: 'user-1',
-      name: null,
-      email: 'jan@example.com',
-      status: AccountStatus.PENDING,
-      apartments: [],
-    });
-
-    render(await DashboardPage());
-
-    expect(screen.queryByText('Powiadomienia')).not.toBeInTheDocument();
-    expect(screen.queryByText('Naliczenia')).not.toBeInTheDocument();
-    expect(screen.queryByText('Mieszkania')).not.toBeInTheDocument();
-  });
+      expect(screen.queryByText(`${name}-loaded`)).not.toBeInTheDocument();
+      expect(container.querySelector('[aria-hidden="true"]')).not.toBeNull();
+      for (const other of SECTIONS.filter((item) => item !== name)) {
+        expect(screen.getByText(`${other}-loaded`)).toBeInTheDocument();
+      }
+    }
+  );
 });

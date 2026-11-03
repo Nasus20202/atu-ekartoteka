@@ -1,0 +1,10 @@
+const SETTINGS_STALE_SECONDS = 60;
+const SETTINGS_LIFETIME_SECONDS = 300;
+
+export const SETTINGS_CACHE = {
+  stale: SETTINGS_STALE_SECONDS,
+  revalidate: SETTINGS_LIFETIME_SECONDS,
+  expire: SETTINGS_LIFETIME_SECONDS,
+} as const;
+
+export const SETTINGS_CACHE_TAG = 'app-settings';

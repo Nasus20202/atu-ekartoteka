@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   deploymentId: process.env.DEPLOYMENT_ID || undefined,
   serverExternalPackages: ['pino', 'pino-pretty'],
+  cacheComponents: true,
+  partialPrefetching: true,
   turbopack: {},
   logging: {
     incomingRequests: {

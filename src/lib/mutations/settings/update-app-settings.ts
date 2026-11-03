@@ -1,3 +1,6 @@
+import { revalidateTag } from 'next/cache';
+
+import { SETTINGS_CACHE_TAG } from '@/lib/cache/profiles';
 import { prisma } from '@/lib/database/prisma';
 import { getAppSettings } from '@/lib/queries/settings/get-app-settings';
 import type { AppSettingsValues } from '@/lib/settings/registry';
@@ -20,6 +23,8 @@ export async function updateAppSettings(values: Partial<AppSettingsValues>) {
       })
     )
   );
+
+  revalidateTag(SETTINGS_CACHE_TAG, { expire: 0 });
 
   return getAppSettings();
 }

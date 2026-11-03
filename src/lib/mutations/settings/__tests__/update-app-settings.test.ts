@@ -3,6 +3,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockUpsert = vi.fn((args: unknown) => args);
 const mockTransaction = vi.fn().mockResolvedValue([]);
 const mockFindMany = vi.fn();
+const mockRevalidateTag = vi.fn();
+
+vi.mock('next/cache', () => ({ revalidateTag: mockRevalidateTag }));
 
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
@@ -35,6 +38,9 @@ describe('updateAppSettings', () => {
         update: { value: 3 },
       },
     ]);
+    expect(mockRevalidateTag).toHaveBeenCalledWith('app-settings', {
+      expire: 0,
+    });
   });
 
   it('does not write settings whose value is unchanged', async () => {
@@ -47,5 +53,6 @@ describe('updateAppSettings', () => {
     ).resolves.toEqual({ tenantHistoryYearsBack: 2 });
 
     expect(mockTransaction).not.toHaveBeenCalled();
+    expect(mockRevalidateTag).not.toHaveBeenCalled();
   });
 });

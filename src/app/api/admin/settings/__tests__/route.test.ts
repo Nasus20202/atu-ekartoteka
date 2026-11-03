@@ -10,6 +10,8 @@ const mockTransaction = vi.fn();
 
 vi.mock('@/auth', () => ({ auth: mockAuth }));
 
+vi.mock('next/cache', () => ({ revalidateTag: vi.fn() }));
+
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
     $transaction: mockTransaction,

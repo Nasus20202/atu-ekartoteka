@@ -1,36 +1,19 @@
-import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
 
 import packageJson from '@/../package.json';
-import { auth } from '@/auth';
-import { EmailVerificationBanner } from '@/components/account/email-verification-banner';
-import { OrphanedSessionSignOut } from '@/components/account/orphaned-session-sign-out';
-import { DashboardNavbar } from '@/components/navigation/dashboard-navbar';
-import { isApprovedAdmin } from '@/lib/auth/admin-access';
-import { findUserByIdCached } from '@/lib/queries/users/find-user-by-id';
+import { DashboardChrome } from '@/components/navigation/dashboard-chrome';
+import { DashboardNavbarSkeleton } from '@/components/navigation/dashboard-navbar-skeleton';
 
-export default async function DashboardLayout({
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
-
-  if (!session) {
-    redirect('/login');
-  }
-
-  const user = await findUserByIdCached(session.user.id);
-
-  if (!user) {
-    return <OrphanedSessionSignOut />;
-  }
-
-  const isAdmin = isApprovedAdmin(user);
-
   return (
     <>
-      <DashboardNavbar mode="dashboard" isAdmin={isAdmin} />
-      <EmailVerificationBanner emailVerified={user.emailVerified} />
+      <Suspense fallback={<DashboardNavbarSkeleton />}>
+        <DashboardChrome />
+      </Suspense>
       {children}
       <div className="fixed bottom-4 left-4 z-10">
         <p className="text-xs text-muted-foreground/60">

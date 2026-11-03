@@ -1,5 +1,6 @@
-import { cache } from 'react';
+import { cacheLife, cacheTag } from 'next/cache';
 
+import { SETTINGS_CACHE, SETTINGS_CACHE_TAG } from '@/lib/cache/profiles';
 import { prisma } from '@/lib/database/prisma';
 import {
   type AppSettingsValues,
@@ -14,4 +15,11 @@ export async function getAppSettings(): Promise<AppSettingsValues> {
   return resolveAppSettings(rows);
 }
 
-export const getAppSettingsCached = cache(getAppSettings);
+/** Settings are global, so every user shares one entry per replica. */
+export async function getAppSettingsCached(): Promise<AppSettingsValues> {
+  'use cache';
+  cacheLife(SETTINGS_CACHE);
+  cacheTag(SETTINGS_CACHE_TAG);
+
+  return getAppSettings();
+}
