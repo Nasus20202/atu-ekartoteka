@@ -226,6 +226,11 @@ The application SHALL be fully usable on mobile viewports (≥ 375 px) as well a
 - **WHEN** a flex row contains elements with constrained or fixed widths (e.g., currency amounts, icon buttons)
 - **THEN** those elements have `shrink-0` so they are never compressed; variable-length text elements have `min-w-0` so they absorb available space without overflowing
 
+#### Scenario: Admin user cards with unbroken text
+
+- **WHEN** an admin user card shows a name, email or apartment label that contains no spaces, on a viewport ≥ 360 px
+- **THEN** the text wraps inside the card, the cards list keeps the width of the page, and the page body does not scroll horizontally
+
 ---
 
 ### Requirement: Accessibility baseline

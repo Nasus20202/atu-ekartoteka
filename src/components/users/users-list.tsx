@@ -61,7 +61,7 @@ export function UsersList({
           onSort={onSort}
         />
       ) : (
-        <div className="grid gap-4">
+        <div className="grid grid-cols-1 gap-4">
           {users.map((user) => (
             <UserCard key={user.id} {...cardProps(user)} />
           ))}

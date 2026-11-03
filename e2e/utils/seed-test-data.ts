@@ -10,7 +10,6 @@ import * as pg from 'pg';
 import { fileURLToPath } from 'url';
 
 import { loadSql } from './load-sql';
-import { seedVisualTestData } from './seed-visual-test-data';
 import {
   ADMIN_EMAIL,
   ADMIN_NAME,
@@ -108,9 +107,6 @@ export async function seedTestData(connectionString?: string) {
       new Date(currentYear, 11, 31),
     ]);
     console.log('  - Created payments for year:', currentYear);
-
-    await seedVisualTestData(client);
-    console.log('  - Created visual regression users');
   } finally {
     await client.end();
   }

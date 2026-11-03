@@ -16,7 +16,7 @@ context: |
   - Package manager: pnpm
   - Build: Next.js (standalone output), Vite via Vitest for unit tests
   - Unit tests: Vitest + React Testing Library — co-located in __tests__/ folders, jsdom environment
-  - E2E tests: Playwright (Chromium) — tests in e2e/, global seed/teardown in e2e/global-setup.ts and e2e/global-teardown.ts
+  - E2E tests: Playwright (Chromium) — tests in e2e/, global seed/teardown in e2e/global-setup.ts and e2e/global-teardown.ts; functional tests use database `e2e` (port 3000), visual tests use database `e2e_visual` (port 3001), both served from one production build
   - Linting: ESLint (flat config) with simple-import-sort, unused-imports, prettier, playwright plugins
   - Formatting: Prettier — single quotes, semicolons, trailing commas (es5), 80-char width, 2-space indent, LF
 

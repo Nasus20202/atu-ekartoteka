@@ -106,6 +106,14 @@ See [Docker Documentation](docs/DOCKER.md) for detailed setup and troubleshootin
 - `pnpm test:e2e:visual` - Run visual regression tests
 - `pnpm test:e2e:visual:update` - Regenerate visual baselines after an intended UI change
 
+## End-to-end tests
+
+E2E runs need a running PostgreSQL server and `DATABASE_URL`, for example `postgresql://postgres:postgres@localhost:5432/e2e`. The functional suite uses database `e2e`, and the visual suite uses `e2e_visual` on the same server. Global setup creates both databases if they are missing and applies migrations.
+
+`pnpm test:e2e` and `pnpm test:e2e:visual` build the app, then start that build twice with `next start`: on port 3000 for the functional suite and on port 3001 for the visual suite (`PLAYWRIGHT_VISUAL_BASE_URL` overrides the visual URL). Run `pnpm build` first if you call `pnpm exec playwright test` directly.
+
+`docker-compose.e2e.yaml` runs the same image the same way, with `ekartoteka` on port 3000 and `ekartoteka-visual` on port 3001, and `docker/postgres-init` creates `e2e_visual`.
+
 ## Health Checks
 
 The application provides health check endpoints for monitoring:

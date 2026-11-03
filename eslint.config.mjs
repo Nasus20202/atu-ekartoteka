@@ -136,6 +136,13 @@ const eslintConfig = defineConfig([
       'no-restricted-imports': 'off',
     },
   },
+  // Playwright config reads the E2E database helper from e2e/ outside the @ alias
+  {
+    files: ['playwright.config.ts'],
+    rules: {
+      'no-restricted-imports': 'off',
+    },
+  },
   // Access checks go through the shared predicates; the comparison itself lives
   // in the predicate modules so a change of policy cannot miss a call site.
   {
