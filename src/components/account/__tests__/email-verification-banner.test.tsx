@@ -1,23 +1,18 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { EmailVerificationBanner } from '@/components/account/email-verification-banner';
 
-const mockFetch = vi.fn();
+const mocks = vi.hoisted(() => ({ resend: vi.fn() }));
 
-function respond(ok: boolean, body: unknown) {
-  mockFetch.mockResolvedValue({ ok, json: () => Promise.resolve(body) });
-}
+vi.mock('@/actions/verification', () => ({
+  resendVerificationAction: mocks.resend,
+}));
 
 describe('EmailVerificationBanner', () => {
   beforeEach(() => {
-    vi.stubGlobal('fetch', mockFetch);
-    mockFetch.mockReset();
-  });
-
-  afterEach(() => {
-    vi.unstubAllGlobals();
+    mocks.resend.mockReset();
   });
 
   it('renders nothing for a verified email', () => {
@@ -37,23 +32,25 @@ describe('EmailVerificationBanner', () => {
   });
 
   it('resends the verification email', async () => {
-    respond(true, {});
+    mocks.resend.mockResolvedValue({ ok: true, data: { message: '' } });
     render(<EmailVerificationBanner emailVerified={false} />);
 
     await userEvent.click(
       screen.getByRole('button', { name: 'Wyślij ponownie' })
     );
 
-    expect(mockFetch).toHaveBeenCalledWith('/api/resend-verification', {
-      method: 'POST',
-    });
+    expect(mocks.resend).toHaveBeenCalledTimes(1);
     expect(
       await screen.findByText('Email weryfikacyjny został wysłany')
     ).toBeInTheDocument();
   });
 
   it('shows the API error message', async () => {
-    respond(false, { error: 'Poczekaj 4 min przed ponownym wysłaniem' });
+    mocks.resend.mockResolvedValue({
+      ok: false,
+      error: 'Poczekaj 4 min przed ponownym wysłaniem',
+      code: 'failed',
+    });
     render(<EmailVerificationBanner emailVerified={false} />);
 
     await userEvent.click(
@@ -66,7 +63,7 @@ describe('EmailVerificationBanner', () => {
   });
 
   it('shows a generic message for non-Error failures', async () => {
-    mockFetch.mockRejectedValue('offline');
+    mocks.resend.mockRejectedValue('offline');
     render(<EmailVerificationBanner emailVerified={false} />);
 
     await userEvent.click(
@@ -77,7 +74,7 @@ describe('EmailVerificationBanner', () => {
   });
 
   it('disables the button while sending', async () => {
-    mockFetch.mockReturnValue(new Promise(() => {}));
+    mocks.resend.mockReturnValue(new Promise(() => {}));
     render(<EmailVerificationBanner emailVerified={false} />);
 
     await userEvent.click(

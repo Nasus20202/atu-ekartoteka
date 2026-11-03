@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
-  auth: vi.fn(),
+  requireUserAction: vi.fn(),
   findUserById: vi.fn(),
   findRecentVerification: vi.fn(),
   deleteVerificationsForUser: vi.fn(),
@@ -9,7 +9,9 @@ const mocks = vi.hoisted(() => ({
   sendVerificationEmail: vi.fn(),
 }));
 
-vi.mock('@/auth', () => ({ auth: mocks.auth }));
+vi.mock('@/lib/auth/require-action', () => ({
+  requireUserAction: mocks.requireUserAction,
+}));
 vi.mock('@/lib/queries/users/find-user-by-id', () => ({
   findUserById: mocks.findUserById,
 }));
@@ -38,7 +40,7 @@ vi.mock('@/lib/logger', () => ({
   createLogger: () => ({ info: vi.fn(), error: vi.fn() }),
 }));
 
-import { POST } from '@/app/api/resend-verification/route';
+import { resendVerificationAction } from '@/actions/verification';
 
 const NOW = new Date('2025-01-01T12:00:00.000Z');
 const user = {
@@ -48,12 +50,14 @@ const user = {
   emailVerified: false,
 };
 
-describe('POST /api/resend-verification', () => {
+describe('resendVerificationAction', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
     vi.setSystemTime(NOW);
-    mocks.auth.mockResolvedValue({ user: { id: 'user-1' } });
+    mocks.requireUserAction.mockResolvedValue({
+      session: { user: { id: 'user-1' } },
+    });
     mocks.findUserById.mockResolvedValue(user);
     mocks.findRecentVerification.mockResolvedValue(null);
   });
@@ -62,30 +66,34 @@ describe('POST /api/resend-verification', () => {
     vi.useRealTimers();
   });
 
-  it('requires a session', async () => {
-    mocks.auth.mockResolvedValue(null);
+  it('returns the denial for an anonymous caller', async () => {
+    const denied = {
+      ok: false,
+      error: 'Wymagane logowanie',
+      code: 'unauthenticated',
+    };
+    mocks.requireUserAction.mockResolvedValue({ denied });
 
-    const response = await POST();
-
-    expect(response.status).toBe(401);
+    expect(await resendVerificationAction()).toEqual(denied);
+    expect(mocks.findUserById).not.toHaveBeenCalled();
   });
 
-  it('returns 404 for an unknown user', async () => {
+  it('reports an unknown user', async () => {
     mocks.findUserById.mockResolvedValue(null);
 
-    const response = await POST();
-
-    expect(response.status).toBe(404);
+    expect(await resendVerificationAction()).toMatchObject({
+      ok: false,
+      code: 'not-found',
+    });
   });
 
   it('rejects an already verified email', async () => {
     mocks.findUserById.mockResolvedValue({ ...user, emailVerified: true });
 
-    const response = await POST();
-
-    expect(response.status).toBe(400);
-    await expect(response.json()).resolves.toEqual({
+    expect(await resendVerificationAction()).toEqual({
+      ok: false,
       error: 'Email jest już zweryfikowany',
+      code: 'invalid',
     });
   });
 
@@ -94,19 +102,19 @@ describe('POST /api/resend-verification', () => {
       createdAt: new Date('2025-01-01T11:58:30.000Z'),
     });
 
-    const response = await POST();
-
-    expect(response.status).toBe(429);
-    await expect(response.json()).resolves.toEqual({
+    expect(await resendVerificationAction()).toEqual({
+      ok: false,
       error: 'Poczekaj 4 min przed ponownym wysłaniem',
+      code: 'failed',
     });
     expect(mocks.sendVerificationEmail).not.toHaveBeenCalled();
   });
 
   it('replaces old codes and emails a new token', async () => {
-    const response = await POST();
-
-    expect(response.status).toBe(200);
+    expect(await resendVerificationAction()).toEqual({
+      ok: true,
+      data: { message: 'Email weryfikacyjny został wysłany ponownie' },
+    });
     expect(mocks.deleteVerificationsForUser).toHaveBeenCalledWith('user-1');
     expect(mocks.createEmailVerification).toHaveBeenCalledWith({
       userId: 'user-1',
@@ -123,7 +131,7 @@ describe('POST /api/resend-verification', () => {
   it('omits a missing name from the email', async () => {
     mocks.findUserById.mockResolvedValue({ ...user, name: null });
 
-    await POST();
+    await resendVerificationAction();
 
     expect(mocks.sendVerificationEmail).toHaveBeenCalledWith(
       'jan@example.com',
@@ -132,11 +140,13 @@ describe('POST /api/resend-verification', () => {
     );
   });
 
-  it('returns 500 when sending fails', async () => {
+  it('fails when sending fails', async () => {
     mocks.sendVerificationEmail.mockRejectedValue(new Error('smtp'));
 
-    const response = await POST();
-
-    expect(response.status).toBe(500);
+    expect(await resendVerificationAction()).toEqual({
+      ok: false,
+      error: 'Nie udało się wysłać emaila',
+      code: 'failed',
+    });
   });
 });

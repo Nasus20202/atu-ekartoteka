@@ -4,6 +4,7 @@ import { Save } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { updateProfileAction } from '@/actions/profile';
 import { getPasswordChangeError } from '@/components/account/password-change';
 import { PasswordInput } from '@/components/account/password-input';
 import { Button } from '@/components/ui/button';
@@ -58,15 +59,9 @@ export function ProfileForm({ initialName, authMethod }: ProfileFormProps) {
         body.newPassword = formData.newPassword;
       }
 
-      const response = await fetch('/api/user/profile', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
+      const result = await updateProfileAction(body);
 
-      if (response.ok) {
+      if (result.ok) {
         setSuccess(true);
         setFormData({
           ...formData,
@@ -76,9 +71,8 @@ export function ProfileForm({ initialName, authMethod }: ProfileFormProps) {
         });
         router.refresh();
       } else {
-        const data = await response.json();
         setErrors({
-          password: data.error || 'Nie udało się zaktualizować profilu',
+          password: result.error || 'Nie udało się zaktualizować profilu',
         });
       }
     } catch (error) {

@@ -54,7 +54,8 @@ export async function requireAdminAction(
 
   if (denied) {
     if (attempt) logger.warn({ email: 'anonymous' }, attempt);
-    return { denied };
+    // Admin areas answer anonymous callers like the admin routes do
+    return { denied: { ...denied, error: UNAUTHORIZED_MESSAGE } };
   }
 
   if (!(await hasAdminAccess(session.user.id))) {

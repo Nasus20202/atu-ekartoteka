@@ -5,6 +5,9 @@ import { ApartmentDetailsContent } from '@/components/apartments/apartment-detai
 import type { ApartmentDetailDto } from '@/lib/types/dto/apartment-dto';
 
 const confirmMock = vi.fn();
+const actionMock = vi.hoisted(() => ({ setApartmentActiveAction: vi.fn() }));
+
+vi.mock('@/actions/apartments', () => actionMock);
 
 vi.mock('@/components/layout/page-header', () => ({
   PageHeader: ({
@@ -101,7 +104,10 @@ describe('ApartmentDetailsContent', () => {
   });
 
   it('toggles apartment status after confirmation', async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({ ok: true } as Response);
+    actionMock.setApartmentActiveAction.mockResolvedValueOnce({
+      ok: true,
+      data: { id: 'apt-1', isActive: false },
+    });
     renderContent({
       owner: null,
       email: null,
@@ -123,11 +129,10 @@ describe('ApartmentDetailsContent', () => {
           variant: 'destructive',
         })
       );
-      expect(fetch).toHaveBeenCalledWith('/api/admin/apartments/apt-1', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isActive: false }),
-      });
+      expect(actionMock.setApartmentActiveAction).toHaveBeenCalledWith(
+        'apt-1',
+        false
+      );
     });
 
     expect(await screen.findByText(/nieaktywny/i)).toBeInTheDocument();
@@ -154,7 +159,7 @@ describe('ApartmentDetailsContent', () => {
       );
     });
 
-    expect(fetch).not.toHaveBeenCalled();
+    expect(actionMock.setApartmentActiveAction).not.toHaveBeenCalled();
     expect(screen.getByText(/sekcja wpłat/i)).toBeInTheDocument();
     expect(screen.getByText(/lista naliczeń/i)).toBeInTheDocument();
   });

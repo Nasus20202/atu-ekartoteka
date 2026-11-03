@@ -26,10 +26,6 @@ export function adminScenario() {
     `/api/admin/apartments?page=${randomApartmentsPage()}&limit=20`,
     '/api/admin/apartments'
   );
-  getJson(
-    `/api/admin/apartments/${randomApartmentId()}`,
-    '/api/admin/apartments/:id'
-  );
   getJson('/api/admin/users?page=1&limit=50', '/api/admin/users');
   getJson(
     `/api/admin/unassigned-apartments?page=${randomUnassignedHoasPage()}`,
@@ -42,7 +38,8 @@ export function adminScenario() {
   );
 }
 
-// The pages are client rendered, so the cost sits in the JSON APIs they call
+// The pages load their first data on the server, so the page requests carry the
+// query cost; the JSON APIs are what search and scrolling call afterwards
 function browseRandomHoa() {
   const hoaId = randomHoaId();
   getPage(`/admin/apartments/${hoaId}`, 'admin hoa page');

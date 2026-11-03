@@ -48,6 +48,11 @@ test.describe.serial('Admin user list', () => {
       timeout: 10000,
     });
     // The seeded user already has this apartment selected
-    await expect(adminPage.getByText(/ul\. Testowa 1\/1A/i)).toBeVisible();
+    await expect(
+      adminPage
+        .getByRole('dialog')
+        .getByText(/ul\. Testowa 1\/1A/i)
+        .first()
+    ).toBeVisible();
   });
 });

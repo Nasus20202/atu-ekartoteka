@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { createLogger } from '@/lib/logger';
-import { updateHoaName } from '@/lib/mutations/hoa/update-hoa-name';
 import { findHoas } from '@/lib/queries/hoa/find-hoas';
 import { toHoaListItemDto } from '@/lib/types/dto/hoa-dto';
 import { getErrorMessage } from '@/lib/utils/error-message';
@@ -27,38 +26,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       {
         error: 'Nie udało się pobrać wspólnot',
-        message: getErrorMessage(error),
-      },
-      { status: 500 }
-    );
-  }
-}
-
-export async function PATCH(req: NextRequest) {
-  try {
-    const { response } = await requireAdmin();
-    if (response) return response;
-
-    const body = await req.json();
-    const { id, name } = body;
-
-    if (!id || !name) {
-      return NextResponse.json(
-        { error: 'Brak wymaganych pól' },
-        { status: 400 }
-      );
-    }
-
-    const updatedHOA = await updateHoaName(id, name);
-
-    return NextResponse.json({
-      homeownersAssociation: updatedHOA,
-    });
-  } catch (error) {
-    logger.error({ error }, 'HOA update error');
-    return NextResponse.json(
-      {
-        error: 'Nie udało się zaktualizować wspólnoty',
         message: getErrorMessage(error),
       },
       { status: 500 }

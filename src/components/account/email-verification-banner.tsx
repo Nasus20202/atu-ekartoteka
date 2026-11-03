@@ -3,6 +3,7 @@
 import { Mail, X } from 'lucide-react';
 import { useState } from 'react';
 
+import { resendVerificationAction } from '@/actions/verification';
 import {
   GENERIC_ERROR_MESSAGE,
   getErrorMessage,
@@ -25,12 +26,9 @@ export function EmailVerificationBanner({ emailVerified }: Props) {
     setLoading(true);
     setMessage(null);
     try {
-      const response = await fetch('/api/resend-verification', {
-        method: 'POST',
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error);
+      const result = await resendVerificationAction();
+      if (!result.ok) {
+        throw new Error(result.error);
       }
       setMessage('Email weryfikacyjny został wysłany');
     } catch (error) {

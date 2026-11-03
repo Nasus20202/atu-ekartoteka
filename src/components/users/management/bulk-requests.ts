@@ -1,3 +1,7 @@
+import {
+  bulkAssignAccountsAction,
+  bulkCreateAccountsAction,
+} from '@/actions/bulk-users';
 import type { HoaGroup } from '@/components/users/management/hoa-card';
 
 export type BulkMode = 'create' | 'assign';
@@ -14,15 +18,9 @@ type RequestResult<T> =
 
 const LOAD_APARTMENTS_FAILED = 'Nie udało się pobrać listy mieszkań';
 
-const BULK_OPERATIONS = {
-  create: {
-    url: '/api/admin/users/bulk-create',
-    failed: 'Wystąpił błąd podczas tworzenia kont',
-  },
-  assign: {
-    url: '/api/admin/users/bulk-assign',
-    failed: 'Wystąpił błąd podczas przypisywania kont',
-  },
+const BULK_FAILED = {
+  create: 'Wystąpił błąd podczas tworzenia kont',
+  assign: 'Wystąpił błąd podczas przypisywania kont',
 } as const;
 
 async function requestJson<T>(
@@ -70,16 +68,22 @@ export async function fetchUnassignedHoas(
     : { error: result.error };
 }
 
-export function runBulkOperation(
+export async function runBulkOperation(
   mode: BulkMode,
   apartmentIds: string[]
 ): Promise<RequestResult<BulkOperationResult>> {
-  const { url, failed } = BULK_OPERATIONS[mode];
-  return requestJson<BulkOperationResult>(url, failed, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ apartmentIds }),
-  });
+  try {
+    const result =
+      mode === 'create'
+        ? await bulkCreateAccountsAction({ apartmentIds })
+        : await bulkAssignAccountsAction({ apartmentIds });
+
+    return result.ok
+      ? { data: result.data }
+      : { error: result.error || BULK_FAILED[mode] };
+  } catch {
+    return { error: BULK_FAILED[mode] };
+  }
 }
 
 export function formatBulkResult(

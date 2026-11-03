@@ -1,4 +1,3 @@
-import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AccountStatus, AuthMethod, UserRole } from '@/lib/types';
@@ -53,12 +52,6 @@ vi.mock('@/lib/logger', () => ({
   }),
 }));
 
-function makeRequest(body: unknown): NextRequest {
-  return {
-    json: vi.fn().mockResolvedValue(body),
-  } as unknown as NextRequest;
-}
-
 function adminSession() {
   return {
     user: { id: 'admin-id', email: 'admin@example.com', role: UserRole.ADMIN },
@@ -66,7 +59,13 @@ function adminSession() {
   };
 }
 
-describe('POST /api/admin/users/bulk-create', () => {
+// The data of a successful result, or the failure itself
+function dataOf(result: { ok: boolean }) {
+  const value = result as any;
+  return value.ok ? value.data : value;
+}
+
+describe('bulkCreateAccountsAction', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSendAccountActivationEmail.mockResolvedValue(true);
@@ -81,47 +80,47 @@ describe('POST /api/admin/users/bulk-create', () => {
     });
   });
 
-  it('should return 401 when not authenticated', async () => {
+  it('should return an unauthenticated result when not authenticated', async () => {
     mockAuth.mockResolvedValueOnce(null);
 
-    const { POST } = await import('../route');
-    const response = await POST(makeRequest({ apartmentIds: ['apt-1'] }));
-    const data = await response.json();
+    const { bulkCreateAccountsAction } = await import('@/actions/bulk-users');
+    const result = await bulkCreateAccountsAction({ apartmentIds: ['apt-1'] });
+    const data = dataOf(result);
 
-    expect(response.status).toBe(401);
+    expect(result).toMatchObject({ ok: false, code: 'unauthenticated' });
     expect(data.error).toBe('Brak uprawnień');
   });
 
-  it('should return 401 when user is not admin', async () => {
+  it('should return a forbidden result when user is not admin', async () => {
     mockAuth.mockResolvedValueOnce({
       user: { id: 'u', email: 'u@e.com', role: UserRole.TENANT },
       expires: new Date().toISOString(),
     });
 
-    const { POST } = await import('../route');
-    const response = await POST(makeRequest({ apartmentIds: ['apt-1'] }));
+    const { bulkCreateAccountsAction } = await import('@/actions/bulk-users');
+    const result = await bulkCreateAccountsAction({ apartmentIds: ['apt-1'] });
 
-    expect(response.status).toBe(403);
+    expect(result).toMatchObject({ ok: false, code: 'forbidden' });
   });
 
-  it('should return 400 when apartmentIds is empty', async () => {
+  it('should return an invalid result when apartmentIds is empty', async () => {
     mockAuth.mockResolvedValueOnce(adminSession());
 
-    const { POST } = await import('../route');
-    const response = await POST(makeRequest({ apartmentIds: [] }));
-    const data = await response.json();
+    const { bulkCreateAccountsAction } = await import('@/actions/bulk-users');
+    const result = await bulkCreateAccountsAction({ apartmentIds: [] });
+    const data = dataOf(result);
 
-    expect(response.status).toBe(400);
+    expect(result).toMatchObject({ ok: false, code: 'invalid' });
     expect(data.error).toBe('Wybierz co najmniej jedno mieszkanie');
   });
 
-  it('should return 400 when apartmentIds is missing', async () => {
+  it('should return an invalid result when apartmentIds is missing', async () => {
     mockAuth.mockResolvedValueOnce(adminSession());
 
-    const { POST } = await import('../route');
-    const response = await POST(makeRequest({}));
+    const { bulkCreateAccountsAction } = await import('@/actions/bulk-users');
+    const result = await bulkCreateAccountsAction({});
 
-    expect(response.status).toBe(400);
+    expect(result).toMatchObject({ ok: false, code: 'invalid' });
   });
 
   it('should create a user for a single apartment', async () => {
@@ -132,11 +131,11 @@ describe('POST /api/admin/users/bulk-create', () => {
     mockUserFindUnique.mockResolvedValueOnce(null);
     mockUserCreate.mockResolvedValueOnce({ id: 'new-user-id' });
 
-    const { POST } = await import('../route');
-    const response = await POST(makeRequest({ apartmentIds: ['apt-1'] }));
-    const data = await response.json();
+    const { bulkCreateAccountsAction } = await import('@/actions/bulk-users');
+    const result = await bulkCreateAccountsAction({ apartmentIds: ['apt-1'] });
+    const data = dataOf(result);
 
-    expect(response.status).toBe(200);
+    expect(result.ok).toBe(true);
     expect(data).toEqual({ created: 1, skipped: 0, errors: 0 });
     expect(mockUserCreate).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -161,13 +160,13 @@ describe('POST /api/admin/users/bulk-create', () => {
     mockUserFindUnique.mockResolvedValueOnce(null);
     mockUserCreate.mockResolvedValueOnce({ id: 'new-user-id' });
 
-    const { POST } = await import('../route');
-    const response = await POST(
-      makeRequest({ apartmentIds: ['apt-1', 'apt-2'] })
-    );
-    const data = await response.json();
+    const { bulkCreateAccountsAction } = await import('@/actions/bulk-users');
+    const result = await bulkCreateAccountsAction({
+      apartmentIds: ['apt-1', 'apt-2'],
+    });
+    const data = dataOf(result);
 
-    expect(response.status).toBe(200);
+    expect(result.ok).toBe(true);
     expect(data.created).toBe(1);
     // Both apartments should be updated in one transaction
     expect(mockApartmentUpdateMany).toHaveBeenCalledWith(
@@ -184,11 +183,11 @@ describe('POST /api/admin/users/bulk-create', () => {
     ]);
     mockUserFindUnique.mockResolvedValueOnce({ id: 'existing-user' });
 
-    const { POST } = await import('../route');
-    const response = await POST(makeRequest({ apartmentIds: ['apt-1'] }));
-    const data = await response.json();
+    const { bulkCreateAccountsAction } = await import('@/actions/bulk-users');
+    const result = await bulkCreateAccountsAction({ apartmentIds: ['apt-1'] });
+    const data = dataOf(result);
 
-    expect(response.status).toBe(200);
+    expect(result.ok).toBe(true);
     expect(data).toEqual({ created: 0, skipped: 1, errors: 0 });
     expect(mockUserCreate).not.toHaveBeenCalled();
   });
@@ -201,11 +200,11 @@ describe('POST /api/admin/users/bulk-create', () => {
     mockUserFindUnique.mockResolvedValueOnce(null);
     mockTransaction.mockRejectedValueOnce(new Error('DB error'));
 
-    const { POST } = await import('../route');
-    const response = await POST(makeRequest({ apartmentIds: ['apt-1'] }));
-    const data = await response.json();
+    const { bulkCreateAccountsAction } = await import('@/actions/bulk-users');
+    const result = await bulkCreateAccountsAction({ apartmentIds: ['apt-1'] });
+    const data = dataOf(result);
 
-    expect(response.status).toBe(200);
+    expect(result.ok).toBe(true);
     expect(data).toEqual({ created: 0, skipped: 0, errors: 1 });
   });
 
@@ -221,13 +220,13 @@ describe('POST /api/admin/users/bulk-create', () => {
       .mockResolvedValueOnce({ id: 'user-a' })
       .mockResolvedValueOnce({ id: 'user-b' });
 
-    const { POST } = await import('../route');
-    const response = await POST(
-      makeRequest({ apartmentIds: ['apt-1', 'apt-2'] })
-    );
-    const data = await response.json();
+    const { bulkCreateAccountsAction } = await import('@/actions/bulk-users');
+    const result = await bulkCreateAccountsAction({
+      apartmentIds: ['apt-1', 'apt-2'],
+    });
+    const data = dataOf(result);
 
-    expect(response.status).toBe(200);
+    expect(result.ok).toBe(true);
     expect(data).toEqual({ created: 2, skipped: 0, errors: 0 });
   });
 
@@ -240,30 +239,14 @@ describe('POST /api/admin/users/bulk-create', () => {
     mockUserCreate.mockResolvedValueOnce({ id: 'new-user-id' });
     mockSendAccountActivationEmail.mockRejectedValueOnce(new Error('smtp'));
 
-    const { POST } = await import('../route');
-    const response = await POST(makeRequest({ apartmentIds: ['apt-1'] }));
+    const { bulkCreateAccountsAction } = await import('@/actions/bulk-users');
+    const result = await bulkCreateAccountsAction({ apartmentIds: ['apt-1'] });
 
-    await expect(response.json()).resolves.toEqual({
-      created: 1,
-      skipped: 0,
-      errors: 0,
-    });
+    expect(dataOf(result)).toEqual({ created: 1, skipped: 0, errors: 0 });
     expect(mockSendAccountActivationEmail).toHaveBeenCalledWith(
       'owner@example.com',
       expect.any(String),
       undefined
     );
-  });
-
-  it('returns 500 when the request body cannot be read', async () => {
-    mockAuth.mockResolvedValueOnce(adminSession());
-    const request = {
-      json: vi.fn().mockRejectedValue(new Error('bad json')),
-    } as unknown as NextRequest;
-
-    const { POST } = await import('../route');
-    const response = await POST(request);
-
-    expect(response.status).toBe(500);
   });
 });

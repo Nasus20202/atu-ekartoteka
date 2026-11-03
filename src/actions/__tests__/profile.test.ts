@@ -1,5 +1,4 @@
 import bcrypt from 'bcrypt';
-import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AccountStatus, AuthMethod, UserRole } from '@/lib/types';
@@ -31,18 +30,18 @@ vi.mock('@/lib/logger', () => ({
   }),
 }));
 
-function createMockRequest(body: unknown): NextRequest {
-  return {
-    json: async () => body,
-  } as NextRequest;
+// The data of a successful result, or the failure itself
+function dataOf(result: { ok: boolean }) {
+  const value = result as any;
+  return value.ok ? value.data : value;
 }
 
-describe('User Profile API', () => {
+describe('updateProfileAction', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('PATCH /api/user/profile', () => {
+  describe('profile changes', () => {
     const mockUser = {
       id: 'user-id',
       email: 'user@example.com',
@@ -56,20 +55,20 @@ describe('User Profile API', () => {
       updatedAt: new Date(),
     };
 
-    it('should return 401 when not authenticated', async () => {
+    it('should return an unauthenticated result when not authenticated', async () => {
       mockAuth.mockResolvedValueOnce(null);
 
-      const { PATCH } = await import('../route');
-      const request = createMockRequest({ name: 'New Name' });
+      const { updateProfileAction } = await import('@/actions/profile');
+      const input = { name: 'New Name' };
 
-      const response = await PATCH(request);
-      const data = await response.json();
+      const result = await updateProfileAction(input);
+      const data = dataOf(result);
 
-      expect(response.status).toBe(401);
+      expect(result).toMatchObject({ ok: false, code: 'unauthenticated' });
       expect(data.error).toBe('Musisz być zalogowany');
     });
 
-    it('should return 404 when user not found', async () => {
+    it('should return a not-found result when user not found', async () => {
       mockAuth.mockResolvedValueOnce({
         user: {
           id: 'user-id',
@@ -80,13 +79,13 @@ describe('User Profile API', () => {
       });
       mockUserFindUnique.mockResolvedValueOnce(null);
 
-      const { PATCH } = await import('../route');
-      const request = createMockRequest({ name: 'New Name' });
+      const { updateProfileAction } = await import('@/actions/profile');
+      const input = { name: 'New Name' };
 
-      const response = await PATCH(request);
-      const data = await response.json();
+      const result = await updateProfileAction(input);
+      const data = dataOf(result);
 
-      expect(response.status).toBe(404);
+      expect(result).toMatchObject({ ok: false, code: 'not-found' });
       expect(data.error).toBe('Nie znaleziono użytkownika');
     });
 
@@ -105,13 +104,13 @@ describe('User Profile API', () => {
         name: 'Updated Name',
       });
 
-      const { PATCH } = await import('../route');
-      const request = createMockRequest({ name: 'Updated Name' });
+      const { updateProfileAction } = await import('@/actions/profile');
+      const input = { name: 'Updated Name' };
 
-      const response = await PATCH(request);
-      const data = await response.json();
+      const result = await updateProfileAction(input);
+      const data = dataOf(result);
 
-      expect(response.status).toBe(200);
+      expect(result.ok).toBe(true);
       expect(data.name).toBe('Updated Name');
       expect(mockUserUpdate).toHaveBeenCalledWith({
         where: { id: 'user-id' },
@@ -147,13 +146,13 @@ describe('User Profile API', () => {
         name: null,
       });
 
-      const { PATCH } = await import('../route');
-      const request = createMockRequest({ name: '' });
+      const { updateProfileAction } = await import('@/actions/profile');
+      const input = { name: '' };
 
-      const response = await PATCH(request);
-      const data = await response.json();
+      const result = await updateProfileAction(input);
+      const data = dataOf(result);
 
-      expect(response.status).toBe(200);
+      expect(result.ok).toBe(true);
       expect(data.name).toBeNull();
       expect(mockUserUpdate).toHaveBeenCalledWith({
         where: { id: 'user-id' },
@@ -185,13 +184,13 @@ describe('User Profile API', () => {
       });
       mockUserFindUnique.mockResolvedValueOnce(mockUser);
 
-      const { PATCH } = await import('../route');
-      const request = createMockRequest({ newPassword: 'newPassword123' });
+      const { updateProfileAction } = await import('@/actions/profile');
+      const input = { newPassword: 'newPassword123' };
 
-      const response = await PATCH(request);
-      const data = await response.json();
+      const result = await updateProfileAction(input);
+      const data = dataOf(result);
 
-      expect(response.status).toBe(400);
+      expect(result).toMatchObject({ ok: false, code: 'invalid' });
       expect(data.error).toBe('Obecne hasło jest wymagane aby zmienić hasło');
     });
 
@@ -206,16 +205,16 @@ describe('User Profile API', () => {
       });
       mockUserFindUnique.mockResolvedValueOnce(mockUser);
 
-      const { PATCH } = await import('../route');
-      const request = createMockRequest({
+      const { updateProfileAction } = await import('@/actions/profile');
+      const input = {
         currentPassword: 'wrongPassword',
         newPassword: 'newPassword123',
-      });
+      };
 
-      const response = await PATCH(request);
-      const data = await response.json();
+      const result = await updateProfileAction(input);
+      const data = dataOf(result);
 
-      expect(response.status).toBe(400);
+      expect(result).toMatchObject({ ok: false, code: 'invalid' });
       expect(data.error).toBe('Obecne hasło jest nieprawidłowe');
     });
 
@@ -223,11 +222,11 @@ describe('User Profile API', () => {
       mockAuth.mockResolvedValueOnce({ user: { id: 'user-id' } });
       mockUserFindUnique.mockResolvedValueOnce(mockUser);
 
-      const { PATCH } = await import('../route');
-      const response = await PATCH(createMockRequest({ newPassword: 'short' }));
-      const data = await response.json();
+      const { updateProfileAction } = await import('@/actions/profile');
+      const result = await updateProfileAction({ newPassword: 'short' });
+      const data = dataOf(result);
 
-      expect(response.status).toBe(400);
+      expect(result).toMatchObject({ ok: false, code: 'invalid' });
       expect(data.error).toBe('Hasło musi mieć co najmniej 8 znaków');
     });
 
@@ -235,16 +234,14 @@ describe('User Profile API', () => {
       mockAuth.mockResolvedValueOnce({ user: { id: 'user-id' } });
       mockUserFindUnique.mockResolvedValueOnce({ ...mockUser, password: null });
 
-      const { PATCH } = await import('../route');
-      const response = await PATCH(
-        createMockRequest({
-          currentPassword: 'anything',
-          newPassword: 'newPassword123',
-        })
-      );
-      const data = await response.json();
+      const { updateProfileAction } = await import('@/actions/profile');
+      const result = await updateProfileAction({
+        currentPassword: 'anything',
+        newPassword: 'newPassword123',
+      });
+      const data = dataOf(result);
 
-      expect(response.status).toBe(400);
+      expect(result).toMatchObject({ ok: false, code: 'invalid' });
       expect(data.error).toBe('Obecne hasło jest nieprawidłowe');
       expect(mockUserUpdate).not.toHaveBeenCalled();
     });
@@ -264,15 +261,15 @@ describe('User Profile API', () => {
         password: bcrypt.hashSync('newPassword123', 10),
       });
 
-      const { PATCH } = await import('../route');
-      const request = createMockRequest({
+      const { updateProfileAction } = await import('@/actions/profile');
+      const input = {
         currentPassword: 'currentPassword123',
         newPassword: 'newPassword123',
-      });
+      };
 
-      const response = await PATCH(request);
+      const result = await updateProfileAction(input);
 
-      expect(response.status).toBe(200);
+      expect(result.ok).toBe(true);
       expect(mockUserUpdate).toHaveBeenCalled();
       const updateCall = mockUserUpdate.mock.calls[0][0];
       expect(updateCall.where).toEqual({ id: 'user-id' });
@@ -295,17 +292,17 @@ describe('User Profile API', () => {
         password: bcrypt.hashSync('newPassword123', 10),
       });
 
-      const { PATCH } = await import('../route');
-      const request = createMockRequest({
+      const { updateProfileAction } = await import('@/actions/profile');
+      const input = {
         name: 'New Name',
         currentPassword: 'currentPassword123',
         newPassword: 'newPassword123',
-      });
+      };
 
-      const response = await PATCH(request);
-      const data = await response.json();
+      const result = await updateProfileAction(input);
+      const data = dataOf(result);
 
-      expect(response.status).toBe(200);
+      expect(result.ok).toBe(true);
       expect(data.name).toBe('New Name');
       expect(mockUserUpdate).toHaveBeenCalled();
       const updateCall = mockUserUpdate.mock.calls[0][0];
@@ -324,13 +321,13 @@ describe('User Profile API', () => {
       });
       mockUserFindUnique.mockRejectedValueOnce(new Error('Database error'));
 
-      const { PATCH } = await import('../route');
-      const request = createMockRequest({ name: 'New Name' });
+      const { updateProfileAction } = await import('@/actions/profile');
+      const input = { name: 'New Name' };
 
-      const response = await PATCH(request);
-      const data = await response.json();
+      const result = await updateProfileAction(input);
+      const data = dataOf(result);
 
-      expect(response.status).toBe(500);
+      expect(result).toMatchObject({ ok: false, code: 'failed' });
       expect(data.error).toBe('Nie udało się zaktualizować profilu');
     });
 
@@ -354,13 +351,13 @@ describe('User Profile API', () => {
         updatedAt: mockUser.updatedAt,
       });
 
-      const { PATCH } = await import('../route');
-      const request = createMockRequest({ name: 'Updated Name' });
+      const { updateProfileAction } = await import('@/actions/profile');
+      const input = { name: 'Updated Name' };
 
-      const response = await PATCH(request);
-      const data = await response.json();
+      const result = await updateProfileAction(input);
+      const data = dataOf(result);
 
-      expect(response.status).toBe(200);
+      expect(result.ok).toBe(true);
       expect(data).not.toHaveProperty('password');
     });
 
@@ -378,13 +375,13 @@ describe('User Profile API', () => {
         ...mockUser,
       });
 
-      const { PATCH } = await import('../route');
-      const request = createMockRequest({
+      const { updateProfileAction } = await import('@/actions/profile');
+      const input = {
         currentPassword: 'currentPassword123',
         newPassword: 'newPassword123',
-      });
+      };
 
-      await PATCH(request);
+      await updateProfileAction(input);
 
       const updateCall = mockUserUpdate.mock.calls[0][0];
       const hashedPassword = updateCall.data.password as string;
@@ -406,15 +403,15 @@ describe('User Profile API', () => {
       mockUserFindUnique.mockResolvedValueOnce(mockUser);
       mockUserUpdate.mockResolvedValueOnce({ ...mockUser });
 
-      const { PATCH } = await import('../route');
-      const request = createMockRequest({
+      const { updateProfileAction } = await import('@/actions/profile');
+      const input = {
         currentPassword: 'currentPassword123',
         newPassword: 'newPassword123',
-      });
+      };
 
-      const response = await PATCH(request);
+      const result = await updateProfileAction(input);
 
-      expect(response.status).toBe(200);
+      expect(result.ok).toBe(true);
       const updateCall = mockUserUpdate.mock.calls[0][0];
       expect(updateCall.data).toHaveProperty('mustChangePassword', false);
     });
@@ -435,15 +432,15 @@ describe('User Profile API', () => {
       });
       mockUserUpdate.mockResolvedValueOnce({ ...mockUser });
 
-      const { PATCH } = await import('../route');
-      const request = createMockRequest({
+      const { updateProfileAction } = await import('@/actions/profile');
+      const input = {
         newPassword: 'newPassword123',
         // no currentPassword
-      });
+      };
 
-      const response = await PATCH(request);
+      const result = await updateProfileAction(input);
 
-      expect(response.status).toBe(200);
+      expect(result.ok).toBe(true);
       const updateCall = mockUserUpdate.mock.calls[0][0];
       expect(updateCall.data).toHaveProperty('mustChangePassword', false);
       expect(updateCall.data).toHaveProperty('password');
@@ -464,13 +461,13 @@ describe('User Profile API', () => {
         mustChangePassword: false,
       });
 
-      const { PATCH } = await import('../route');
-      const request = createMockRequest({ newPassword: 'newPassword123' });
+      const { updateProfileAction } = await import('@/actions/profile');
+      const input = { newPassword: 'newPassword123' };
 
-      const response = await PATCH(request);
-      const data = await response.json();
+      const result = await updateProfileAction(input);
+      const data = dataOf(result);
 
-      expect(response.status).toBe(400);
+      expect(result).toMatchObject({ ok: false, code: 'invalid' });
       expect(data.error).toBe('Obecne hasło jest wymagane aby zmienić hasło');
       expect(mockUserUpdate).not.toHaveBeenCalled();
     });

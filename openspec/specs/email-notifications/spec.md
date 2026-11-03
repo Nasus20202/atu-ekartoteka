@@ -69,7 +69,7 @@ The system SHALL send an email containing a verification link when a new user re
 #### Scenario: Resend verification
 
 - **GIVEN** the user requests a new verification link
-- **WHEN** `/api/resend-verification` is called
+- **WHEN** the signed-in user triggers the `resendVerificationAction` Server Action
 - **THEN** a fresh token is generated and a new verification email is dispatched
 
 ---

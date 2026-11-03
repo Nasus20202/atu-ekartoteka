@@ -6,7 +6,6 @@ const DASHBOARD_PATH = '/dashboard';
 
 const ALLOWED_PREFIXES: string[] = [
   CHANGE_PASSWORD_PATH,
-  '/api/user/profile',
   '/api/auth',
   '/_next',
   '/favicon.ico',

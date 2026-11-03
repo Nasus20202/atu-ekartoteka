@@ -75,7 +75,11 @@ describe('requireAdminAction', () => {
 
     const { denied } = await requireAdminAction('Settings update attempt');
 
-    expect(denied?.code).toBe('unauthenticated');
+    expect(denied).toEqual({
+      ok: false,
+      error: 'Brak uprawnień',
+      code: 'unauthenticated',
+    });
     expect(mocks.hasAdminAccess).not.toHaveBeenCalled();
   });
 });

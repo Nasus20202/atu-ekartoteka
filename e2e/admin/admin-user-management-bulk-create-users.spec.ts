@@ -3,8 +3,10 @@
  */
 
 import { expect, test } from '../fixtures';
+import { createAccountForApartment } from '../utils/bulk-account-fixtures';
 import { createUnassignedApartment } from '../utils/create-unassigned-apartment';
 import { openTestHoaCard } from '../utils/open-test-hoa';
+import { isServerActionResponse } from '../utils/server-actions';
 
 test.describe.serial('Admin Bulk User Creation', () => {
   let unassignedApartmentId: string;
@@ -122,11 +124,7 @@ test.describe.serial('Admin Bulk User Creation', () => {
     await expect(finalConfirm).toBeVisible();
 
     await Promise.all([
-      adminPage.waitForResponse(
-        (resp) =>
-          resp.url().includes('/api/admin/users/bulk-create') &&
-          resp.status() === 200
-      ),
+      adminPage.waitForResponse(isServerActionResponse),
       finalConfirm.click(),
     ]);
 
@@ -138,12 +136,8 @@ test.describe.serial('Admin Bulk User Creation', () => {
   test('newly created bulk user appears as APPROVED in admin users list', async ({
     adminPage,
   }) => {
-    // Create user for the unassigned apartment via the API
-    const createResponse = await adminPage.request.post(
-      '/api/admin/users/bulk-create',
-      { data: { apartmentIds: [unassignedApartmentId] } }
-    );
-    expect(createResponse.ok()).toBe(true);
+    // Create the user for the unassigned apartment the way the bulk action does
+    await createAccountForApartment(unassignedApartmentId);
 
     // Navigate to the admin users list
     await adminPage.goto('/admin/users');

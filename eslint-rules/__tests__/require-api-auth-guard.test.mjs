@@ -16,7 +16,7 @@ export async function GET() {
   const { response } = await requireUser();
   return response ?? Response.json({});
 }`,
-      filename: 'src/app/api/user/profile/route.ts',
+      filename: 'src/app/api/user/preferences/route.ts',
     },
     {
       code: `import { requireAdmin } from '@/lib/auth/require-admin';

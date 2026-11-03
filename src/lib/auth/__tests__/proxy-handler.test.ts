@@ -71,13 +71,6 @@ describe('proxy-handler: handleMustChangePassword', () => {
     expect(NextResponse.redirect).not.toHaveBeenCalled();
   });
 
-  it('does NOT redirect /api/user/profile when mustChangePassword is true', () => {
-    const result = handleMustChangePassword(
-      makeRequest('/api/user/profile', true)
-    );
-    expect(result).toBeNull();
-  });
-
   it('does NOT redirect /api/auth routes when mustChangePassword is true', () => {
     const result = handleMustChangePassword(
       makeRequest('/api/auth/session', true)
@@ -90,21 +83,19 @@ describe('proxy-handler: handleMustChangePassword', () => {
     expect(result).toBeNull();
   });
 
-  it.each([
-    '/login-help',
-    '/logout-anyway',
-    '/api/user/profile-bulk',
-    '/api/authx/session',
-  ])('does not treat %s as an allowlisted prefix', (pathname) => {
-    const result = handleMustChangePassword(makeRequest(pathname, true));
+  it.each(['/login-help', '/logout-anyway', '/api/authx/session'])(
+    'does not treat %s as an allowlisted prefix',
+    (pathname) => {
+      const result = handleMustChangePassword(makeRequest(pathname, true));
 
-    expect(result).not.toBeNull();
-    expect(NextResponse.redirect).toHaveBeenCalled();
-  });
+      expect(result).not.toBeNull();
+      expect(NextResponse.redirect).toHaveBeenCalled();
+    }
+  );
 
   it('does allow a nested path under an allowlisted prefix', () => {
     const result = handleMustChangePassword(
-      makeRequest('/api/user/profile/settings', true)
+      makeRequest('/api/auth/callback/google', true)
     );
 
     expect(result).toBeNull();

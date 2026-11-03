@@ -1,3 +1,4 @@
+import { createUserAction, updateUserStatusAction } from '@/actions/users';
 import type { NewUserFormData } from '@/components/users/types';
 import type { AccountStatus } from '@/lib/types';
 
@@ -5,23 +6,14 @@ export const UPDATE_USER_FAILED_MESSAGE =
   'Nie udało się zaktualizować użytkownika';
 export const CREATE_USER_FAILED_MESSAGE = 'Nie udało się utworzyć użytkownika';
 
-/** Sends JSON and resolves to an error message, or null on success. */
-async function sendJson(
-  url: string,
-  method: 'PATCH' | 'POST',
-  body: unknown,
+/** Resolves to an error message, or null when the action succeeded. */
+async function errorOf(
+  action: Promise<{ ok: boolean; error?: string }>,
   fallbackError: string
 ): Promise<string | null> {
   try {
-    const response = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    if (response.ok) return null;
-
-    const data = await response.json();
-    return data.error || fallbackError;
+    const result = await action;
+    return result.ok ? null : result.error || fallbackError;
   } catch {
     return fallbackError;
   }
@@ -32,21 +24,11 @@ export function updateUserRequest(payload: {
   status: AccountStatus;
   apartmentIds?: string[];
 }): Promise<string | null> {
-  return sendJson(
-    '/api/admin/users',
-    'PATCH',
-    payload,
-    UPDATE_USER_FAILED_MESSAGE
-  );
+  return errorOf(updateUserStatusAction(payload), UPDATE_USER_FAILED_MESSAGE);
 }
 
 export function createUserRequest(
   data: NewUserFormData
 ): Promise<string | null> {
-  return sendJson(
-    '/api/admin/users/create',
-    'POST',
-    data,
-    CREATE_USER_FAILED_MESSAGE
-  );
+  return errorOf(createUserAction(data), CREATE_USER_FAILED_MESSAGE);
 }

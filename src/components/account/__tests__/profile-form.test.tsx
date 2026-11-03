@@ -9,7 +9,9 @@ vi.mock('next/navigation', () => ({
   useRouter: vi.fn(),
 }));
 
-global.fetch = vi.fn();
+const actionMock = vi.hoisted(() => ({ updateProfileAction: vi.fn() }));
+
+vi.mock('@/actions/profile', () => actionMock);
 
 describe('ProfileForm', () => {
   const mockRouter = {
@@ -20,10 +22,8 @@ describe('ProfileForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useRouter).mockReturnValue(mockRouter as any);
-    vi.mocked(fetch).mockResolvedValue({
-      ok: true,
-      json: async () => ({}),
-    } as Response);
+    actionMock.updateProfileAction.mockReset();
+    actionMock.updateProfileAction.mockResolvedValue({ ok: true, data: {} });
   });
 
   it('should render form with initial name', () => {
@@ -174,10 +174,8 @@ describe('ProfileForm', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith('/api/user/profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'New Name' }),
+      expect(actionMock.updateProfileAction).toHaveBeenCalledWith({
+        name: 'New Name',
       });
     });
   });
@@ -205,13 +203,9 @@ describe('ProfileForm', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith('/api/user/profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          currentPassword: 'oldpass',
-          newPassword: 'newpass123',
-        }),
+      expect(actionMock.updateProfileAction).toHaveBeenCalledWith({
+        currentPassword: 'oldpass',
+        newPassword: 'newpass123',
       });
     });
   });
@@ -276,10 +270,11 @@ describe('ProfileForm', () => {
   });
 
   it('should show error message on API failure', async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
+    actionMock.updateProfileAction.mockResolvedValueOnce({
       ok: false,
-      json: async () => ({ error: 'Invalid password' }),
-    } as Response);
+      error: 'Invalid password',
+      code: 'invalid',
+    });
 
     render(<ProfileForm initialName="" authMethod={AuthMethod.CREDENTIALS} />);
 
@@ -295,10 +290,11 @@ describe('ProfileForm', () => {
   });
 
   it('should show a default message when the API returns no error', async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
+    actionMock.updateProfileAction.mockResolvedValueOnce({
       ok: false,
-      json: async () => ({}),
-    } as Response);
+      error: '',
+      code: 'failed',
+    });
 
     render(<ProfileForm initialName="" authMethod={AuthMethod.CREDENTIALS} />);
     fireEvent.click(screen.getByRole('button', { name: /zapisz zmiany/i }));
@@ -349,7 +345,9 @@ describe('ProfileForm', () => {
   });
 
   it('should handle network errors gracefully', async () => {
-    vi.mocked(fetch).mockRejectedValueOnce(new Error('Network error'));
+    actionMock.updateProfileAction.mockRejectedValueOnce(
+      new Error('Network error')
+    );
 
     render(<ProfileForm initialName="" authMethod={AuthMethod.CREDENTIALS} />);
 

@@ -1,4 +1,3 @@
-import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { UserRole } from '@/lib/types';
@@ -34,12 +33,6 @@ vi.mock('@/lib/logger', () => ({
   }),
 }));
 
-function makeRequest(body: unknown): NextRequest {
-  return {
-    json: vi.fn().mockResolvedValue(body),
-  } as unknown as NextRequest;
-}
-
 function adminSession() {
   return {
     user: { id: 'admin-id', email: 'admin@example.com', role: UserRole.ADMIN },
@@ -47,7 +40,13 @@ function adminSession() {
   };
 }
 
-describe('POST /api/admin/users/bulk-assign', () => {
+// The data of a successful result, or the failure itself
+function dataOf(result: { ok: boolean }) {
+  const value = result as any;
+  return value.ok ? value.data : value;
+}
+
+describe('bulkAssignAccountsAction', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -59,47 +58,47 @@ describe('POST /api/admin/users/bulk-assign', () => {
     });
   });
 
-  it('should return 401 when not authenticated', async () => {
+  it('should return an unauthenticated result when not authenticated', async () => {
     mockAuth.mockResolvedValueOnce(null);
 
-    const { POST } = await import('../route');
-    const response = await POST(makeRequest({ apartmentIds: ['apt-1'] }));
-    const data = await response.json();
+    const { bulkAssignAccountsAction } = await import('@/actions/bulk-users');
+    const result = await bulkAssignAccountsAction({ apartmentIds: ['apt-1'] });
+    const data = dataOf(result);
 
-    expect(response.status).toBe(401);
+    expect(result).toMatchObject({ ok: false, code: 'unauthenticated' });
     expect(data.error).toBe('Brak uprawnień');
   });
 
-  it('should return 401 when user is not admin', async () => {
+  it('should return a forbidden result when user is not admin', async () => {
     mockAuth.mockResolvedValueOnce({
       user: { id: 'u', email: 'u@e.com', role: UserRole.TENANT },
       expires: new Date().toISOString(),
     });
 
-    const { POST } = await import('../route');
-    const response = await POST(makeRequest({ apartmentIds: ['apt-1'] }));
+    const { bulkAssignAccountsAction } = await import('@/actions/bulk-users');
+    const result = await bulkAssignAccountsAction({ apartmentIds: ['apt-1'] });
 
-    expect(response.status).toBe(403);
+    expect(result).toMatchObject({ ok: false, code: 'forbidden' });
   });
 
-  it('should return 400 when apartmentIds is empty', async () => {
+  it('should return an invalid result when apartmentIds is empty', async () => {
     mockAuth.mockResolvedValueOnce(adminSession());
 
-    const { POST } = await import('../route');
-    const response = await POST(makeRequest({ apartmentIds: [] }));
-    const data = await response.json();
+    const { bulkAssignAccountsAction } = await import('@/actions/bulk-users');
+    const result = await bulkAssignAccountsAction({ apartmentIds: [] });
+    const data = dataOf(result);
 
-    expect(response.status).toBe(400);
+    expect(result).toMatchObject({ ok: false, code: 'invalid' });
     expect(data.error).toBe('Wybierz co najmniej jedno mieszkanie');
   });
 
-  it('should return 400 when apartmentIds is missing', async () => {
+  it('should return an invalid result when apartmentIds is missing', async () => {
     mockAuth.mockResolvedValueOnce(adminSession());
 
-    const { POST } = await import('../route');
-    const response = await POST(makeRequest({}));
+    const { bulkAssignAccountsAction } = await import('@/actions/bulk-users');
+    const result = await bulkAssignAccountsAction({});
 
-    expect(response.status).toBe(400);
+    expect(result).toMatchObject({ ok: false, code: 'invalid' });
   });
 
   it('should assign existing user to apartment', async () => {
@@ -110,11 +109,11 @@ describe('POST /api/admin/users/bulk-assign', () => {
     mockUserFindUnique.mockResolvedValueOnce({ id: 'existing-user-id' });
     mockApartmentUpdateMany.mockResolvedValueOnce({ count: 1 });
 
-    const { POST } = await import('../route');
-    const response = await POST(makeRequest({ apartmentIds: ['apt-1'] }));
-    const data = await response.json();
+    const { bulkAssignAccountsAction } = await import('@/actions/bulk-users');
+    const result = await bulkAssignAccountsAction({ apartmentIds: ['apt-1'] });
+    const data = dataOf(result);
 
-    expect(response.status).toBe(200);
+    expect(result.ok).toBe(true);
     expect(data).toEqual({ assigned: 1, skipped: 0, errors: 0 });
     expect(mockApartmentUpdateMany).toHaveBeenCalledWith({
       where: { id: { in: ['apt-1'] }, userId: null },
@@ -131,13 +130,13 @@ describe('POST /api/admin/users/bulk-assign', () => {
     mockUserFindUnique.mockResolvedValueOnce({ id: 'existing-user-id' });
     mockApartmentUpdateMany.mockResolvedValueOnce({ count: 2 });
 
-    const { POST } = await import('../route');
-    const response = await POST(
-      makeRequest({ apartmentIds: ['apt-1', 'apt-2'] })
-    );
-    const data = await response.json();
+    const { bulkAssignAccountsAction } = await import('@/actions/bulk-users');
+    const result = await bulkAssignAccountsAction({
+      apartmentIds: ['apt-1', 'apt-2'],
+    });
+    const data = dataOf(result);
 
-    expect(response.status).toBe(200);
+    expect(result.ok).toBe(true);
     expect(data).toEqual({ assigned: 2, skipped: 0, errors: 0 });
     // Only one findUnique call (deduplicated)
     expect(mockUserFindUnique).toHaveBeenCalledTimes(1);
@@ -154,11 +153,11 @@ describe('POST /api/admin/users/bulk-assign', () => {
     ]);
     mockUserFindUnique.mockResolvedValueOnce(null);
 
-    const { POST } = await import('../route');
-    const response = await POST(makeRequest({ apartmentIds: ['apt-1'] }));
-    const data = await response.json();
+    const { bulkAssignAccountsAction } = await import('@/actions/bulk-users');
+    const result = await bulkAssignAccountsAction({ apartmentIds: ['apt-1'] });
+    const data = dataOf(result);
 
-    expect(response.status).toBe(200);
+    expect(result.ok).toBe(true);
     expect(data).toEqual({ assigned: 0, skipped: 1, errors: 0 });
     expect(mockApartmentUpdateMany).not.toHaveBeenCalled();
   });
@@ -173,11 +172,11 @@ describe('POST /api/admin/users/bulk-assign', () => {
     // ...but updateMany only updates 0 rows (assigned in the meantime)
     mockApartmentUpdateMany.mockResolvedValueOnce({ count: 0 });
 
-    const { POST } = await import('../route');
-    const response = await POST(makeRequest({ apartmentIds: ['apt-1'] }));
-    const data = await response.json();
+    const { bulkAssignAccountsAction } = await import('@/actions/bulk-users');
+    const result = await bulkAssignAccountsAction({ apartmentIds: ['apt-1'] });
+    const data = dataOf(result);
 
-    expect(response.status).toBe(200);
+    expect(result.ok).toBe(true);
     expect(data).toEqual({ assigned: 0, skipped: 1, errors: 0 });
   });
 
@@ -189,11 +188,11 @@ describe('POST /api/admin/users/bulk-assign', () => {
     mockUserFindUnique.mockResolvedValueOnce({ id: 'existing-user-id' });
     mockTransaction.mockRejectedValueOnce(new Error('DB error'));
 
-    const { POST } = await import('../route');
-    const response = await POST(makeRequest({ apartmentIds: ['apt-1'] }));
-    const data = await response.json();
+    const { bulkAssignAccountsAction } = await import('@/actions/bulk-users');
+    const result = await bulkAssignAccountsAction({ apartmentIds: ['apt-1'] });
+    const data = dataOf(result);
 
-    expect(response.status).toBe(200);
+    expect(result.ok).toBe(true);
     expect(data).toEqual({ assigned: 0, skipped: 0, errors: 1 });
   });
 
@@ -210,25 +209,13 @@ describe('POST /api/admin/users/bulk-assign', () => {
       .mockResolvedValueOnce({ count: 1 })
       .mockResolvedValueOnce({ count: 1 });
 
-    const { POST } = await import('../route');
-    const response = await POST(
-      makeRequest({ apartmentIds: ['apt-1', 'apt-2'] })
-    );
-    const data = await response.json();
+    const { bulkAssignAccountsAction } = await import('@/actions/bulk-users');
+    const result = await bulkAssignAccountsAction({
+      apartmentIds: ['apt-1', 'apt-2'],
+    });
+    const data = dataOf(result);
 
-    expect(response.status).toBe(200);
+    expect(result.ok).toBe(true);
     expect(data).toEqual({ assigned: 2, skipped: 0, errors: 0 });
-  });
-
-  it('returns 500 when the request body cannot be read', async () => {
-    mockAuth.mockResolvedValueOnce(adminSession());
-    const request = {
-      json: vi.fn().mockRejectedValue(new Error('bad json')),
-    } as unknown as NextRequest;
-
-    const { POST } = await import('../route');
-    const response = await POST(request);
-
-    expect(response.status).toBe(500);
   });
 });

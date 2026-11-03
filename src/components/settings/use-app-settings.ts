@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 
-const SETTINGS_URL = '/api/admin/settings';
+import { updateSettingsAction } from '@/actions/settings';
+
 const SAVE_ERROR = 'Nie udało się zapisać ustawień';
 
 export type SaveStatus =
@@ -16,19 +17,16 @@ export function useAppSettings(initialYearsBack: number) {
   async function save(nextYearsBack: number) {
     setSaving(true);
     try {
-      const response = await fetch(SETTINGS_URL, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantHistoryYearsBack: nextYearsBack }),
+      const result = await updateSettingsAction({
+        tenantHistoryYearsBack: nextYearsBack,
       });
-      const data = await response.json();
 
-      if (!response.ok) {
-        setStatus({ kind: 'error', message: data.error ?? SAVE_ERROR });
+      if (!result.ok) {
+        setStatus({ kind: 'error', message: result.error || SAVE_ERROR });
         return;
       }
 
-      setYearsBack(data.tenantHistoryYearsBack);
+      setYearsBack(result.data.tenantHistoryYearsBack);
       setStatus({ kind: 'saved' });
     } catch {
       setStatus({ kind: 'error', message: SAVE_ERROR });

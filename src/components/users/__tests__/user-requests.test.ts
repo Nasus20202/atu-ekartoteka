@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   CREATE_USER_FAILED_MESSAGE,
@@ -8,13 +8,12 @@ import {
 } from '@/components/users/user-requests';
 import { AccountStatus, UserRole } from '@/lib/types';
 
-function mockResponse(ok: boolean, body: object = {}) {
-  const fetchMock = vi
-    .fn()
-    .mockResolvedValue({ ok, json: () => Promise.resolve(body) });
-  vi.stubGlobal('fetch', fetchMock);
-  return fetchMock;
-}
+const actionMock = vi.hoisted(() => ({
+  updateUserStatusAction: vi.fn(),
+  createUserAction: vi.fn(),
+}));
+
+vi.mock('@/actions/users', () => actionMock);
 
 const newUser = {
   email: 'a@b.pl',
@@ -25,34 +24,45 @@ const newUser = {
 };
 
 describe('user requests', () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
-  it('patches the user and resolves null on success', async () => {
-    const fetchMock = mockResponse(true);
+  it('updates the user and resolves null on success', async () => {
+    actionMock.updateUserStatusAction.mockResolvedValue({ ok: true, data: {} });
     const payload = { userId: 'u1', status: AccountStatus.APPROVED };
 
     await expect(updateUserRequest(payload)).resolves.toBeNull();
-    expect(fetchMock).toHaveBeenCalledWith('/api/admin/users', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+    expect(actionMock.updateUserStatusAction).toHaveBeenCalledWith(payload);
   });
 
-  it('returns the API error or a fallback', async () => {
-    mockResponse(false, { error: 'Brak uprawnień' });
+  it('creates the user and resolves null on success', async () => {
+    actionMock.createUserAction.mockResolvedValue({ ok: true, data: {} });
+
+    await expect(createUserRequest(newUser)).resolves.toBeNull();
+    expect(actionMock.createUserAction).toHaveBeenCalledWith(newUser);
+  });
+
+  it('returns the action error or a fallback', async () => {
+    actionMock.createUserAction.mockResolvedValueOnce({
+      ok: false,
+      error: 'Brak uprawnień',
+      code: 'forbidden',
+    });
     await expect(createUserRequest(newUser)).resolves.toBe('Brak uprawnień');
 
-    mockResponse(false);
+    actionMock.createUserAction.mockResolvedValueOnce({
+      ok: false,
+      error: '',
+      code: 'failed',
+    });
     await expect(createUserRequest(newUser)).resolves.toBe(
       CREATE_USER_FAILED_MESSAGE
     );
   });
 
-  it('returns the fallback when the request fails', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
+  it('returns the fallback when the action throws', async () => {
+    actionMock.updateUserStatusAction.mockRejectedValue(new Error('offline'));
 
     await expect(
       updateUserRequest({ userId: 'u1', status: AccountStatus.REJECTED })
