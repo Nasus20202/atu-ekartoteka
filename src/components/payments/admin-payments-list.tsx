@@ -4,7 +4,7 @@ import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
 import { getPaymentMonthlyChartData } from '@/components/charts/chart-data';
-import { PaymentMonthlyBalanceChart } from '@/components/charts/payment-monthly-balance-chart';
+import { LazyPaymentMonthlyBalanceChart } from '@/components/charts/lazy-payment-monthly-balance-chart';
 import { PaymentTable } from '@/components/payments/payment-table';
 import { DownloadPaymentPdfButton } from '@/components/pdf/download-payment-pdf-button';
 import {
@@ -123,7 +123,7 @@ function PaymentYearSection({
             <p className="mb-2 text-sm font-semibold">
               Wykres rozliczeń miesięcznych
             </p>
-            <PaymentMonthlyBalanceChart data={monthlyChartData} />
+            <LazyPaymentMonthlyBalanceChart data={monthlyChartData} />
           </div>
           <div className="border-t pt-3">
             <p className="mb-2 text-sm font-semibold">

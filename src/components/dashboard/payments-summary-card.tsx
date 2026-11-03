@@ -1,10 +1,10 @@
 import Link from 'next/link';
 
-import { BalanceHistoryChart } from '@/components/charts/balance-history-chart';
 import {
   type BalanceHistoryDatum,
   mergeBalanceHistories,
 } from '@/components/charts/balance-history-data';
+import { LazyBalanceHistoryChart } from '@/components/charts/lazy-balance-history-chart';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -98,7 +98,7 @@ export const PaymentsSummaryCard = ({
 
           {balanceTrend.series.length > 0 && (
             <div className="rounded-lg border p-3">
-              <BalanceHistoryChart
+              <LazyBalanceHistoryChart
                 data={balanceTrend.data}
                 series={balanceTrend.series}
               />

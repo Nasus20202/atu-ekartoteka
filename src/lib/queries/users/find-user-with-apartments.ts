@@ -2,7 +2,7 @@ import { cache } from 'react';
 
 import { prisma } from '@/lib/database/prisma';
 import { deriveApartmentPayments } from '@/lib/queries/payments/derive-apartment-payments';
-import { chargesFromYear, paymentsFromYear } from '@/lib/utils/history-window';
+import { paymentsFromYear } from '@/lib/utils/history-window';
 
 export async function findUserWithApartments(
   id: string,
@@ -15,11 +15,6 @@ export async function findUserWithApartments(
       apartments: {
         orderBy: { number: 'asc' },
         include: {
-          charges: {
-            where: chargesFromYear(startYear),
-            orderBy: { period: 'desc' },
-            select: { id: true, period: true, totalAmount: true },
-          },
           chargeNotifications: {
             orderBy: { lineNo: 'asc' },
           },

@@ -3,8 +3,9 @@ import { redirect } from 'next/navigation';
 import {
   buildApartmentBalances,
   buildDashboardNotifications,
-  getChargesForPeriod,
   getDashboardPeriods,
+  getPeriodTotal,
+  withMonthlyCharges,
 } from '@/app/dashboard/dashboard-data';
 import { auth } from '@/auth';
 import { UserStatusSection } from '@/components/account/user-status-section';
@@ -14,11 +15,12 @@ import { ChargesSummaryCard } from '@/components/dashboard/charges-summary-card'
 import { NotificationsSidebar } from '@/components/dashboard/notifications-sidebar';
 import { PaymentsSummaryCard } from '@/components/dashboard/payments-summary-card';
 import { isApprovedAccount } from '@/lib/auth/account-access';
+import { findChargeTotalsByPeriod } from '@/lib/queries/charges/find-charge-totals-by-period';
+import { findMonthlyChargeSums } from '@/lib/queries/payments/find-monthly-charge-sums';
 import { findUserWithApartmentsCached } from '@/lib/queries/users/find-user-with-apartments';
 import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
-import { dateToPeriod } from '@/lib/utils/period';
+import { dateToPeriod, yearStartPeriod } from '@/lib/utils/period';
 import { getRequestNow } from '@/lib/utils/request-now';
-import { sumDecimals } from '@/lib/utils/sum';
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -29,35 +31,28 @@ export default async function DashboardPage() {
 
   const startYear = await getTenantHistoryStartYear();
   const now = await getRequestNow();
-  const userData = await findUserWithApartmentsCached(
-    session.user.id,
-    startYear,
-    dateToPeriod(now)
-  );
+  const { currentPeriod, previousPeriod } = getDashboardPeriods(now);
+  const [userData, periodTotals] = await Promise.all([
+    findUserWithApartmentsCached(session.user.id, startYear, dateToPeriod(now)),
+    findChargeTotalsByPeriod(session.user.id, startYear, [
+      currentPeriod,
+      previousPeriod,
+    ]),
+  ]);
 
   if (!userData) {
     redirect('/login');
   }
 
-  const { currentPeriod, previousPeriod } = getDashboardPeriods(now);
-
-  const currentMonthCharges = getChargesForPeriod(
-    userData.apartments,
-    currentPeriod
+  const currentMonth = getPeriodTotal(periodTotals, currentPeriod);
+  const previousMonth = getPeriodTotal(periodTotals, previousPeriod);
+  const monthlyCharges = await findMonthlyChargeSums(
+    userData.apartments.map((apartment) => apartment.id),
+    { fromPeriod: yearStartPeriod(startYear) }
   );
-  const previousMonthCharges = getChargesForPeriod(
-    userData.apartments,
-    previousPeriod
-  );
-
-  const currentMonthTotal = sumDecimals(
-    currentMonthCharges.map((charge) => charge.totalAmount)
-  );
-  const previousMonthTotal = sumDecimals(
-    previousMonthCharges.map((charge) => charge.totalAmount)
-  );
+  const apartments = withMonthlyCharges(userData.apartments, monthlyCharges);
   const recentChargeTrend = getChargeTrendByApartment(
-    userData.apartments,
+    apartments,
     currentPeriod
   );
 
@@ -105,10 +100,10 @@ export default async function DashboardPage() {
                   <ChargesSummaryCard
                     currentPeriod={currentPeriod}
                     previousPeriod={previousPeriod}
-                    currentMonthCharges={currentMonthCharges}
-                    previousMonthCharges={previousMonthCharges}
-                    currentMonthTotal={currentMonthTotal}
-                    previousMonthTotal={previousMonthTotal}
+                    currentMonthCount={currentMonth.count}
+                    previousMonthCount={previousMonth.count}
+                    currentMonthTotal={currentMonth.total}
+                    previousMonthTotal={previousMonth.total}
                     trendData={recentChargeTrend.data}
                     trendSeries={recentChargeTrend.series}
                   />
@@ -116,7 +111,7 @@ export default async function DashboardPage() {
 
               {/* Apartments Card */}
               {isApprovedAccount(userData) && (
-                <ApartmentsSection apartments={userData.apartments} />
+                <ApartmentsSection apartments={apartments} />
               )}
             </div>
           </div>

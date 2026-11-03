@@ -1,6 +1,11 @@
 import { getBalanceHistory } from '@/components/charts/balance-history-data';
 import { getSeriesColor } from '@/components/charts/chart-colors';
 import type { ApartmentBalance } from '@/components/dashboard/payments-summary-card';
+import type {
+  ChargeTotalsByPeriod,
+  PeriodChargeTotal,
+} from '@/lib/queries/charges/find-charge-totals-by-period';
+import type { MonthlyChargeSums } from '@/lib/queries/payments/find-monthly-charge-sums';
 import type { findUserWithApartments } from '@/lib/queries/users/find-user-with-apartments';
 import { formatApartmentLabel } from '@/lib/utils/apartment-label';
 import { getPaymentYearHref } from '@/lib/utils/dashboard-links';
@@ -20,13 +25,25 @@ export function getDashboardPeriods(now: Date) {
   return { currentPeriod, previousPeriod: dateToPeriod(prevMonth) };
 }
 
-export function getChargesForPeriod(
-  apartments: DashboardApartment[],
+export function getPeriodTotal(
+  totals: ChargeTotalsByPeriod,
   period: string
+): PeriodChargeTotal {
+  return totals.get(period) ?? { count: 0, total: toDecimal(0) };
+}
+
+// Trend input: each apartment's monthly charge sums, as charge-like rows.
+export function withMonthlyCharges(
+  apartments: DashboardApartment[],
+  monthlyCharges: MonthlyChargeSums
 ) {
-  return apartments.flatMap((apt) =>
-    apt.charges.filter((charge) => charge.period === period)
-  );
+  return apartments.map((apartment) => ({
+    ...apartment,
+    charges: Array.from(
+      monthlyCharges.get(apartment.id) ?? [],
+      ([period, totalAmount]) => ({ period, totalAmount })
+    ),
+  }));
 }
 
 export function buildDashboardNotifications(apartments: DashboardApartment[]) {

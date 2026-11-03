@@ -1,11 +1,11 @@
 import { FileText } from 'lucide-react';
 import Link from 'next/link';
 
-import { ChargeTrendChart } from '@/components/charts/charge-trend-chart';
 import type {
   ChargeTrendDatum,
   ChargeTrendSeries,
 } from '@/components/charts/chart-data';
+import { LazyChargeTrendChart } from '@/components/charts/lazy-charge-trend-chart';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn, formatCurrency, formatPeriod } from '@/lib/utils';
@@ -16,8 +16,8 @@ import { CHARGE_FORMS, formatCountPl } from '@/lib/utils/pluralize';
 interface ChargesSummaryCardProps {
   currentPeriod: string;
   previousPeriod: string;
-  currentMonthCharges: Array<{ totalAmount: DecimalLike }>;
-  previousMonthCharges: Array<{ totalAmount: DecimalLike }>;
+  currentMonthCount: number;
+  previousMonthCount: number;
   currentMonthTotal: DecimalLike;
   previousMonthTotal: DecimalLike;
   trendData?: ChargeTrendDatum[];
@@ -52,17 +52,15 @@ function ChargePeriodTile({ period, count, total }: ChargePeriodTileProps) {
 export function ChargesSummaryCard({
   currentPeriod,
   previousPeriod,
-  currentMonthCharges,
-  previousMonthCharges,
+  currentMonthCount,
+  previousMonthCount,
   currentMonthTotal,
   previousMonthTotal,
   trendData = [],
   trendSeries = [],
 }: ChargesSummaryCardProps) {
-  const hasCharges =
-    currentMonthCharges.length > 0 || previousMonthCharges.length > 0;
-  const hasBothPeriods =
-    currentMonthCharges.length > 0 && previousMonthCharges.length > 0;
+  const hasCharges = currentMonthCount > 0 || previousMonthCount > 0;
+  const hasBothPeriods = currentMonthCount > 0 && previousMonthCount > 0;
 
   return (
     <Card>
@@ -78,17 +76,17 @@ export function ChargesSummaryCard({
             <div
               className={cn('grid gap-3', hasBothPeriods && 'sm:grid-cols-2')}
             >
-              {currentMonthCharges.length > 0 && (
+              {currentMonthCount > 0 && (
                 <ChargePeriodTile
                   period={currentPeriod}
-                  count={currentMonthCharges.length}
+                  count={currentMonthCount}
                   total={currentMonthTotal}
                 />
               )}
-              {previousMonthCharges.length > 0 && (
+              {previousMonthCount > 0 && (
                 <ChargePeriodTile
                   period={previousPeriod}
-                  count={previousMonthCharges.length}
+                  count={previousMonthCount}
                   total={previousMonthTotal}
                 />
               )}
@@ -97,7 +95,7 @@ export function ChargesSummaryCard({
               <p className="text-sm font-medium">
                 Naliczenia z ostatnich 12 miesięcy
               </p>
-              <ChargeTrendChart data={trendData} series={trendSeries} />
+              <LazyChargeTrendChart data={trendData} series={trendSeries} />
             </div>
             <Link href="/dashboard/charges">
               <Button className="w-full" variant="secondary">
@@ -111,7 +109,7 @@ export function ChargesSummaryCard({
               Brak naliczeń dla ostatnich miesięcy.
             </p>
             <div className="rounded-lg border p-3">
-              <ChargeTrendChart data={trendData} series={trendSeries} />
+              <LazyChargeTrendChart data={trendData} series={trendSeries} />
             </div>
             <Link href="/dashboard/charges">
               <Button className="w-full" variant="secondary">

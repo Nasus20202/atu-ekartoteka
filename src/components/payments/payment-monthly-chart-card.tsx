@@ -1,5 +1,5 @@
 import type { PaymentMonthlyChartDatum } from '@/components/charts/chart-data';
-import { PaymentMonthlyBalanceChart } from '@/components/charts/payment-monthly-balance-chart';
+import { LazyPaymentMonthlyBalanceChart } from '@/components/charts/lazy-payment-monthly-balance-chart';
 import {
   Card,
   CardContent,
@@ -24,7 +24,7 @@ export function PaymentMonthlyChartCard({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <PaymentMonthlyBalanceChart data={data} />
+        <LazyPaymentMonthlyBalanceChart data={data} />
       </CardContent>
     </Card>
   );

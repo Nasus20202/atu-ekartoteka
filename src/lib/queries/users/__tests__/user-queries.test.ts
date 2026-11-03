@@ -96,14 +96,7 @@ describe('user queries', () => {
       header: true,
       footer: true,
     });
-    expect(include.apartments.include.charges.where).toEqual({
-      period: { gte: '202501' },
-    });
-    expect(include.apartments.include.charges.select).toEqual({
-      id: true,
-      period: true,
-      totalAmount: true,
-    });
+    expect(include.apartments.include.charges).toBeUndefined();
   });
 
   it('returns the dashboard user with payments derived from charges', async () => {
