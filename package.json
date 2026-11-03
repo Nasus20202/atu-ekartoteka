@@ -106,6 +106,7 @@
     "pino": "10.4.0",
     "pino-pretty": "13.2.0",
     "prettier": "3.9.10",
+    "prettier-plugin-sql": "0.20.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "recharts": "3.10.1",
@@ -122,7 +123,7 @@
       "prettier --write",
       "eslint --fix"
     ],
-    "*.{json,css,md}": [
+    "*.{json,css,md,sql}": [
       "prettier --write"
     ]
   }

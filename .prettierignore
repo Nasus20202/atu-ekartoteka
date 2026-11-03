@@ -14,3 +14,5 @@ playwright-report
 test-results
 .opencode
 perf-results
+# Prisma checksums applied migrations, so their SQL must not change
+prisma/migrations
