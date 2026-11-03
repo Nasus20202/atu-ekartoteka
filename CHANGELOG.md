@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.12] - 2026-11-03
+
+- feat(db): make connection pool size and timeout configurable
+- refactor(apartments): drop redundant email filter for unassigned lookups
+- perf(dashboard): aggregate charge totals and load charts on demand
+- fix(deps): update dependency forwarded-parse to v2.2.0 (#846)
+- style(openspec): format embedded SQL in archived design doc
+- style(sql): format SQL with prettier-plugin-sql
+- build(e2e): separate visual database and cover every admin page
+- chore(deps): update dependency lucide-react to v1.66.0 (#845)
+
 ## [0.8.11] - 2026-11-03
 
 - fix(auth): send a payload when refreshing the session after a password change
