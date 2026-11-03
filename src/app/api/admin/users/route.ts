@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { loadUsersPage } from '@/app/api/admin/users/load-users-page';
 import { parseUsersQuery } from '@/app/api/admin/users/users-query';
 import { isApprovedStatus } from '@/lib/auth/account-access';
 import { isAdminRole } from '@/lib/auth/admin-access';
@@ -8,7 +9,6 @@ import { createLogger } from '@/lib/logger';
 import { updateUserStatus } from '@/lib/mutations/users/update-user-status';
 import { notifyAccountApproved } from '@/lib/notifications/account-status';
 import { countApartmentAvailability } from '@/lib/queries/apartments/count-apartment-availability';
-import { findTenantUsers } from '@/lib/queries/users/find-tenant-users';
 import { findUserById } from '@/lib/queries/users/find-user-by-id';
 import { AccountStatus } from '@/lib/types';
 import { toUserDto } from '@/lib/types/dto/user-dto';
@@ -27,23 +27,8 @@ export async function GET(req: NextRequest) {
     if (parsed.error !== undefined) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
-    const { role, status, page, limit, search, sort, order } = parsed.query;
 
-    const { users, total } = await findTenantUsers(
-      status,
-      page,
-      limit,
-      search,
-      role,
-      sort ?? undefined,
-      order
-    );
-    const totalPages = Math.ceil(total / limit);
-
-    return NextResponse.json({
-      users: users.map(toUserDto),
-      pagination: { page, limit, total, totalPages },
-    });
+    return NextResponse.json(await loadUsersPage(parsed.query));
   } catch (error) {
     logger.error({ error }, 'Users fetch error');
     return NextResponse.json(

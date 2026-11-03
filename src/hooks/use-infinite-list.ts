@@ -28,6 +28,8 @@ interface UseInfiniteListOptions<T> {
   fetchPage: PageFetcher<T>;
   queryKey: string;
   getId: (item: T) => string;
+  /** First page of `queryKey` loaded on the server, so the mount does not fetch it. */
+  initialPage?: InfinitePage<T>;
 }
 
 interface ListState<T> {
@@ -63,8 +65,21 @@ export function useInfiniteList<T>({
   fetchPage,
   queryKey,
   getId,
+  initialPage,
 }: UseInfiniteListOptions<T>) {
-  const [state, setState] = useState<ListState<T>>(EMPTY_STATE);
+  const [state, setState] = useState<ListState<T>>(() =>
+    initialPage
+      ? {
+          key: queryKey,
+          items: mergeUnique(initialPage.items, getId),
+          page: initialPage.page,
+          totalPages: initialPage.totalPages,
+          total: initialPage.total ?? null,
+          error: null,
+        }
+      : EMPTY_STATE
+  );
+  const skipMountFetchRef = useRef(initialPage !== undefined);
   const [loadingMore, setLoadingMore] = useState(false);
   const fetchRef = useRef(fetchPage);
   const getIdRef = useRef(getId);
@@ -125,6 +140,10 @@ export function useInfiniteList<T>({
 
   useEffect(() => {
     const controller = replaceController();
+    if (skipMountFetchRef.current) {
+      skipMountFetchRef.current = false;
+      return () => controller.abort();
+    }
     requestingRef.current = true;
     void requestPage(FIRST_PAGE, queryKey, controller.signal);
     return () => controller.abort();

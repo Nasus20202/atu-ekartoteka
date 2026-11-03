@@ -4,7 +4,11 @@ import { useCallback, useEffect, useState } from 'react';
 
 import type { UserFilter } from '@/components/users/user-filters';
 import { buildUsersQuery } from '@/components/users/utils';
-import { type PageFetcher, useInfiniteList } from '@/hooks/use-infinite-list';
+import {
+  type InfinitePage,
+  type PageFetcher,
+  useInfiniteList,
+} from '@/hooks/use-infinite-list';
 import { AccountStatus } from '@/lib/types';
 import type { UserDto } from '@/lib/types/dto/user-dto';
 import type { SortState, UserSortKey } from '@/lib/utils/sort';
@@ -13,8 +17,11 @@ const SEARCH_DEBOUNCE_MS = 300;
 
 const getUserId = (user: UserDto) => user.id;
 
-/** Infinitely scrolled, filtered and debounced-search list of users. */
-export function useAdminUsers() {
+/**
+ * Infinitely scrolled, filtered and debounced-search list of users.
+ * `initialPage` is the first page of the default filter, loaded on the server.
+ */
+export function useAdminUsers(initialPage?: InfinitePage<UserDto>) {
   const [filter, setFilter] = useState<UserFilter>(AccountStatus.PENDING);
   const [userSearch, setUserSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -42,6 +49,7 @@ export function useAdminUsers() {
     fetchPage,
     queryKey: `${filter}|${debouncedSearch}|${sort?.key ?? ''}|${sort?.direction ?? ''}`,
     getId: getUserId,
+    initialPage,
   });
 
   useEffect(() => {

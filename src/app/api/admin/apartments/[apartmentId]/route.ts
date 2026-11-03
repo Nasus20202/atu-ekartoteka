@@ -1,18 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { loadApartmentDetail } from '@/app/api/admin/apartments/[apartmentId]/load-apartment-detail';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { createLogger } from '@/lib/logger';
 import { updateApartmentStatus } from '@/lib/mutations/apartments/update-apartment-status';
-import { findApartmentDetail } from '@/lib/queries/apartments/find-apartment-detail';
-import {
-  type ApartmentDetailDto,
-  toApartmentDetailDto,
-  toApartmentSummaryDto,
-} from '@/lib/types/dto/apartment-dto';
-import { toChargePeriodItemDto } from '@/lib/types/dto/charge-dto';
-import { toPaymentPdfDto } from '@/lib/types/dto/payment-dto';
-import { dateToPeriod } from '@/lib/utils/period';
-import { getRequestNow } from '@/lib/utils/request-now';
+import { toApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
 
 const logger = createLogger('api:admin:apartments:detail');
 
@@ -26,10 +18,7 @@ export async function GET(
 
     const { apartmentId } = await params;
 
-    const apartment = await findApartmentDetail(
-      apartmentId,
-      dateToPeriod(await getRequestNow())
-    );
+    const apartment = await loadApartmentDetail(apartmentId);
 
     if (!apartment) {
       return NextResponse.json(
@@ -38,13 +27,7 @@ export async function GET(
       );
     }
 
-    const body: ApartmentDetailDto = toApartmentDetailDto({
-      ...apartment,
-      charges: apartment.charges.map(toChargePeriodItemDto),
-      payments: apartment.payments.map(toPaymentPdfDto),
-    });
-
-    return NextResponse.json(body);
+    return NextResponse.json(apartment);
   } catch (error) {
     logger.error({ error }, 'Error fetching apartment details');
     return NextResponse.json(

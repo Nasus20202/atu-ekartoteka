@@ -4,10 +4,10 @@ import { describe, expect, it } from 'vitest';
 import { DatabaseStatsCard } from '@/components/import/database-stats-card';
 
 describe('DatabaseStatsCard', () => {
-  it('renders loading state', () => {
+  it('renders a skeleton while loading', () => {
     render(<DatabaseStatsCard dbStats={null} statsLoading />);
 
-    expect(screen.getByText(/ładowanie/i)).toBeInTheDocument();
+    expect(screen.getByTestId('stats-skeleton')).toBeInTheDocument();
   });
 
   it('renders stats table', () => {

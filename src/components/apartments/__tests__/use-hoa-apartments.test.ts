@@ -7,13 +7,13 @@ import {
 } from '@/components/apartments/apartment-list-utils';
 import { useHoaApartments } from '@/components/apartments/use-hoa-apartments';
 
-const { push, searchParams } = vi.hoisted(() => ({
-  push: vi.fn(),
+const { searchParams } = vi.hoisted(() => ({
   searchParams: { current: new URLSearchParams() },
 }));
 
+const push = vi.spyOn(window.history, 'pushState');
+
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push }),
   useSearchParams: () => searchParams.current,
 }));
 
@@ -155,7 +155,7 @@ describe('useHoaApartments', () => {
     expect(result.current.apartments).toEqual([]);
   });
 
-  it('pushes changed query params without a page and skips unchanged ones', async () => {
+  it('updates the history with changed query params without a page and skips unchanged ones', async () => {
     stubFetch(pageBody(1, []), pageBody(1, []));
     searchParams.current = new URLSearchParams('page=2&search=17');
     const first = renderHook(() => useHoaApartments('hoa-1'));
@@ -164,7 +164,7 @@ describe('useHoaApartments', () => {
     act(() =>
       first.result.current.updateURL({ search: '', activeOnly: 'true' })
     );
-    expect(push).toHaveBeenCalledWith('?activeOnly=true', { scroll: false });
+    expect(push).toHaveBeenCalledWith(null, '', '?activeOnly=true');
 
     push.mockClear();
     searchParams.current = new URLSearchParams('search=17');
@@ -173,5 +173,28 @@ describe('useHoaApartments', () => {
 
     act(() => second.result.current.updateURL({ search: '17' }));
     expect(push).not.toHaveBeenCalled();
+  });
+
+  it('uses the server-provided first page without fetching it again', () => {
+    const fetchMock = stubFetch();
+    searchParams.current = new URLSearchParams();
+
+    const { result } = renderHook(() =>
+      useHoaApartments('hoa-1', {
+        hoa: hoa as never,
+        page: {
+          items: [apartment('a1') as never],
+          page: 1,
+          totalPages: 2,
+          total: 25,
+        },
+      })
+    );
+
+    expect(result.current.loading).toBe(false);
+    expect(result.current.apartments).toHaveLength(1);
+    expect(result.current.hoa).toEqual(hoa);
+    expect(result.current.hasMore).toBe(true);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

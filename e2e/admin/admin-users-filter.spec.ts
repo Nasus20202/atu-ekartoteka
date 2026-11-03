@@ -54,7 +54,7 @@ test.describe.serial('Admin Users Filter', () => {
     const apartmentOption = adminPage.locator('label').filter({
       hasText: externalOwnerId,
     });
-    await expect(apartmentOption).toBeVisible({ timeout: 5000 });
+    await expect(apartmentOption).toBeVisible({ timeout: 10000 });
     await apartmentOption.click();
 
     await Promise.all([

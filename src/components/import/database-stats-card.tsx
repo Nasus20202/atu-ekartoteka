@@ -2,6 +2,7 @@ import { Database } from 'lucide-react';
 
 import type { DatabaseStats } from '@/components/import/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -30,7 +31,10 @@ export function DatabaseStatsCard({
       </CardHeader>
       <CardContent>
         {statsLoading ? (
-          <p className="text-sm text-muted-foreground">Ładowanie...</p>
+          <div className="space-y-2" data-testid="stats-skeleton">
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-6 w-full" />
+          </div>
         ) : dbStats ? (
           <div className="overflow-x-auto">
             <Table>

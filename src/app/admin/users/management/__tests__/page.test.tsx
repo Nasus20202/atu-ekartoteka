@@ -22,10 +22,6 @@ vi.mock('@/components/layout/page-header', () => ({
   PageHeader: ({ title }: { title: string }) => <h1>{title}</h1>,
 }));
 
-vi.mock('@/components/ui/loading-card', () => ({
-  LoadingCard: () => <div>Ładowanie...</div>,
-}));
-
 vi.mock('next/link', () => ({
   default: ({
     children,

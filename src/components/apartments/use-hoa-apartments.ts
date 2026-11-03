@@ -1,9 +1,13 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useCallback, useState } from 'react';
 
-import { type PageFetcher, useInfiniteList } from '@/hooks/use-infinite-list';
+import {
+  type InfinitePage,
+  type PageFetcher,
+  useInfiniteList,
+} from '@/hooks/use-infinite-list';
 import type {
   ApartmentSummaryDto,
   HomeownersAssociationNoticeDto,
@@ -14,15 +18,27 @@ const PAGE_SIZE = 20;
 
 const getApartmentId = (apartment: ApartmentSummaryDto) => apartment.id;
 
-/** Infinitely scrolled list of a HOA's apartments, filtered by the URL query. */
-export function useHoaApartments(hoaId: string) {
-  const router = useRouter();
+export interface HoaApartmentsInitialData {
+  hoa: HomeownersAssociationNoticeDto | null;
+  page: InfinitePage<ApartmentSummaryDto>;
+}
+
+/**
+ * Infinitely scrolled list of a HOA's apartments, filtered by the URL query.
+ * `initial` is the first page for the URL query at mount, loaded on the server.
+ */
+export function useHoaApartments(
+  hoaId: string,
+  initial?: HoaApartmentsInitialData
+) {
   const searchParams = useSearchParams();
 
   const search = searchParams.get('search') || '';
   const activeOnly = searchParams.get('activeOnly') === 'true';
 
-  const [hoa, setHoa] = useState<HomeownersAssociationNoticeDto | null>(null);
+  const [hoa, setHoa] = useState<HomeownersAssociationNoticeDto | null>(
+    initial?.hoa ?? null
+  );
   const [sort, setSort] = useState<SortState<ApartmentSortKey> | null>(null);
 
   const fetchPage = useCallback<PageFetcher<ApartmentSummaryDto>>(
@@ -55,6 +71,7 @@ export function useHoaApartments(hoaId: string) {
     fetchPage,
     queryKey: `${hoaId}|${search}|${activeOnly}|${sort?.key ?? ''}|${sort?.direction ?? ''}`,
     getId: getApartmentId,
+    initialPage: initial?.page,
   });
 
   const updateURL = (updates: Record<string, string | null>) => {
@@ -69,7 +86,9 @@ export function useHoaApartments(hoaId: string) {
     });
     const nextQuery = newParams.toString();
     if (nextQuery !== searchParams.toString()) {
-      router.push(`?${nextQuery}`, { scroll: false });
+      // History API updates useSearchParams without re-rendering the server page,
+      // because the list refetches its own pages from the API.
+      window.history.pushState(null, '', `?${nextQuery}`);
     }
   };
 
