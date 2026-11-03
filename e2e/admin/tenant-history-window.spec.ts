@@ -12,7 +12,6 @@ import { createMixedPaymentsUser } from '../utils/create-mixed-payments-user';
 import { deleteUserAndApartmentsByEmail } from '../utils/delete-user-and-apartments-by-email';
 import { USER_PASSWORD } from '../utils/test-credentials';
 
-const SETTINGS_URL = '/api/admin/settings';
 const YEARS_INPUT_LABEL = 'Liczba poprzednich lat widocznych dla mieszkańców';
 const VISIBLE_OFFSET = DEFAULT_TENANT_HISTORY_YEARS_BACK;
 const HIDDEN_OFFSET = DEFAULT_TENANT_HISTORY_YEARS_BACK + 1;
@@ -42,10 +41,19 @@ test.describe('Tenant history window', () => {
   }
 
   async function setYearsBack(adminPage: Page, value: number) {
-    const response = await adminPage.request.put(SETTINGS_URL, {
-      data: { tenantHistoryYearsBack: value },
-    });
-    expect(response.ok(), await response.text()).toBe(true);
+    await adminPage.goto('/admin/settings');
+    await adminPage
+      .getByLabel(YEARS_INPUT_LABEL)
+      .filter({ visible: true })
+      .fill(String(value));
+    const save = adminPage
+      .getByRole('button', { name: 'Zapisz' })
+      .filter({ visible: true });
+
+    if (await save.isEnabled()) {
+      await save.click();
+      await expect(adminPage.getByText('Zapisano ustawienia')).toBeVisible();
+    }
   }
 
   test('tenant sees only years inside the default window', async ({

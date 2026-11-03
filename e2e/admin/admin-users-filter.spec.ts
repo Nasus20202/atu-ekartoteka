@@ -5,6 +5,7 @@
 import { expect, test } from '../fixtures';
 import { createUniqueUnassignedApartment } from '../utils/create-unique-unassigned-apartment';
 import { deleteApartment } from '../utils/delete-apartment';
+import { isServerActionResponse } from '../utils/server-actions';
 import { ADMIN_EMAIL } from '../utils/test-credentials';
 
 test.describe.serial('Admin Users Filter', () => {
@@ -58,10 +59,7 @@ test.describe.serial('Admin Users Filter', () => {
     await apartmentOption.click();
 
     await Promise.all([
-      adminPage.waitForResponse(
-        (resp) =>
-          resp.url().includes('/api/admin/users') && resp.status() === 200
-      ),
+      adminPage.waitForResponse(isServerActionResponse),
       adminPage
         .getByRole('dialog')
         .getByRole('button', { name: /^Przypisz \(1\)$/ })

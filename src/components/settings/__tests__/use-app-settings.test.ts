@@ -1,44 +1,36 @@
 import { act, renderHook } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useAppSettings } from '@/components/settings/use-app-settings';
 
-function json(ok: boolean, body: object) {
-  return { ok, json: () => Promise.resolve(body) };
-}
+const actionMock = vi.hoisted(() => ({ updateSettingsAction: vi.fn() }));
+
+vi.mock('@/actions/settings', () => actionMock);
 
 describe('useAppSettings', () => {
-  const fetchMock = vi.fn();
+  const action = actionMock.updateSettingsAction;
 
   beforeEach(() => {
-    fetchMock.mockReset();
-    vi.stubGlobal('fetch', fetchMock);
-  });
-
-  afterEach(() => {
-    vi.unstubAllGlobals();
+    action.mockReset();
   });
 
   it('starts from the server-provided history window without fetching', () => {
     const { result } = renderHook(() => useAppSettings(3));
 
     expect(result.current.yearsBack).toBe(3);
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(action).not.toHaveBeenCalled();
   });
 
   it('saves the new history window', async () => {
     const { result } = renderHook(() => useAppSettings(1));
 
-    fetchMock.mockResolvedValueOnce(json(true, { tenantHistoryYearsBack: 5 }));
+    action.mockResolvedValueOnce({
+      ok: true,
+      data: { tenantHistoryYearsBack: 5 },
+    });
     await act(() => result.current.save(5));
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      '/api/admin/settings',
-      expect.objectContaining({
-        method: 'PUT',
-        body: JSON.stringify({ tenantHistoryYearsBack: 5 }),
-      })
-    );
+    expect(action).toHaveBeenCalledWith({ tenantHistoryYearsBack: 5 });
     expect(result.current.yearsBack).toBe(5);
     expect(result.current.status).toEqual({ kind: 'saved' });
     expect(result.current.saving).toBe(false);
@@ -47,7 +39,11 @@ describe('useAppSettings', () => {
   it('shows the API error message when saving fails', async () => {
     const { result } = renderHook(() => useAppSettings(1));
 
-    fetchMock.mockResolvedValueOnce(json(false, { error: 'Zła wartość' }));
+    action.mockResolvedValueOnce({
+      ok: false,
+      error: 'Zła wartość',
+      code: 'invalid',
+    });
     await act(() => result.current.save(99));
 
     expect(result.current.status).toEqual({
@@ -60,7 +56,7 @@ describe('useAppSettings', () => {
   it('falls back to a generic message when the API gives none', async () => {
     const { result } = renderHook(() => useAppSettings(1));
 
-    fetchMock.mockResolvedValueOnce(json(false, {}));
+    action.mockResolvedValueOnce({ ok: false, error: '', code: 'failed' });
     await act(() => result.current.save(2));
 
     expect(result.current.status).toEqual({
@@ -72,7 +68,7 @@ describe('useAppSettings', () => {
   it('shows a generic message when the save request throws', async () => {
     const { result } = renderHook(() => useAppSettings(1));
 
-    fetchMock.mockRejectedValueOnce(new Error('offline'));
+    action.mockRejectedValueOnce(new Error('offline'));
     await act(() => result.current.save(2));
 
     expect(result.current.status).toEqual({

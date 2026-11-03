@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import { setApartmentActiveAction } from '@/actions/apartments';
 import { ApartmentInfoCard } from '@/components/apartments/apartment-info-card';
 import { AssignedUserCard } from '@/components/apartments/assigned-user-card';
 import { ChargeNotificationsCard } from '@/components/apartments/charge-notifications-card';
@@ -49,14 +50,10 @@ export function ApartmentDetailsContent({
 
     setUpdating(true);
     try {
-      const response = await fetch(`/api/admin/apartments/${apartmentId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isActive: newStatus }),
-      });
+      const result = await setApartmentActiveAction(apartmentId, newStatus);
 
-      if (!response.ok) {
-        throw new Error('Failed to update apartment status');
+      if (!result.ok) {
+        throw new Error(result.error);
       }
 
       setApartment({ ...apartment, isActive: newStatus });

@@ -33,16 +33,16 @@ vi.mock('@/components/layout/auth-layout', () => ({
   ),
 }));
 
-global.fetch = vi.fn();
+const actionMock = vi.hoisted(() => ({ updateProfileAction: vi.fn() }));
+
+vi.mock('@/actions/profile', () => actionMock);
 
 describe('ChangePasswordPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUpdate.mockResolvedValue(null);
-    vi.mocked(fetch).mockResolvedValue({
-      ok: true,
-      json: async () => ({}),
-    } as Response);
+    actionMock.updateProfileAction.mockReset();
+    actionMock.updateProfileAction.mockResolvedValue({ ok: true, data: {} });
   });
 
   function getNewPasswordInput(container: HTMLElement) {
@@ -77,7 +77,7 @@ describe('ChangePasswordPage', () => {
     await waitFor(() => {
       expect(screen.getByText(/co najmniej 8 znaków/i)).toBeInTheDocument();
     });
-    expect(fetch).not.toHaveBeenCalled();
+    expect(actionMock.updateProfileAction).not.toHaveBeenCalled();
   });
 
   it('should show error when passwords do not match', async () => {
@@ -94,10 +94,10 @@ describe('ChangePasswordPage', () => {
     await waitFor(() => {
       expect(screen.getByText(/hasła nie są identyczne/i)).toBeInTheDocument();
     });
-    expect(fetch).not.toHaveBeenCalled();
+    expect(actionMock.updateProfileAction).not.toHaveBeenCalled();
   });
 
-  it('should call API, refresh the session and navigate on success', async () => {
+  it('should call the action, refresh the session and navigate on success', async () => {
     const { container } = render(<ChangePasswordPage />);
 
     fireEvent.change(getNewPasswordInput(container), {
@@ -109,10 +109,8 @@ describe('ChangePasswordPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /ustaw hasło/i }));
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith('/api/user/profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ newPassword: 'NewPassword1' }),
+      expect(actionMock.updateProfileAction).toHaveBeenCalledWith({
+        newPassword: 'NewPassword1',
       });
     });
 
@@ -123,11 +121,12 @@ describe('ChangePasswordPage', () => {
     expect(mockRefresh).toHaveBeenCalledOnce();
   });
 
-  it('should show error message on API failure', async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
+  it('should show error message when the action fails', async () => {
+    actionMock.updateProfileAction.mockResolvedValueOnce({
       ok: false,
-      json: async () => ({ error: 'Wystąpił błąd serwera' }),
-    } as Response);
+      error: 'Wystąpił błąd serwera',
+      code: 'failed',
+    });
 
     const { container } = render(<ChangePasswordPage />);
 

@@ -10,6 +10,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import BulkCreateUsersPage from '@/app/admin/users/management/page';
 
+const actionMock = vi.hoisted(() => ({
+  bulkCreateAccountsAction: vi.fn(),
+  bulkAssignAccountsAction: vi.fn(),
+}));
+
+vi.mock('@/actions/bulk-users', () => actionMock);
+
 vi.mock('next/navigation', () => ({
   useRouter: vi.fn(),
 }));
@@ -222,7 +229,7 @@ describe('BulkCreateUsersPage', () => {
     });
   });
 
-  it('calls POST API and shows result summary on success after confirmation', async () => {
+  it('runs the create action and shows the result summary on success after confirmation', async () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce({
         ok: true,
@@ -230,12 +237,12 @@ describe('BulkCreateUsersPage', () => {
       } as Response)
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ created: 2, skipped: 0, errors: 0 }),
-      } as Response)
-      .mockResolvedValueOnce({
-        ok: true,
         json: async () => ({ hoas: [], pagination: SINGLE_PAGE }),
       } as Response);
+    actionMock.bulkCreateAccountsAction.mockResolvedValueOnce({
+      ok: true,
+      data: { created: 2, skipped: 0, errors: 0 },
+    });
 
     render(<BulkCreateUsersPage />);
 
@@ -267,23 +274,21 @@ describe('BulkCreateUsersPage', () => {
       expect(screen.getByText(/Utworzono 2 kont/i)).toBeInTheDocument();
     });
 
-    expect(fetch).toHaveBeenCalledWith('/api/admin/users/bulk-create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: expect.stringContaining('apt-1'),
+    expect(actionMock.bulkCreateAccountsAction).toHaveBeenCalledWith({
+      apartmentIds: expect.arrayContaining(['apt-1']),
     });
   });
 
   it('shows error alert on API failure after confirmation', async () => {
-    vi.mocked(fetch)
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ hoas: mockHoas, pagination: SINGLE_PAGE }),
-      } as Response)
-      .mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({ error: 'Błąd serwera' }),
-      } as Response);
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ hoas: mockHoas, pagination: SINGLE_PAGE }),
+    } as Response);
+    actionMock.bulkCreateAccountsAction.mockResolvedValueOnce({
+      ok: false,
+      error: 'Błąd serwera',
+      code: 'failed',
+    });
 
     render(<BulkCreateUsersPage />);
 
@@ -699,7 +704,7 @@ describe('BulkCreateUsersPage', () => {
       });
     });
 
-    it('calls bulk-assign API and shows assign result on success', async () => {
+    it('runs the assign action and shows the result on success', async () => {
       const user = userEvent.setup();
       vi.mocked(fetch)
         .mockResolvedValueOnce({
@@ -712,12 +717,12 @@ describe('BulkCreateUsersPage', () => {
         } as Response)
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ assigned: 2, skipped: 0, errors: 0 }),
-        } as Response)
-        .mockResolvedValueOnce({
-          ok: true,
           json: async () => ({ hoas: [], pagination: SINGLE_PAGE }),
         } as Response);
+      actionMock.bulkAssignAccountsAction.mockResolvedValueOnce({
+        ok: true,
+        data: { assigned: 2, skipped: 0, errors: 0 },
+      });
 
       render(<BulkCreateUsersPage />);
 
@@ -752,10 +757,8 @@ describe('BulkCreateUsersPage', () => {
         expect(screen.getByText(/Przypisano 2 mieszkań/i)).toBeInTheDocument();
       });
 
-      expect(fetch).toHaveBeenCalledWith('/api/admin/users/bulk-assign', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: expect.stringContaining('apt'),
+      expect(actionMock.bulkAssignAccountsAction).toHaveBeenCalledWith({
+        apartmentIds: expect.any(Array),
       });
     });
   });

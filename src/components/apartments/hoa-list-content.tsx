@@ -3,6 +3,7 @@
 import { Building2, Search } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
+import { renameHoaAction } from '@/actions/hoa';
 import { HoaListCard } from '@/components/apartments/hoa-list-card';
 import { HoaGridSkeleton } from '@/components/apartments/hoa-list-skeleton';
 import { Button } from '@/components/ui/button';
@@ -95,12 +96,8 @@ export function HoaListContent({ initialHoas }: HoaListContentProps) {
 
   const saveEdit = async (id: string) => {
     try {
-      const response = await fetch('/api/admin/hoa', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, name: editingName }),
-      });
-      if (response.ok) {
+      const result = await renameHoaAction(id, editingName);
+      if (result.ok) {
         setEditingId(null);
         setEditingName('');
         void fetchHOAs(search);

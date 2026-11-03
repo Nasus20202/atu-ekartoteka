@@ -1,5 +1,4 @@
 import bcrypt from 'bcrypt';
-import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AccountStatus, UserRole } from '@/lib/types';
@@ -42,35 +41,35 @@ vi.mock('bcrypt', () => ({
   },
 }));
 
-function createMockRequest(body: any): NextRequest {
-  return {
-    json: async () => body,
-  } as NextRequest;
+// The data of a successful result, or the failure itself
+function dataOf(result: { ok: boolean }) {
+  const value = result as any;
+  return value.ok ? value.data : value;
 }
 
-describe('Admin Users Create API', () => {
+describe('createUserAction', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('POST /api/admin/users/create', () => {
-    it('should return 401 when not authenticated', async () => {
+  describe('creating a user', () => {
+    it('should return an unauthenticated result when not authenticated', async () => {
       mockAuth.mockResolvedValueOnce(null);
 
-      const { POST } = await import('../route');
-      const request = createMockRequest({
+      const { createUserAction } = await import('@/actions/users');
+      const input = {
         email: 'test@example.com',
         password: 'password123',
-      });
+      };
 
-      const response = await POST(request);
-      const data = await response.json();
+      const result = await createUserAction(input);
+      const data = dataOf(result);
 
-      expect(response.status).toBe(401);
+      expect(result).toMatchObject({ ok: false, code: 'unauthenticated' });
       expect(data.error).toBe('Brak uprawnień');
     });
 
-    it('should return 401 when user is not admin', async () => {
+    it('should return a forbidden result when user is not admin', async () => {
       mockAuth.mockResolvedValueOnce({
         user: {
           id: 'user-id',
@@ -80,20 +79,20 @@ describe('Admin Users Create API', () => {
         expires: new Date().toISOString(),
       });
 
-      const { POST } = await import('../route');
-      const request = createMockRequest({
+      const { createUserAction } = await import('@/actions/users');
+      const input = {
         email: 'test@example.com',
         password: 'password123',
-      });
+      };
 
-      const response = await POST(request);
-      const data = await response.json();
+      const result = await createUserAction(input);
+      const data = dataOf(result);
 
-      expect(response.status).toBe(403);
+      expect(result).toMatchObject({ ok: false, code: 'forbidden' });
       expect(data.error).toBe('Brak uprawnień');
     });
 
-    it('should return 400 when email is missing', async () => {
+    it('should return an invalid result when email is missing', async () => {
       mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
@@ -103,17 +102,17 @@ describe('Admin Users Create API', () => {
         expires: new Date().toISOString(),
       });
 
-      const { POST } = await import('../route');
-      const request = createMockRequest({ password: 'password123' });
+      const { createUserAction } = await import('@/actions/users');
+      const input = { password: 'password123' };
 
-      const response = await POST(request);
-      const data = await response.json();
+      const result = await createUserAction(input);
+      const data = dataOf(result);
 
-      expect(response.status).toBe(400);
+      expect(result).toMatchObject({ ok: false, code: 'invalid' });
       expect(data.error).toBe('Email i hasło są wymagane');
     });
 
-    it('should return 400 when password is missing', async () => {
+    it('should return an invalid result when password is missing', async () => {
       mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
@@ -123,17 +122,17 @@ describe('Admin Users Create API', () => {
         expires: new Date().toISOString(),
       });
 
-      const { POST } = await import('../route');
-      const request = createMockRequest({ email: 'test@example.com' });
+      const { createUserAction } = await import('@/actions/users');
+      const input = { email: 'test@example.com' };
 
-      const response = await POST(request);
-      const data = await response.json();
+      const result = await createUserAction(input);
+      const data = dataOf(result);
 
-      expect(response.status).toBe(400);
+      expect(result).toMatchObject({ ok: false, code: 'invalid' });
       expect(data.error).toBe('Email i hasło są wymagane');
     });
 
-    it('should return 400 when role is invalid', async () => {
+    it('should return an invalid result when role is invalid', async () => {
       mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
@@ -143,21 +142,21 @@ describe('Admin Users Create API', () => {
         expires: new Date().toISOString(),
       });
 
-      const { POST } = await import('../route');
-      const request = createMockRequest({
+      const { createUserAction } = await import('@/actions/users');
+      const input = {
         email: 'test@example.com',
         password: 'password123',
         role: 'INVALID_ROLE',
-      });
+      };
 
-      const response = await POST(request);
-      const data = await response.json();
+      const result = await createUserAction(input);
+      const data = dataOf(result);
 
-      expect(response.status).toBe(400);
+      expect(result).toMatchObject({ ok: false, code: 'invalid' });
       expect(data.error).toBe('Nieprawidłowa rola');
     });
 
-    it('should return 400 when status is invalid', async () => {
+    it('should return an invalid result when status is invalid', async () => {
       mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
@@ -167,21 +166,21 @@ describe('Admin Users Create API', () => {
         expires: new Date().toISOString(),
       });
 
-      const { POST } = await import('../route');
-      const request = createMockRequest({
+      const { createUserAction } = await import('@/actions/users');
+      const input = {
         email: 'test@example.com',
         password: 'password123',
         status: 'INVALID_STATUS',
-      });
+      };
 
-      const response = await POST(request);
-      const data = await response.json();
+      const result = await createUserAction(input);
+      const data = dataOf(result);
 
-      expect(response.status).toBe(400);
+      expect(result).toMatchObject({ ok: false, code: 'invalid' });
       expect(data.error).toBe('Nieprawidłowy status konta');
     });
 
-    it('should return 400 when user already exists', async () => {
+    it('should return an invalid result when user already exists', async () => {
       mockAuth.mockResolvedValueOnce({
         user: {
           id: 'admin-id',
@@ -195,16 +194,16 @@ describe('Admin Users Create API', () => {
         email: 'test@example.com',
       });
 
-      const { POST } = await import('../route');
-      const request = createMockRequest({
+      const { createUserAction } = await import('@/actions/users');
+      const input = {
         email: 'test@example.com',
         password: 'password123',
-      });
+      };
 
-      const response = await POST(request);
-      const data = await response.json();
+      const result = await createUserAction(input);
+      const data = dataOf(result);
 
-      expect(response.status).toBe(400);
+      expect(result).toMatchObject({ ok: false, code: 'invalid' });
       expect(data.error).toBe('Użytkownik z tym adresem email już istnieje');
     });
 
@@ -228,16 +227,16 @@ describe('Admin Users Create API', () => {
         createdAt: new Date(),
       });
 
-      const { POST } = await import('../route');
-      const request = createMockRequest({
+      const { createUserAction } = await import('@/actions/users');
+      const input = {
         email: 'test@example.com',
         password: 'password123',
-      });
+      };
 
-      const response = await POST(request);
-      const data = await response.json();
+      const result = await createUserAction(input);
+      const data = dataOf(result);
 
-      expect(response.status).toBe(201);
+      expect(result.ok).toBe(true);
       expect(data.email).toBe('test@example.com');
       expect(data.role).toBe(UserRole.TENANT);
       expect(data.status).toBe(AccountStatus.PENDING);
@@ -274,19 +273,19 @@ describe('Admin Users Create API', () => {
         createdAt: new Date(),
       });
 
-      const { POST } = await import('../route');
-      const request = createMockRequest({
+      const { createUserAction } = await import('@/actions/users');
+      const input = {
         email: 'test@example.com',
         password: 'password123',
         name: 'Test User',
         role: UserRole.ADMIN,
         status: AccountStatus.APPROVED,
-      });
+      };
 
-      const response = await POST(request);
-      const data = await response.json();
+      const result = await createUserAction(input);
+      const data = dataOf(result);
 
-      expect(response.status).toBe(201);
+      expect(result.ok).toBe(true);
       expect(data.role).toBe(UserRole.ADMIN);
       expect(data.status).toBe(AccountStatus.APPROVED);
       expect(data.name).toBe('Test User');
@@ -312,13 +311,13 @@ describe('Admin Users Create API', () => {
         createdAt: new Date(),
       });
 
-      const { POST } = await import('../route');
-      const request = createMockRequest({
+      const { createUserAction } = await import('@/actions/users');
+      const input = {
         email: 'test@example.com',
         password: 'password123',
-      });
+      };
 
-      await POST(request);
+      await createUserAction(input);
 
       expect(bcrypt.hash).toHaveBeenCalledWith('password123', 10);
       expect(mockUserCreate).toHaveBeenCalledWith(
@@ -350,14 +349,14 @@ describe('Admin Users Create API', () => {
         createdAt: new Date(),
       });
 
-      const { POST } = await import('../route');
-      const request = createMockRequest({
+      const { createUserAction } = await import('@/actions/users');
+      const input = {
         email: 'test@example.com',
         password: 'password123',
-      });
+      };
 
-      const response = await POST(request);
-      const data = await response.json();
+      const result = await createUserAction(input);
+      const data = dataOf(result);
 
       expect(data).not.toHaveProperty('password');
       expect(mockUserCreate).toHaveBeenCalledWith({
@@ -384,16 +383,16 @@ describe('Admin Users Create API', () => {
       });
       mockUserFindUnique.mockRejectedValueOnce(new Error('Database error'));
 
-      const { POST } = await import('../route');
-      const request = createMockRequest({
+      const { createUserAction } = await import('@/actions/users');
+      const input = {
         email: 'test@example.com',
         password: 'password123',
-      });
+      };
 
-      const response = await POST(request);
-      const data = await response.json();
+      const result = await createUserAction(input);
+      const data = dataOf(result);
 
-      expect(response.status).toBe(500);
+      expect(result).toMatchObject({ ok: false, code: 'failed' });
       expect(data.error).toBe('Nie udało się utworzyć użytkownika');
     });
   });

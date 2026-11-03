@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   findHoas: vi.fn(),
 }));
 
+vi.mock('@/actions/hoa', () => ({ renameHoaAction: vi.fn() }));
 vi.mock('@/lib/auth/require-admin-access', () => ({
   requireAdminAccess: mocks.requireAdminAccess,
 }));

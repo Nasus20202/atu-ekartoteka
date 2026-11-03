@@ -12,10 +12,9 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/auth/require-admin-access', () => ({
   requireAdminAccess: mocks.requireAdminAccess,
 }));
-vi.mock(
-  '@/app/api/admin/apartments/[apartmentId]/load-apartment-detail',
-  () => ({ loadApartmentDetail: mocks.loadApartmentDetail })
-);
+vi.mock('@/lib/queries/apartments/load-apartment-detail', () => ({
+  loadApartmentDetail: mocks.loadApartmentDetail,
+}));
 vi.mock('@/components/apartments/apartment-details-content', () => ({
   ApartmentDetailsContent: (props: unknown) => {
     mocks.content(props);

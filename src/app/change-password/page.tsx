@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 
+import { updateProfileAction } from '@/actions/profile';
 import { AuthLayout } from '@/components/layout/auth-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -45,16 +46,10 @@ export default function ChangePasswordPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/user/profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ newPassword }),
-      });
+      const result = await updateProfileAction({ newPassword });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Wystąpił błąd');
+      if (!result.ok) {
+        throw new Error(result.error || 'Wystąpił błąd');
       }
 
       // An empty payload makes this a POST; update() alone is a GET that

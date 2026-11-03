@@ -1,10 +1,17 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   fetchUnassignedHoas,
   formatBulkResult,
   runBulkOperation,
 } from '@/components/users/management/bulk-requests';
+
+const actionMock = vi.hoisted(() => ({
+  bulkCreateAccountsAction: vi.fn(),
+  bulkAssignAccountsAction: vi.fn(),
+}));
+
+vi.mock('@/actions/bulk-users', () => actionMock);
 
 function stubResponse(ok: boolean, body: object) {
   const fetchMock = vi
@@ -15,6 +22,10 @@ function stubResponse(ok: boolean, body: object) {
 }
 
 describe('bulk requests', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   afterEach(() => {
     vi.unstubAllGlobals();
   });
@@ -48,24 +59,60 @@ describe('bulk requests', () => {
     });
   });
 
-  it('posts the selected apartments to the operation endpoint', async () => {
+  it('runs the create action with the selected apartments', async () => {
     const result = { created: 2, skipped: 0, errors: 0 };
-    const fetchMock = stubResponse(true, result);
+    actionMock.bulkCreateAccountsAction.mockResolvedValue({
+      ok: true,
+      data: result,
+    });
 
     await expect(runBulkOperation('create', ['a', 'b'])).resolves.toEqual({
       data: result,
     });
-    expect(fetchMock).toHaveBeenCalledWith('/api/admin/users/bulk-create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ apartmentIds: ['a', 'b'] }),
+    expect(actionMock.bulkCreateAccountsAction).toHaveBeenCalledWith({
+      apartmentIds: ['a', 'b'],
     });
   });
 
-  it('falls back to the operation error message', async () => {
-    stubResponse(false, {});
+  it('runs the assign action with the selected apartments', async () => {
+    const result = { assigned: 1, skipped: 0, errors: 0 };
+    actionMock.bulkAssignAccountsAction.mockResolvedValue({
+      ok: true,
+      data: result,
+    });
+
+    await expect(runBulkOperation('assign', ['a'])).resolves.toEqual({
+      data: result,
+    });
+    expect(actionMock.bulkAssignAccountsAction).toHaveBeenCalledWith({
+      apartmentIds: ['a'],
+    });
+  });
+
+  it('returns the action error, or the operation message without one', async () => {
+    actionMock.bulkAssignAccountsAction.mockResolvedValueOnce({
+      ok: false,
+      error: 'Wybierz co najmniej jedno mieszkanie',
+      code: 'invalid',
+    });
+    await expect(runBulkOperation('assign', [])).resolves.toEqual({
+      error: 'Wybierz co najmniej jedno mieszkanie',
+    });
+
+    actionMock.bulkAssignAccountsAction.mockResolvedValueOnce({
+      ok: false,
+      error: '',
+      code: 'failed',
+    });
     await expect(runBulkOperation('assign', ['a'])).resolves.toEqual({
       error: 'Wystąpił błąd podczas przypisywania kont',
+    });
+
+    actionMock.bulkCreateAccountsAction.mockRejectedValueOnce(
+      new Error('offline')
+    );
+    await expect(runBulkOperation('create', ['a'])).resolves.toEqual({
+      error: 'Wystąpił błąd podczas tworzenia kont',
     });
   });
 });

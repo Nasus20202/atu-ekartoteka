@@ -6,9 +6,9 @@ import { SettingsContent } from '@/components/settings/settings-content';
 const FIXED_NOW = new Date(2026, 9, 30);
 const INPUT_LABEL = 'Liczba poprzednich lat widocznych dla mieszkańców';
 
-function jsonResponse(body: unknown, ok = true) {
-  return { ok, json: () => Promise.resolve(body) };
-}
+const actionMock = vi.hoisted(() => ({ updateSettingsAction: vi.fn() }));
+
+vi.mock('@/actions/settings', () => actionMock);
 
 function renderContent() {
   render(<SettingsContent initialYearsBack={2} />);
@@ -17,13 +17,13 @@ function renderContent() {
 
 describe('SettingsContent', () => {
   beforeEach(() => {
+    actionMock.updateSettingsAction.mockReset();
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(FIXED_NOW);
   });
 
   afterEach(() => {
     vi.useRealTimers();
-    vi.unstubAllGlobals();
   });
 
   it('shows the stored value and the visible years', () => {
@@ -46,20 +46,18 @@ describe('SettingsContent', () => {
   });
 
   it('saves a new value', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue(jsonResponse({ tenantHistoryYearsBack: 1 }));
-    vi.stubGlobal('fetch', fetchMock);
+    actionMock.updateSettingsAction.mockResolvedValue({
+      ok: true,
+      data: { tenantHistoryYearsBack: 1 },
+    });
 
     const input = renderContent();
     fireEvent.change(input, { target: { value: '1' } });
     fireEvent.click(screen.getByRole('button', { name: 'Zapisz' }));
 
     expect(await screen.findByText('Zapisano ustawienia')).toBeInTheDocument();
-    expect(fetchMock).toHaveBeenCalledWith('/api/admin/settings', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tenantHistoryYearsBack: 1 }),
+    expect(actionMock.updateSettingsAction).toHaveBeenCalledWith({
+      tenantHistoryYearsBack: 1,
     });
   });
 
@@ -73,10 +71,10 @@ describe('SettingsContent', () => {
   });
 
   it('hides the success message after the next edit', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(jsonResponse({ tenantHistoryYearsBack: 3 }))
-    );
+    actionMock.updateSettingsAction.mockResolvedValue({
+      ok: true,
+      data: { tenantHistoryYearsBack: 3 },
+    });
 
     renderContent();
     fireEvent.click(screen.getByRole('button', { name: 'Więcej lat' }));
@@ -93,9 +91,6 @@ describe('SettingsContent', () => {
     ['21', 'a number above the limit'],
     ['  ', 'an empty value'],
   ])('rejects %j (%s) without saving', async (value) => {
-    const fetchMock = vi.fn();
-    vi.stubGlobal('fetch', fetchMock);
-
     const input = renderContent();
     fireEvent.change(input, { target: { value } });
     fireEvent.click(screen.getByRole('button', { name: 'Zapisz' }));
@@ -103,18 +98,15 @@ describe('SettingsContent', () => {
     expect(
       await screen.findByText('Podaj liczbę całkowitą od 0 do 20')
     ).toBeInTheDocument();
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(actionMock.updateSettingsAction).not.toHaveBeenCalled();
   });
 
   it('shows the server error when saving fails', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValue(
-          jsonResponse({ error: 'Nieprawidłowa liczba lat' }, false)
-        )
-    );
+    actionMock.updateSettingsAction.mockResolvedValue({
+      ok: false,
+      error: 'Nieprawidłowa liczba lat',
+      code: 'invalid',
+    });
 
     renderContent();
     fireEvent.click(screen.getByRole('button', { name: 'Więcej lat' }));

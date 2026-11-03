@@ -4,9 +4,11 @@
  */
 
 import { expect, test } from '../fixtures';
+import { assignApartmentToUser } from '../utils/bulk-account-fixtures';
 import { createUserWithUnassignedApartment } from '../utils/create-user-with-unassigned-apartment';
 import { deleteUserAndApartmentsByEmail } from '../utils/delete-user-and-apartments-by-email';
 import { openTestHoaCard } from '../utils/open-test-hoa';
+import { isServerActionResponse } from '../utils/server-actions';
 
 test.describe.serial('Admin Bulk Assign Existing Users', () => {
   let email: string;
@@ -85,11 +87,7 @@ test.describe.serial('Admin Bulk Assign Existing Users', () => {
     await expect(assignButton).toBeEnabled();
 
     await Promise.all([
-      adminPage.waitForResponse(
-        (resp) =>
-          resp.url().includes('/api/admin/users/bulk-assign') &&
-          resp.status() === 200
-      ),
+      adminPage.waitForResponse(isServerActionResponse),
       assignButton.click(),
     ]);
 
@@ -101,12 +99,8 @@ test.describe.serial('Admin Bulk Assign Existing Users', () => {
   test('assigned apartment no longer appears in assign tab after assignment', async ({
     adminPage,
   }) => {
-    // Assign via API first
-    const assignResp = await adminPage.request.post(
-      '/api/admin/users/bulk-assign',
-      { data: { apartmentIds: [apartmentId] } }
-    );
-    expect(assignResp.ok()).toBe(true);
+    // Assign first, the way the bulk action does
+    await assignApartmentToUser(apartmentId, email);
 
     await adminPage.goto('/admin/users/management');
     await Promise.all([
