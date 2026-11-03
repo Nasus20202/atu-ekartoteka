@@ -1,5 +1,8 @@
 import { prisma } from '@/lib/database/prisma';
-import { getAppSettings } from '@/lib/queries/settings/get-app-settings';
+import {
+  getAppSettings,
+  invalidateAppSettingsCache,
+} from '@/lib/queries/settings/get-app-settings';
 import type { AppSettingsValues } from '@/lib/settings/registry';
 
 /** Upserts only settings whose value changed, in one transaction; returns all settings. */
@@ -20,6 +23,8 @@ export async function updateAppSettings(values: Partial<AppSettingsValues>) {
       })
     )
   );
+
+  invalidateAppSettingsCache();
 
   return getAppSettings();
 }
