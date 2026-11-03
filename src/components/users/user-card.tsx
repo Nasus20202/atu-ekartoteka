@@ -60,7 +60,7 @@ export function UserCard(actionProps: UserActionsProps) {
                     key={apartment.id}
                     className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-muted-foreground"
                   >
-                    <span className="font-medium text-foreground">
+                    <span className="min-w-0 break-words font-medium text-foreground">
                       {formatApartmentLabel(apartment)}
                     </span>
                     <span>

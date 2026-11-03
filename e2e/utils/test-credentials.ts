@@ -44,3 +44,10 @@ export const VISUAL_NAME = 'E2E Visual User';
 // One apartment in each of the two HOAs
 export const VISUAL_MULTI_EMAIL = 'visual-multi@e2e-test.com';
 export const VISUAL_MULTI_NAME = 'E2E Visual Multi User';
+// Waiting for approval, with an email that has no spaces to exercise the users list layout
+export const VISUAL_PENDING_EMAIL =
+  'visual.pending.user.with.a.very.long.unbroken.email.address@e2e-test.com';
+export const VISUAL_PENDING_NAME = 'E2E Visual Pending User';
+// Apartment without a user, listed on the users management page
+export const VISUAL_UNASSIGNED_OWNER = 'E2E Visual Unassigned Owner';
+export const VISUAL_UNASSIGNED_EMAIL = 'visual-unassigned@e2e-test.com';

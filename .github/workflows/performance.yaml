@@ -7,7 +7,7 @@ jobs:
   performance:
     name: Run
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/e2e_test
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/e2e
     runs-on: ubuntu-latest
     timeout-minutes: 30
 

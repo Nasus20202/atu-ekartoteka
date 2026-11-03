@@ -1,12 +1,29 @@
 /**
- * Visual regression tests for admin pages that show only the visual seed data.
- * Lists of all HOAs and users change with parallel tests, so they are skipped.
+ * Visual regression tests for the admin apartment pages. The visual database
+ * holds only fixed seed data, so every list shows the same rows on every run.
  */
 
 import { expect, test } from '../fixtures';
-import { VISUAL_HOA_NAME } from '../utils/test-credentials';
+import { expectNoHorizontalOverflow } from '../utils/expect-no-horizontal-overflow';
+import {
+  VISUAL_HOA_NAME,
+  VISUAL_SECOND_HOA_NAME,
+} from '../utils/test-credentials';
 
-test.describe('Visual: admin pages', () => {
+test.describe('Visual: admin apartments', () => {
+  test('HOA list', async ({ visualAdminPage }) => {
+    await visualAdminPage.goto('/admin/apartments');
+    await expect(
+      visualAdminPage.getByText(VISUAL_SECOND_HOA_NAME)
+    ).toBeVisible();
+    await expect(visualAdminPage.getByText('Ładowanie')).toHaveCount(0);
+    await expectNoHorizontalOverflow(visualAdminPage);
+
+    await expect(visualAdminPage).toHaveScreenshot('hoa-list.png', {
+      fullPage: true,
+    });
+  });
+
   test('HOA apartments and apartment details', async ({ visualAdminPage }) => {
     await visualAdminPage.goto('/admin/apartments');
     const hoaHref = await visualAdminPage
@@ -22,6 +39,7 @@ test.describe('Visual: admin pages', () => {
       visualAdminPage.getByRole('heading', { name: VISUAL_HOA_NAME })
     ).toBeVisible();
     await expect(visualAdminPage.getByText('Ładowanie')).toHaveCount(0);
+    await expectNoHorizontalOverflow(visualAdminPage);
     await expect(visualAdminPage).toHaveScreenshot('hoa-apartments.png', {
       fullPage: true,
     });
@@ -34,19 +52,9 @@ test.describe('Visual: admin pages', () => {
     await visualAdminPage.goto(apartmentHref!);
     await expect(visualAdminPage.getByText('Historia wpłat')).toBeVisible();
     await expect(visualAdminPage.getByText('Ładowanie')).toHaveCount(0);
+    await expectNoHorizontalOverflow(visualAdminPage);
     await expect(visualAdminPage).toHaveScreenshot('apartment-details.png', {
       fullPage: true,
-    });
-  });
-
-  test('import page', async ({ visualAdminPage }) => {
-    await visualAdminPage.goto('/admin/import');
-    await expect(visualAdminPage.getByRole('table')).toBeVisible();
-
-    await expect(visualAdminPage).toHaveScreenshot('import.png', {
-      fullPage: true,
-      // Database totals change with parallel tests
-      mask: [visualAdminPage.getByRole('table')],
     });
   });
 });

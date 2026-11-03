@@ -1,12 +1,13 @@
 /**
  * Global teardown for E2E tests.
- * Runs once after all tests to clean up the database.
+ * Runs once after all tests to clean up the functional and visual databases.
  */
 
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 
 import { cleanTestData } from './utils/clean-test-data';
+import { getVisualDatabaseUrl } from './utils/database-urls';
 
 // Load environment variables
 dotenv.config({ path: fileURLToPath(new URL('../.env', import.meta.url)) });
@@ -21,6 +22,7 @@ async function globalTeardown() {
 
   console.log('🧹 Cleaning up test data...');
   await cleanTestData(databaseUrl);
+  await cleanTestData(getVisualDatabaseUrl(databaseUrl));
 
   console.log('✅ Cleanup complete');
 }

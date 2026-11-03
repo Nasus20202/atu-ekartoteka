@@ -7,8 +7,9 @@ jobs:
   e2e:
     name: Run
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/e2e_test
-      DATABASE_REPLICA_URLS: postgresql://postgres:postgres@localhost:5432/e2e_test
+      # Functional suite database; the visual suite uses e2e_visual on the same server
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/e2e
+      DATABASE_REPLICA_URLS: postgresql://postgres:postgres@localhost:5432/e2e
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -61,13 +62,16 @@ jobs:
         env:
           CI: true
           PLAYWRIGHT_BASE_URL: http://localhost:3000
+          PLAYWRIGHT_VISUAL_BASE_URL: http://localhost:3001
           PLAYWRIGHT_SKIP_WEBSERVER: 'true'
 
       - name: Show application logs
         if: failure()
         run: |
           docker compose -f docker-compose.e2e.yaml ps
-          docker inspect --format '{{json .State.Health}}' "$(docker compose -f docker-compose.e2e.yaml ps -q ekartoteka)" || true
+          for service in ekartoteka ekartoteka-visual; do
+            docker inspect --format '{{json .State.Health}}' "$(docker compose -f docker-compose.e2e.yaml ps -q "$service")" || true
+          done
           docker compose -f docker-compose.e2e.yaml logs
 
       - name: Upload Playwright Report
