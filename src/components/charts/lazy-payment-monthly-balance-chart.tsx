@@ -2,7 +2,10 @@
 
 import dynamic from 'next/dynamic';
 
-import { ChartPlaceholder } from '@/components/charts/chart-placeholder';
+import {
+  ChartPlaceholder,
+  PAYMENT_CHART_PLACEHOLDER_CLASS,
+} from '@/components/charts/chart-placeholder';
 
 // recharts is large, so the chart is kept out of the initial page bundle
 export const LazyPaymentMonthlyBalanceChart = dynamic(
@@ -12,6 +15,8 @@ export const LazyPaymentMonthlyBalanceChart = dynamic(
     ),
   {
     ssr: false,
-    loading: () => <ChartPlaceholder className="h-72" />,
+    loading: () => (
+      <ChartPlaceholder className={PAYMENT_CHART_PLACEHOLDER_CLASS} />
+    ),
   }
 );
