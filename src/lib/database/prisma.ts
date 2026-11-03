@@ -4,6 +4,7 @@ import { SqlDriverAdapterFactory } from '@prisma/client/runtime/client';
 import { readReplicas } from '@prisma/extension-read-replicas';
 
 import { PrismaClient } from '@/generated/prisma/client';
+import { readDatabasePoolConfig } from '@/lib/database/pool-config';
 
 const globalForPrisma = globalThis as unknown as {
   prisma: ReturnType<typeof createPrismaClient> | undefined;
@@ -12,6 +13,7 @@ const globalForPrisma = globalThis as unknown as {
 const createNewAdapter = (connectionString: string) =>
   new PrismaPg({
     connectionString,
+    ...readDatabasePoolConfig(),
   });
 
 const createNewClient = (adapter: SqlDriverAdapterFactory) =>

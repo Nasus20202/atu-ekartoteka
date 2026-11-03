@@ -32,6 +32,8 @@ Visit `http://localhost:3000/register` to create the first admin user.
 - Database (Postgres):
   - `DATABASE_URL` - Full Postgres connection string used by Prisma (production/development).
   - `DATABASE_REPLICA_URLS` - Optional comma-separated list of read replica connection strings for load distribution. When configured, all read queries (e.g., `findMany`, `findUnique`) are automatically routed to replicas, while writes go to the primary database.
+  - `DATABASE_POOL_MAX` - Connections per database client (primary and each replica). Default: `10`.
+  - `DATABASE_POOL_CONNECTION_TIMEOUT_MS` - Milliseconds a request waits for a free connection before failing. Default: `5000`.
   - `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `POSTGRES_PORT` - Used in docker-compose for provisioning the DB container.
 
 - Auth.js:
