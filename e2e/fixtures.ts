@@ -21,6 +21,45 @@ import {
   VISUAL_PASSWORD,
 } from './utils/test-credentials';
 
+// React streams a section into a hidden segment first and swaps it in a moment
+// later, so right after a navigation the same text can exist twice in the DOM.
+const STREAMING_SEGMENT_SELECTOR = '[id^="S:"][hidden]';
+const STREAMING_SETTLE_TIMEOUT = 10000;
+const REACT_ROOT_KEY_PREFIX = '__reactContainer';
+
+const wrappedPages = new WeakSet<Page>();
+
+function waitForStreamedContentAfterGoto(page: Page) {
+  if (wrappedPages.has(page)) {
+    return;
+  }
+
+  wrappedPages.add(page);
+
+  const goto = page.goto.bind(page);
+
+  page.goto = async (...args: Parameters<Page['goto']>) => {
+    const response = await goto(...args);
+    await page
+      .waitForFunction(
+        (selector) => !document.querySelector(selector),
+        STREAMING_SEGMENT_SELECTOR,
+        { timeout: STREAMING_SETTLE_TIMEOUT }
+      )
+      .catch(() => undefined);
+    // Controls only react once the document has hydrated
+    await page
+      .waitForFunction(
+        (prefix) => Object.keys(document).some((key) => key.startsWith(prefix)),
+        REACT_ROOT_KEY_PREFIX,
+        { timeout: STREAMING_SETTLE_TIMEOUT }
+      )
+      .catch(() => undefined);
+
+    return response;
+  };
+}
+
 /**
  * Login helper function
  */
@@ -30,6 +69,7 @@ export async function login(
   password: string,
   origin = ''
 ) {
+  waitForStreamedContentAfterGoto(page);
   await page.goto(`${origin}/login`);
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Hasło', { exact: true }).fill(password);
@@ -58,6 +98,11 @@ export const test = base.extend<{
   visualMultiPage: Page;
   visualAdminPage: Page;
 }>({
+  page: async ({ page }, use) => {
+    waitForStreamedContentAfterGoto(page);
+    await use(page);
+  },
+
   /**
    * Page already logged in as admin
    */

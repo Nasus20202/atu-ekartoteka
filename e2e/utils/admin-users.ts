@@ -35,6 +35,7 @@ export function userCard(page: Page, email: string) {
 export async function searchUsers(page: Page, term: string) {
   await page
     .getByPlaceholder(/Szukaj po imieniu, emailu lub mieszkaniu/i)
+    .filter({ visible: true })
     .fill(term);
   await page.waitForResponse(
     (resp) =>

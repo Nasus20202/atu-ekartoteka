@@ -3,6 +3,7 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 
 import { expect, test } from '../fixtures';
+import { FILE_INPUT_SELECTOR } from '../utils/file-input';
 
 test.describe('Admin Import Error Download', () => {
   test('admin can download error reports after import with validation errors', async ({
@@ -32,13 +33,14 @@ test.describe('Admin Import Error Download', () => {
       });
 
     // Remove webkitdirectory attribute so Playwright can upload files
-    await adminPage.evaluate(() => {
-      const input = document.querySelector('input[type="file"]');
+    await adminPage.locator(FILE_INPUT_SELECTOR).waitFor({ state: 'attached' });
+    await adminPage.evaluate((selector) => {
+      const input = document.querySelector(selector);
       input?.removeAttribute('webkitdirectory');
       input?.removeAttribute('directory');
-    });
+    }, FILE_INPUT_SELECTOR);
 
-    const fileInput = adminPage.locator('input[type="file"]');
+    const fileInput = adminPage.locator(FILE_INPUT_SELECTOR);
     await fileInput.setInputFiles(
       filePayloads.map((f) => ({
         name: `TEST03/${f.name}`,

@@ -17,7 +17,9 @@ test.describe('Login', () => {
 
       // Should show welcome message
       await expect(
-        adminPage.getByText(new RegExp(`Witaj.*${ADMIN_NAME}`, 'i'))
+        adminPage
+          .getByText(new RegExp(`Witaj.*${ADMIN_NAME}`, 'i'))
+          .filter({ visible: true })
       ).toBeVisible();
     });
 
@@ -46,7 +48,9 @@ test.describe('Login', () => {
 
       // Should show welcome message
       await expect(
-        userPage.getByText(new RegExp(`Witaj.*${USER_NAME}`, 'i'))
+        userPage
+          .getByText(new RegExp(`Witaj.*${USER_NAME}`, 'i'))
+          .filter({ visible: true })
       ).toBeVisible();
     });
 
