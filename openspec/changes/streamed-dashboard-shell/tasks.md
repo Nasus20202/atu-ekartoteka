@@ -30,7 +30,7 @@
 
 ## 6. Static titles
 
-- [ ] 6.1 Replace `generateMetadata` on the four dynamic-segment pages with static titles; delete `page-titles.ts` and its tests.
+- [x] 6.1 Replace `generateMetadata` on the four dynamic-segment pages with static titles; delete `page-titles.ts` and its tests.
 - [ ] 6.2 Update the metadata unit tests and the E2E title assertions; confirm the dev overlay no longer reports a blocking route and clicks show a skeleton at once (checked on a production build).
 
 ## 7. Lazy charts (measure, then decide)

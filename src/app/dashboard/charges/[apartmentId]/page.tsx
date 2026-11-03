@@ -6,16 +6,9 @@ import { ApartmentChargesHeader } from '@/components/charges/apartment-charges-h
 import { Page } from '@/components/layout/page';
 import { CardListSkeleton } from '@/components/skeletons/card-list-skeleton';
 import { PageHeaderSkeleton } from '@/components/skeletons/page-header-skeleton';
-import { getChargesTitle } from '@/lib/metadata/page-titles';
+import { PAGE_TITLES } from '@/lib/metadata/document-title';
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ apartmentId: string }>;
-}): Promise<Metadata> {
-  const { apartmentId } = await params;
-  return { title: await getChargesTitle(apartmentId) };
-}
+export const metadata: Metadata = { title: PAGE_TITLES.chargesFallback };
 
 export default function ApartmentChargesPage({
   params,

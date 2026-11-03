@@ -1,16 +1,10 @@
 import type { Metadata } from 'next';
 
-import { nestedTitle } from '@/lib/metadata/document-title';
-import { getHoaApartmentsTitle } from '@/lib/metadata/page-titles';
+import { nestedTitle, PAGE_TITLES } from '@/lib/metadata/document-title';
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ hoaId: string }>;
-}): Promise<Metadata> {
-  const { hoaId } = await params;
-  return { title: nestedTitle(await getHoaApartmentsTitle(hoaId)) };
-}
+export const metadata: Metadata = {
+  title: nestedTitle(PAGE_TITLES.hoaApartmentsFallback),
+};
 
 export default function HoaApartmentsLayout({
   children,

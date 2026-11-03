@@ -1,6 +1,6 @@
 /**
- * Browser document titles for admin pages. HOA and apartment names are
- * shown in the title for admins.
+ * Browser document titles for admin pages. Pages with a dynamic segment use
+ * a static title, so no name appears in it.
  */
 
 import type { Page } from '@playwright/test';
@@ -12,7 +12,6 @@ import {
   openSeededApartmentDetails,
 } from '../utils/admin-apartments';
 
-const TEST_HOA_NAME = 'Test HOA';
 const HOA_PATH = /\/admin\/apartments\/([^/?#]+)$/;
 const UNKNOWN_APARTMENT_ID = '00000000-0000-4000-8000-000000000000';
 
@@ -32,21 +31,21 @@ test.describe('Admin page titles', () => {
     );
   });
 
-  test('HOA apartments page uses the HOA name', async ({ adminPage }) => {
+  test('HOA apartments page has a static title', async ({ adminPage }) => {
     await openHoaApartments(adminPage);
 
-    await expect(adminPage).toHaveTitle(`${TEST_HOA_NAME} | ATU Ekartoteka`);
-  });
-
-  test('apartment page uses the number and HOA name', async ({ adminPage }) => {
-    await openSeededApartmentDetails(adminPage);
-
     await expect(adminPage).toHaveTitle(
-      `Lokal 1A - ${TEST_HOA_NAME} | ATU Ekartoteka`
+      'Mieszkania wspólnoty | ATU Ekartoteka'
     );
   });
 
-  test('unknown apartment uses the generic apartment title', async ({
+  test('apartment page has a static title', async ({ adminPage }) => {
+    await openSeededApartmentDetails(adminPage);
+
+    await expect(adminPage).toHaveTitle('Lokal | ATU Ekartoteka');
+  });
+
+  test('unknown apartment uses the same static title', async ({
     adminPage,
   }) => {
     await openHoaApartments(adminPage);

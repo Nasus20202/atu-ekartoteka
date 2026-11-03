@@ -2,7 +2,9 @@ import { render, screen } from '@testing-library/react';
 import { use } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import PaymentDetailsPage from '@/app/dashboard/payments/[apartmentId]/[year]/page';
+import PaymentDetailsPage, {
+  metadata,
+} from '@/app/dashboard/payments/[apartmentId]/[year]/page';
 
 const pending = vi.hoisted(() => ({ name: '' }));
 
@@ -36,9 +38,6 @@ vi.mock('@/components/payments/payment-apartment-section', () => ({
     return <div>apartment-loaded</div>;
   },
 }));
-vi.mock('@/lib/metadata/page-titles', () => ({
-  getPaymentsYearTitle: vi.fn(),
-}));
 
 const SECTIONS = ['header', 'summary', 'chart', 'table', 'apartment'];
 
@@ -61,4 +60,10 @@ describe('PaymentDetailsPage', () => {
       }
     }
   );
+});
+
+describe('PaymentDetailsPage metadata', () => {
+  it('uses a static title so navigation is not blocked', () => {
+    expect(metadata).toEqual({ title: 'Wpłaty mieszkania' });
+  });
 });

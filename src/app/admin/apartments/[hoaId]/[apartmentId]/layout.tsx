@@ -1,15 +1,8 @@
 import type { Metadata } from 'next';
 
-import { getApartmentTitle } from '@/lib/metadata/page-titles';
+import { PAGE_TITLES } from '@/lib/metadata/document-title';
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ apartmentId: string }>;
-}): Promise<Metadata> {
-  const { apartmentId } = await params;
-  return { title: await getApartmentTitle(apartmentId) };
-}
+export const metadata: Metadata = { title: PAGE_TITLES.apartment };
 
 export default function ApartmentLayout({
   children,

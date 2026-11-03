@@ -2,7 +2,9 @@ import { render, screen } from '@testing-library/react';
 import { use } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import ApartmentChargesPage from '@/app/dashboard/charges/[apartmentId]/page';
+import ApartmentChargesPage, {
+  metadata,
+} from '@/app/dashboard/charges/[apartmentId]/page';
 
 const pending = vi.hoisted(() => ({ header: false, content: false }));
 
@@ -18,7 +20,6 @@ vi.mock('@/components/charges/apartment-charges-content', () => ({
     return <div>content-loaded</div>;
   },
 }));
-vi.mock('@/lib/metadata/page-titles', () => ({ getChargesTitle: vi.fn() }));
 
 function renderPage() {
   return render(
@@ -48,5 +49,11 @@ describe('ApartmentChargesPage', () => {
 
     expect(screen.getByText('header-loaded')).toBeInTheDocument();
     expect(screen.getByTestId('card-list-skeleton')).toBeInTheDocument();
+  });
+});
+
+describe('ApartmentChargesPage metadata', () => {
+  it('uses a static title so navigation is not blocked', () => {
+    expect(metadata).toEqual({ title: 'Naliczenia mieszkania' });
   });
 });

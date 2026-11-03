@@ -30,30 +30,6 @@ export const PAGE_TITLES = {
   chargesError: 'Wystąpił błąd',
 } as const;
 
-/** "Naliczenia - <label>" for the owner, the generic title otherwise. */
-export function formatChargesTitle(label: string | null): string {
-  return label
-    ? `${PAGE_TITLES.charges} - ${label}`
-    : PAGE_TITLES.chargesFallback;
-}
-
-/** "Wpłaty <year> - <label>" for the owner, the generic title otherwise. */
-export function formatPaymentsYearTitle(
-  year: number | null,
-  label: string | null
-): string {
-  if (year === null || !label) return PAGE_TITLES.paymentsFallback;
-  return `${PAGE_TITLES.payments} ${year} - ${label}`;
-}
-
-/** "Lokal <number> - <HOA name>" for the admin apartment page. */
-export function formatAdminApartmentTitle(
-  number: string,
-  hoaName: string
-): string {
-  return `${PAGE_TITLES.apartment} ${number} - ${hoaName}`;
-}
-
 /**
  * Title for a segment that has nested segments. A plain string would drop
  * the app template for them, so the object form keeps it.
