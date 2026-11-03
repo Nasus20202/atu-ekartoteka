@@ -55,7 +55,11 @@ export function MeasuredChart({
   return (
     <div
       ref={containerRef}
-      className={cn('min-w-0', className)}
+      className={cn(
+        'min-w-0',
+        hasSize && 'motion-safe:animate-fade-in motion-reduce:animate-none',
+        className
+      )}
       data-testid={dataTestId}
     >
       {hasSize ? children(size) : null}
