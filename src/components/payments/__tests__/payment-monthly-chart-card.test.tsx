@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { PaymentMonthlyChartCard } from '@/components/payments/payment-monthly-chart-card';
@@ -13,7 +13,7 @@ vi.mock('@/components/charts/payment-monthly-balance-chart', () => ({
 }));
 
 describe('PaymentMonthlyChartCard', () => {
-  it('renders the chart with the given data', () => {
+  it('renders the chart with the given data', async () => {
     const data = [{ month: 'Sty', payments: 1, charges: 2, balance: -1 }];
 
     render(<PaymentMonthlyChartCard data={data as never} />);
@@ -21,6 +21,6 @@ describe('PaymentMonthlyChartCard', () => {
     expect(
       screen.getByText('Wykres rozliczeń miesięcznych')
     ).toBeInTheDocument();
-    expect(mockChart).toHaveBeenCalledWith({ data });
+    await waitFor(() => expect(mockChart).toHaveBeenCalledWith({ data }));
   });
 });

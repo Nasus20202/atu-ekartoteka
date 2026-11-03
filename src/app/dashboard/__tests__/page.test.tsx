@@ -9,13 +9,19 @@ const {
   mockAuth,
   mockRedirect,
   mockFindUserWithApartmentsCached,
+  mockFindChargeTotalsByPeriod,
+  mockFindMonthlyChargeSums,
   mockGetChargeTrendByApartment,
+  mockChargesSummaryCard,
   mockNotificationsSidebar,
 } = vi.hoisted(() => ({
   mockAuth: vi.fn(),
   mockRedirect: vi.fn(),
   mockFindUserWithApartmentsCached: vi.fn(),
+  mockFindChargeTotalsByPeriod: vi.fn(),
+  mockFindMonthlyChargeSums: vi.fn(),
   mockGetChargeTrendByApartment: vi.fn(),
+  mockChargesSummaryCard: vi.fn(),
   mockNotificationsSidebar: vi.fn(),
 }));
 
@@ -29,6 +35,14 @@ vi.mock('next/navigation', () => ({
 
 vi.mock('@/lib/queries/users/find-user-with-apartments', () => ({
   findUserWithApartmentsCached: mockFindUserWithApartmentsCached,
+}));
+
+vi.mock('@/lib/queries/charges/find-charge-totals-by-period', () => ({
+  findChargeTotalsByPeriod: mockFindChargeTotalsByPeriod,
+}));
+
+vi.mock('@/lib/queries/payments/find-monthly-charge-sums', () => ({
+  findMonthlyChargeSums: mockFindMonthlyChargeSums,
 }));
 
 vi.mock('@/lib/settings/tenant-history', () => ({
@@ -52,7 +66,10 @@ vi.mock('@/components/dashboard/apartments-section', () => ({
 }));
 
 vi.mock('@/components/dashboard/charges-summary-card', () => ({
-  ChargesSummaryCard: () => <div>Naliczenia</div>,
+  ChargesSummaryCard: (props: unknown) => {
+    mockChargesSummaryCard(props);
+    return <div>Naliczenia</div>;
+  },
 }));
 
 vi.mock('@/components/dashboard/payments-summary-card', () => ({
@@ -74,6 +91,8 @@ describe('DashboardPage', () => {
       series: [],
     });
     mockAuth.mockResolvedValue({ user: { id: 'user-1' } });
+    mockFindChargeTotalsByPeriod.mockResolvedValue(new Map());
+    mockFindMonthlyChargeSums.mockResolvedValue(new Map());
   });
 
   it('loads dashboard data within the tenant history window', async () => {
@@ -88,6 +107,54 @@ describe('DashboardPage', () => {
       2024,
       expect.stringMatching(/^\d{6}$/)
     );
+  });
+
+  it('passes the database charge counts and totals to the summary card', async () => {
+    mockFindUserWithApartmentsCached.mockResolvedValue({
+      id: 'user-1',
+      name: 'Jan',
+      email: 'jan@example.com',
+      status: AccountStatus.APPROVED,
+      apartments: [
+        {
+          id: 'apt-1',
+          number: '10',
+          address: 'Testowa',
+          building: '1',
+          city: 'Warszawa',
+          postalCode: '00-001',
+          owner: 'Jan',
+          shareNumerator: 1,
+          shareDenominator: 10,
+          charges: [],
+          payments: [],
+          chargeNotifications: [],
+          homeownersAssociation: {
+            id: 'hoa-1',
+            name: 'Wspólnota',
+            header: null,
+          },
+        },
+      ],
+    });
+    mockFindChargeTotalsByPeriod.mockImplementation(
+      async (_userId: string, _startYear: number, periods: string[]) =>
+        new Map(
+          periods.map((period) => [
+            period,
+            { count: 4, total: new Prisma.Decimal(800) },
+          ])
+        )
+    );
+
+    render(await DashboardPage());
+
+    expect(mockChargesSummaryCard.mock.calls[0][0]).toMatchObject({
+      currentMonthCount: 4,
+      previousMonthCount: 4,
+      currentMonthTotal: new Prisma.Decimal(800),
+      previousMonthTotal: new Prisma.Decimal(800),
+    });
   });
 
   it('passes stringified notification decimals to the sidebar', async () => {

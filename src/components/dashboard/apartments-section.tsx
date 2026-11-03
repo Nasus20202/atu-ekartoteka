@@ -16,7 +16,7 @@ type ApartmentCardData = Pick<
   | 'shareRatio'
 > & {
   payments?: Pick<Payment, 'calculatedClosingBalance' | 'year'>[];
-  charges?: Array<{ id: string }>;
+  charges?: Array<{ period: string }>;
   homeownersAssociation?: { id: string; header: string | null } | null;
 };
 

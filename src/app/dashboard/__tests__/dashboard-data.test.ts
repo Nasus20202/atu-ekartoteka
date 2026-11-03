@@ -7,11 +7,13 @@ import {
 import {
   buildApartmentBalances,
   buildDashboardNotifications,
-  getChargesForPeriod,
   getDashboardPeriods,
+  getPeriodTotal,
+  withMonthlyCharges,
 } from '@/app/dashboard/dashboard-data';
 import { getSeriesColor } from '@/components/charts/chart-colors';
 import { Prisma } from '@/generated/prisma/browser';
+import type { MonthlyChargeSums } from '@/lib/queries/payments/find-monthly-charge-sums';
 
 type Apartment = Parameters<typeof buildApartmentBalances>[0][number];
 
@@ -28,7 +30,6 @@ function makeApartment(overrides: Partial<Apartment> = {}): Apartment {
     number: '10',
     address: 'Testowa',
     building: '1',
-    charges: [],
     chargeNotifications: [],
     payments: [],
     homeownersAssociation: hoa,
@@ -52,24 +53,41 @@ describe('getDashboardPeriods', () => {
   });
 });
 
-describe('getChargesForPeriod', () => {
-  it('collects charges of the period from all apartments', () => {
-    const charge = (id: string, period: string) => ({
-      id,
-      period,
-      totalAmount: new Prisma.Decimal(1),
-    });
-    const apartments = [
-      makeApartment({
-        charges: [charge('a', '202501'), charge('b', '202412')],
-      }),
-      makeApartment({ id: 'apt-2', charges: [charge('c', '202501')] }),
-    ];
-
-    expect(getChargesForPeriod(apartments, '202501').map((c) => c.id)).toEqual([
-      'a',
-      'c',
+describe('getPeriodTotal', () => {
+  it('returns the count and total stored for the period', () => {
+    const totals = new Map([
+      ['202501', { count: 3, total: new Prisma.Decimal(450) }],
     ]);
+
+    expect(getPeriodTotal(totals, '202501')).toEqual({
+      count: 3,
+      total: new Prisma.Decimal(450),
+    });
+  });
+
+  it('returns zero for a period without charges', () => {
+    const { count, total } = getPeriodTotal(new Map(), '202412');
+
+    expect(count).toBe(0);
+    expect(total.toFixed(2)).toBe('0.00');
+  });
+});
+
+describe('withMonthlyCharges', () => {
+  it('attaches each apartment monthly sums as charge rows', () => {
+    const monthly: MonthlyChargeSums = new Map([
+      ['apt-1', new Map([['202501', new Prisma.Decimal(120)]])],
+    ]);
+
+    const [withCharges, withoutCharges] = withMonthlyCharges(
+      [makeApartment(), makeApartment({ id: 'apt-2' })],
+      monthly
+    );
+
+    expect(withCharges.charges).toEqual([
+      { period: '202501', totalAmount: new Prisma.Decimal(120) },
+    ]);
+    expect(withoutCharges.charges).toEqual([]);
   });
 });
 

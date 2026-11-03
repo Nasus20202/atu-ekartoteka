@@ -84,7 +84,7 @@ describe('PaymentsSummaryCard', () => {
     );
   });
 
-  it('shows one combined balance chart for all apartments', () => {
+  it('shows one combined balance chart for all apartments', async () => {
     render(
       <PaymentsSummaryCard
         apartmentBalances={[
@@ -95,7 +95,9 @@ describe('PaymentsSummaryCard', () => {
       />
     );
 
-    expect(screen.getAllByTestId('balance-history-chart')).toHaveLength(1);
+    expect(await screen.findAllByTestId('balance-history-chart')).toHaveLength(
+      1
+    );
   });
 
   it('hides the balance chart without history', () => {

@@ -869,3 +869,24 @@ The system SHALL show the recent charge months of the dashboard `Naliczenia` car
 - **GIVEN** only one of the two recent months has charges
 - **WHEN** the tenant views the dashboard
 - **THEN** that month's tile spans the full width of the card
+
+### Requirement: Dashboard Charts Load on Demand
+
+The dashboard and payment detail charts SHALL be loaded on the client only, outside the initial page bundle, and SHALL show a placeholder of the chart's height until they load.
+
+#### Scenario: Chart code is not part of the initial bundle
+
+- **WHEN** a tenant navigates to the dashboard or a payment detail page
+- **THEN** the charting library is loaded after the page renders, not as part of the initial page bundle
+- **AND** the chart area reserves its final height while the chart loads
+
+### Requirement: Dashboard Charge Totals Aggregated in the Database
+
+The dashboard charge summary (line count and total for the current and previous month) and the trend chart series SHALL be computed by the database from the tenant's charge records within the tenant history window.
+
+#### Scenario: Summary figures match the stored charges
+
+- **GIVEN** a tenant whose apartments have charge lines in the current and previous billing periods
+- **WHEN** they view the dashboard
+- **THEN** the charge summary shows the number of charge lines and the total for each period
+- **AND** the figures equal the sums of the stored charge records for those periods

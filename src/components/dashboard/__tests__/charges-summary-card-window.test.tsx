@@ -2,7 +2,6 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ChargesSummaryCard } from '@/components/dashboard/charges-summary-card';
-import { Prisma } from '@/generated/prisma/browser';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
@@ -14,8 +13,8 @@ describe('ChargesSummaryCard history window', () => {
       <ChargesSummaryCard
         currentPeriod="202701"
         previousPeriod="202612"
-        currentMonthCharges={[{ totalAmount: new Prisma.Decimal(600) }]}
-        previousMonthCharges={[]}
+        currentMonthCount={1}
+        previousMonthCount={0}
         currentMonthTotal={600}
         previousMonthTotal={0}
       />

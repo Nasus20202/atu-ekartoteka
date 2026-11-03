@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ChargesSummaryCard } from '@/components/dashboard/charges-summary-card';
@@ -32,8 +32,8 @@ describe('ChargesSummaryCard', () => {
       <ChargesSummaryCard
         currentPeriod="202501"
         previousPeriod="202412"
-        currentMonthCharges={mockCharges}
-        previousMonthCharges={[]}
+        currentMonthCount={mockCharges.length}
+        previousMonthCount={0}
         currentMonthTotal={600}
         previousMonthTotal={0}
         trendData={trendData}
@@ -44,13 +44,13 @@ describe('ChargesSummaryCard', () => {
     expect(screen.getByText('Naliczenia')).toBeInTheDocument();
   });
 
-  it('displays current month charges when present', () => {
+  it('displays current month charges when present', async () => {
     render(
       <ChargesSummaryCard
         currentPeriod="202501"
         previousPeriod="202412"
-        currentMonthCharges={mockCharges}
-        previousMonthCharges={[]}
+        currentMonthCount={mockCharges.length}
+        previousMonthCount={0}
         currentMonthTotal={600}
         previousMonthTotal={0}
         trendData={trendData}
@@ -58,7 +58,9 @@ describe('ChargesSummaryCard', () => {
       />
     );
 
-    expect(screen.getAllByText('Styczeń 2025')[1]).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getAllByText('Styczeń 2025')).toHaveLength(2)
+    );
     expect(screen.getByText('3 naliczenia')).toBeInTheDocument();
     expect(screen.getByText('600,00 zł')).toBeInTheDocument();
   });
@@ -70,8 +72,8 @@ describe('ChargesSummaryCard', () => {
       <ChargesSummaryCard
         currentPeriod="202501"
         previousPeriod="202412"
-        currentMonthCharges={[]}
-        previousMonthCharges={prevCharges}
+        currentMonthCount={0}
+        previousMonthCount={prevCharges.length}
         currentMonthTotal={0}
         previousMonthTotal={400}
         trendData={trendData}
@@ -94,8 +96,8 @@ describe('ChargesSummaryCard', () => {
       <ChargesSummaryCard
         currentPeriod="202501"
         previousPeriod="202412"
-        currentMonthCharges={mockCharges}
-        previousMonthCharges={prevCharges}
+        currentMonthCount={mockCharges.length}
+        previousMonthCount={prevCharges.length}
         currentMonthTotal={600}
         previousMonthTotal={900}
         trendData={trendData}
@@ -114,8 +116,8 @@ describe('ChargesSummaryCard', () => {
       <ChargesSummaryCard
         currentPeriod="202501"
         previousPeriod="202412"
-        currentMonthCharges={mockCharges}
-        previousMonthCharges={[]}
+        currentMonthCount={mockCharges.length}
+        previousMonthCount={0}
         currentMonthTotal={600}
         previousMonthTotal={0}
         trendData={trendData}
@@ -134,8 +136,8 @@ describe('ChargesSummaryCard', () => {
       <ChargesSummaryCard
         currentPeriod="202501"
         previousPeriod="202412"
-        currentMonthCharges={mockCharges}
-        previousMonthCharges={mockCharges}
+        currentMonthCount={mockCharges.length}
+        previousMonthCount={mockCharges.length}
         currentMonthTotal={600}
         previousMonthTotal={600}
         trendData={trendData}
@@ -154,8 +156,8 @@ describe('ChargesSummaryCard', () => {
       <ChargesSummaryCard
         currentPeriod="202501"
         previousPeriod="202412"
-        currentMonthCharges={mockCharges}
-        previousMonthCharges={mockCharges}
+        currentMonthCount={mockCharges.length}
+        previousMonthCount={mockCharges.length}
         currentMonthTotal={600}
         previousMonthTotal={600}
         trendData={trendData}
@@ -178,8 +180,8 @@ describe('ChargesSummaryCard', () => {
       <ChargesSummaryCard
         currentPeriod="202501"
         previousPeriod="202412"
-        currentMonthCharges={mockCharges}
-        previousMonthCharges={[]}
+        currentMonthCount={mockCharges.length}
+        previousMonthCount={0}
         currentMonthTotal={600}
         previousMonthTotal={0}
         trendData={trendData}
@@ -199,8 +201,8 @@ describe('ChargesSummaryCard', () => {
       <ChargesSummaryCard
         currentPeriod="202501"
         previousPeriod="202412"
-        currentMonthCharges={[]}
-        previousMonthCharges={[]}
+        currentMonthCount={0}
+        previousMonthCount={0}
         currentMonthTotal={0}
         previousMonthTotal={0}
         trendData={[]}
@@ -222,8 +224,8 @@ describe('ChargesSummaryCard', () => {
       <ChargesSummaryCard
         currentPeriod="202501"
         previousPeriod="202412"
-        currentMonthCharges={singleCharge}
-        previousMonthCharges={[]}
+        currentMonthCount={singleCharge.length}
+        previousMonthCount={0}
         currentMonthTotal={100}
         previousMonthTotal={0}
         trendData={trendData}
@@ -240,8 +242,8 @@ describe('ChargesSummaryCard', () => {
       <ChargesSummaryCard
         currentPeriod="202501"
         previousPeriod="202412"
-        currentMonthCharges={fiveCharges}
-        previousMonthCharges={[]}
+        currentMonthCount={fiveCharges.length}
+        previousMonthCount={0}
         currentMonthTotal={500}
         previousMonthTotal={0}
         trendData={trendData}
@@ -252,13 +254,13 @@ describe('ChargesSummaryCard', () => {
     expect(screen.getByText('5 naliczeń')).toBeInTheDocument();
   });
 
-  it('renders the recent charge trend chart when enough history exists', () => {
+  it('renders the recent charge trend chart when enough history exists', async () => {
     render(
       <ChargesSummaryCard
         currentPeriod="202501"
         previousPeriod="202412"
-        currentMonthCharges={mockCharges}
-        previousMonthCharges={[]}
+        currentMonthCount={mockCharges.length}
+        previousMonthCount={0}
         currentMonthTotal={600}
         previousMonthTotal={0}
         trendData={trendData}
@@ -266,16 +268,16 @@ describe('ChargesSummaryCard', () => {
       />
     );
 
-    expect(screen.getByTestId('charge-trend-chart')).toBeInTheDocument();
+    expect(await screen.findByTestId('charge-trend-chart')).toBeInTheDocument();
   });
 
-  it('renders the trend fallback when history is too short', () => {
+  it('renders the trend fallback when history is too short', async () => {
     render(
       <ChargesSummaryCard
         currentPeriod="202501"
         previousPeriod="202412"
-        currentMonthCharges={[]}
-        previousMonthCharges={[]}
+        currentMonthCount={0}
+        previousMonthCount={0}
         currentMonthTotal={0}
         previousMonthTotal={0}
         trendData={[]}
@@ -283,7 +285,9 @@ describe('ChargesSummaryCard', () => {
       />
     );
 
-    expect(screen.getByTestId('charge-trend-fallback')).toBeInTheDocument();
+    expect(
+      await screen.findByTestId('charge-trend-fallback')
+    ).toBeInTheDocument();
   });
 
   it.each([
@@ -294,10 +298,8 @@ describe('ChargesSummaryCard', () => {
       <ChargesSummaryCard
         currentPeriod="202501"
         previousPeriod="202412"
-        currentMonthCharges={[]}
-        previousMonthCharges={Array.from({ length: count }, () => ({
-          totalAmount: new Prisma.Decimal(1),
-        }))}
+        currentMonthCount={0}
+        previousMonthCount={count}
         currentMonthTotal={0}
         previousMonthTotal={count}
         trendData={trendData}
