@@ -6,7 +6,9 @@ Migration `20261031000000_apartment_share_ratio` adds:
 
 ```sql
 "shareRatio" DOUBLE PRECISION GENERATED ALWAYS AS (
-  CASE WHEN "shareDenominator" > 0 THEN "shareNumerator" / "shareDenominator" END
+  CASE
+    WHEN "shareDenominator" > 0 THEN "shareNumerator" / "shareDenominator"
+  END
 ) STORED
 ```
 
