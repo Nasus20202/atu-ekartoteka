@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2026-11-04
+
+- test: raise unit coverage of server sections and admin lists
+- docs(openspec): record that allowedOrigins was checked on staging
+- docs(openspec): archive streamed-dashboard-shell and sync specs
+- refactor(client): read client data with SWR
+- fix(admin): render the chosen list view on the server
+- refactor: move every mutation to module-level server actions
+- perf(admin): stream admin pages with server-loaded first data and skeletons
+- feat(auth): add server action guards and lint rule for use-server modules
+- perf(titles): use static titles on dynamic-segment pages so navigation is not blocked
+- perf: read runtime config at request time
+- perf(admin): stream the admin access check and root redirect
+- perf(dashboard): stream the dashboard and tenant pages in sections
+- perf(settings): cache global app settings in memory
+- docs(openspec): propose streamed-dashboard-shell
+- fix(charts): render empty chart placeholder and fade the chart in
+- chore(grafana): update ekartoteka dashboard
+
 ## [0.8.12] - 2026-11-03
 
 - feat(db): make connection pool size and timeout configurable
