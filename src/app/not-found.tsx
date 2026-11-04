@@ -2,32 +2,28 @@ import { FileQuestion } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { StatusCard } from '@/components/errors/status-card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { PAGE_TITLES } from '@/lib/metadata/document-title';
 
 export const metadata: Metadata = { title: PAGE_TITLES.notFound };
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-background">
-      <main className="flex min-h-screen items-center justify-center p-8">
-        <Card className="w-full max-w-md">
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <FileQuestion className="mb-4 h-16 w-16 text-muted-foreground" />
-            <h1 className="mb-2 text-4xl font-bold">404</h1>
-            <h2 className="mb-2 text-xl font-semibold">
-              Strona nie znaleziona
-            </h2>
-            <p className="mb-6 text-center text-muted-foreground">
-              Strona, której szukasz nie istnieje.
-            </p>
-            <Link href="/dashboard">
-              <Button>Powrót do strony głównej</Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </main>
-    </div>
+    <StatusCard
+      icon={FileQuestion}
+      title="404"
+      titleClassName="text-4xl sm:text-4xl"
+      actions={
+        <Button asChild>
+          <Link href="/dashboard">Powrót do strony głównej</Link>
+        </Button>
+      }
+    >
+      <h2 className="mb-2 text-xl font-semibold text-foreground">
+        Strona nie znaleziona
+      </h2>
+      <p>Strona, której szukasz, nie istnieje lub została przeniesiona.</p>
+    </StatusCard>
   );
 }

@@ -4,8 +4,8 @@ import { AlertTriangle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { startTransition, useEffect } from 'react';
 
+import { StatusCard } from '@/components/errors/status-card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { logger } from '@/lib/logger';
 import {
   formatDocumentTitle,
@@ -24,41 +24,43 @@ export default function Error({
   const router = useRouter();
 
   useEffect(() => {
-    // Log the error to an error reporting service
     logger.error(
-      { error: error.message, stack: error.stack },
+      { error: error.message, stack: error.stack, digest: error.digest },
       'Application error'
     );
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
       <title>{formatDocumentTitle(PAGE_TITLE)}</title>
-      <main className="flex min-h-screen items-center justify-center p-8">
-        <Card className="w-full max-w-md">
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <AlertTriangle className="mb-4 h-16 w-16 text-destructive" />
-            <h1 className="mb-2 text-2xl font-bold">{PAGE_TITLE}</h1>
-            <p className="mb-6 text-center text-muted-foreground">
-              Wystąpił nieoczekiwany błąd. Spróbuj ponownie.
-            </p>
-            <div className="flex gap-3">
-              <Button onClick={() => reset()}>Spróbuj ponownie</Button>
-              <Button
-                variant="outline"
-                onClick={() =>
-                  startTransition(() => {
-                    router.push('/dashboard');
-                    reset();
-                  })
-                }
-              >
-                Powrót do strony głównej
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </main>
-    </div>
+      <StatusCard
+        icon={AlertTriangle}
+        iconClassName="text-destructive"
+        title={PAGE_TITLE}
+        actions={
+          <>
+            <Button onClick={() => reset()}>Spróbuj ponownie</Button>
+            <Button
+              variant="outline"
+              onClick={() =>
+                startTransition(() => {
+                  router.push('/dashboard');
+                  reset();
+                })
+              }
+            >
+              Powrót do strony głównej
+            </Button>
+          </>
+        }
+      >
+        <p>Wystąpił nieoczekiwany błąd. Spróbuj ponownie.</p>
+        {error.digest && (
+          <p className="mt-3 text-xs">
+            Kod błędu: <code className="font-mono">{error.digest}</code>
+          </p>
+        )}
+      </StatusCard>
+    </>
   );
 }

@@ -1,3 +1,5 @@
+import { notFound } from 'next/navigation';
+
 import { ApartmentDetailsContent } from '@/components/apartments/apartment-details-content';
 import { REVEAL_CLASS } from '@/components/layout/reveal';
 import { requireAdminAccess } from '@/lib/auth/require-admin-access';
@@ -15,7 +17,7 @@ export async function ApartmentDetailsSection({
   const apartment = await loadApartmentDetail(apartmentId);
 
   if (!apartment) {
-    return <p>Nie znaleziono mieszkania</p>;
+    notFound();
   }
 
   return (

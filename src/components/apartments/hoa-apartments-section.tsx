@@ -1,3 +1,5 @@
+import { notFound } from 'next/navigation';
+
 import { loadApartmentsPage } from '@/app/api/admin/apartments/load-apartments-page';
 import { HoaApartmentsContent } from '@/components/apartments/hoa-apartments-content';
 import { REVEAL_CLASS } from '@/components/layout/reveal';
@@ -33,6 +35,10 @@ export async function HoaApartmentsSection({
     }),
     getListViewMode(LIST_VIEW_STORAGE_KEYS.apartments),
   ]);
+
+  if (!hoa) {
+    notFound();
+  }
 
   return (
     <div className={REVEAL_CLASS}>
