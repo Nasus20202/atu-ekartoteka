@@ -70,6 +70,20 @@ describe('resetPasswordAction', () => {
     expect(mocks.findPasswordResetByToken).not.toHaveBeenCalled();
   });
 
+  it('treats a non-text token as missing', async () => {
+    expect(
+      await resetPasswordAction({
+        ...INPUT,
+        token: 42 as unknown as string,
+      })
+    ).toEqual({
+      ok: false,
+      code: 'invalid',
+      error: 'Token i hasło są wymagane',
+    });
+    expect(mocks.findPasswordResetByToken).not.toHaveBeenCalled();
+  });
+
   it('rejects a password that is too short', async () => {
     expect(
       await resetPasswordAction({ ...INPUT, password: 'short' })

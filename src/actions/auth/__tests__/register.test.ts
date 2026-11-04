@@ -299,6 +299,21 @@ describe('registerAction', () => {
     );
   });
 
+  it('treats a non-text email or password as missing', async () => {
+    const result = await registerAction({
+      ...TENANT_INPUT,
+      email: 42 as unknown as string,
+    });
+    const passwordResult = await registerAction({
+      ...TENANT_INPUT,
+      password: 42 as unknown as string,
+    });
+
+    expect(result).toMatchObject({ ok: false, code: 'invalid' });
+    expect(passwordResult).toMatchObject({ ok: false, code: 'invalid' });
+    expect(mockCreateUser).not.toHaveBeenCalled();
+  });
+
   it('rejects a failed Turnstile check without creating the account', async () => {
     mockIsTurnstileEnabled.mockReturnValue(true);
     mockVerifyTurnstileToken.mockResolvedValue(false);

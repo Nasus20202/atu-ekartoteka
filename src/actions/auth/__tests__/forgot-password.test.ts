@@ -78,6 +78,15 @@ describe('forgotPasswordAction', () => {
     ).toEqual({ ok: false, code: 'invalid', error: 'Email jest wymagany' });
   });
 
+  it('treats a non-text email as missing', async () => {
+    expect(
+      await forgotPasswordAction({
+        email: 42 as unknown as string,
+        turnstileToken: 'test-turnstile-token',
+      })
+    ).toEqual({ ok: false, code: 'invalid', error: 'Email jest wymagany' });
+  });
+
   it('reports success without sending anything for an unknown email', async () => {
     expect(
       await forgotPasswordAction({

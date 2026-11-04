@@ -8,11 +8,15 @@ import {
 const mocks = vi.hoisted(() => ({
   auth: vi.fn(),
   hasAdminAccess: vi.fn(),
+  warn: vi.fn(),
 }));
 
 vi.mock('@/auth', () => ({ auth: mocks.auth }));
 vi.mock('@/lib/auth/admin-access', () => ({
   hasAdminAccess: mocks.hasAdminAccess,
+}));
+vi.mock('@/lib/logger', () => ({
+  createLogger: () => ({ warn: mocks.warn }),
 }));
 
 const session = { user: { id: 'user-1', email: 'jan@example.com' } };
@@ -81,5 +85,55 @@ describe('requireAdminAction', () => {
       code: 'unauthenticated',
     });
     expect(mocks.hasAdminAccess).not.toHaveBeenCalled();
+  });
+
+  it('logs an anonymous denial with the attempt label', async () => {
+    mocks.auth.mockResolvedValue(null);
+
+    await requireAdminAction('Settings update attempt');
+
+    expect(mocks.warn).toHaveBeenCalledWith(
+      { email: 'anonymous' },
+      'Settings update attempt'
+    );
+  });
+
+  it('does not log an anonymous denial without an attempt label', async () => {
+    mocks.auth.mockResolvedValue(null);
+
+    await requireAdminAction();
+
+    expect(mocks.warn).not.toHaveBeenCalled();
+  });
+
+  it('logs a forbidden attempt with the caller email', async () => {
+    mocks.hasAdminAccess.mockResolvedValue(false);
+
+    await requireAdminAction('Settings update attempt');
+
+    expect(mocks.warn).toHaveBeenCalledWith(
+      { email: 'jan@example.com' },
+      'Settings update attempt'
+    );
+  });
+
+  it('logs a forbidden attempt as anonymous when the session has no email', async () => {
+    mocks.auth.mockResolvedValue({ user: { id: 'user-2', email: null } });
+    mocks.hasAdminAccess.mockResolvedValue(false);
+
+    await requireAdminAction('Settings update attempt');
+
+    expect(mocks.warn).toHaveBeenCalledWith(
+      { email: 'anonymous' },
+      'Settings update attempt'
+    );
+  });
+
+  it('does not log a forbidden call without an attempt label', async () => {
+    mocks.hasAdminAccess.mockResolvedValue(false);
+
+    await requireAdminAction();
+
+    expect(mocks.warn).not.toHaveBeenCalled();
   });
 });
