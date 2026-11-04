@@ -3,6 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { unwrapResult } from '@/actions/action-result';
+import { resetPasswordAction } from '@/actions/auth/reset-password';
 import { useTurnstile } from '@/hooks/use-turnstile';
 import {
   MIN_PASSWORD_LENGTH,
@@ -13,7 +15,6 @@ import {
   getErrorMessage,
 } from '@/lib/utils/error-message';
 
-const RESET_FAILED_MESSAGE = 'Wystąpił błąd';
 const PASSWORDS_MISMATCH_MESSAGE = 'Hasła nie są identyczne';
 const MISSING_TOKEN_MESSAGE = 'Brak tokenu resetowania';
 const REDIRECT_DELAY_MS = 2000;
@@ -50,21 +51,13 @@ export function useResetPasswordForm(token: string | null) {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      unwrapResult(
+        await resetPasswordAction({
           token,
           password,
           turnstileToken: turnstile.token,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || RESET_FAILED_MESSAGE);
-      }
+        })
+      );
 
       setSuccess(true);
       setTimeout(() => {

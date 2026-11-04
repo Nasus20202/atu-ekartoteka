@@ -8,7 +8,7 @@ import type { HoaListItemDto } from '@/lib/types/dto/hoa-dto';
 
 const actionMock = vi.hoisted(() => ({ renameHoaAction: vi.fn() }));
 
-vi.mock('@/actions/hoa', () => actionMock);
+vi.mock('@/actions/apartments/hoa', () => actionMock);
 
 const hoa: HoaListItemDto = {
   id: 'hoa-1',

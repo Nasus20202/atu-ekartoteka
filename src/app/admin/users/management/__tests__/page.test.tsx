@@ -15,7 +15,7 @@ const actionMock = vi.hoisted(() => ({
   bulkAssignAccountsAction: vi.fn(),
 }));
 
-vi.mock('@/actions/bulk-users', () => actionMock);
+vi.mock('@/actions/users/bulk-users', () => actionMock);
 
 vi.mock('next/navigation', () => ({
   useRouter: vi.fn(),

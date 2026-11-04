@@ -4,7 +4,7 @@ import { Building2, Search } from 'lucide-react';
 import { useState } from 'react';
 import useSWR from 'swr';
 
-import { renameHoaAction } from '@/actions/hoa';
+import { renameHoaAction } from '@/actions/apartments/hoa';
 import { HoaListCard } from '@/components/apartments/hoa-list-card';
 import { HoaGridSkeleton } from '@/components/apartments/hoa-list-skeleton';
 import { Button } from '@/components/ui/button';

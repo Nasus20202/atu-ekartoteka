@@ -11,7 +11,7 @@ vi.mock('next/navigation', () => ({
 
 const actionMock = vi.hoisted(() => ({ updateProfileAction: vi.fn() }));
 
-vi.mock('@/actions/profile', () => actionMock);
+vi.mock('@/actions/account/profile', () => actionMock);
 
 describe('ProfileForm', () => {
   const mockRouter = {

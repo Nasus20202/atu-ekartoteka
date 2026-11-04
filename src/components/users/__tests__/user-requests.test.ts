@@ -13,7 +13,7 @@ const actionMock = vi.hoisted(() => ({
   createUserAction: vi.fn(),
 }));
 
-vi.mock('@/actions/users', () => actionMock);
+vi.mock('@/actions/users/users', () => actionMock);
 
 const newUser = {
   email: 'a@b.pl',

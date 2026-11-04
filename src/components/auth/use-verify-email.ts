@@ -3,12 +3,13 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { unwrapResult } from '@/actions/action-result';
+import { verifyEmailAction } from '@/actions/auth/verify-email';
 import {
   GENERIC_ERROR_MESSAGE,
   getErrorMessage,
 } from '@/lib/utils/error-message';
 
-const VERIFICATION_FAILED_MESSAGE = 'Weryfikacja nie powiodła się';
 const REDIRECT_DELAY_MS = 2000;
 
 /** Verifies the email token once on mount and reports progress. */
@@ -27,16 +28,7 @@ export function useVerifyEmail(token: string | null) {
       }
 
       try {
-        const response = await fetch('/api/verify-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token }),
-        });
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || VERIFICATION_FAILED_MESSAGE);
-        }
+        unwrapResult(await verifyEmailAction(token));
 
         if (!cancelled) {
           setSuccess(true);

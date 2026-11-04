@@ -780,12 +780,6 @@ The system SHALL derive the closing balance and the monthly running balance of e
 - **WHEN** the payment table renders
 - **THEN** the `Razem` `Wpłaty` value minus the `Razem` `Naliczenia` value equals the derived `Saldo`
 
-#### Scenario: Admin HOA total
-
-- **GIVEN** a HOA whose apartments have payment records
-- **WHEN** an admin opens the HOA financial summary
-- **THEN** the total closing balance is the sum of the derived closing balances of each apartment's latest payment year
-
 ---
 
 ### Requirement: HOA Header and Footer for Admin

@@ -7,7 +7,7 @@ import type { ApartmentDetailDto } from '@/lib/types/dto/apartment-dto';
 const confirmMock = vi.fn();
 const actionMock = vi.hoisted(() => ({ setApartmentActiveAction: vi.fn() }));
 
-vi.mock('@/actions/apartments', () => actionMock);
+vi.mock('@/actions/apartments/apartments', () => actionMock);
 
 vi.mock('@/components/layout/page-header', () => ({
   PageHeader: ({

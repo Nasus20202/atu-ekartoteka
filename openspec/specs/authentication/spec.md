@@ -352,7 +352,7 @@ route. A module that does neither SHALL fail linting.
 
 #### Scenario: Public route
 
-- **GIVEN** an allowlisted public module such as `/api/health/route.ts`
+- **GIVEN** a public module such as `/api/health/route.ts` that carries a file-level `eslint-disable local/require-api-auth-guard` comment with a stated reason
 - **WHEN** it is linted
 - **THEN** no guard is required
 
@@ -401,8 +401,24 @@ check SHALL redirect to `/login` (no session) or `/dashboard` (not allowed).
 Every module that declares `'use server'` SHALL resolve the caller's identity
 through a shared action guard (`requireUserAction` or `requireAdminAction`) before
 reading or writing data, and SHALL return the same denial as the route guards
-(unauthenticated, not allowed). A module that does neither SHALL fail linting.
+(unauthenticated, not allowed). A module that does neither SHALL fail linting,
+unless it carries a file-level `eslint-disable local/require-action-auth-guard`
+comment with a stated reason. Such a public module SHALL be limited to signed-out
+flows (registration, email verification, password reset) that are protected by
+server-side Turnstile checks where enabled.
 Authorization SHALL come from the database, never from client-supplied arguments.
+
+#### Scenario: Public authentication action
+
+- **GIVEN** a signed-out visitor registers, verifies an email or resets a password
+- **WHEN** the Server Action runs
+- **THEN** it runs without a session, applies the same validation and Turnstile check as before, and returns the same Polish messages on failure
+
+#### Scenario: Unguarded module without a reason
+
+- **GIVEN** a `'use server'` module has no action guard and no disable comment
+- **WHEN** linting runs
+- **THEN** the lint rule fails the module
 
 #### Scenario: Anonymous call
 

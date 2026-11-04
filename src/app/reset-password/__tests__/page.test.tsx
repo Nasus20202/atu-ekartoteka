@@ -8,9 +8,11 @@ import ResetPasswordPage from '@/app/reset-password/page';
 const mockPush = vi.fn();
 const mockGet = vi.fn((): string | null => 'reset-token');
 const mockReset = vi.fn();
-const mockFetch = vi.fn();
+const resetPasswordActionMock = vi.hoisted(() => vi.fn());
 
-vi.stubGlobal('fetch', mockFetch);
+vi.mock('@/actions/auth/reset-password', () => ({
+  resetPasswordAction: resetPasswordActionMock,
+}));
 
 vi.mock('next/navigation', () => ({
   useRouter: vi.fn(),
@@ -57,7 +59,7 @@ describe('ResetPasswordPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGet.mockReturnValue('reset-token');
-    mockFetch.mockResolvedValue({ ok: true, json: async () => ({}) });
+    resetPasswordActionMock.mockResolvedValue({ ok: true, data: undefined });
     vi.mocked(useRouter).mockReturnValue({
       push: mockPush,
     } as unknown as ReturnType<typeof useRouter>);
@@ -88,9 +90,8 @@ describe('ResetPasswordPage', () => {
     expect(
       screen.getByText('Przekierowywanie do strony logowania...')
     ).toBeInTheDocument();
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/reset-password',
-      expect.objectContaining({ method: 'POST' })
+    expect(resetPasswordActionMock).toHaveBeenCalledWith(
+      expect.objectContaining({ token: 'reset-token', password: 'secret123' })
     );
   });
 
@@ -100,13 +101,14 @@ describe('ResetPasswordPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Hasła nie są identyczne')).toBeInTheDocument();
     });
-    expect(mockFetch).not.toHaveBeenCalled();
+    expect(resetPasswordActionMock).not.toHaveBeenCalled();
   });
 
   it('shows the API error message when the reset is rejected', async () => {
-    mockFetch.mockResolvedValue({
+    resetPasswordActionMock.mockResolvedValue({
       ok: false,
-      json: async () => ({ error: 'Link wygasł' }),
+      code: 'invalid',
+      error: 'Link wygasł',
     });
 
     await submitPasswords('secret123', 'secret123');

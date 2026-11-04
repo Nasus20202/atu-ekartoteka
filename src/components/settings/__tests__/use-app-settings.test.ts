@@ -5,7 +5,7 @@ import { useAppSettings } from '@/components/settings/use-app-settings';
 
 const actionMock = vi.hoisted(() => ({ updateSettingsAction: vi.fn() }));
 
-vi.mock('@/actions/settings', () => actionMock);
+vi.mock('@/actions/settings/settings', () => actionMock);
 
 describe('useAppSettings', () => {
   const action = actionMock.updateSettingsAction;

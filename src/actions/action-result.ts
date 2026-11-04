@@ -28,3 +28,12 @@ export function readInput(input: unknown): Record<string, unknown> {
     ? (input as Record<string, unknown>)
     : {};
 }
+
+/** The data of a successful result; throws the failure message otherwise. */
+export function unwrapResult<T>(result: ActionResult<T>): T {
+  if (result.ok) {
+    return result.data;
+  }
+
+  throw new Error(result.error);
+}

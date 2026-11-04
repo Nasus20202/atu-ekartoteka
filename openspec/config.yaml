@@ -28,7 +28,7 @@ context: |
   - No magic numbers or strings — use constants or enums
   - No unused code — delete it
   - No toast library — use Alert component or inline state for user feedback
-  - Client reads (search, paging, pickers, config) use SWR with the shared options in src/lib/swr; mutations are Server Actions; no hand-written fetch/useEffect data hooks
+  - Client reads (search, paging, pickers, config) use SWR with the shared options in src/lib/swr; mutations are Server Actions in src/actions/<feature>/, public ones with a reasoned eslint-disable comment; only the admin import and validate API routes use useSWRMutation with jsonPoster from src/lib/swr; no hand-written fetch/useEffect data hooks
   - Pre-commit hook runs lint-staged then vitest --run; commits are blocked on test or lint failures
 
   ## Domain

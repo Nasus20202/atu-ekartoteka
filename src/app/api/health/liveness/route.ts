@@ -1,3 +1,4 @@
+/* eslint-disable local/require-api-auth-guard -- Health probes carry no session */
 import { NextResponse } from 'next/server';
 
 /**

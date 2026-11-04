@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { updateSettingsAction } from '@/actions/settings';
+import { updateSettingsAction } from '@/actions/settings/settings';
 
 const SAVE_ERROR = 'Nie udało się zapisać ustawień';
 

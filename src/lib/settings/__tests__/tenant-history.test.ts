@@ -4,9 +4,7 @@ vi.mock('@/lib/utils/request-now', () => ({
   getRequestNow: vi.fn().mockResolvedValue(new Date(2027, 0, 5)),
 }));
 vi.mock('@/lib/queries/settings/get-app-settings', () => ({
-  getAppSettingsCached: vi
-    .fn()
-    .mockResolvedValue({ tenantHistoryYearsBack: 2 }),
+  getAppSettings: vi.fn().mockResolvedValue({ tenantHistoryYearsBack: 2 }),
 }));
 
 const { getTenantHistoryStartYear } =

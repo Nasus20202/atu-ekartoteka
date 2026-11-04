@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Create mock functions
-const mockUserCount = vi.fn();
+const mockUserFindFirst = vi.fn();
 
 // Mock the prisma client
 vi.mock('@/lib/database/prisma', () => ({
   prisma: {
-    user: { count: mockUserCount },
+    user: { findFirst: mockUserFindFirst },
   },
 }));
 
@@ -28,7 +28,7 @@ describe('Health Check Endpoints', () => {
   describe('GET /api/health', () => {
     it('should return healthy status when database is connected', async () => {
       // Mock successful database query
-      mockUserCount.mockResolvedValueOnce(1);
+      mockUserFindFirst.mockResolvedValueOnce({ id: 'user-1' });
 
       const { GET } = await import('../route');
       const response = await GET();
@@ -43,7 +43,7 @@ describe('Health Check Endpoints', () => {
 
     it('should return unhealthy status when database is disconnected', async () => {
       // Mock failed database query
-      mockUserCount.mockRejectedValueOnce(
+      mockUserFindFirst.mockRejectedValueOnce(
         new Error('Database connection failed')
       );
 
@@ -75,14 +75,14 @@ describe('Health Check Endpoints', () => {
       await GET();
 
       // Verify prisma was not called
-      expect(mockUserCount).not.toHaveBeenCalled();
+      expect(mockUserFindFirst).not.toHaveBeenCalled();
     });
   });
 
   describe('GET /api/health/readiness', () => {
     it('should return ready status when database is connected', async () => {
       // Mock successful database query
-      mockUserCount.mockResolvedValueOnce(1);
+      mockUserFindFirst.mockResolvedValueOnce({ id: 'user-1' });
 
       const { GET } = await import('../readiness/route');
       const response = await GET();
@@ -96,7 +96,7 @@ describe('Health Check Endpoints', () => {
 
     it('should return not ready status when database is disconnected', async () => {
       // Mock failed database query
-      mockUserCount.mockRejectedValueOnce(
+      mockUserFindFirst.mockRejectedValueOnce(
         new Error('Database connection failed')
       );
 
@@ -111,13 +111,13 @@ describe('Health Check Endpoints', () => {
     });
 
     it('should check database connectivity', async () => {
-      mockUserCount.mockResolvedValueOnce(1);
+      mockUserFindFirst.mockResolvedValueOnce({ id: 'user-1' });
 
       const { GET } = await import('../readiness/route');
       await GET();
 
       // Verify prisma was called
-      expect(mockUserCount).toHaveBeenCalled();
+      expect(mockUserFindFirst).toHaveBeenCalled();
     });
   });
 

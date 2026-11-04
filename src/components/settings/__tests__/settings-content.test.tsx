@@ -8,7 +8,7 @@ const INPUT_LABEL = 'Liczba poprzednich lat widocznych dla mieszkańców';
 
 const actionMock = vi.hoisted(() => ({ updateSettingsAction: vi.fn() }));
 
-vi.mock('@/actions/settings', () => actionMock);
+vi.mock('@/actions/settings/settings', () => actionMock);
 
 function renderContent() {
   render(<SettingsContent initialYearsBack={2} />);

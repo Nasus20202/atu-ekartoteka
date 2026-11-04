@@ -92,7 +92,7 @@ The system SHALL NOT apply the tenant history window to any admin view or admin 
 
 ### Requirement: Admin-Configurable Window Length
 
-The system SHALL let an admin set, on the `Ustawienia` page at `/admin/settings`, the number of previous full calendar years visible to tenants. The value SHALL be a whole number from 0 to 20 and SHALL default to 2 when it has never been set. The page SHALL load the stored value, never a cached one, and saving SHALL go through an admin-only Server Action.
+The system SHALL let an admin set, on the `Ustawienia` page at `/admin/settings`, the number of previous full calendar years visible to tenants. The value SHALL be a whole number from 0 to 20 and SHALL default to 2 when it has never been set. The page SHALL load the stored value, and saving SHALL go through an admin-only Server Action.
 
 #### Scenario: Admin views the current setting
 
@@ -137,27 +137,3 @@ The system SHALL let an admin set, on the `Ustawienia` page at `/admin/settings`
 - **GIVEN** an authenticated admin in the admin panel
 - **WHEN** the navigation renders
 - **THEN** it contains an `Ustawienia` link to `/admin/settings`
-
-### Requirement: Application Settings Cache
-
-The system SHALL cache the global application settings in memory for a bounded
-time so that reading them does not query the database on every request. A save
-SHALL make the new value visible immediately to the replica that handled it,
-and to every other replica no later than the cache lifetime. The admin settings
-endpoint SHALL always return stored values, not cached ones.
-
-#### Scenario: Repeated reads
-
-- **WHEN** settings are read several times within the cache lifetime
-- **THEN** the database is queried once
-
-#### Scenario: Save invalidates
-
-- **GIVEN** the cache holds the previous value
-- **WHEN** an admin saves a different history window
-- **THEN** the next read on that replica returns the new value
-
-#### Scenario: Unchanged save
-
-- **WHEN** an admin saves values equal to the stored ones
-- **THEN** nothing is written and the cache is not invalidated

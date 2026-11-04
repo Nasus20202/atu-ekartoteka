@@ -1,3 +1,4 @@
+/* eslint-disable local/require-api-auth-guard -- Reveals only whether Google sign-in is enabled, needed before login */
 import { connection, NextResponse } from 'next/server';
 
 export async function GET() {

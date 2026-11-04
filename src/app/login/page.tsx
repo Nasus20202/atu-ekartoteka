@@ -8,6 +8,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { AuthLoading } from '@/components/auth/auth-loading';
 import { GoogleSignIn } from '@/components/auth/google-sign-in';
 import { TurnstileField } from '@/components/auth/turnstile-field';
+import { useGoogleSignInEnabled } from '@/components/auth/use-google-sign-in-enabled';
 import { AuthLayout } from '@/components/layout/auth-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AnimatedAlert } from '@/components/ui/animated-alert';
@@ -22,27 +23,12 @@ function LoginForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const turnstile = useTurnstile();
-  const [googleEnabled, setGoogleEnabled] = useState(false);
+  const googleEnabled = useGoogleSignInEnabled();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { status } = useSession();
 
   const resetSuccess = searchParams.get('reset') === 'success';
-
-  // Fetch Google sign-in configuration on mount
-  useEffect(() => {
-    const fetchGoogleConfig = async () => {
-      try {
-        const response = await fetch('/api/config/google');
-        const config = await response.json();
-        setGoogleEnabled(config.enabled);
-      } catch {
-        setGoogleEnabled(false);
-      }
-    };
-
-    fetchGoogleConfig();
-  }, []);
 
   // Redirect if already logged in
   useEffect(() => {

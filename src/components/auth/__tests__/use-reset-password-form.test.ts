@@ -10,7 +10,11 @@ import {
 const mocks = vi.hoisted(() => ({
   push: vi.fn(),
   reset: vi.fn(),
-  fetch: vi.fn(),
+  resetPasswordAction: vi.fn(),
+}));
+
+vi.mock('@/actions/auth/reset-password', () => ({
+  resetPasswordAction: mocks.resetPasswordAction,
 }));
 
 vi.mock('next/navigation', () => ({
@@ -25,16 +29,14 @@ vi.mock('@/hooks/use-turnstile', () => ({
   }),
 }));
 
-vi.stubGlobal('fetch', mocks.fetch);
-
 const event = { preventDefault: vi.fn() } as unknown as React.FormEvent;
 
-function okResponse(body: unknown = {}) {
-  return { ok: true, json: async () => body };
+function okResult() {
+  return { ok: true, data: undefined };
 }
 
-function errorResponse(error: string) {
-  return { ok: false, json: async () => ({ error }) };
+function errorResult(error: string) {
+  return { ok: false, code: 'invalid', error };
 }
 
 async function fillAndSubmit(password: string, confirmPassword: string) {
@@ -55,14 +57,14 @@ async function fillAndSubmit(password: string, confirmPassword: string) {
 describe('useResetPasswordForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.fetch.mockResolvedValue(okResponse());
+    mocks.resetPasswordAction.mockResolvedValue(okResult());
   });
 
   it('rejects mismatched passwords without calling the API', async () => {
     const result = await fillAndSubmit('secret123', 'secret124');
 
     expect(result.current.error).toBe('Hasła nie są identyczne');
-    expect(mocks.fetch).not.toHaveBeenCalled();
+    expect(mocks.resetPasswordAction).not.toHaveBeenCalled();
   });
 
   it('rejects a password shorter than the minimum', async () => {
@@ -70,20 +72,16 @@ describe('useResetPasswordForm', () => {
     const result = await fillAndSubmit(short, short);
 
     expect(result.current.error).toBe(PASSWORD_TOO_SHORT_MESSAGE);
-    expect(mocks.fetch).not.toHaveBeenCalled();
+    expect(mocks.resetPasswordAction).not.toHaveBeenCalled();
   });
 
   it('posts the token, password and turnstile token on success', async () => {
     const result = await fillAndSubmit('secret123', 'secret123');
 
-    expect(mocks.fetch).toHaveBeenCalledWith('/api/reset-password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        token: 'reset-token',
-        password: 'secret123',
-        turnstileToken: 'turnstile-token',
-      }),
+    expect(mocks.resetPasswordAction).toHaveBeenCalledWith({
+      token: 'reset-token',
+      password: 'secret123',
+      turnstileToken: 'turnstile-token',
     });
     expect(result.current.success).toBe(true);
     expect(result.current.error).toBe('');
@@ -91,7 +89,7 @@ describe('useResetPasswordForm', () => {
   });
 
   it('shows the API error message and resets the challenge on failure', async () => {
-    mocks.fetch.mockResolvedValue(errorResponse('Link wygasł'));
+    mocks.resetPasswordAction.mockResolvedValue(errorResult('Link wygasł'));
 
     const result = await fillAndSubmit('secret123', 'secret123');
 
@@ -128,8 +126,8 @@ describe('useResetPasswordForm', () => {
     }
   });
 
-  it('falls back to a generic message when the API returns none', async () => {
-    mocks.fetch.mockResolvedValue({ ok: false, json: async () => ({}) });
+  it('falls back to a generic message when the action throws a non-error', async () => {
+    mocks.resetPasswordAction.mockRejectedValue('network down');
 
     const result = await fillAndSubmit('secret123', 'secret123');
 
@@ -149,6 +147,6 @@ describe('useResetPasswordForm', () => {
     });
 
     expect(result.current.error).toBe('Brak tokenu resetowania');
-    expect(mocks.fetch).not.toHaveBeenCalled();
+    expect(mocks.resetPasswordAction).not.toHaveBeenCalled();
   });
 });

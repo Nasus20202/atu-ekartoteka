@@ -3,7 +3,7 @@
 import { Mail, X } from 'lucide-react';
 import { useState } from 'react';
 
-import { resendVerificationAction } from '@/actions/verification';
+import { resendVerificationAction } from '@/actions/account/verification';
 import {
   GENERIC_ERROR_MESSAGE,
   getErrorMessage,

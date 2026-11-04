@@ -3,22 +3,28 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useVerifyEmail } from '@/components/auth/use-verify-email';
 
-const mocks = vi.hoisted(() => ({ push: vi.fn(), fetch: vi.fn() }));
+const mocks = vi.hoisted(() => ({ push: vi.fn(), verifyEmailAction: vi.fn() }));
+
+vi.mock('@/actions/auth/verify-email', () => ({
+  verifyEmailAction: mocks.verifyEmailAction,
+}));
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mocks.push }),
 }));
 
-vi.stubGlobal('fetch', mocks.fetch);
+function okResult() {
+  return { ok: true, data: undefined };
+}
 
-function okResponse() {
-  return { ok: true, json: async () => ({}) };
+function errorResult(error: string) {
+  return { ok: false, code: 'invalid', error };
 }
 
 describe('useVerifyEmail', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.fetch.mockResolvedValue(okResponse());
+    mocks.verifyEmailAction.mockResolvedValue(okResult());
   });
 
   it('marks the email as verified and stops the spinner', async () => {
@@ -32,18 +38,11 @@ describe('useVerifyEmail', () => {
 
     expect(result.current.success).toBe(true);
     expect(result.current.error).toBeNull();
-    expect(mocks.fetch).toHaveBeenCalledWith('/api/verify-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: 'verify-token' }),
-    });
+    expect(mocks.verifyEmailAction).toHaveBeenCalledWith('verify-token');
   });
 
   it('shows the API error message when the token is rejected', async () => {
-    mocks.fetch.mockResolvedValue({
-      ok: false,
-      json: async () => ({ error: 'Token wygasł' }),
-    });
+    mocks.verifyEmailAction.mockResolvedValue(errorResult('Token wygasł'));
 
     const { result } = renderHook(() => useVerifyEmail('expired-token'));
 
@@ -77,8 +76,8 @@ describe('useVerifyEmail', () => {
     }
   });
 
-  it('falls back to a generic message when the API returns none', async () => {
-    mocks.fetch.mockResolvedValue({ ok: false, json: async () => ({}) });
+  it('falls back to a generic message when the action throws a non-error', async () => {
+    mocks.verifyEmailAction.mockRejectedValue('network down');
 
     const { result } = renderHook(() => useVerifyEmail('verify-token'));
 
@@ -86,12 +85,12 @@ describe('useVerifyEmail', () => {
       expect(result.current.verifying).toBe(false);
     });
 
-    expect(result.current.error).toBe('Weryfikacja nie powiodła się');
+    expect(result.current.error).toBe('Wystąpił błąd');
   });
 
   it('does not redirect when unmounted before the response arrives', async () => {
     let resolveFetch!: (value: unknown) => void;
-    mocks.fetch.mockReturnValue(
+    mocks.verifyEmailAction.mockReturnValue(
       new Promise((resolve) => {
         resolveFetch = resolve;
       })
@@ -99,7 +98,7 @@ describe('useVerifyEmail', () => {
 
     const { unmount } = renderHook(() => useVerifyEmail('verify-token'));
     unmount();
-    resolveFetch({ ok: true, json: async () => ({}) });
+    resolveFetch(okResult());
 
     await act(async () => {
       for (let i = 0; i < 5; i++) await Promise.resolve();
@@ -110,7 +109,7 @@ describe('useVerifyEmail', () => {
 
   it('ignores a failure that arrives after unmount', async () => {
     let rejectFetch!: (reason: unknown) => void;
-    mocks.fetch.mockReturnValue(
+    mocks.verifyEmailAction.mockReturnValue(
       new Promise((_resolve, reject) => {
         rejectFetch = reject;
       })
@@ -136,6 +135,6 @@ describe('useVerifyEmail', () => {
 
     expect(result.current.verifying).toBe(false);
     expect(result.current.error).toBeNull();
-    expect(mocks.fetch).not.toHaveBeenCalled();
+    expect(mocks.verifyEmailAction).not.toHaveBeenCalled();
   });
 });
