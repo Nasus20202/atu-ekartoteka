@@ -11,8 +11,8 @@ const getHoaId = (hoa: HoaGroup) => hoa.hoaId;
 
 export function useUnassignedHoas(mode: BulkMode) {
   const fetchPage = useCallback<PageFetcher<HoaGroup>>(
-    async (page, signal) => {
-      const result = await fetchUnassignedHoas(mode, page, signal);
+    async (page) => {
+      const result = await fetchUnassignedHoas(mode, page);
       if (result.error !== undefined) throw new Error(result.error);
       return {
         items: result.data.hoas,

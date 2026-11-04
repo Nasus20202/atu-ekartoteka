@@ -37,7 +37,8 @@ describe('useInfiniteList with an initial page', () => {
     act(() => result.current.loadMore());
     await waitFor(() => expect(result.current.loadingMore).toBe(false));
 
-    expect(fetchPage).toHaveBeenCalledWith(2, expect.any(AbortSignal));
+    expect(fetchPage).toHaveBeenCalledTimes(1);
+    expect(fetchPage).toHaveBeenCalledWith(2);
     expect(result.current.items.map(getId)).toEqual(['a', 'b', 'c', 'd']);
   });
 
@@ -47,9 +48,7 @@ describe('useInfiniteList with an initial page', () => {
 
     rerender({ key: 'q2' });
 
-    await waitFor(() =>
-      expect(fetchPage).toHaveBeenCalledWith(1, expect.any(AbortSignal))
-    );
+    await waitFor(() => expect(fetchPage).toHaveBeenCalledWith(1));
     await waitFor(() => expect(result.current.items.map(getId)).toEqual(['x']));
   });
 });

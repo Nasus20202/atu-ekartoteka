@@ -1,7 +1,8 @@
 'use client';
 
 import { Building2, Search } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import useSWR from 'swr';
 
 import { renameHoaAction } from '@/actions/hoa';
 import { HoaListCard } from '@/components/apartments/hoa-list-card';
@@ -15,6 +16,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { fetchJson } from '@/lib/swr/fetch-json';
+import { SWR_OPTIONS } from '@/lib/swr/swr-options';
 import type { HoaListItemDto } from '@/lib/types/dto/hoa-dto';
 import { HOA_ACCUSATIVE_FORMS, pluralizePl } from '@/lib/utils/pluralize';
 
@@ -22,65 +25,39 @@ interface HoaListContentProps {
   initialHoas: HoaListItemDto[];
 }
 
+const NO_SEARCH = '';
+
+interface HoaListResponse {
+  homeownersAssociations: HoaListItemDto[];
+}
+
+async function fetchHoas([, search]: readonly [string, string]) {
+  const params = new URLSearchParams({ search });
+  const data = await fetchJson<HoaListResponse>(`/api/admin/hoa?${params}`);
+  return data.homeownersAssociations;
+}
+
 export function HoaListContent({ initialHoas }: HoaListContentProps) {
-  const [hoas, setHoas] = useState<HoaListItemDto[]>(initialHoas);
-  const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [loadedSearch, setLoadedSearch] = useState('');
+  const [search, setSearch] = useState(NO_SEARCH);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
 
-  async function fetchHOAs(nextSearch: string) {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams({ search: nextSearch });
-      const response = await fetch(`/api/admin/hoa?${params}`);
-      const data = await response.json();
-      if (response.ok) {
-        setHoas(data.homeownersAssociations);
-      }
-    } catch (error) {
-      console.error('Failed to fetch HOAs:', error);
-    } finally {
-      setLoading(false);
+  const startsFromServer = search === NO_SEARCH;
+  const { data, isValidating, mutate } = useSWR(
+    ['hoa-list', search] as const,
+    fetchHoas,
+    {
+      ...SWR_OPTIONS,
+      fallbackData: startsFromServer ? initialHoas : undefined,
+      revalidateOnMount: false,
     }
-  }
-
-  useEffect(() => {
-    // The server-provided list already matches this search
-    if (search === loadedSearch) return;
-
-    let cancelled = false;
-
-    async function loadHOAs() {
-      try {
-        setLoading(true);
-        const params = new URLSearchParams({ search });
-        const response = await fetch(`/api/admin/hoa?${params}`);
-        const data = await response.json();
-        if (!cancelled && response.ok) {
-          setHoas(data.homeownersAssociations);
-          setLoadedSearch(search);
-        }
-      } catch (error) {
-        console.error('Failed to fetch HOAs:', error);
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    void loadHOAs();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [search, loadedSearch]);
+  );
+  const hoas = data ?? [];
+  const loading = isValidating && data === undefined;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    void fetchHOAs(search);
+    void mutate();
   };
 
   const startEditing = (hoa: HoaListItemDto) => {
@@ -99,7 +76,7 @@ export function HoaListContent({ initialHoas }: HoaListContentProps) {
       if (result.ok) {
         setEditingId(null);
         setEditingName('');
-        void fetchHOAs(search);
+        void mutate();
       }
     } catch (error) {
       console.error('Failed to update HOA:', error);

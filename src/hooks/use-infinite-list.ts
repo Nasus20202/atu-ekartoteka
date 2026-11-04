@@ -7,6 +7,10 @@ import {
   useRef,
   useState,
 } from 'react';
+import { useSWRConfig } from 'swr';
+import useSWRInfinite, { unstable_serialize } from 'swr/infinite';
+
+import { SWR_OPTIONS } from '@/lib/swr/swr-options';
 
 export const LOAD_MORE_FAILED = 'Nie udało się wczytać kolejnych pozycji';
 
@@ -19,10 +23,7 @@ export interface InfinitePage<T> {
   total?: number;
 }
 
-export type PageFetcher<T> = (
-  page: number,
-  signal: AbortSignal
-) => Promise<InfinitePage<T>>;
+export type PageFetcher<T> = (page: number) => Promise<InfinitePage<T>>;
 
 interface UseInfiniteListOptions<T> {
   fetchPage: PageFetcher<T>;
@@ -32,23 +33,7 @@ interface UseInfiniteListOptions<T> {
   initialPage?: InfinitePage<T>;
 }
 
-interface ListState<T> {
-  key: string | null;
-  items: T[];
-  page: number;
-  totalPages: number;
-  total: number | null;
-  error: string | null;
-}
-
-const EMPTY_STATE: ListState<never> = {
-  key: null,
-  items: [],
-  page: 0,
-  totalPages: 0,
-  total: null,
-  error: null,
-};
+type PageKey = readonly [string, number];
 
 function mergeUnique<T>(items: T[], getId: (item: T) => string): T[] {
   const seen = new Set<string>();
@@ -60,155 +45,89 @@ function mergeUnique<T>(items: T[], getId: (item: T) => string): T[] {
   });
 }
 
-/** Accumulates pages of a paginated API; resets whenever `queryKey` changes. */
+/** Accumulates pages of a paginated API; starts over whenever `queryKey` changes. */
 export function useInfiniteList<T>({
   fetchPage,
   queryKey,
   getId,
   initialPage,
 }: UseInfiniteListOptions<T>) {
-  const [state, setState] = useState<ListState<T>>(() =>
-    initialPage
-      ? {
-          key: queryKey,
-          items: mergeUnique(initialPage.items, getId),
-          page: initialPage.page,
-          totalPages: initialPage.totalPages,
-          total: initialPage.total ?? null,
-          error: null,
-        }
-      : EMPTY_STATE
-  );
-  // The query whose first page is already loaded: it is not requested again,
-  // also when an effect runs twice (React strict mode) or the query returns
-  const loadedKeyRef = useRef<string | null>(
+  const { mutate: mutateCache } = useSWRConfig();
+  const [initialKey] = useState(() =>
     initialPage !== undefined ? queryKey : null
   );
-  const [loadingMore, setLoadingMore] = useState(false);
   const fetchRef = useRef(fetchPage);
-  const getIdRef = useRef(getId);
-  const controllerRef = useRef<AbortController | null>(null);
-  const requestingRef = useRef(false);
 
   useLayoutEffect(() => {
     fetchRef.current = fetchPage;
-    getIdRef.current = getId;
   });
 
-  const requestPage = useCallback(
-    async (page: number, key: string, signal: AbortSignal) => {
-      try {
-        const result = await fetchRef.current(page, signal);
-        if (signal.aborted) return;
-        loadedKeyRef.current = key;
-        setState((previous) => ({
-          key,
-          items: mergeUnique(
-            [...(previous.key === key ? previous.items : []), ...result.items],
-            getIdRef.current
-          ),
-          page: result.page,
-          totalPages: result.totalPages,
-          total: result.total ?? null,
-          error: null,
-        }));
-      } catch {
-        if (signal.aborted) return;
-        setState((previous) =>
-          previous.key === key
-            ? { ...previous, error: LOAD_MORE_FAILED }
-            : {
-                ...EMPTY_STATE,
-                key,
-                totalPages: FIRST_PAGE,
-                error: LOAD_MORE_FAILED,
-              }
-        );
-      } finally {
-        if (!signal.aborted) {
-          requestingRef.current = false;
-          setLoadingMore(false);
-        }
-      }
-    },
-    []
+  const getKey = useCallback(
+    (index: number, previous: InfinitePage<T> | null): PageKey | null =>
+      previous && previous.page >= previous.totalPages
+        ? null
+        : [queryKey, index + FIRST_PAGE],
+    [queryKey]
   );
 
-  // Aborting the previous controller drops any response still in flight, so a
-  // stale page can never land after a reset or refresh.
-  const replaceController = useCallback(() => {
-    controllerRef.current?.abort();
-    const controller = new AbortController();
-    controllerRef.current = controller;
-    return controller;
+  // Loading more must not request the server-loaded first page again, so it is
+  // put where SWR looks for the pages it already has.
+  useEffect(() => {
+    if (initialPage === undefined || initialKey === null) return;
+    void mutateCache([initialKey, FIRST_PAGE], initialPage, {
+      revalidate: false,
+    });
+    void mutateCache(unstable_serialize(getKey), [initialPage], {
+      revalidate: false,
+    });
+    // Only the page the list mounted with is seeded
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    const controller = replaceController();
-    if (loadedKeyRef.current === queryKey) {
-      return () => controller.abort();
-    }
-    requestingRef.current = true;
-    void requestPage(FIRST_PAGE, queryKey, controller.signal);
-    return () => controller.abort();
-  }, [queryKey, replaceController, requestPage]);
+  const startsFromServer = initialPage !== undefined && queryKey === initialKey;
 
-  // While a changed query loads, the last loaded items stay visible instead of
-  // collapsing the list into a loading placeholder.
-  const current = state.key === queryKey ? state : null;
-  const items = current ? current.items : state.items;
-  const total = current ? current.total : state.total;
-  const hasMore = current !== null && current.page < current.totalPages;
+  const { data, error, isLoading, isValidating, size, setSize, mutate } =
+    useSWRInfinite<InfinitePage<T>>(
+      getKey,
+      ([, page]: PageKey) => fetchRef.current(page),
+      {
+        ...SWR_OPTIONS,
+        fallbackData: startsFromServer ? [initialPage] : undefined,
+        revalidateOnMount: startsFromServer ? false : undefined,
+        revalidateFirstPage: false,
+        keepPreviousData: true,
+      }
+    );
+
+  const pages = (data ?? []).filter((page) => page !== undefined);
+  const items = mergeUnique(
+    pages.flatMap((page) => page.items),
+    getId
+  );
+  const last = pages[pages.length - 1];
+  const loading = isLoading && items.length === 0;
+  // A first page that failed can be requested again like any later page
+  const hasMore =
+    !isLoading &&
+    (last === undefined ? error !== undefined : last.page < last.totalPages);
+  const loadingMore = !isLoading && isValidating && size > pages.length;
 
   const loadMore = useCallback(() => {
-    const controller = controllerRef.current;
-    if (!controller || requestingRef.current || !hasMore || !current) return;
-    requestingRef.current = true;
-    setLoadingMore(true);
-    void requestPage(current.page + 1, queryKey, controller.signal);
-  }, [current, hasMore, queryKey, requestPage]);
+    if (!hasMore || loadingMore) return;
+    void setSize(pages.length + 1);
+  }, [hasMore, loadingMore, pages.length, setSize]);
 
   const refresh = useCallback(async () => {
-    if (!controllerRef.current) return;
-    const { signal } = replaceController();
-    const loadedPages = Math.max(current?.page ?? 0, FIRST_PAGE);
-    requestingRef.current = true;
-    setLoadingMore(false);
-    try {
-      const results = await Promise.all(
-        Array.from({ length: loadedPages }, (_, index) =>
-          fetchRef.current(index + FIRST_PAGE, signal)
-        )
-      );
-      if (signal.aborted) return;
-      const last = results[results.length - 1];
-      setState({
-        key: queryKey,
-        items: mergeUnique(
-          results.flatMap((result) => result.items),
-          getIdRef.current
-        ),
-        page: last.page,
-        totalPages: last.totalPages,
-        total: last.total ?? null,
-        error: null,
-      });
-    } catch {
-      if (!signal.aborted) {
-        setState((previous) => ({ ...previous, error: LOAD_MORE_FAILED }));
-      }
-    } finally {
-      if (!signal.aborted) requestingRef.current = false;
-    }
-  }, [current, queryKey, replaceController]);
+    await mutate();
+  }, [mutate]);
 
   return {
     items,
-    total,
-    loading: current === null && items.length === 0,
+    total: last?.total ?? null,
+    loading,
     loadingMore,
     hasMore,
-    error: current?.error ?? null,
+    error: error ? LOAD_MORE_FAILED : null,
     loadMore,
     refresh,
   };

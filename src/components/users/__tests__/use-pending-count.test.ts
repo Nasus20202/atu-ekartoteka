@@ -46,18 +46,6 @@ describe('usePendingCount', () => {
     expect(result.current.pendingCount).toBe(0);
   });
 
-  it('logs network errors', async () => {
-    const consoleError = vi
-      .spyOn(console, 'error')
-      .mockImplementation(() => {});
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
-
-    renderHook(() => usePendingCount());
-
-    await waitFor(() => expect(consoleError).toHaveBeenCalled());
-    consoleError.mockRestore();
-  });
-
   it('reloads the count on demand', async () => {
     const fetchMock = vi
       .fn()

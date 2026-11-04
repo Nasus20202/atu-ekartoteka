@@ -9,6 +9,7 @@ import {
   type PageFetcher,
   useInfiniteList,
 } from '@/hooks/use-infinite-list';
+import { fetchJson } from '@/lib/swr/fetch-json';
 import { AccountStatus } from '@/lib/types';
 import type { UserDto } from '@/lib/types/dto/user-dto';
 import type { SortState, UserSortKey } from '@/lib/utils/sort';
@@ -16,6 +17,11 @@ import type { SortState, UserSortKey } from '@/lib/utils/sort';
 const SEARCH_DEBOUNCE_MS = 300;
 
 const getUserId = (user: UserDto) => user.id;
+
+interface UsersPageResponse {
+  users: UserDto[];
+  pagination: { totalPages: number; total: number };
+}
 
 /**
  * Infinitely scrolled, filtered and debounced-search list of users.
@@ -28,13 +34,11 @@ export function useAdminUsers(initialPage?: InfinitePage<UserDto>) {
   const [sort, setSort] = useState<SortState<UserSortKey> | null>(null);
 
   const fetchPage = useCallback<PageFetcher<UserDto>>(
-    async (page, signal) => {
+    async (page) => {
       const query = buildUsersQuery(filter, page, debouncedSearch, sort);
-      const response = await fetch(`/api/admin/users?${query}`, { signal });
-      if (!response.ok) {
-        throw new Error(`Users request failed: ${response.status}`);
-      }
-      const data = await response.json();
+      const data = await fetchJson<UsersPageResponse>(
+        `/api/admin/users?${query}`
+      );
       return {
         items: data.users,
         page,

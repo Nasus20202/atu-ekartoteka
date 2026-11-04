@@ -1,49 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback } from 'react';
+import useSWR from 'swr';
 
 import type { DatabaseStats } from '@/components/import/types';
+import { fetchJson } from '@/lib/swr/fetch-json';
+import { SWR_OPTIONS } from '@/lib/swr/swr-options';
+
+const STATS_URL = '/api/admin/stats';
 
 /** Database totals shown above the import form, refreshable after imports. */
 export function useDatabaseStats() {
-  const [dbStats, setDbStats] = useState<DatabaseStats | null>(null);
-  const [statsLoading, setStatsLoading] = useState(true);
+  const { data, isLoading, mutate } = useSWR<DatabaseStats>(
+    STATS_URL,
+    fetchJson,
+    SWR_OPTIONS
+  );
 
-  async function fetchStats(
-    options: { isCancelled?: () => boolean; skipLoading?: boolean } = {}
-  ) {
-    try {
-      if (!options.skipLoading) {
-        setStatsLoading(true);
-      }
-      const res = await fetch('/api/admin/stats');
+  const fetchStats = useCallback(async () => {
+    await mutate();
+  }, [mutate]);
 
-      if (res.ok && !options.isCancelled?.()) {
-        const data = await res.json();
-        setDbStats(data);
-      }
-    } catch {
-      // Ignore stats errors
-    } finally {
-      if (!options.isCancelled?.()) {
-        setStatsLoading(false);
-      }
-    }
-  }
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadStats() {
-      await fetchStats({ isCancelled: () => cancelled, skipLoading: true });
-    }
-
-    void loadStats();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return { dbStats, statsLoading, fetchStats };
+  return { dbStats: data ?? null, statsLoading: isLoading, fetchStats };
 }

@@ -12,6 +12,7 @@ describe('useTurnstileConfig', () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({
+        ok: true,
         json: () => Promise.resolve({ siteKey: 'key', enabled: true }),
       })
     );
@@ -43,7 +44,10 @@ describe('useTurnstileConfig', () => {
 
     const { result, unmount } = renderHook(() => useTurnstileConfig());
     unmount();
-    resolve({ json: () => Promise.resolve({ siteKey: 'k', enabled: true }) });
+    resolve({
+      ok: true,
+      json: () => Promise.resolve({ siteKey: 'k', enabled: true }),
+    });
     await Promise.resolve();
 
     expect(result.current).toBeNull();

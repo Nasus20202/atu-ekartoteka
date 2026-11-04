@@ -59,6 +59,7 @@
 - **Location**: `use-<name>.ts` with a named `use<Name>` export. App-wide hooks go in `src/hooks/`; feature-specific hooks are co-located with their components (e.g. `src/components/users/use-admin-users.ts`).
 - **Client boundary**: Add `'use client'` when the hook uses browser APIs, Next.js client hooks, or is imported by a Server Component. Hooks imported only from client components may omit it.
 - **Responsibility**: Hooks own state, effects, data fetching, and derived values; components own markup. Don't duplicate fetching/state logic across components — extract it into a hook.
+- **Client reads**: Data a client component fetches itself (search, paging, pickers, config) uses SWR with `SWR_OPTIONS` and `fetchJson` from `src/lib/swr`; don't hand-write fetch/`useEffect` state. A list seeded by the server wraps its content in `SwrScope` and gets the first page as `initialPage`/`fallbackData`.
 - **API**: Return a typed object (or `as const` tuple) with named fields; avoid positional boolean flags and hidden side effects.
 - **Tests**: Every hook has `__tests__/use-<name>.test.ts` next to it; component tests use `__tests__/<component>.test.tsx`; user flows go in `e2e/`.
 

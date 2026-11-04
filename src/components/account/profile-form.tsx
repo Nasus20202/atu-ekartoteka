@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { updateProfileAction } from '@/actions/profile';
 import { getPasswordChangeError } from '@/components/account/password-change';
 import { PasswordInput } from '@/components/account/password-input';
+import { AnimatedAlert } from '@/components/ui/animated-alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -85,11 +86,12 @@ export function ProfileForm({ initialName, authMethod }: ProfileFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {success && (
-        <div className="rounded-md bg-green-50 p-4 text-sm text-green-800 dark:bg-green-950 dark:text-green-200">
-          Profil został zaktualizowany
-        </div>
-      )}
+      <AnimatedAlert
+        show={success}
+        className="rounded-md border-transparent bg-green-50 p-4 text-green-800 dark:bg-green-950 dark:text-green-200"
+      >
+        Profil został zaktualizowany
+      </AnimatedAlert>
 
       {/* Name Section */}
       <div className="space-y-4">
