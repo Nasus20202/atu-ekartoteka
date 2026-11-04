@@ -117,6 +117,52 @@ describe('HoaListContent', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it('searches again when the search form is submitted', async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ homeownersAssociations: [hoa] }),
+    });
+    const user = userEvent.setup();
+    render(<HoaListContent initialHoas={[hoa]} />);
+
+    await user.type(screen.getByPlaceholderText('Wyszukaj...'), 'W0{Enter}');
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenLastCalledWith('/api/admin/hoa?search=W0')
+    );
+  });
+
+  it('leaves editing without saving on cancel', async () => {
+    const user = userEvent.setup();
+    render(<HoaListContent initialHoas={[hoa]} />);
+
+    await user.click(
+      screen.getByRole('button', { name: /zmień nazwę wspólnoty/i })
+    );
+    await user.click(screen.getByRole('button', { name: /anuluj/i }));
+
+    expect(screen.queryByDisplayValue('Wspólnota Testowa')).toBeNull();
+    expect(actionMock.renameHoaAction).not.toHaveBeenCalled();
+  });
+
+  it('keeps editing when the rename request throws', async () => {
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    actionMock.renameHoaAction.mockRejectedValue(new Error('network'));
+    const user = userEvent.setup();
+    render(<HoaListContent initialHoas={[hoa]} />);
+
+    await user.click(
+      screen.getByRole('button', { name: /zmień nazwę wspólnoty/i })
+    );
+    await user.click(screen.getByRole('button', { name: /zapisz/i }));
+
+    expect(screen.getByDisplayValue('Wspólnota Testowa')).toBeInTheDocument();
+    expect(consoleError).toHaveBeenCalled();
+    consoleError.mockRestore();
+  });
+
   it('does not request the list again when effects run twice', () => {
     render(
       <StrictMode>

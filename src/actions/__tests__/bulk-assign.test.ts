@@ -180,6 +180,20 @@ describe('bulkAssignAccountsAction', () => {
     expect(data).toEqual({ assigned: 0, skipped: 1, errors: 0 });
   });
 
+  it('returns a failure when the apartments cannot be loaded', async () => {
+    mockAuth.mockResolvedValueOnce(adminSession());
+    mockApartmentFindMany.mockRejectedValueOnce(new Error('DB down'));
+
+    const { bulkAssignAccountsAction } = await import('@/actions/bulk-users');
+    const result = await bulkAssignAccountsAction({ apartmentIds: ['apt-1'] });
+
+    expect(result).toEqual({
+      ok: false,
+      error: 'Nie udało się przypisać mieszkań',
+      code: 'failed',
+    });
+  });
+
   it('should track errors when DB transaction fails', async () => {
     mockAuth.mockResolvedValueOnce(adminSession());
     mockApartmentFindMany.mockResolvedValueOnce([

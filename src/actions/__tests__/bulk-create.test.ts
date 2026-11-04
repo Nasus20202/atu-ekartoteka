@@ -192,6 +192,20 @@ describe('bulkCreateAccountsAction', () => {
     expect(mockUserCreate).not.toHaveBeenCalled();
   });
 
+  it('returns a failure when the apartments cannot be loaded', async () => {
+    mockAuth.mockResolvedValueOnce(adminSession());
+    mockApartmentFindMany.mockRejectedValueOnce(new Error('DB down'));
+
+    const { bulkCreateAccountsAction } = await import('@/actions/bulk-users');
+    const result = await bulkCreateAccountsAction({ apartmentIds: ['apt-1'] });
+
+    expect(result).toEqual({
+      ok: false,
+      error: 'Nie udało się utworzyć kont',
+      code: 'failed',
+    });
+  });
+
   it('should track errors when DB transaction fails', async () => {
     mockAuth.mockResolvedValueOnce(adminSession());
     mockApartmentFindMany.mockResolvedValueOnce([
