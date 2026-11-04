@@ -28,7 +28,7 @@ context: |
   - No magic numbers or strings — use constants or enums
   - No unused code — delete it
   - No toast library — use Alert component or inline state for user feedback
-  - Admin pages use 'use client' with useState/useEffect/fetch directly (no SWR/React Query)
+  - Client reads (search, paging, pickers, config) use SWR with the shared options in src/lib/swr; mutations are Server Actions; no hand-written fetch/useEffect data hooks
   - Pre-commit hook runs lint-staged then vitest --run; commits are blocked on test or lint failures
 
   ## Domain

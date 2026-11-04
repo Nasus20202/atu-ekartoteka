@@ -270,8 +270,8 @@ The system SHALL allow admins to create multiple tenant accounts at once for apa
 #### Scenario: Unauthorized bulk create or assign
 
 - **GIVEN** a non-admin user
-- **WHEN** they call any of the bulk-create, bulk-assign, or unassigned-apartments endpoints
-- **THEN** the request is rejected with 401
+- **WHEN** they call the bulk-create or bulk-assign Server Action, or the unassigned-apartments endpoint
+- **THEN** the call is rejected (`forbidden` result for the actions, 403 for the endpoint)
 
 ### Requirement: Forced Password Change
 
@@ -292,8 +292,8 @@ The system SHALL force users created via bulk creation to change their temporary
 #### Scenario: Bypass routes not blocked
 
 - **GIVEN** a user with `mustChangePassword: true`
-- **WHEN** they navigate to `/change-password` or `/api/user/profile`
-- **THEN** the middleware does not redirect (allowing the password change to proceed)
+- **WHEN** they navigate to `/change-password` or submit the profile Server Action from that page
+- **THEN** the proxy does not redirect (allowing the password change to proceed)
 
 ---
 
