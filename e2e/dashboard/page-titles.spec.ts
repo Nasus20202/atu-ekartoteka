@@ -73,7 +73,7 @@ test.describe('Tenant page titles', () => {
     await userPage.goto(`/dashboard/charges/${apartmentId}`);
 
     await expect(
-      userPage.getByRole('heading', { name: 'Mieszkanie nie znalezione' })
+      userPage.getByRole('heading', { name: 'Naliczenia nie znalezione' })
     ).toBeVisible();
     await expect(userPage).toHaveTitle(GENERIC_CHARGES_TITLE);
   });

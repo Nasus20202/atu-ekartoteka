@@ -7,7 +7,12 @@ const mocks = vi.hoisted(() => ({
   requireAdminAccess: vi.fn(),
   loadApartmentDetail: vi.fn(),
   content: vi.fn(),
+  notFound: vi.fn(() => {
+    throw new Error('NEXT_NOT_FOUND');
+  }),
 }));
+
+vi.mock('next/navigation', () => ({ notFound: mocks.notFound }));
 
 vi.mock('@/lib/auth/require-admin-access', () => ({
   requireAdminAccess: mocks.requireAdminAccess,
@@ -42,12 +47,14 @@ describe('ApartmentDetailsSection', () => {
     });
   });
 
-  it('shows a message for an unknown apartment', async () => {
+  it('renders the not-found page for an unknown apartment', async () => {
     mocks.loadApartmentDetail.mockResolvedValue(null);
 
-    render(await ApartmentDetailsSection({ params }));
-
-    expect(screen.getByText('Nie znaleziono mieszkania')).toBeInTheDocument();
+    await expect(ApartmentDetailsSection({ params })).rejects.toThrow(
+      'NEXT_NOT_FOUND'
+    );
+    expect(mocks.notFound).toHaveBeenCalledOnce();
+    expect(mocks.content).not.toHaveBeenCalled();
   });
 
   it('does not load the apartment when the admin check fails', async () => {

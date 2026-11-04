@@ -81,7 +81,9 @@ test.describe('Tenant history window', () => {
     await page.keyboard.press('Escape');
 
     await page.goto(`/dashboard/payments/${seed.apartmentId}/${hiddenYear}`);
-    await expect(page.getByRole('heading', { name: '404' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Wpłaty nie znalezione' })
+    ).toBeVisible();
 
     await page.goto(`/dashboard/charges/${seed.apartmentId}`);
     await expect(

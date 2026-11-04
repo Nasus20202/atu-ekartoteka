@@ -78,7 +78,7 @@ The root not-found page SHALL set the title `Strona nie znaleziona` for unknown 
 
 ### Requirement: Error Page Titles
 
-The application error page SHALL set the title `Coś poszło nie tak!`, and the charges error page SHALL set the title `Wystąpił błąd`. Both titles SHALL use the app template.
+The application error page and the root-layout error page SHALL set the title `Coś poszło nie tak!`, and the charges error page SHALL set the title `Wystąpił błąd`. All titles SHALL use the app template.
 
 #### Scenario: Application error page
 

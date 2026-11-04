@@ -7,7 +7,12 @@ const mocks = vi.hoisted(() => ({
   requireAdminAccess: vi.fn(),
   loadApartmentsPage: vi.fn(),
   content: vi.fn(),
+  notFound: vi.fn(() => {
+    throw new Error('NEXT_NOT_FOUND');
+  }),
 }));
+
+vi.mock('next/navigation', () => ({ notFound: mocks.notFound }));
 
 vi.mock('@/lib/list-view-mode-server', () => ({
   getListViewMode: () => Promise.resolve('table'),
@@ -64,6 +69,22 @@ describe('HoaApartmentsSection', () => {
       },
       initialViewMode: 'table',
     });
+  });
+
+  it('renders the not-found page for an unknown association', async () => {
+    mocks.loadApartmentsPage.mockResolvedValue({
+      apartments: [],
+      hoa: null,
+      pagination,
+    });
+
+    await expect(
+      HoaApartmentsSection({
+        params: Promise.resolve({ hoaId: 'missing' }),
+        searchParams: Promise.resolve({}),
+      })
+    ).rejects.toThrow('NEXT_NOT_FOUND');
+    expect(mocks.content).not.toHaveBeenCalled();
   });
 
   it('does not query when the admin check fails', async () => {
