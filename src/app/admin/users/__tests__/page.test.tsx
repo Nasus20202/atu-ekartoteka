@@ -18,6 +18,10 @@ vi.mock('@/components/users/admin-users-section', () => ({
   },
 }));
 
+vi.mock('@/lib/auth/require-admin-access', () => ({
+  requireAdminAccess: vi.fn(),
+}));
+
 describe('AdminUsersPage', () => {
   it('renders the users when they are ready', async () => {
     pending.section = false;

@@ -13,17 +13,21 @@ vi.mock('@/components/apartments/hoa-list-section', () => ({
   },
 }));
 
+vi.mock('@/lib/auth/require-admin-access', () => ({
+  requireAdminAccess: vi.fn(),
+}));
+
 describe('ApartmentsPage', () => {
-  it('renders the list when its data is ready', () => {
+  it('renders the list when its data is ready', async () => {
     pending.section = false;
-    render(<ApartmentsPage />);
+    render(await ApartmentsPage());
 
     expect(screen.getByText('hoa-list-loaded')).toBeInTheDocument();
   });
 
-  it('shows the header and a skeleton while the list loads', () => {
+  it('shows the header and a skeleton while the list loads', async () => {
     pending.section = true;
-    render(<ApartmentsPage />);
+    render(await ApartmentsPage());
 
     expect(screen.getByText('Wspólnoty mieszkaniowe')).toBeInTheDocument();
     expect(

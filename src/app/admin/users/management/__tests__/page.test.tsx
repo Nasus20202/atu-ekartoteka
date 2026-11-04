@@ -110,6 +110,10 @@ function expandHoa(hoaName: string) {
   fireEvent.click(screen.getByText(hoaName));
 }
 
+vi.mock('@/lib/auth/require-admin-access', () => ({
+  requireAdminAccess: vi.fn(),
+}));
+
 describe('BulkCreateUsersPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -120,7 +124,7 @@ describe('BulkCreateUsersPage', () => {
   });
 
   it('renders HOA names collapsed by default', async () => {
-    render(<BulkCreateUsersPage />);
+    render(await BulkCreateUsersPage());
 
     await waitFor(() => {
       expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
@@ -131,7 +135,7 @@ describe('BulkCreateUsersPage', () => {
   });
 
   it('shows apartment content after expanding HOA', async () => {
-    render(<BulkCreateUsersPage />);
+    render(await BulkCreateUsersPage());
 
     await waitFor(() => {
       expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
@@ -151,7 +155,7 @@ describe('BulkCreateUsersPage', () => {
       json: async () => ({ hoas: [], pagination: SINGLE_PAGE }),
     } as Response);
 
-    render(<BulkCreateUsersPage />);
+    render(await BulkCreateUsersPage());
 
     await waitFor(() => {
       expect(screen.getByText(/Brak mieszkań bez kont/i)).toBeInTheDocument();
@@ -159,7 +163,7 @@ describe('BulkCreateUsersPage', () => {
   });
 
   it('confirm button is disabled when nothing is selected', async () => {
-    render(<BulkCreateUsersPage />);
+    render(await BulkCreateUsersPage());
 
     await waitFor(() => {
       expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
@@ -170,7 +174,7 @@ describe('BulkCreateUsersPage', () => {
   });
 
   it('selects individual apartment and enables confirm button', async () => {
-    render(<BulkCreateUsersPage />);
+    render(await BulkCreateUsersPage());
 
     await waitFor(() => {
       expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
@@ -190,7 +194,7 @@ describe('BulkCreateUsersPage', () => {
   });
 
   it('select-all checkbox appears after expanding and selects all apartments in that HOA', async () => {
-    render(<BulkCreateUsersPage />);
+    render(await BulkCreateUsersPage());
 
     await waitFor(() => {
       expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
@@ -209,7 +213,7 @@ describe('BulkCreateUsersPage', () => {
   });
 
   it('shows confirmation dialog with account list before creating', async () => {
-    render(<BulkCreateUsersPage />);
+    render(await BulkCreateUsersPage());
 
     await waitFor(() => {
       expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
@@ -244,7 +248,7 @@ describe('BulkCreateUsersPage', () => {
       data: { created: 2, skipped: 0, errors: 0 },
     });
 
-    render(<BulkCreateUsersPage />);
+    render(await BulkCreateUsersPage());
 
     await waitFor(() => {
       expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
@@ -290,7 +294,7 @@ describe('BulkCreateUsersPage', () => {
       code: 'failed',
     });
 
-    render(<BulkCreateUsersPage />);
+    render(await BulkCreateUsersPage());
 
     await waitFor(() => {
       expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
@@ -353,7 +357,7 @@ describe('BulkCreateUsersPage', () => {
       }),
     } as Response);
 
-    render(<BulkCreateUsersPage />);
+    render(await BulkCreateUsersPage());
 
     await waitFor(() => {
       expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
@@ -389,7 +393,7 @@ describe('BulkCreateUsersPage', () => {
       }),
     } as Response);
 
-    render(<BulkCreateUsersPage />);
+    render(await BulkCreateUsersPage());
 
     await waitFor(() => {
       expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
@@ -445,7 +449,7 @@ describe('BulkCreateUsersPage', () => {
       }),
     } as Response);
 
-    render(<BulkCreateUsersPage />);
+    render(await BulkCreateUsersPage());
 
     await waitFor(() => {
       expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
@@ -491,7 +495,7 @@ describe('BulkCreateUsersPage', () => {
       }),
     } as Response);
 
-    render(<BulkCreateUsersPage />);
+    render(await BulkCreateUsersPage());
 
     await waitFor(() => {
       expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
@@ -541,7 +545,7 @@ describe('BulkCreateUsersPage', () => {
       }),
     } as Response);
 
-    render(<BulkCreateUsersPage />);
+    render(await BulkCreateUsersPage());
 
     await waitFor(() => {
       expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
@@ -567,7 +571,7 @@ describe('BulkCreateUsersPage', () => {
       }) as Response;
 
     it('does not offer more HOAs when everything is loaded', async () => {
-      render(<BulkCreateUsersPage />);
+      render(await BulkCreateUsersPage());
 
       await waitFor(() => {
         expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
@@ -583,7 +587,7 @@ describe('BulkCreateUsersPage', () => {
         .mockResolvedValueOnce(page([mockHoas[0]], 1))
         .mockResolvedValueOnce(page([mockHoas[1]], 2));
 
-      render(<BulkCreateUsersPage />);
+      render(await BulkCreateUsersPage());
 
       await screen.findByText('Wspólnota Alfa');
       expandHoa('Wspólnota Alfa');
@@ -614,7 +618,7 @@ describe('BulkCreateUsersPage', () => {
           json: async () => ({ error: 'Brak uprawnień' }),
         } as Response);
 
-      render(<BulkCreateUsersPage />);
+      render(await BulkCreateUsersPage());
 
       await user.click(
         await screen.findByRole('button', { name: 'Pokaż więcej' })
@@ -634,7 +638,7 @@ describe('BulkCreateUsersPage', () => {
         } as Response)
         .mockResolvedValueOnce(page([mockHoas[0]], 1, 1));
 
-      render(<BulkCreateUsersPage />);
+      render(await BulkCreateUsersPage());
 
       fireEvent.click(
         await screen.findByRole('button', { name: 'Pokaż więcej' })
@@ -657,7 +661,7 @@ describe('BulkCreateUsersPage', () => {
           json: async () => ({ hoas: [mockHoas[0]], pagination: SINGLE_PAGE }),
         } as Response);
 
-      render(<BulkCreateUsersPage />);
+      render(await BulkCreateUsersPage());
 
       await waitFor(() => {
         expect(screen.getByText('Wspólnota Alfa')).toBeInTheDocument();
@@ -689,7 +693,7 @@ describe('BulkCreateUsersPage', () => {
           json: async () => ({ hoas: [], pagination: SINGLE_PAGE }),
         } as Response);
 
-      render(<BulkCreateUsersPage />);
+      render(await BulkCreateUsersPage());
 
       await waitFor(() => screen.getByText('Wspólnota Alfa'));
 
@@ -724,7 +728,7 @@ describe('BulkCreateUsersPage', () => {
         data: { assigned: 2, skipped: 0, errors: 0 },
       });
 
-      render(<BulkCreateUsersPage />);
+      render(await BulkCreateUsersPage());
 
       await waitFor(() => screen.getByText('Wspólnota Alfa'));
 

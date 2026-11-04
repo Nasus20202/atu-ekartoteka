@@ -5,8 +5,11 @@ import { HoaListSkeleton } from '@/components/apartments/hoa-list-skeleton';
 import { HoaNoticesButton } from '@/components/apartments/hoa-notices-button';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
+import { requireAdminAccess } from '@/lib/auth/require-admin-access';
 
-export default function ApartmentsPage() {
+export default async function ApartmentsPage() {
+  await requireAdminAccess();
+
   return (
     <Page maxWidth="7xl">
       <PageHeader

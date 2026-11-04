@@ -551,6 +551,22 @@ Every table view SHALL sort from a column header click, expose the active sort d
 - **WHEN** scrolling appends the next page
 - **THEN** the new rows continue the descending order without gaps or duplicates
 
+### Requirement: Page-Owned Skeletons
+
+Dashboard and admin routes SHALL NOT use a route-level loading state. Each page SHALL show its skeletons from its own Suspense boundaries, so the skeletons a page shows on reload are the ones it renders itself.
+
+#### Scenario: Reload of the dashboard
+
+- **GIVEN** a signed-in tenant on `/dashboard`
+- **WHEN** they reload the page
+- **THEN** the first response shows the greeting, notifications and section skeletons from the page's own boundaries
+
+#### Scenario: Reload of an admin page
+
+- **GIVEN** a signed-in admin on any `/admin` page
+- **WHEN** they reload the page
+- **THEN** the page shows the same skeletons as the page's own Suspense boundaries, with no separate route skeleton
+
 ### Requirement: Streamed Page Sections
 
 Every page that loads data SHALL render its static shell immediately and show each

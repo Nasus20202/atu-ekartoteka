@@ -13,25 +13,29 @@ vi.mock('@/components/apartments/apartment-details-section', () => ({
   },
 }));
 
-function renderPage() {
+async function renderPage() {
   return render(
-    <ApartmentDetailsPage
-      params={Promise.resolve({ hoaId: 'hoa-1', apartmentId: 'apt-1' })}
-    />
+    await ApartmentDetailsPage({
+      params: Promise.resolve({ hoaId: 'hoa-1', apartmentId: 'apt-1' }),
+    })
   );
 }
 
+vi.mock('@/lib/auth/require-admin-access', () => ({
+  requireAdminAccess: vi.fn(),
+}));
+
 describe('ApartmentDetailsPage', () => {
-  it('renders the details when they are ready', () => {
+  it('renders the details when they are ready', async () => {
     pending.section = false;
-    renderPage();
+    await renderPage();
 
     expect(screen.getByText('details-loaded')).toBeInTheDocument();
   });
 
-  it('shows a skeleton while the details load', () => {
+  it('shows a skeleton while the details load', async () => {
     pending.section = true;
-    renderPage();
+    await renderPage();
 
     expect(screen.queryByText('details-loaded')).not.toBeInTheDocument();
     expect(
