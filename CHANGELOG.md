@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.2] - 2026-11-04
+
+- refactor(routes): remove route loading states and fix admin access skeleton (#863)
+- chore(deps): update ghcr.io/nasus20202/atu-ekartoteka:latest docker digest to 959a14d (#862)
+
 ## [0.9.1] - 2026-11-04
 
 - chore(deps): update pnpm/action-setup digest to 73e4699 (#856)
