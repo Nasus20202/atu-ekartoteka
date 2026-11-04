@@ -1,28 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import useSWR from 'swr';
+
+import { fetchJson } from '@/lib/swr/fetch-json';
+import { SWR_OPTIONS } from '@/lib/swr/swr-options';
+
+const SETUP_CHECK_URL = '/api/setup/check';
 
 /** Whether the app still needs its first admin account. */
 export function useSetupStatus() {
-  const [isFirstAdmin, setIsFirstAdmin] = useState(false);
-  const [checkingSetup, setCheckingSetup] = useState(true);
+  const { data, isLoading } = useSWR<{ needsSetup: boolean }>(
+    SETUP_CHECK_URL,
+    fetchJson,
+    SWR_OPTIONS
+  );
 
-  useEffect(() => {
-    // Check if this is first run (no admin exists)
-    const checkSetupStatus = async () => {
-      try {
-        const response = await fetch('/api/setup/check');
-        const data = await response.json();
-        setIsFirstAdmin(data.needsSetup);
-      } catch (error) {
-        console.error('Failed to check setup status:', error);
-      } finally {
-        setCheckingSetup(false);
-      }
-    };
-
-    checkSetupStatus();
-  }, []);
-
-  return { isFirstAdmin, checkingSetup };
+  return { isFirstAdmin: data?.needsSetup ?? false, checkingSetup: isLoading };
 }

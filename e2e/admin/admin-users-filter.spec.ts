@@ -51,7 +51,14 @@ test.describe.serial('Admin Users Filter', () => {
       timeout: 10000,
     });
 
+    const searchResponse = adminPage.waitForResponse(
+      (resp) =>
+        resp.url().includes('/api/admin/apartments') &&
+        resp.url().includes('search=') &&
+        resp.status() === 200
+    );
     await adminPage.getByLabel(/Wybierz mieszkanie/i).fill('ul. Testowa 1/2B');
+    await searchResponse;
     const apartmentOption = adminPage.locator('label').filter({
       hasText: externalOwnerId,
     });

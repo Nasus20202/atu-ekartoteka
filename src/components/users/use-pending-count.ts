@@ -1,18 +1,23 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
+import useSWR from 'swr';
 
+import { fetchJson } from '@/lib/swr/fetch-json';
+import { SWR_OPTIONS } from '@/lib/swr/swr-options';
 import { AccountStatus } from '@/lib/types';
 
-const PENDING_COUNT_QUERY = new URLSearchParams({
+const PENDING_COUNT_URL = `/api/admin/users?${new URLSearchParams({
   status: AccountStatus.PENDING,
   limit: '1',
-}).toString();
+})}`;
 
-async function fetchPendingCount(): Promise<number | null> {
-  const response = await fetch(`/api/admin/users?${PENDING_COUNT_QUERY}`);
-  if (!response.ok) return null;
-  const data = await response.json();
+interface PendingCountResponse {
+  pagination?: { total?: number };
+}
+
+async function fetchPendingCount(url: string): Promise<number> {
+  const data = await fetchJson<PendingCountResponse>(url);
   return data.pagination?.total ?? 0;
 }
 
@@ -21,27 +26,15 @@ async function fetchPendingCount(): Promise<number | null> {
  * count the server already loaded, so the mount does not request it again.
  */
 export function usePendingCount(initialCount?: number) {
-  const [pendingCount, setPendingCount] = useState(initialCount ?? 0);
-  const [version, setVersion] = useState(0);
+  const { data, mutate } = useSWR(PENDING_COUNT_URL, fetchPendingCount, {
+    ...SWR_OPTIONS,
+    fallbackData: initialCount,
+    revalidateOnMount: initialCount === undefined ? undefined : false,
+  });
 
-  useEffect(() => {
-    // The server already counted them for the first render
-    if (initialCount !== undefined && version === 0) return;
+  const reload = useCallback(() => {
+    void mutate();
+  }, [mutate]);
 
-    let cancelled = false;
-    fetchPendingCount()
-      .then((count) => {
-        if (!cancelled && count !== null) setPendingCount(count);
-      })
-      .catch((error) => {
-        console.error('Failed to fetch pending users count:', error);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [version, initialCount]);
-
-  const reload = useCallback(() => setVersion((current) => current + 1), []);
-
-  return { pendingCount, reload };
+  return { pendingCount: data ?? 0, reload };
 }

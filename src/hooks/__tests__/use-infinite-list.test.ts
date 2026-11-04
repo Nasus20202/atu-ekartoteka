@@ -79,7 +79,7 @@ describe('useInfiniteList', () => {
 
     await act(async () => next.resolve(pageOf(1, ['y1'])));
     expect(result.current.items.map(getId)).toEqual(['y1']);
-    expect(fetchPage).toHaveBeenLastCalledWith(1, expect.any(AbortSignal));
+    expect(fetchPage).toHaveBeenLastCalledWith(1);
   });
 
   it('shows the loading state when a query changes before anything loaded', async () => {
@@ -144,7 +144,7 @@ describe('useInfiniteList', () => {
 
     act(() => result.current.loadMore());
     await waitFor(() => expect(result.current.error).toBeNull());
-    expect(fetchPage).toHaveBeenLastCalledWith(2, expect.any(AbortSignal));
+    expect(fetchPage).toHaveBeenLastCalledWith(2);
     expect(result.current.items.map(getId)).toEqual(['a', 'b']);
   });
 

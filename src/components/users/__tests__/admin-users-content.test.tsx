@@ -169,18 +169,14 @@ describe('AdminUsersContent', () => {
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith(
-        '/api/admin/users?status=PENDING&page=1',
-        expect.anything()
+        '/api/admin/users?status=PENDING&page=1'
       );
     });
 
     fireEvent.click(screen.getByRole('button', { name: /administratorzy/i }));
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith(
-        '/api/admin/users?role=ADMIN&page=1',
-        expect.anything()
-      );
+      expect(fetch).toHaveBeenCalledWith('/api/admin/users?role=ADMIN&page=1');
     });
   });
 
@@ -350,8 +346,7 @@ describe('AdminUsersContent', () => {
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith(
-        '/api/admin/users?status=PENDING&page=1&sort=name&order=asc',
-        expect.anything()
+        '/api/admin/users?status=PENDING&page=1&sort=name&order=asc'
       );
     });
   });
@@ -389,8 +384,7 @@ describe('AdminUsersContent', () => {
       expect(screen.getByText('approved@example.com')).toBeInTheDocument();
     });
     expect(fetch).toHaveBeenCalledWith(
-      '/api/admin/users?status=PENDING&page=2',
-      expect.anything()
+      '/api/admin/users?status=PENDING&page=2'
     );
     expect(screen.getByText('pending@example.com')).toBeInTheDocument();
     expect(
@@ -527,8 +521,7 @@ describe('AdminUsersContent', () => {
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith(
-        '/api/admin/users?status=PENDING&page=1',
-        expect.anything()
+        '/api/admin/users?status=PENDING&page=1'
       );
     });
 
@@ -540,8 +533,7 @@ describe('AdminUsersContent', () => {
     await waitFor(
       () => {
         expect(fetch).toHaveBeenCalledWith(
-          '/api/admin/users?status=PENDING&page=1&search=anna',
-          expect.anything()
+          '/api/admin/users?status=PENDING&page=1&search=anna'
         );
       },
       { timeout: 1500 }

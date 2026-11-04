@@ -57,8 +57,10 @@ describe('useAvailableApartments', () => {
     );
     rerender({ search: ' 17/12 ' });
 
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
-    expect(requestedParams(fetchMock).get('search')).toBe('17/12');
+    await waitFor(() =>
+      expect(requestedParams(fetchMock).get('search')).toBe('17/12')
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   it('keeps the list empty when the request fails', async () => {
@@ -71,18 +73,6 @@ describe('useAvailableApartments', () => {
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
     expect(result.current).toEqual([]);
-  });
-
-  it('logs network errors', async () => {
-    const consoleError = vi
-      .spyOn(console, 'error')
-      .mockImplementation(() => {});
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
-
-    renderHook(() => useAvailableApartments(selectedUser, ''));
-
-    await waitFor(() => expect(consoleError).toHaveBeenCalled());
-    consoleError.mockRestore();
   });
 
   it('ignores results that arrive after unmount', async () => {

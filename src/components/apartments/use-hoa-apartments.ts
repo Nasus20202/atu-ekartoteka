@@ -8,6 +8,7 @@ import {
   type PageFetcher,
   useInfiniteList,
 } from '@/hooks/use-infinite-list';
+import { fetchJson } from '@/lib/swr/fetch-json';
 import type {
   ApartmentSummaryDto,
   HomeownersAssociationNoticeDto,
@@ -17,6 +18,12 @@ import type { ApartmentSortKey, SortState } from '@/lib/utils/sort';
 const PAGE_SIZE = 20;
 
 const getApartmentId = (apartment: ApartmentSummaryDto) => apartment.id;
+
+interface HoaApartmentsResponse {
+  apartments: ApartmentSummaryDto[];
+  hoa: HomeownersAssociationNoticeDto | null;
+  pagination: { page: number; totalPages: number; total: number };
+}
 
 export interface HoaApartmentsInitialData {
   hoa: HomeownersAssociationNoticeDto | null;
@@ -42,7 +49,7 @@ export function useHoaApartments(
   const [sort, setSort] = useState<SortState<ApartmentSortKey> | null>(null);
 
   const fetchPage = useCallback<PageFetcher<ApartmentSummaryDto>>(
-    async (page, signal) => {
+    async (page) => {
       const urlParams = new URLSearchParams({
         page: page.toString(),
         limit: PAGE_SIZE.toString(),
@@ -54,13 +61,9 @@ export function useHoaApartments(
         urlParams.set('sort', sort.key);
         urlParams.set('order', sort.direction);
       }
-      const response = await fetch(`/api/admin/apartments?${urlParams}`, {
-        signal,
-      });
-      if (!response.ok) {
-        throw new Error(`Apartments request failed: ${response.status}`);
-      }
-      const data = await response.json();
+      const data = await fetchJson<HoaApartmentsResponse>(
+        `/api/admin/apartments?${urlParams}`
+      );
       if (data.hoa) setHoa(data.hoa);
       return { items: data.apartments, ...data.pagination };
     },

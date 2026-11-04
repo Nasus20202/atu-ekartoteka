@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import useSWR from 'swr';
 
 import { NoticeSection } from '@/components/apartments/hoa-notice-card';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { fetchJson } from '@/lib/swr/fetch-json';
+import { SWR_OPTIONS } from '@/lib/swr/swr-options';
 
 export interface HoaNoticeItem {
   id: string;
@@ -27,6 +29,7 @@ interface HoaNoticesDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+const NOTICES_URL = '/api/admin/hoa/notices';
 const LOAD_ERROR_MESSAGE = 'Nie udało się pobrać nagłówków i stopek.';
 
 function HoaNoticeEntry({ hoa }: { hoa: HoaNoticeItem }) {
@@ -51,38 +54,11 @@ export function HoaNoticesDialog({
   open,
   onOpenChange,
 }: HoaNoticesDialogProps) {
-  const [hoas, setHoas] = useState<HoaNoticeItem[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    let cancelled = false;
-
-    async function loadNotices() {
-      try {
-        const response = await fetch('/api/admin/hoa/notices');
-        if (!response.ok) {
-          throw new Error(`Request failed with status ${response.status}`);
-        }
-        const data = await response.json();
-        if (!cancelled) {
-          setHoas(data.homeownersAssociations);
-          setError(null);
-        }
-      } catch (fetchError) {
-        console.error('Failed to fetch HOA notices:', fetchError);
-        if (!cancelled) {
-          setError(LOAD_ERROR_MESSAGE);
-        }
-      }
-    }
-
-    void loadNotices();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [open]);
+  const { data, error: loadError } = useSWR<{
+    homeownersAssociations: HoaNoticeItem[];
+  }>(open ? NOTICES_URL : null, fetchJson, SWR_OPTIONS);
+  const hoas = data?.homeownersAssociations ?? null;
+  const error = loadError ? LOAD_ERROR_MESSAGE : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

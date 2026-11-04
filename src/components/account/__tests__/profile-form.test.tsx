@@ -224,6 +224,13 @@ describe('ProfileForm', () => {
         screen.getByText(/profil został zaktualizowany/i)
       ).toBeInTheDocument();
     });
+    expect(screen.getByRole('alert')).toHaveAttribute('data-state', 'open');
+  });
+
+  it('should not render the success message before an update', () => {
+    render(<ProfileForm initialName="" authMethod={AuthMethod.CREDENTIALS} />);
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('should clear password fields after successful update', async () => {

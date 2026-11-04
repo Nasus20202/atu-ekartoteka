@@ -1,6 +1,7 @@
 import { loadUsersPage } from '@/app/api/admin/users/load-users-page';
 import { parseUsersQuery } from '@/app/api/admin/users/users-query';
 import { REVEAL_CLASS } from '@/components/layout/reveal';
+import { SwrScope } from '@/components/providers/swr-scope';
 import { AdminUsersContent } from '@/components/users/admin-users-content';
 import { buildUsersQuery } from '@/components/users/utils';
 import { requireAdminAccess } from '@/lib/auth/require-admin-access';
@@ -28,10 +29,12 @@ export async function AdminUsersSection() {
 
   return (
     <div className={REVEAL_CLASS}>
-      <AdminUsersContent
-        initialPage={{ items: users, ...pagination }}
-        initialViewMode={viewMode}
-      />
+      <SwrScope>
+        <AdminUsersContent
+          initialPage={{ items: users, ...pagination }}
+          initialViewMode={viewMode}
+        />
+      </SwrScope>
     </div>
   );
 }

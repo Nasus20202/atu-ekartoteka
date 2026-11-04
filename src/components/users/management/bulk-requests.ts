@@ -25,11 +25,10 @@ const BULK_FAILED = {
 
 async function requestJson<T>(
   url: string,
-  fallbackError: string,
-  init?: RequestInit
+  fallbackError: string
 ): Promise<RequestResult<T>> {
   try {
-    const response = await fetch(url, init);
+    const response = await fetch(url);
     const data = await response.json();
     return response.ok ? { data } : { error: data.error || fallbackError };
   } catch {
@@ -45,8 +44,7 @@ export interface UnassignedHoasPage {
 
 export async function fetchUnassignedHoas(
   mode: BulkMode,
-  page = 1,
-  signal?: AbortSignal
+  page = 1
 ): Promise<RequestResult<UnassignedHoasPage>> {
   const modeParam = mode === 'assign' ? 'assignable' : 'creatable';
   const result = await requestJson<{
@@ -54,8 +52,7 @@ export async function fetchUnassignedHoas(
     pagination: { page: number; totalPages: number };
   }>(
     `/api/admin/unassigned-apartments?mode=${modeParam}&page=${page}`,
-    LOAD_APARTMENTS_FAILED,
-    signal && { signal }
+    LOAD_APARTMENTS_FAILED
   );
   return result.error === undefined
     ? {

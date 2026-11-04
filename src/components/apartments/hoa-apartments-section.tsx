@@ -1,6 +1,7 @@
 import { loadApartmentsPage } from '@/app/api/admin/apartments/load-apartments-page';
 import { HoaApartmentsContent } from '@/components/apartments/hoa-apartments-content';
 import { REVEAL_CLASS } from '@/components/layout/reveal';
+import { SwrScope } from '@/components/providers/swr-scope';
 import { requireAdminAccess } from '@/lib/auth/require-admin-access';
 import { LIST_VIEW_STORAGE_KEYS } from '@/lib/list-view-mode';
 import { getListViewMode } from '@/lib/list-view-mode-server';
@@ -35,11 +36,13 @@ export async function HoaApartmentsSection({
 
   return (
     <div className={REVEAL_CLASS}>
-      <HoaApartmentsContent
-        hoaId={hoaId}
-        initial={{ hoa, page: { items: apartments, ...pagination } }}
-        initialViewMode={viewMode}
-      />
+      <SwrScope>
+        <HoaApartmentsContent
+          hoaId={hoaId}
+          initial={{ hoa, page: { items: apartments, ...pagination } }}
+          initialViewMode={viewMode}
+        />
+      </SwrScope>
     </div>
   );
 }
