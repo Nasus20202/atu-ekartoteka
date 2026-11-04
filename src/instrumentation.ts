@@ -8,6 +8,34 @@
  * so that PinoInstrumentation can hook into Pino properly.
  */
 
+/**
+ * Logs each failed request with its error digest, the ID the error page shows,
+ * so a report can be matched to the trace when tracing is enabled.
+ */
+export async function onRequestError(
+  error: Error & { digest?: string },
+  request: { path: string }
+) {
+  if (process.env.NEXT_RUNTIME !== 'nodejs') {
+    return;
+  }
+
+  const { getActiveTraceId } = await import('@/lib/opentelemetry/active-trace');
+  const { createLogger } = await import('@/lib/logger');
+  const logger = createLogger('request-error');
+  const traceId = getActiveTraceId();
+
+  logger.error(
+    {
+      digest: error.digest,
+      path: request.path,
+      error: error.message,
+      ...(traceId ? { traceId } : {}),
+    },
+    'Request failed'
+  );
+}
+
 export async function register() {
   // Double-check we're on Node.js server (not Edge runtime or client)
   if (process.env.NEXT_RUNTIME === 'nodejs') {
