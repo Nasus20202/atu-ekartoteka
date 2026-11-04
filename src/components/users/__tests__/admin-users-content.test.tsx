@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -161,6 +167,7 @@ describe('AdminUsersContent', () => {
     window.localStorage.clear();
     confirmMock.mockResolvedValue(true);
     pendingCountMock.value = 0;
+    vi.mocked(fetch).mockReset();
     vi.mocked(fetch).mockResolvedValue(usersResponse());
   });
 
@@ -512,6 +519,151 @@ describe('AdminUsersContent', () => {
     await waitFor(() => {
       expect(confirmMock).toHaveBeenCalledWith(
         expect.objectContaining({ title: 'Odrzuć użytkownika' })
+      );
+    });
+  });
+
+  it('rejects a pending user straight from the list', async () => {
+    const user = userEvent.setup();
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(usersResponse([pendingUser]))
+      .mockResolvedValueOnce(usersResponse([]));
+    actionMock.updateUserStatusAction.mockResolvedValueOnce({
+      ok: true,
+      data: {},
+    });
+
+    render(<AdminUsersContent />);
+
+    await user.click(
+      (await screen.findAllByRole('button', { name: /^odrzuć$/i }))[0]
+    );
+
+    await waitFor(() => {
+      expect(actionMock.updateUserStatusAction).toHaveBeenCalledWith({
+        userId: 'user-1',
+        status: 'REJECTED',
+        apartmentIds: undefined,
+      });
+    });
+  });
+
+  it('approves a pending user with the chosen apartments', async () => {
+    const user = userEvent.setup();
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(usersResponse([pendingUser]))
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          apartments: [
+            {
+              id: 'apt-2',
+              externalOwnerId: 'own-2',
+              externalApartmentId: 'ext-2',
+              owner: 'Jan Kowalski',
+              email: 'pending@example.com',
+              address: 'Polna',
+              building: '3',
+              number: '1',
+              postalCode: '00-002',
+              city: 'Warszawa',
+              shareRatio: 0.5,
+              isActive: true,
+            },
+          ],
+        }),
+      } as Response)
+      .mockResolvedValueOnce(usersResponse([]));
+    actionMock.updateUserStatusAction.mockResolvedValueOnce({
+      ok: true,
+      data: {},
+    });
+
+    render(<AdminUsersContent />);
+
+    await user.click(
+      (await screen.findAllByRole('button', { name: /zatwierdź/i }))[0]
+    );
+    await user.click(await screen.findByLabelText(/polna 3\/1/i));
+    await user.click(
+      within(screen.getByRole('dialog')).getByRole('button', {
+        name: /^zatwierdź$/i,
+      })
+    );
+
+    await waitFor(() => {
+      expect(actionMock.updateUserStatusAction).toHaveBeenCalledWith({
+        userId: 'user-1',
+        status: 'APPROVED',
+        apartmentIds: ['apt-2'],
+      });
+    });
+  });
+
+  it('deselects an apartment that was chosen before', async () => {
+    const user = userEvent.setup();
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(usersResponse([pendingUser]))
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          apartments: [
+            {
+              id: 'apt-2',
+              externalOwnerId: 'own-2',
+              externalApartmentId: 'ext-2',
+              owner: 'Jan Kowalski',
+              email: 'pending@example.com',
+              address: 'Polna',
+              building: '3',
+              number: '1',
+              postalCode: '00-002',
+              city: 'Warszawa',
+              shareRatio: 0.5,
+              isActive: true,
+            },
+          ],
+        }),
+      } as Response);
+
+    render(<AdminUsersContent />);
+
+    await user.click(
+      (await screen.findAllByRole('button', { name: /zatwierdź/i }))[0]
+    );
+    const option = await screen.findByLabelText(/polna 3\/1/i);
+    await user.click(option);
+    expect(option).toBeChecked();
+    await user.click(option);
+
+    expect(option).not.toBeChecked();
+  });
+
+  it('rejects a user from the status dialog', async () => {
+    const user = userEvent.setup();
+    const rejectedCandidate = { ...pendingUser, status: 'APPROVED' };
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(usersResponse([rejectedCandidate]))
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ apartments: [] }),
+      } as Response)
+      .mockResolvedValueOnce(usersResponse([]));
+    actionMock.updateUserStatusAction.mockResolvedValueOnce({
+      ok: true,
+      data: {},
+    });
+
+    render(<AdminUsersContent />);
+
+    await user.click(
+      (await screen.findAllByRole('button', { name: /zmień status/i }))[0]
+    );
+    await user.click(screen.getByRole('button', { name: /^odrzucony$/i }));
+
+    await waitFor(() => {
+      expect(actionMock.updateUserStatusAction).toHaveBeenCalledWith(
+        expect.objectContaining({ status: 'REJECTED' })
       );
     });
   });
