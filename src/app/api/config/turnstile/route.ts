@@ -1,3 +1,4 @@
+/* eslint-disable local/require-api-auth-guard -- Public Turnstile site key, needed before login */
 import { connection, NextResponse } from 'next/server';
 
 export async function GET() {

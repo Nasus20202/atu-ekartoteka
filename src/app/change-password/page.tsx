@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 
-import { updateProfileAction } from '@/actions/profile';
+import { updateProfileAction } from '@/actions/account/profile';
 import { AuthLayout } from '@/components/layout/auth-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';

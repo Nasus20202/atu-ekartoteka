@@ -34,19 +34,6 @@ export async function GET() {
       filename: 'src/app/api/reports/route.ts',
     },
     {
-      // Public route: the NextAuth handler is allowed to import auth directly.
-      code: "import { auth } from '@/auth';",
-      filename: 'src/app/api/auth/[...nextauth]/route.ts',
-    },
-    {
-      code: 'export async function GET() { return new Response(); }',
-      filename: 'src/app/api/health/route.ts',
-    },
-    {
-      code: 'export async function POST() {}',
-      filename: 'src/app/api/register/route.ts',
-    },
-    {
       // Not an API route module.
       code: 'export const value = 1;',
       filename: 'src/lib/auth/providers.ts',

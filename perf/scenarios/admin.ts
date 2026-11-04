@@ -47,7 +47,6 @@ function browseRandomHoa() {
     `/api/admin/apartments?hoaId=${hoaId}&page=1&limit=20`,
     'admin hoa apartments'
   );
-  getJson(`/api/admin/hoa/${hoaId}/financial-summary`, 'admin hoa summary');
 
   const apartmentId = randomApartmentId();
   getPage(

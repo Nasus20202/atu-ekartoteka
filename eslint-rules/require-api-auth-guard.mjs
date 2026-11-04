@@ -18,20 +18,6 @@ const GUARD_MODULES = new Set([
   '@/lib/auth/require-admin',
 ]);
 
-const PUBLIC_ROUTES = new Set([
-  'src/app/api/auth/[...nextauth]/route.ts',
-  'src/app/api/config/google/route.ts',
-  'src/app/api/config/turnstile/route.ts',
-  'src/app/api/forgot-password/route.ts',
-  'src/app/api/health/route.ts',
-  'src/app/api/health/liveness/route.ts',
-  'src/app/api/health/readiness/route.ts',
-  'src/app/api/register/route.ts',
-  'src/app/api/reset-password/route.ts',
-  'src/app/api/setup/check/route.ts',
-  'src/app/api/verify-email/route.ts',
-]);
-
 function toApiPath(filename) {
   const normalized = filename.split(path.sep).join('/');
 
@@ -53,7 +39,7 @@ const requireApiAuthGuard = {
     },
     messages: {
       missingGuard:
-        'API route {{file}} never calls requireUser()/requireAdmin(). Add the guard call, or add the route to PUBLIC_ROUTES in eslint-rules/require-api-auth-guard.mjs if it is public.',
+        'API route {{file}} never calls requireUser()/requireAdmin(). Add the guard call, or disable this rule for the file with a reason (/* eslint-disable local/require-api-auth-guard -- reason */) if it is public.',
     },
     schema: [],
   },
@@ -61,11 +47,7 @@ const requireApiAuthGuard = {
   create(context) {
     const apiPath = toApiPath(context.filename);
 
-    if (
-      !apiPath ||
-      !apiPath.endsWith('/route.ts') ||
-      PUBLIC_ROUTES.has(apiPath)
-    ) {
+    if (!apiPath || !apiPath.endsWith('/route.ts')) {
       return {};
     }
 

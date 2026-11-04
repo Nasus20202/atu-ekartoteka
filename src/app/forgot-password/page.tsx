@@ -4,6 +4,8 @@ import { Mail } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
+import { unwrapResult } from '@/actions/action-result';
+import { forgotPasswordAction } from '@/actions/auth/forgot-password';
 import { TurnstileField } from '@/components/auth/turnstile-field';
 import { AuthLayout } from '@/components/layout/auth-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -31,17 +33,9 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, turnstileToken: turnstile.token }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Wystąpił błąd');
-      }
+      unwrapResult(
+        await forgotPasswordAction({ email, turnstileToken: turnstile.token })
+      );
 
       setSuccess(true);
     } catch (err) {

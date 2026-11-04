@@ -6,9 +6,11 @@ import VerifyEmailPage from '@/app/verify-email/page';
 
 const mockPush = vi.fn();
 const mockGet = vi.fn((): string | null => 'verify-token');
-const mockFetch = vi.fn();
+const verifyEmailActionMock = vi.hoisted(() => vi.fn());
 
-vi.stubGlobal('fetch', mockFetch);
+vi.mock('@/actions/auth/verify-email', () => ({
+  verifyEmailAction: verifyEmailActionMock,
+}));
 
 vi.mock('next/navigation', () => ({
   useRouter: vi.fn(),
@@ -34,7 +36,7 @@ describe('VerifyEmailPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGet.mockReturnValue('verify-token');
-    mockFetch.mockResolvedValue({ ok: true, json: async () => ({}) });
+    verifyEmailActionMock.mockResolvedValue({ ok: true, data: undefined });
     vi.mocked(useRouter).mockReturnValue({
       push: mockPush,
     } as unknown as ReturnType<typeof useRouter>);
@@ -65,13 +67,14 @@ describe('VerifyEmailPage', () => {
     expect(
       screen.getByText('Brak tokenu weryfikacyjnego w linku')
     ).toBeInTheDocument();
-    expect(mockFetch).not.toHaveBeenCalled();
+    expect(verifyEmailActionMock).not.toHaveBeenCalled();
   });
 
   it('shows the API error message when the token is rejected', async () => {
-    mockFetch.mockResolvedValue({
+    verifyEmailActionMock.mockResolvedValue({
       ok: false,
-      json: async () => ({ error: 'Token wygasł' }),
+      code: 'invalid',
+      error: 'Token wygasł',
     });
 
     render(<VerifyEmailPage />);

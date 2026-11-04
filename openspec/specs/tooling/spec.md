@@ -314,7 +314,9 @@ request time so the values are not frozen into the build.
 Server Actions SHALL be exported functions of `'use server'` modules that receive
 explicit, validated arguments. Inline actions that capture variables SHALL NOT be
 used, so no closure is encrypted and `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` is not
-required. Reads SHALL NOT use Server Actions.
+required. Reads SHALL NOT use Server Actions. Server Actions SHALL live in
+`src/actions/<feature>/` (for example `auth`, `account`, `users`, `apartments`,
+`settings`) with their tests in that folder's `__tests__`.
 
 #### Scenario: Inline action
 
@@ -329,7 +331,19 @@ required. Reads SHALL NOT use Server Actions.
 
 ### Requirement: Client Reads With SWR
 
-Data a Client Component fetches by itself SHALL be read with SWR through a `GET` route, using the shared options in `src/lib/swr`. Mutations SHALL be Server Actions. A list seeded with server-loaded data SHALL NOT request that first page again on mount and SHALL sit in a `SwrScope`.
+Data a Client Component fetches by itself SHALL be read with SWR through a `GET` route, using the shared options in `src/lib/swr`. Mutations SHALL be Server Actions, except the stable JSON API write routes `/api/admin/import` and `/api/admin/import/validate`, which SHALL be sent with `useSWRMutation` using the shared `jsonPoster` fetcher. Public (signed-out) mutations SHALL be Server Actions that carry a file-level `eslint-disable local/require-action-auth-guard` comment stating the reason. A client-side config read such as the Google sign-in config SHALL also use SWR. A list seeded with server-loaded data SHALL NOT request that first page again on mount and SHALL sit in a `SwrScope`.
+
+#### Scenario: Stable API write
+
+- **GIVEN** a Client Component submits to a stable JSON API route such as `/api/admin/import`
+- **WHEN** the mutation is written
+- **THEN** it uses `useSWRMutation` with `jsonPoster` and the server's `error` message is shown on failure
+
+#### Scenario: New write
+
+- **GIVEN** a developer adds a mutation that is not a stable API route
+- **WHEN** the mutation is written
+- **THEN** it is a Server Action, not a `useSWRMutation` call
 
 #### Scenario: Server-loaded first page
 

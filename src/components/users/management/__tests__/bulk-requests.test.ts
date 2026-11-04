@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
-  fetchUnassignedHoas,
   formatBulkResult,
   runBulkOperation,
 } from '@/components/users/management/bulk-requests';
@@ -11,15 +10,7 @@ const actionMock = vi.hoisted(() => ({
   bulkAssignAccountsAction: vi.fn(),
 }));
 
-vi.mock('@/actions/bulk-users', () => actionMock);
-
-function stubResponse(ok: boolean, body: object) {
-  const fetchMock = vi
-    .fn()
-    .mockResolvedValue({ ok, json: () => Promise.resolve(body) });
-  vi.stubGlobal('fetch', fetchMock);
-  return fetchMock;
-}
+vi.mock('@/actions/users/bulk-users', () => actionMock);
 
 describe('bulk requests', () => {
   beforeEach(() => {
@@ -28,35 +19,6 @@ describe('bulk requests', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
-  });
-
-  it('fetches HOAs for the mode', async () => {
-    const fetchMock = stubResponse(true, {
-      hoas: [{ hoaId: 'h1' }],
-      pagination: { page: 1, limit: 10, total: 25, totalPages: 3 },
-    });
-
-    await expect(fetchUnassignedHoas('assign')).resolves.toEqual({
-      data: { hoas: [{ hoaId: 'h1' }], page: 1, totalPages: 3 },
-    });
-    await fetchUnassignedHoas('create', 2);
-
-    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
-      '/api/admin/unassigned-apartments?mode=assignable&page=1',
-      '/api/admin/unassigned-apartments?mode=creatable&page=2',
-    ]);
-  });
-
-  it('returns the API error or a fallback when loading fails', async () => {
-    stubResponse(false, { error: 'Brak uprawnień' });
-    await expect(fetchUnassignedHoas('create')).resolves.toEqual({
-      error: 'Brak uprawnień',
-    });
-
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
-    await expect(fetchUnassignedHoas('create')).resolves.toEqual({
-      error: 'Nie udało się pobrać listy mieszkań',
-    });
   });
 
   it('runs the create action with the selected apartments', async () => {

@@ -1,4 +1,7 @@
-import { createUserAction, updateUserStatusAction } from '@/actions/users';
+import {
+  createUserAction,
+  updateUserStatusAction,
+} from '@/actions/users/users';
 import type { NewUserFormData } from '@/components/users/types';
 import type { AccountStatus } from '@/lib/types';
 

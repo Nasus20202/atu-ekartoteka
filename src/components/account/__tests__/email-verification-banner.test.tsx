@@ -6,7 +6,7 @@ import { EmailVerificationBanner } from '@/components/account/email-verification
 
 const mocks = vi.hoisted(() => ({ resend: vi.fn() }));
 
-vi.mock('@/actions/verification', () => ({
+vi.mock('@/actions/account/verification', () => ({
   resendVerificationAction: mocks.resend,
 }));
 

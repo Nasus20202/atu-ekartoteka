@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { setApartmentActiveAction } from '@/actions/apartments';
+import { setApartmentActiveAction } from '@/actions/apartments/apartments';
 import { ApartmentInfoCard } from '@/components/apartments/apartment-info-card';
 import { AssignedUserCard } from '@/components/apartments/assigned-user-card';
 import { ChargeNotificationsCard } from '@/components/apartments/charge-notifications-card';

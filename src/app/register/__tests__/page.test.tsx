@@ -6,6 +6,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import RegisterPage from '@/app/register/page';
 
+const { registerActionMock } = vi.hoisted(() => ({
+  registerActionMock: vi.fn(),
+}));
+
+vi.mock('@/actions/auth/register', () => ({
+  registerAction: registerActionMock,
+}));
+
 vi.mock('next-auth/react', () => ({
   signIn: vi.fn(),
 }));
@@ -65,6 +73,10 @@ describe('RegisterPage', () => {
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
+    registerActionMock.mockResolvedValue({
+      ok: true,
+      data: { autoLoginToken: 'token-123', requiresVerification: true },
+    });
     vi.clearAllMocks();
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.mocked(useRouter).mockReturnValue({
@@ -84,13 +96,6 @@ describe('RegisterPage', () => {
         return Promise.resolve({
           ok: true,
           json: async () => ({ enabled: false, siteKey: null }),
-        } as Response);
-      }
-
-      if (String(url).includes('/api/register')) {
-        return Promise.resolve({
-          ok: true,
-          json: async () => ({ message: 'ok', autoLoginToken: 'token-123' }),
         } as Response);
       }
 
@@ -249,13 +254,6 @@ describe('RegisterPage', () => {
         } as Response);
       }
 
-      if (String(url).includes('/api/register')) {
-        return Promise.resolve({
-          ok: true,
-          json: async () => ({ message: 'ok', autoLoginToken: 'token-123' }),
-        } as Response);
-      }
-
       return Promise.reject(new Error('Unknown endpoint'));
     });
     vi.mocked(signIn).mockResolvedValue({ error: undefined } as never);
@@ -341,6 +339,11 @@ describe('RegisterPage', () => {
   });
 
   it('shows registration api error', async () => {
+    registerActionMock.mockResolvedValueOnce({
+      ok: false,
+      code: 'invalid',
+      error: 'Email już istnieje',
+    });
     vi.mocked(fetch).mockImplementation((url) => {
       if (String(url).includes('/api/setup/check')) {
         return Promise.resolve({
@@ -353,13 +356,6 @@ describe('RegisterPage', () => {
         return Promise.resolve({
           ok: true,
           json: async () => ({ enabled: false, siteKey: null }),
-        } as Response);
-      }
-
-      if (String(url).includes('/api/register')) {
-        return Promise.resolve({
-          ok: false,
-          json: async () => ({ error: 'Email już istnieje' }),
         } as Response);
       }
 

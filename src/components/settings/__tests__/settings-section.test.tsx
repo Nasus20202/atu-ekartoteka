@@ -8,7 +8,9 @@ const mocks = vi.hoisted(() => ({
   getAppSettings: vi.fn(),
 }));
 
-vi.mock('@/actions/settings', () => ({ updateSettingsAction: vi.fn() }));
+vi.mock('@/actions/settings/settings', () => ({
+  updateSettingsAction: vi.fn(),
+}));
 vi.mock('@/lib/auth/require-admin-access', () => ({
   requireAdminAccess: mocks.requireAdminAccess,
 }));

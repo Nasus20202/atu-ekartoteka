@@ -16,7 +16,7 @@ const actionMock = vi.hoisted(() => ({
   createUserAction: vi.fn(),
 }));
 
-vi.mock('@/actions/users', () => actionMock);
+vi.mock('@/actions/users/users', () => actionMock);
 const pendingCountMock = vi.hoisted(() => ({ value: 0 }));
 
 vi.mock('@/components/users/use-pending-count', () => ({

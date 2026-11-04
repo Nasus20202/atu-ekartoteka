@@ -4,7 +4,7 @@ import { Save } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { updateProfileAction } from '@/actions/profile';
+import { updateProfileAction } from '@/actions/account/profile';
 import { getPasswordChangeError } from '@/components/account/password-change';
 import { PasswordInput } from '@/components/account/password-input';
 import { AnimatedAlert } from '@/components/ui/animated-alert';

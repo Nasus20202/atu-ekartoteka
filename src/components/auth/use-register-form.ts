@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
 
+import { unwrapResult } from '@/actions/action-result';
+import { registerAction } from '@/actions/auth/register';
 import { useTurnstile } from '@/hooks/use-turnstile';
 import {
   MIN_PASSWORD_LENGTH,
@@ -14,7 +16,6 @@ import {
   getErrorMessage,
 } from '@/lib/utils/error-message';
 
-const REGISTRATION_FAILED_MESSAGE = 'Rejestracja nie powiodła się';
 const PASSWORDS_MISMATCH_MESSAGE = 'Hasła nie są identyczne';
 const AUTO_LOGIN_FAILED_MESSAGE =
   'Konto utworzone, ale nie udało się zalogować automatycznie. Zaloguj się ręcznie.';
@@ -51,25 +52,15 @@ export function useRegisterForm(isFirstAdmin: boolean) {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const data = unwrapResult(
+        await registerAction({
           email: formData.email,
           password: formData.password,
           name: formData.name || undefined,
           isFirstAdmin,
           turnstileToken: turnstile.token,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || REGISTRATION_FAILED_MESSAGE);
-      }
+        })
+      );
 
       setSuccess(true);
       const loginResult = await signIn('credentials', {

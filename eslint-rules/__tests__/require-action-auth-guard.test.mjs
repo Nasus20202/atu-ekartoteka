@@ -36,6 +36,13 @@ export async function save() {
 
   invalid: [
     {
+      // A disable comment covers only its own file.
+      code: `'use server';
+export async function lookup() { return 1; }`,
+      filename: 'src/actions/other-lookup.ts',
+      errors: [{ messageId: 'missingGuard' }],
+    },
+    {
       code: `'use server';
 export async function renameHoa() {}`,
       filename: 'src/actions/hoa.ts',

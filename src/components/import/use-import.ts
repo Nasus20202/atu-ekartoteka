@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import useSWRMutation from 'swr/mutation';
 
 import {
   CLEAN_IMPORT_CONFIRMATION,
@@ -9,19 +10,33 @@ import {
   SKIP_VALIDATION_CONFIRMATION,
   SKIP_VALIDATION_FINAL_CONFIRMATION,
 } from '@/components/import/import-confirmations';
-import { prepareImportFiles } from '@/components/import/prepare-import-files';
+import {
+  type PreparedImportFile,
+  prepareImportFiles,
+} from '@/components/import/prepare-import-files';
 import type { ImportResponse } from '@/components/import/types';
 import {
   type ConfirmOptions,
   useConfirm,
 } from '@/components/providers/confirm-dialog';
+import { jsonPoster } from '@/lib/swr/json-mutation';
 import { getErrorMessage } from '@/lib/utils/error-message';
 
+const IMPORT_URL = '/api/admin/import';
 const IMPORT_FAILED_MESSAGE = 'Import nie powiódł się';
+
+interface ImportBody {
+  files: PreparedImportFile[];
+  cleanImport: boolean;
+  skipValidation: boolean;
+}
+
+const runImport = jsonPoster<ImportBody, ImportResponse>(IMPORT_FAILED_MESSAGE);
 
 /** State and handlers driving the data import form. */
 export function useImport(fetchStats: () => Promise<void>) {
   const confirm = useConfirm();
+  const { trigger: startImport } = useSWRMutation(IMPORT_URL, runImport);
   const [files, setFiles] = useState<FileList | null>(null);
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<ImportResponse | null>(null);
@@ -57,18 +72,11 @@ export function useImport(fetchStats: () => Promise<void>) {
     try {
       const fileData = await prepareImportFiles(files);
 
-      const res = await fetch('/api/admin/import', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ files: fileData, cleanImport, skipValidation }),
+      const data = await startImport({
+        files: fileData,
+        cleanImport,
+        skipValidation,
       });
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || IMPORT_FAILED_MESSAGE);
-      }
 
       setResponse(data);
       if (data.success) {

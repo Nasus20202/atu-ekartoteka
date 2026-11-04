@@ -1,33 +1,32 @@
 import type { Options } from 'k6/options';
 
-// Limits sit at roughly 1.5 times the slowest p95 seen in CI at peak load on the
-// production-sized dataset (see perf/seed). Hosted runners vary in CPU speed by
-// more than 2x between runs, so a regression such as an endpoint loading every
-// row fails the run while a slow runner does not.
+// Limits sit at about twice the slowest p95 seen in CI at peak load on the
+// production-sized dataset (see perf/seed), rounded up to a round number.
+// The headroom absorbs the runner-to-runner CPU differences seen in CI, so a
+// regression such as an endpoint loading every row still fails the run.
 const SCENARIO_LIMITS: Record<string, { avg: number; p95: number }> = {
-  public: { avg: 20, p95: 70 },
-  login: { avg: 130, p95: 300 },
-  user_journey: { avg: 230, p95: 540 },
-  admin_journey: { avg: 200, p95: 490 },
+  public: { avg: 20, p95: 40 },
+  login: { avg: 100, p95: 200 },
+  user_journey: { avg: 100, p95: 250 },
+  admin_journey: { avg: 150, p95: 300 },
 };
 
 // Slowest endpoints, tracked on their own so one regression is not hidden
 // by the scenario average
 const ENDPOINT_P95_LIMITS: Record<string, number> = {
-  '/dashboard': 540,
-  '/dashboard/charges': 560,
-  '/dashboard/payments': 520,
-  '/admin/apartments': 410,
-  '/api/admin/apartments': 600,
-  '/api/admin/users': 620,
-  'admin hoa page': 470,
-  'admin hoa apartments': 430,
-  'admin hoa summary': 430,
-  'admin apartment page': 420,
-  'admin apartment search': 550,
-  'payment details': 630,
-  '/api/admin/unassigned-apartments': 550,
-  'auth login': 300,
+  '/dashboard': 250,
+  '/dashboard/charges': 250,
+  '/dashboard/payments': 250,
+  '/admin/apartments': 250,
+  '/api/admin/apartments': 250,
+  '/api/admin/users': 200,
+  'admin hoa page': 200,
+  'admin hoa apartments': 150,
+  'admin apartment page': 200,
+  'admin apartment search': 350,
+  'payment details': 250,
+  '/api/admin/unassigned-apartments': 200,
+  'auth login': 200,
 };
 
 export const THRESHOLDS: Options['thresholds'] = {
@@ -35,7 +34,7 @@ export const THRESHOLDS: Options['thresholds'] = {
   checks: ['rate>0.999'],
   // Arrival-rate scenarios must keep their schedule
   dropped_iterations: ['count==0'],
-  http_req_duration: ['p(99)<600'],
+  http_req_duration: ['p(99)<300'],
   ...Object.fromEntries(
     Object.entries(SCENARIO_LIMITS).map(([scenario, { avg, p95 }]) => [
       `http_req_duration{scenario:${scenario}}`,
