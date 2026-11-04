@@ -116,7 +116,7 @@ The run SHALL fail when the app returns errors or responds slower than the agree
 
 - **GIVEN** the limits in `perf/lib/thresholds.ts`
 - **WHEN** they are set or changed
-- **THEN** each sits at roughly twice the slowest p95 measured in CI at peak load, rounded to a round number and kept below the previous calibration, so a real regression fails while a slower shared runner does not
+- **THEN** each sits at roughly 1.5 times the slowest p95 measured in CI at peak load, rounded to a round number, so a real regression fails while a slower shared runner does not
 
 #### Scenario: Removed route
 
