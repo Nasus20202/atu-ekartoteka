@@ -58,7 +58,7 @@ Visit `http://localhost:3000/register` to create the first admin user.
 
 - Application URLs & client-side script:
   - `APP_URL` - Public URL used in email links and frontend redirection.
-  - `TRACKING_SCRIPT` - Optional: inline script used to load tracking providers (be cautious; sanitized strings only).
+  - `TRACKING_SCRIPT` - Optional: JavaScript snippet that loads a tracking provider (for example Rybbit, Plausible or Umami). It is served from `/api/tracking`, read on each request, and cached by browsers for one hour. List the provider's domain in `TRACKING_ORIGINS` (be cautious; the snippet runs on every page).
 
 - Security / process:
   - `LOG_LEVEL` - Optional: logging level used in production (e.g., `info`, `debug`).
