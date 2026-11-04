@@ -67,80 +67,6 @@ A layout that sets a title and has nested pages SHALL keep the app template for 
 - **WHEN** they open apartment 1A of HOA `Test HOA`
 - **THEN** the document title ends with `| ATU Ekartoteka`
 
-### Requirement: Admin Page Titles Show HOA and Apartment Names
-
-The admin HOA page SHALL use the HOA name as its title, and the admin apartment page SHALL use `Lokal <number> - <HOA name>`. Only admins SHALL see these names in titles. Non-admins SHALL get the generic titles `Mieszkania wspólnoty` (HOA) and `Lokal` (apartment), and the title lookup SHALL NOT query the database for them.
-
-#### Scenario: Admin opens an HOA page
-
-- **GIVEN** an admin
-- **WHEN** they open the apartments page of HOA `KLO11`
-- **THEN** the document title is `KLO11 | ATU Ekartoteka`
-
-#### Scenario: Admin opens an apartment page
-
-- **GIVEN** an admin
-- **WHEN** they open apartment 12 of HOA `KLO11`
-- **THEN** the document title is `Lokal 12 - KLO11 | ATU Ekartoteka`
-
-#### Scenario: Unknown HOA for an admin
-
-- **GIVEN** an admin
-- **WHEN** they open the apartments page of an HOA id that does not exist
-- **THEN** the document title is `Mieszkania wspólnoty | ATU Ekartoteka`
-
-#### Scenario: Unknown apartment for an admin
-
-- **GIVEN** an admin
-- **WHEN** they open the page of an apartment id that does not exist
-- **THEN** the document title is `Lokal | ATU Ekartoteka`
-
-#### Scenario: Tenant opens an admin HOA page
-
-- **GIVEN** a tenant who requests an admin HOA page
-- **WHEN** the page title is generated
-- **THEN** the title is `Mieszkania wspólnoty | ATU Ekartoteka`, the HOA name is not read from the database, and the name does not appear in the title
-
-### Requirement: Tenant Apartment Titles Show Only Owned Addresses
-
-The tenant charges page SHALL use `Naliczenia - <address label>` and the payment year page SHALL use `Wpłaty <year> - <address label>`, where the address label is the apartment's address, building and number. The address label SHALL appear only when the signed-in user owns the apartment and their account is approved. For any other apartment, or for an invalid year, the title SHALL be the generic `Naliczenia mieszkania` or `Wpłaty mieszkania`.
-
-#### Scenario: Owner opens their charges
-
-- **GIVEN** a tenant who owns apartment `Mickiewicza 3/12`
-- **WHEN** they open that apartment's charges
-- **THEN** the document title is `Naliczenia - Mickiewicza 3/12 | ATU Ekartoteka`
-
-#### Scenario: Owner opens payments for a year
-
-- **GIVEN** a tenant who owns apartment `Mickiewicza 3/12`
-- **WHEN** they open the 2025 payments of that apartment
-- **THEN** the document title is `Wpłaty 2025 - Mickiewicza 3/12 | ATU Ekartoteka`
-
-#### Scenario: Apartment not owned by the user
-
-- **GIVEN** a tenant who does not own apartment `apt-9`
-- **WHEN** they open the charges of `apt-9`
-- **THEN** the page responds with not found, the document title is `Naliczenia mieszkania | ATU Ekartoteka`, and the address is not shown
-
-#### Scenario: Apartment that does not exist
-
-- **GIVEN** a tenant
-- **WHEN** they open the charges of an apartment id that does not exist
-- **THEN** the page responds with not found and the document title is `Naliczenia mieszkania | ATU Ekartoteka`
-
-#### Scenario: Owner whose account is not approved
-
-- **GIVEN** a tenant who owns apartment `Mickiewicza 3/12` and whose account is not approved
-- **WHEN** the charges title is generated
-- **THEN** the title is `Naliczenia mieszkania | ATU Ekartoteka` and the address is not shown
-
-#### Scenario: Invalid payment year
-
-- **GIVEN** a tenant who owns apartment `Mickiewicza 3/12`
-- **WHEN** they open the payments of that apartment for year `abc`
-- **THEN** the page responds with not found and the document title is `Wpłaty mieszkania | ATU Ekartoteka`
-
 ### Requirement: Not-Found Page Titles
 
 The root not-found page SHALL set the title `Strona nie znaleziona` for unknown routes. An unknown or unowned apartment does not have its own not-found title; its charges and payments pages use the generic titles from the tenant requirement.
@@ -164,3 +90,30 @@ The application error page SHALL set the title `Coś poszło nie tak!`, and the 
 - **GIVEN** a tenant
 - **WHEN** the charges page for an apartment fails to load
 - **THEN** the document title is `Wystąpił błąd | ATU Ekartoteka`
+
+### Requirement: Dynamic Route Titles Are Static
+
+Pages whose route has a dynamic segment (an HOA, an apartment or a payment year)
+SHALL use a static title that does not depend on the session or the database, so
+that a navigation to them is never blocked by a title lookup. The titles are
+`Mieszkania wspólnoty` (admin HOA page), `Lokal` (admin apartment page),
+`Naliczenia mieszkania` (tenant charges page) and `Wpłaty mieszkania` (tenant payment
+year page), followed by the app name.
+
+#### Scenario: Admin opens an HOA page
+
+- **GIVEN** an admin
+- **WHEN** they open the apartments page of HOA `KLO11`
+- **THEN** the document title is `Mieszkania wspólnoty | ATU Ekartoteka` and the HOA name is not in it
+
+#### Scenario: Tenant opens an apartment page
+
+- **GIVEN** a tenant who owns apartment `Mickiewicza 3/12`
+- **WHEN** they open that apartment's charges or its 2025 payments
+- **THEN** the document title is `Naliczenia mieszkania | ATU Ekartoteka` or `Wpłaty mieszkania | ATU Ekartoteka`
+- **AND** the address is not in the title
+
+#### Scenario: Navigation is not blocked
+
+- **WHEN** a user follows a link to one of these pages
+- **THEN** the page skeleton is shown without waiting for a title lookup

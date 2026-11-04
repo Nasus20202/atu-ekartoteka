@@ -34,15 +34,13 @@ The load test SHALL exercise the main traffic types at the same time.
 
 - **GIVEN** a signed-in tenant (each virtual user signs in once, as its own tenant)
 - **WHEN** the `user_journey` scenario runs
-- **THEN** it visits the dashboard, charges, the tenant's apartment charges, payments, the tenant's payment details for a random seeded year and profile pages with think time between them
+- **THEN** it visits the dashboard, charges, the tenant's apartment charges, payments, the tenant's payment details for a random seeded year and profile pages with think time between them, reading each streamed response to its end
 
 #### Scenario: Admin journey
 
 - **GIVEN** a signed-in admin
 - **WHEN** the `admin_journey` scenario runs
-- **THEN** it visits the admin apartments, users and import pages and calls the admin JSON APIs they use, requesting a random apartments page, a random apartment, a random page of unassigned apartments, an apartment search, and the pages and JSON APIs of a random HOA (its apartments and financial summary) and a random apartment each iteration
-
----
+- **THEN** it visits the admin pages, whose HTML already contains their initial data, and calls the admin JSON routes that still exist, for a random HOA and apartment each iteration
 
 ### Requirement: Production-Sized Dataset
 
@@ -110,7 +108,7 @@ The run SHALL fail when the app returns errors or responds slower than the agree
 
 #### Scenario: Latency per endpoint
 
-- **GIVEN** a tracked endpoint (the dashboard pages, the admin apartment and user lists, and login)
+- **GIVEN** a tracked endpoint (the dashboard pages, the admin pages and lists, and login)
 - **WHEN** its p95 duration exceeds its limit
 - **THEN** the run fails, even if the scenario as a whole stays within its limit
 
@@ -118,9 +116,13 @@ The run SHALL fail when the app returns errors or responds slower than the agree
 
 - **GIVEN** the limits in `perf/lib/thresholds.ts`
 - **WHEN** they are set or changed
-- **THEN** each sits at roughly three times the value measured in CI at peak load, so a real regression fails while a slower runner does not
+- **THEN** each sits at roughly 1.5 times the slowest p95 measured in CI at peak load, so a real regression fails while a slower runner does not
 
----
+#### Scenario: Removed route
+
+- **GIVEN** an API route that was deleted
+- **WHEN** the run starts
+- **THEN** no scenario requests it and no threshold refers to it
 
 ### Requirement: Reporting
 
@@ -137,3 +139,15 @@ Each run SHALL publish a readable summary.
 - **GIVEN** a failed performance job
 - **WHEN** application logs are printed
 - **THEN** only the last lines are shown, so the k6 summary stays readable
+
+### Requirement: Streamed Page Checks
+
+A page request SHALL pass only when the response is the page, not a redirect that
+was sent after the shell. A page check SHALL verify the status and that the body
+carries no redirect marker.
+
+#### Scenario: Expired session
+
+- **GIVEN** a virtual user whose session no longer works
+- **WHEN** it requests a streamed page and the server redirects after sending the shell
+- **THEN** the check fails although the status is 200

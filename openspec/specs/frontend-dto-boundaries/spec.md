@@ -54,10 +54,10 @@ The system SHALL map user and apartment data to named DTO contracts before that 
 - **THEN** each user payload is mapped to a named user DTO
 - **AND** nested apartment assignments are mapped to explicit apartment summary DTOs instead of raw apartment rows
 
-#### Scenario: Profile update route returns a DTO-mapped user
+#### Scenario: Profile update action returns a DTO-mapped user
 
-- **WHEN** the profile API route returns the updated user after a successful profile change
-- **THEN** the JSON response uses the named user DTO contract rather than the raw mutation result
+- **WHEN** the profile Server Action returns the updated user after a successful profile change
+- **THEN** the result carries the named user DTO contract rather than the raw mutation result
 
 #### Scenario: Apartment detail route returns a DTO-mapped apartment
 
