@@ -1,27 +1,27 @@
+import { DashboardShell } from '@/components/dashboard/dashboard-shell';
+import { ApartmentsCardSkeleton } from '@/components/dashboard/skeletons/apartments-card-skeleton';
+import { ChargesCardSkeleton } from '@/components/dashboard/skeletons/charges-card-skeleton';
 import { GreetingSkeleton } from '@/components/dashboard/skeletons/greeting-skeleton';
-import { SkeletonCard } from '@/components/skeletons/skeleton-card';
-import { SkeletonRow } from '@/components/skeletons/skeleton-row';
+import { NotificationsCardSkeleton } from '@/components/dashboard/skeletons/notifications-card-skeleton';
+import { PaymentsCardSkeleton } from '@/components/dashboard/skeletons/payments-card-skeleton';
+import { StatusCardSkeleton } from '@/components/dashboard/skeletons/status-card-skeleton';
 
-/** Generic page skeleton for dashboard routes that do not stream their own sections. */
+/** The dashboard page's own skeletons in its layout, shown on client navigation. */
 export function DashboardSkeleton() {
   return (
-    <div className="w-full bg-background" data-testid="dashboard-skeleton">
-      <main className="p-4 md:p-8">
-        <div className="mx-auto w-full max-w-7xl">
-          <GreetingSkeleton />
-          <div className="space-y-6">
-            <SkeletonCard>
-              <SkeletonRow />
-              <SkeletonRow />
-            </SkeletonCard>
-            <SkeletonCard>
-              <SkeletonRow />
-              <SkeletonRow />
-              <SkeletonRow />
-            </SkeletonCard>
-          </div>
-        </div>
-      </main>
+    <div data-testid="dashboard-skeleton">
+      <DashboardShell
+        greeting={<GreetingSkeleton />}
+        notifications={<NotificationsCardSkeleton />}
+        main={
+          <>
+            <StatusCardSkeleton />
+            <PaymentsCardSkeleton />
+            <ChargesCardSkeleton />
+            <ApartmentsCardSkeleton />
+          </>
+        }
+      />
     </div>
   );
 }

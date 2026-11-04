@@ -14,6 +14,12 @@ describe('dashboard skeletons', () => {
     expect(blocks.length).toBeGreaterThan(0);
   });
 
+  it('renders the notifications aside of the dashboard shell', () => {
+    const { container } = render(<DashboardSkeleton />);
+
+    expect(container.querySelector('aside')).not.toBeNull();
+  });
+
   it('only pulses when motion is allowed', () => {
     const { container } = render(<DashboardSkeleton />);
 

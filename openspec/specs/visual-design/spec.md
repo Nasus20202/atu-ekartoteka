@@ -551,6 +551,16 @@ Every table view SHALL sort from a column header click, expose the active sort d
 - **WHEN** scrolling appends the next page
 - **THEN** the new rows continue the descending order without gaps or duplicates
 
+### Requirement: Reload Shows the Navigation Skeleton
+
+A full page load (reload or first visit) of a dashboard route SHALL render the same skeleton layout as a client navigation to that route, so the skeleton does not change shape between the two.
+
+#### Scenario: Reload of the dashboard
+
+- **GIVEN** a signed-in tenant on `/dashboard`
+- **WHEN** they reload the page
+- **THEN** the first response shows the greeting, notifications and section skeletons in the same grid as the loading skeleton shown on navigation
+
 ### Requirement: Streamed Page Sections
 
 Every page that loads data SHALL render its static shell immediately and show each
