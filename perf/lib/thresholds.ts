@@ -5,28 +5,28 @@ import type { Options } from 'k6/options';
 // The headroom absorbs the runner-to-runner CPU differences seen in CI, so a
 // regression such as an endpoint loading every row still fails the run.
 const SCENARIO_LIMITS: Record<string, { avg: number; p95: number }> = {
-  public: { avg: 20, p95: 40 },
-  login: { avg: 100, p95: 200 },
-  user_journey: { avg: 100, p95: 250 },
-  admin_journey: { avg: 150, p95: 300 },
+  public: { avg: 10, p95: 20 },
+  login: { avg: 60, p95: 150 },
+  user_journey: { avg: 60, p95: 150 },
+  admin_journey: { avg: 80, p95: 200 },
 };
 
 // Slowest endpoints, tracked on their own so one regression is not hidden
 // by the scenario average
 const ENDPOINT_P95_LIMITS: Record<string, number> = {
-  '/dashboard': 250,
-  '/dashboard/charges': 250,
-  '/dashboard/payments': 250,
-  '/admin/apartments': 250,
-  '/api/admin/apartments': 250,
-  '/api/admin/users': 200,
-  'admin hoa page': 200,
-  'admin hoa apartments': 150,
-  'admin apartment page': 200,
-  'admin apartment search': 350,
-  'payment details': 250,
-  '/api/admin/unassigned-apartments': 200,
-  'auth login': 200,
+  '/dashboard': 150,
+  '/dashboard/charges': 150,
+  '/dashboard/payments': 150,
+  '/admin/apartments': 150,
+  '/api/admin/apartments': 150,
+  '/api/admin/users': 150,
+  'admin hoa page': 150,
+  'admin hoa apartments': 100,
+  'admin apartment page': 150,
+  'admin apartment search': 250,
+  'payment details': 150,
+  '/api/admin/unassigned-apartments': 150,
+  'auth login': 150,
 };
 
 export const THRESHOLDS: Options['thresholds'] = {
@@ -34,7 +34,7 @@ export const THRESHOLDS: Options['thresholds'] = {
   checks: ['rate>0.999'],
   // Arrival-rate scenarios must keep their schedule
   dropped_iterations: ['count==0'],
-  http_req_duration: ['p(99)<300'],
+  http_req_duration: ['p(99)<200'],
   ...Object.fromEntries(
     Object.entries(SCENARIO_LIMITS).map(([scenario, { avg, p95 }]) => [
       `http_req_duration{scenario:${scenario}}`,
