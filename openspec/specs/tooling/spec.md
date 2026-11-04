@@ -307,7 +307,9 @@ request time so the values are not frozen into the build.
 
 - **GIVEN** `TRACKING_SCRIPT` is set only at runtime
 - **WHEN** any page is rendered
-- **THEN** the tracking script is included
+- **THEN** the page references `/api/tracking` as a deferred script
+- **AND** `/api/tracking` returns the configured snippet as JavaScript, read on each request
+- **AND** the layout and pages stay statically rendered
 
 ### Requirement: Module-Level Server Actions
 

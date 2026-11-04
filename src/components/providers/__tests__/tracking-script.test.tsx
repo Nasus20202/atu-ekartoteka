@@ -1,52 +1,23 @@
 import { render } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-vi.mock('next/script', () => ({
-  // A real <script> element triggers React 19's "scripts are never executed"
-  // warning; the props are what this test verifies.
-  default: ({
-    id,
-    strategy,
-    dangerouslySetInnerHTML,
-  }: {
-    id: string;
-    strategy: string;
-    dangerouslySetInnerHTML: { __html: string };
-  }) => (
-    <div
-      id={id}
-      data-strategy={strategy}
-      dangerouslySetInnerHTML={dangerouslySetInnerHTML}
-    />
-  ),
-}));
-
-vi.mock('next/server', () => ({
-  connection: vi.fn().mockResolvedValue(undefined),
-}));
-
-import { TrackingScript } from '@/components/providers/tracking-script';
+import {
+  TRACKING_SCRIPT_SRC,
+  TrackingScript,
+} from '@/components/providers/tracking-script';
 
 describe('TrackingScript', () => {
-  afterEach(() => {
-    vi.unstubAllEnvs();
+  it('loads the runtime tracking endpoint as a deferred script', () => {
+    const { container } = render(<TrackingScript />);
+    const script = container.querySelector('script');
+
+    expect(script).toHaveAttribute('src', TRACKING_SCRIPT_SRC);
+    expect(script).toHaveAttribute('defer');
   });
 
-  it('renders nothing without a tracking script', async () => {
-    vi.stubEnv('TRACKING_SCRIPT', '');
+  it('does not inline any configuration into the page', () => {
+    const { container } = render(<TrackingScript />);
 
-    const { container } = render(await TrackingScript());
-
-    expect(container).toBeEmptyDOMElement();
-  });
-
-  it('injects the configured script after the page is interactive', async () => {
-    vi.stubEnv('TRACKING_SCRIPT', 'window.tracked = true;');
-
-    const { container } = render(await TrackingScript());
-    const script = container.querySelector('#custom-tracking');
-
-    expect(script).toHaveAttribute('data-strategy', 'afterInteractive');
-    expect(script?.innerHTML).toBe('window.tracked = true;');
+    expect(container.querySelector('script')?.textContent).toBe('');
   });
 });

@@ -2,7 +2,6 @@ import '@/app/globals.css';
 
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
-import { Suspense } from 'react';
 
 import { ConfirmProvider } from '@/components/providers/confirm-dialog';
 import { SessionProvider } from '@/components/providers/session-provider';
@@ -39,9 +38,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <Suspense fallback={null}>
-          <TrackingScript />
-        </Suspense>
+        <TrackingScript />
         <SessionProvider>
           <ThemeProvider attribute="class" enableSystem={true}>
             <ConfirmProvider>{children}</ConfirmProvider>
