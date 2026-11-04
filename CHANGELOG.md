@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.1] - 2026-11-04
+
+- chore(deps): update pnpm/action-setup digest to 73e4699 (#856)
+- chore(deps): update node.js to v26.13.0 (#859)
+- chore(deps): pin postgres docker tag to 10a5c69 (#853)
+- test(perf): raise k6 latency limits to about 1.5x measured p95
+- chore(deps): update vitest monorepo to v5.1.0 (#860)
+- chore(deps): update tailwindcss monorepo to v4.3.4 (#858)
+- chore(deps): update github/codeql-action digest to 1fc58d0 (#855)
+- chore(deps): update ghcr.io/nasus20202/atu-ekartoteka:latest docker digest to e186c6c (#854)
+- chore(deps): update davelosert/vitest-coverage-report-action digest to 74c2d92 (#852)
+- test(perf): recalibrate latency limits to the shared runner
+- test(perf): tighten latency limits to about twice the measured p95
+- test: cover non-text auth input, denial logging and the import hook
+- feat(observability): log error digest with trace id on failed requests
+- feat(errors): add styled not-found pages and a global error page
+- feat(tracking): serve the analytics snippet from a runtime route
+- refactor: move client data access to SWR and server actions
+- chore(deps): pin dependency swr to 2.5.1 (#850)
+
 ## [0.9.0] - 2026-11-04
 
 - test: raise unit coverage of server sections and admin lists
