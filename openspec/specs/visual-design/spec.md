@@ -553,13 +553,19 @@ Every table view SHALL sort from a column header click, expose the active sort d
 
 ### Requirement: Reload Shows the Navigation Skeleton
 
-A full page load (reload or first visit) of a dashboard route SHALL render the same skeleton layout as a client navigation to that route, so the skeleton does not change shape between the two.
+A full page load (reload or first visit) of a dashboard or admin route SHALL render the same skeleton layout as a client navigation to that route, so the skeleton does not change shape between the two.
 
 #### Scenario: Reload of the dashboard
 
 - **GIVEN** a signed-in tenant on `/dashboard`
 - **WHEN** they reload the page
 - **THEN** the first response shows the greeting, notifications and section skeletons in the same grid as the loading skeleton shown on navigation
+
+#### Scenario: Reload of an admin page
+
+- **GIVEN** a signed-in admin on any `/admin` page with a loading skeleton
+- **WHEN** they reload the page
+- **THEN** the first response shows the same skeleton as the loading state of that page on client navigation
 
 ### Requirement: Streamed Page Sections
 

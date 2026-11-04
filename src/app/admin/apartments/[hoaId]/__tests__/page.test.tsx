@@ -27,6 +27,10 @@ async function renderPage() {
   );
 }
 
+vi.mock('@/lib/auth/require-admin-access', () => ({
+  requireAdminAccess: vi.fn(),
+}));
+
 describe('HoaApartmentsPage', () => {
   it('renders the list when its data is ready', async () => {
     pending.section = false;

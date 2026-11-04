@@ -57,6 +57,10 @@ Object.defineProperty(Blob.prototype, 'stream', {
   },
 });
 
+vi.mock('@/lib/auth/require-admin-access', () => ({
+  requireAdminAccess: vi.fn(),
+}));
+
 describe('AdminImportPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -75,7 +79,7 @@ describe('AdminImportPage', () => {
   });
 
   it('loads and displays database stats', async () => {
-    render(<AdminImportPage />);
+    render(await AdminImportPage());
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith('/api/admin/stats');
@@ -87,7 +91,7 @@ describe('AdminImportPage', () => {
 
   it('asks for double confirmation before enabling skip validation', async () => {
     const user = userEvent.setup();
-    render(<AdminImportPage />);
+    render(await AdminImportPage());
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith('/api/admin/stats');
@@ -106,7 +110,7 @@ describe('AdminImportPage', () => {
     const user = userEvent.setup();
     confirmMock.mockResolvedValueOnce(false);
 
-    render(<AdminImportPage />);
+    render(await AdminImportPage());
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith('/api/admin/stats');
@@ -125,7 +129,7 @@ describe('AdminImportPage', () => {
     const user = userEvent.setup();
     confirmMock.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
 
-    render(<AdminImportPage />);
+    render(await AdminImportPage());
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith('/api/admin/stats');
@@ -142,7 +146,7 @@ describe('AdminImportPage', () => {
 
   it('allows disabling skip validation without confirmation', async () => {
     const user = userEvent.setup();
-    render(<AdminImportPage />);
+    render(await AdminImportPage());
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith('/api/admin/stats');
@@ -162,7 +166,7 @@ describe('AdminImportPage', () => {
 
   it('asks for double confirmation before enabling clean import', async () => {
     const user = userEvent.setup();
-    render(<AdminImportPage />);
+    render(await AdminImportPage());
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith('/api/admin/stats');
@@ -187,7 +191,7 @@ describe('AdminImportPage', () => {
     const user = userEvent.setup();
     confirmMock.mockResolvedValueOnce(false);
 
-    render(<AdminImportPage />);
+    render(await AdminImportPage());
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith('/api/admin/stats');
@@ -206,7 +210,7 @@ describe('AdminImportPage', () => {
     const user = userEvent.setup();
     confirmMock.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
 
-    render(<AdminImportPage />);
+    render(await AdminImportPage());
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith('/api/admin/stats');
@@ -223,7 +227,7 @@ describe('AdminImportPage', () => {
 
   it('allows disabling clean import without confirmation', async () => {
     const user = userEvent.setup();
-    render(<AdminImportPage />);
+    render(await AdminImportPage());
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith('/api/admin/stats');
@@ -245,7 +249,7 @@ describe('AdminImportPage', () => {
     const user = userEvent.setup();
     confirmMock.mockResolvedValue(true);
 
-    render(<AdminImportPage />);
+    render(await AdminImportPage());
 
     const input = screen.getByLabelText(/folder z danymi/i);
     const file = new File(['hello'], 'lok.txt', { type: 'text/plain' });
@@ -311,7 +315,7 @@ describe('AdminImportPage', () => {
         }),
       } as Response);
 
-    render(<AdminImportPage />);
+    render(await AdminImportPage());
 
     const input = screen.getByLabelText(/folder z danymi/i);
     const file = new File(['hello'], 'lok.txt', { type: 'text/plain' });
@@ -355,7 +359,7 @@ describe('AdminImportPage', () => {
         json: async () => ({ error: 'Import nieudany' }),
       } as Response);
 
-    render(<AdminImportPage />);
+    render(await AdminImportPage());
 
     const input = screen.getByLabelText(/folder z danymi/i);
     const file = new File(['hello'], 'lok.txt', { type: 'text/plain' });

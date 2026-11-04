@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { AdminPageSkeleton } from '@/components/skeletons/admin-page-skeleton';
 import { CardListSkeleton } from '@/components/skeletons/card-list-skeleton';
 import { FormCardSkeleton } from '@/components/skeletons/form-card-skeleton';
 import { PageHeaderSkeleton } from '@/components/skeletons/page-header-skeleton';
@@ -26,7 +25,6 @@ describe('skeletons', () => {
       <>
         <PageHeaderSkeleton />
         <FormCardSkeleton />
-        <AdminPageSkeleton />
       </>
     );
 

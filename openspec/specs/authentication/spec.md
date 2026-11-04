@@ -378,11 +378,13 @@ Protected pages SHALL render their content only after the session and the
 database access check succeeded. While the check runs, the page MAY show a
 loading skeleton but SHALL NOT render protected content or its data. A failed
 check SHALL redirect to `/login` (no session) or `/dashboard` (not allowed).
+Admin pages run the check in their own `page.tsx`, below the route's loading
+boundary, so a reload shows the same skeleton as client navigation.
 
 #### Scenario: Slow access check
 
 - **WHEN** an admin opens an admin page and the access check is slow
-- **THEN** the navbar and a page skeleton are shown and no admin content is rendered
+- **THEN** the navbar is shown, the route's loading skeleton is shown, and no admin content is rendered
 
 #### Scenario: Non-admin
 
