@@ -104,8 +104,7 @@ action calls `requireUserAction` / `requireAdminAction` first (same 401/403 shap
 the route guards) and lint extends `require-api-auth-guard` to `'use server'`
 modules. Actions run one at a time per client, so type-ahead search stays a read.
 `serverActions.allowedOrigins` needs no configuration: the gateway preserves `Host` and
-does not rewrite the URL, so the origin check compares equal values. A settings save
-after the first staging deploy confirms it.
+does not rewrite the URL, so the origin check compares equal values. Checked on staging.
 
 All mutations are actions now: settings, HOA rename, apartment status, user status,
 user creation, bulk create, bulk assign, the profile and password update, and the

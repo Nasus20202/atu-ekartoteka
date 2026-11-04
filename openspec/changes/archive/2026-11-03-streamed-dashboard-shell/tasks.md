@@ -50,7 +50,7 @@
 
 - [x] 9.1 Add `requireUserAction` / `requireAdminAction` and extend `require-api-auth-guard` (and a no-inline-action rule) to `'use server'` modules, with tests.
 - [x] 9.2 Move settings, HOA rename and apartment status to module-level actions; delete the matching routes and tests.
-- [x] 9.3 `serverActions.allowedOrigins` needs no configuration (the gateway preserves `Host`, no URL rewrite) and no encryption key is needed (module-level actions only). A save of the settings after the first staging deploy is the only remaining smoke check.
+- [x] 9.3 `serverActions.allowedOrigins` needs no configuration (the gateway preserves `Host`, no URL rewrite); checked on staging. No encryption key is needed (module-level actions only).
 - [x] 9.4 Update `AGENTS.md` and the `tenant-history-window` delta for the action boundary and the removed settings route (the other specs name no removed route).
 
 ## 10. Performance tests
