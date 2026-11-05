@@ -8,3 +8,6 @@ Zaloguj się tutaj:
 {{LOGIN_URL}}
 
 Dziękujemy za cierpliwość!
+
+--
+ATU Ekartoteka

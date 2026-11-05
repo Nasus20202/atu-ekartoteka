@@ -12,3 +12,6 @@ Aby zatwierdzić lub odrzucić użytkownika, przejdź do panelu administracyjneg
 
 ---
 To jest automatyczna wiadomość. Nie odpowiadaj na ten email.
+
+--
+ATU Ekartoteka
