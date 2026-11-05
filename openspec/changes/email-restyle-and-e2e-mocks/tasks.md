@@ -35,7 +35,7 @@
 - [x] 5.3 Admin approval sends the approved email; verify subject and login link
 - [x] 5.4 Google login for a new and a returning user; verify the pending-account and dashboard outcomes and the admin notification email
 - [x] 5.5 Turnstile: valid token logs in, invalid token is rejected; verify both on login and registration
-- [ ] 5.6 Run the whole suite (`pnpm test:e2e`) and `pnpm test`; verify existing functional and visual projects are unaffected
+- [x] 5.6 Run the whole suite (`pnpm test:e2e`) and `pnpm test`; verify existing functional and visual projects are unaffected
 
 ## Workflow follow-up
 
