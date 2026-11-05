@@ -18,7 +18,8 @@ const MESSAGES: Record<string, () => EmailMessage> = {
   verification: () => verificationMessage('tok-1', 'Anna'),
   passwordReset: () => passwordResetMessage('tok-2', 'Anna'),
   accountApproved: () => accountApprovedMessage('Anna'),
-  accountActivation: () => accountActivationMessage('Temp-Pass-1', 'Anna'),
+  accountActivation: () =>
+    accountActivationMessage('anna@example.com', 'Temp-Pass-1', 'Anna'),
   newUserAdmin: () =>
     newUserAdminMessage('anna@example.com', 'Anna Nowak', '2026-01-02 10:00'),
 };
@@ -90,10 +91,14 @@ describe('email templates', () => {
   });
 
   it('shows the temporary password and the registration details', () => {
-    const activation = accountActivationMessage('Temp-Pass-1');
+    const activation = accountActivationMessage(
+      'anna@example.com',
+      'Temp-Pass-1'
+    );
     const admin = newUserAdminMessage('a@b.pl', 'Anna', '2026-01-02');
 
     for (const content of [activation.html, activation.text]) {
+      expect(content).toContain('anna@example.com');
       expect(content).toContain('Temp-Pass-1');
     }
     for (const value of ['a@b.pl', 'Anna', '2026-01-02']) {

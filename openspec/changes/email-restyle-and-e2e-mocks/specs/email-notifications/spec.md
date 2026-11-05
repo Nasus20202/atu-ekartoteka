@@ -29,3 +29,15 @@ Every HTML email SHALL share one layout that matches the application's visual de
 - **GIVEN** a template pair
 - **WHEN** it is rendered with the same variables
 - **THEN** the plain-text variant contains every link and value that the HTML variant contains
+
+## MODIFIED Requirements
+
+### Requirement: Account Activation Email
+
+The system SHALL send the login email and a temporary password to users whose accounts are created by an admin via bulk creation.
+
+#### Scenario: Activation email dispatched
+
+- **GIVEN** an admin bulk-creates accounts for unassigned apartments
+- **WHEN** each account is created
+- **THEN** an `account_activation` email is sent with subject "Twoje konto zostało utworzone – ustaw nowe hasło", containing the recipient's email address, the temporary password and a link to `/login`
