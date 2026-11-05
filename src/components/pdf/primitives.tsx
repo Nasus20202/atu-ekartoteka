@@ -1,9 +1,11 @@
 import { Page as PdfPage, StyleSheet, Text, View } from '@react-pdf/renderer';
 import type { ReactNode } from 'react';
 
+import { PDF_FONT_FAMILY } from '@/lib/pdf/font-constants';
+
 export const styles = StyleSheet.create({
   page: {
-    fontFamily: 'Roboto',
+    fontFamily: PDF_FONT_FAMILY,
     fontSize: 10,
     padding: 32,
     color: '#111',
