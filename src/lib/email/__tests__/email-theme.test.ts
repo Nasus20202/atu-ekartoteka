@@ -2,9 +2,16 @@ import fs from 'fs';
 import path from 'path';
 import { describe, expect, it } from 'vitest';
 
-import { EMAIL_RADIUS, emailColors } from '@/lib/email/email-theme';
+import {
+  EMAIL_BUTTON_RADIUS,
+  EMAIL_CARD_RADIUS,
+  EMAIL_RADIUS,
+  emailColors,
+} from '@/lib/email/email-theme';
 
 const PX_PER_REM = 16;
+const BUTTON_RADIUS_OFFSET_PX = 2;
+const CARD_RADIUS_OFFSET_PX = 4;
 const HEX_RADIX = 16;
 const HEX_DIGITS = 2;
 const PERCENT = 100;
@@ -42,6 +49,7 @@ function hslToHex(value: string): string {
 
 describe('email theme', () => {
   it.each([
+    ['foreground', 'foreground'],
     ['primary', 'primary'],
     ['primaryForeground', 'primary-foreground'],
     ['muted', 'muted'],
@@ -51,9 +59,11 @@ describe('email theme', () => {
     expect(emailColors[key]).toBe(hslToHex(token(cssName)));
   });
 
-  it('uses the website corner radius', () => {
-    expect(EMAIL_RADIUS).toBe(
-      `${Number.parseFloat(token('radius')) * PX_PER_REM}px`
-    );
+  it('uses the website corner radii', () => {
+    const radius = Number.parseFloat(token('radius')) * PX_PER_REM;
+
+    expect(EMAIL_RADIUS).toBe(`${radius}px`);
+    expect(EMAIL_BUTTON_RADIUS).toBe(`${radius - BUTTON_RADIUS_OFFSET_PX}px`);
+    expect(EMAIL_CARD_RADIUS).toBe(`${radius + CARD_RADIUS_OFFSET_PX}px`);
   });
 });

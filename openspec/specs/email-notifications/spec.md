@@ -56,9 +56,9 @@ Every email type SHALL have an HTML body built from shared React components and 
 
 #### Scenario: Shared theme
 
-- **GIVEN** the website's primary, primary-foreground, muted, muted-foreground and border colours and its corner radius
+- **GIVEN** the website's foreground, primary, primary-foreground, muted, muted-foreground and border colours and its card, button and base corner radii
 - **WHEN** the email theme is defined
-- **THEN** the email theme equals those design tokens, so a change to a token fails the test suite until the theme follows
+- **THEN** the email theme equals those design tokens, so a change to a token fails the test suite until the theme follows; buttons use the application's primary button colours, size and shadow, and text uses the application's Geist fonts ahead of the system font stack
 
 #### Scenario: Sender identity
 
