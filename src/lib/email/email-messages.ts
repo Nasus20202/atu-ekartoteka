@@ -59,6 +59,7 @@ export function accountApprovedMessage(name?: string): EmailMessage {
 }
 
 export function accountActivationMessage(
+  email: string,
   tempPassword: string,
   name?: string
 ): EmailMessage {
@@ -67,6 +68,7 @@ export function accountActivationMessage(
     'Twoje konto zostało utworzone – ustaw nowe hasło',
     {
       NAME: greeting(name),
+      EMAIL: email,
       TEMP_PASSWORD: tempPassword,
       LOGIN_URL: appUrl('/login'),
     }

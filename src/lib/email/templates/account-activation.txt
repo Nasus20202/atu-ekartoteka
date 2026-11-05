@@ -4,6 +4,7 @@ Witaj{{NAME}},
 
 Administrator utworzył dla Ciebie konto w systemie. Możesz zalogować się używając poniższych danych:
 
+Email: {{EMAIL}}
 Tymczasowe hasło: {{TEMP_PASSWORD}}
 
 Po zalogowaniu zostaniesz poproszony o ustawienie nowego hasła.

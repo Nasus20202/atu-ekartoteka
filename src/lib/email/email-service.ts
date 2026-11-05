@@ -190,7 +190,7 @@ export class EmailService {
     name?: string
   ): Promise<boolean> {
     return this.sendEmail(
-      { to, ...accountActivationMessage(tempPassword, name) },
+      { to, ...accountActivationMessage(to, tempPassword, name) },
       'account_activation'
     );
   }

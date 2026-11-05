@@ -21,7 +21,11 @@ const EMAILS = {
   'password-reset': () => passwordResetMessage('token', RECIPIENT_NAME),
   'account-approved': () => accountApprovedMessage(RECIPIENT_NAME),
   'account-activation': () =>
-    accountActivationMessage('Tymczasowe-Haslo-42', RECIPIENT_NAME),
+    accountActivationMessage(
+      'anna.nowak@example.com',
+      'Tymczasowe-Haslo-42',
+      RECIPIENT_NAME
+    ),
   'new-user-registration-admin': () =>
     newUserAdminMessage(
       'anna.nowak@example.com',
