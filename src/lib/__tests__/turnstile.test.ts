@@ -16,7 +16,7 @@ describe('Turnstile helper', () => {
     const OVERRIDE_URL = 'http://localhost:4010/turnstile/siteverify';
 
     function stubFetch() {
-      const fetchMock = vi.fn((_url: string) =>
+      const fetchMock = vi.fn<(url: string) => Promise<Response>>(() =>
         Promise.resolve({
           json: () => Promise.resolve({ success: true }),
         } as Response)
