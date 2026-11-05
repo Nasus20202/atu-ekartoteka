@@ -180,13 +180,31 @@ The system SHALL have end-to-end tests covering all primary user flows.
 
 ### Requirement: E2E Browser Target
 
-The system SHALL run E2E tests against Chromium by default.
+The system SHALL run the functional E2E tests on Chromium and Firefox, each as its own desktop project and as a separate CI job.
 
-#### Scenario: Single browser project
+#### Scenario: Browser projects
 
 - **GIVEN** the Playwright configuration
 - **WHEN** tests are executed
-- **THEN** they run on the `Desktop Chrome` Chromium profile; additional browser projects may be added as the matrix grows
+- **THEN** the `chromium` and `firefox` projects run the same functional tests on their `Desktop Chrome` and `Desktop Firefox` profiles, with the admin tests in matching `*-admin` projects
+
+#### Scenario: Default local run is Chromium only
+
+- **GIVEN** a developer machine
+- **WHEN** `pnpm test:e2e` is run
+- **THEN** only the Chromium-based projects (`chromium*` and `visual-*`) run, and Firefox runs through `pnpm test:e2e:firefox` or the CI matrix
+
+#### Scenario: Browser matrix in CI
+
+- **GIVEN** the E2E workflow runs in CI
+- **WHEN** it starts
+- **THEN** each browser runs in its own job with its own database stack, so the browsers run in parallel
+
+#### Scenario: Visual tests stay on Chromium
+
+- **GIVEN** the visual regression projects
+- **WHEN** they run
+- **THEN** they run only on Chromium, because screenshot baselines are stored per browser
 
 ---
 

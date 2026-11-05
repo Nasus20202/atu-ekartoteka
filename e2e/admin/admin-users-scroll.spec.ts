@@ -8,6 +8,7 @@ import {
   createScrollTestUsers,
   deleteScrollTestUsers,
 } from '../utils/scroll-test-users';
+import { scrollUntilCount } from '../utils/scroll-until-count';
 
 // More than the API's default page of 50 users
 const USER_COUNT = 55;
@@ -38,10 +39,7 @@ test.describe('Admin users infinite scroll', () => {
     ).toHaveCount(0);
     await expect(adminPage.getByText(/Strona \d+ z \d+/)).toHaveCount(0);
 
-    await expect(async () => {
-      await adminPage.mouse.wheel(0, 20000);
-      await expect(cards).toHaveCount(USER_COUNT, { timeout: 1000 });
-    }).toPass({ timeout: LOAD_TIMEOUT_MS });
+    await scrollUntilCount(adminPage, cards, USER_COUNT);
 
     // Created with descending timestamps, so the oldest user comes last
     await expect(cards.last()).toContainText(`${prefix}-${USER_COUNT}@`);

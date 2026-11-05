@@ -27,7 +27,23 @@ const STREAMING_SEGMENT_SELECTOR = '[id^="S:"][hidden]';
 const STREAMING_SETTLE_TIMEOUT = 10000;
 const REACT_ROOT_KEY_PREFIX = '__reactContainer';
 
+// A server redirect replaces the navigation that goto() started. Chromium
+// resolves goto() with the redirected page, but Firefox rejects it.
+const REDIRECT_INTERRUPTION_MESSAGES = [
+  'interrupted by another navigation',
+  'NS_BINDING_ABORTED',
+];
+
 const wrappedPages = new WeakSet<Page>();
+
+function isRedirectInterruption(error: unknown) {
+  return (
+    error instanceof Error &&
+    REDIRECT_INTERRUPTION_MESSAGES.some((message) =>
+      error.message.includes(message)
+    )
+  );
+}
 
 function waitForStreamedContentAfterGoto(page: Page) {
   if (wrappedPages.has(page)) {
@@ -39,7 +55,14 @@ function waitForStreamedContentAfterGoto(page: Page) {
   const goto = page.goto.bind(page);
 
   page.goto = async (...args: Parameters<Page['goto']>) => {
-    const response = await goto(...args);
+    const response = await goto(...args).catch(async (error: unknown) => {
+      if (!isRedirectInterruption(error)) {
+        throw error;
+      }
+      // Wait for the page the redirect led to; that is what the test expects
+      await page.waitForLoadState('load');
+      return null;
+    });
     await page
       .waitForFunction(
         (selector) => !document.querySelector(selector),
@@ -78,6 +101,19 @@ export async function login(
   await page.waitForURL((url) => !url.pathname.includes('/login'), {
     timeout: 10000,
   });
+  // The forced password change page has no h1 and no refresh to wait for
+  if (!new URL(page.url()).pathname.startsWith('/change-password')) {
+    await waitForSignedInPage(page);
+  }
+}
+
+/**
+ * Waits for a signed-in landing page (every dashboard and admin page has an h1).
+ * The login page calls router.refresh() after pushing here; a test that navigates
+ * before that finishes can be redirected back, so the fixtures wait for it first.
+ */
+async function waitForSignedInPage(page: Page) {
+  await page.getByRole('heading', { level: 1 }).first().waitFor();
 }
 
 async function freezeVisualDate(page: Page) {
@@ -110,6 +146,7 @@ export const test = base.extend<{
     const context = await browser.newContext();
     const page = await context.newPage();
     await login(page, ADMIN_EMAIL, ADMIN_PASSWORD);
+    await waitForSignedInPage(page);
     await use(page);
     await context.close();
   },
@@ -121,6 +158,7 @@ export const test = base.extend<{
     const context = await browser.newContext();
     const page = await context.newPage();
     await login(page, USER_EMAIL, USER_PASSWORD);
+    await waitForSignedInPage(page);
     await use(page);
     await context.close();
   },
@@ -132,6 +170,7 @@ export const test = base.extend<{
     const context = await browser.newContext();
     const page = await context.newPage();
     await login(page, PROFILE_EMAIL, PROFILE_PASSWORD);
+    await waitForSignedInPage(page);
     await use(page);
     await context.close();
   },

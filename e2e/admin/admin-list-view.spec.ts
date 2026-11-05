@@ -8,6 +8,7 @@ import {
   createScrollTestHoa,
   deleteScrollTestHoa,
 } from '../utils/scroll-test-hoa';
+import { scrollUntilCount } from '../utils/scroll-until-count';
 import { USER_EMAIL } from '../utils/test-credentials';
 
 const APARTMENT_COUNT = 45;
@@ -92,10 +93,7 @@ test.describe('Admin list view switch', () => {
     await expect(addressHeader).toHaveAttribute('aria-sort', 'descending');
     await expect(links.first()).not.toHaveText('ul. Przewijana 1/1');
 
-    await expect(async () => {
-      await adminPage.mouse.wheel(0, 10000);
-      await expect(links).toHaveCount(APARTMENT_COUNT, { timeout: 1000 });
-    }).toPass({ timeout: LOAD_TIMEOUT_MS });
+    await scrollUntilCount(adminPage, links, APARTMENT_COUNT);
 
     const expectedDescending = Array.from(
       { length: APARTMENT_COUNT },

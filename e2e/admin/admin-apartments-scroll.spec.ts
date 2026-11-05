@@ -7,6 +7,7 @@ import {
   createScrollTestHoa,
   deleteScrollTestHoa,
 } from '../utils/scroll-test-hoa';
+import { scrollUntilCount } from '../utils/scroll-until-count';
 
 const APARTMENT_COUNT = 45;
 const LOAD_TIMEOUT_MS = 10000;
@@ -39,10 +40,7 @@ test.describe('Admin apartments infinite scroll', () => {
     ).toHaveCount(0);
 
     const cards = adminPage.getByRole('button', { name: 'Zobacz szczegóły' });
-    await expect(async () => {
-      await adminPage.mouse.wheel(0, 10000);
-      await expect(cards).toHaveCount(APARTMENT_COUNT, { timeout: 1000 });
-    }).toPass({ timeout: LOAD_TIMEOUT_MS });
+    await scrollUntilCount(adminPage, cards, APARTMENT_COUNT);
 
     await expect(
       adminPage.getByText(`ul. Przewijana 1/${APARTMENT_COUNT}`, {

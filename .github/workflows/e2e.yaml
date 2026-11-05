@@ -5,7 +5,18 @@ on:
 
 jobs:
   e2e:
-    name: Run
+    name: E2E (${{ matrix.browser }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - browser: chromium
+            projects: >-
+              --project=chromium --project=chromium-mobile
+              --project=chromium-admin --project=chromium-integrations
+              --project=visual-desktop --project=visual-mobile
+          - browser: firefox
+            projects: --project=firefox --project=firefox-admin
     env:
       # Functional suite database; the visual suite uses e2e_visual on the same server
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/e2e
@@ -50,18 +61,18 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+          key: playwright-${{ matrix.browser }}-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
 
       - name: Install Playwright Browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: pnpm exec playwright install chromium --with-deps
+        run: pnpm exec playwright install ${{ matrix.browser }} --with-deps
 
       - name: Install Playwright system dependencies
         if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: pnpm exec playwright install-deps chromium
+        run: pnpm exec playwright install-deps ${{ matrix.browser }}
 
       - name: Run E2E tests against the Docker image
-        run: pnpm exec playwright test
+        run: pnpm exec playwright test ${{ matrix.projects }}
         env:
           CI: true
           PLAYWRIGHT_BASE_URL: http://localhost:3000
@@ -82,7 +93,7 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         if: always()
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.browser }}
           path: playwright-report/
           retention-days: 7
 
@@ -90,6 +101,6 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         if: failure()
         with:
-          name: playwright-screenshots
+          name: playwright-screenshots-${{ matrix.browser }}
           path: test-results/
           retention-days: 7
