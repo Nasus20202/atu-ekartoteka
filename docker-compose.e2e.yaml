@@ -3,7 +3,7 @@
 # `ekartoteka-visual` the visual suite (port 3001, database e2e_visual) and
 # `ekartoteka-integrations` the integration suite (port 3002, database e2e),
 # which talks to the local `mocks` service (SMTP, Google OIDC, Turnstile).
-# `mocks` is the `mocks` target of docker/Dockerfile (same Node image as the app).
+# `mocks` is built from docker/Dockerfile.mocks (same Node image as the app).
 # CI:    docker compose -f docker-compose.e2e.yaml up --no-build --wait
 # Local: docker compose -f docker-compose.e2e.yaml up --build --wait
 x-app-common: &app-common
@@ -80,8 +80,7 @@ services:
     image: ekartoteka-mocks:e2e
     build:
       context: .
-      dockerfile: docker/Dockerfile
-      target: mocks
+      dockerfile: docker/Dockerfile.mocks
     ports:
       - '4010:4010'
       - '1025:1025'

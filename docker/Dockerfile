@@ -19,12 +19,6 @@ RUN corepack install
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile --prod --ignore-scripts
 
-# Local SMTP, Google OIDC and Turnstile mocks for the E2E stack (not part of the release image)
-FROM builder-deps AS mocks
-COPY e2e/mocks ./e2e/mocks
-EXPOSE 4010 1025
-CMD ["node_modules/.bin/tsx", "e2e/mocks/main.ts"]
-
 # Build the application
 FROM base AS builder
 COPY --from=builder-deps /app/node_modules ./node_modules

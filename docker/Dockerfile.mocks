@@ -1,0 +1,18 @@
+# Local SMTP, Google OIDC and Turnstile mocks for the E2E stack (see docker-compose.e2e.yaml).
+# Not part of the release image; it uses the same Node base image as docker/Dockerfile.
+FROM node:26.13.0-alpine@sha256:c6ad9e9c1d80f6eb607c26b4b0a132ff7a2344fad1c78ea3baa2a7d4c8de6d94
+WORKDIR /app
+# Node 26 images no longer bundle corepack, so install it from npm first
+# renovate: datasource=npm depName=corepack
+ARG COREPACK_VERSION=0.36.0
+RUN npm install -g corepack@${COREPACK_VERSION} && corepack enable
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN corepack install
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile --ignore-scripts
+
+COPY e2e/mocks ./e2e/mocks
+
+EXPOSE 4010 1025
+CMD ["node_modules/.bin/tsx", "e2e/mocks/main.ts"]
