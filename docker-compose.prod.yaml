@@ -40,7 +40,7 @@ services:
       retries: 5
 
   ekartoteka-migrations:
-    image: ${APP_IMAGE:-ghcr.io/nasus20202/atu-ekartoteka:latest@sha256:8b3fdd456265c19a76cb743835dd78f731e71890df0d231c8456d901c8e03ed6}
+    image: ${APP_IMAGE:-ghcr.io/nasus20202/atu-ekartoteka:latest@sha256:a369d2f6164f1e93a5e076e7f084ca7afe806fc5fe11144649c5065fa4367aba}
     container_name: atu-ekartoteka-migrations-prod
     depends_on:
       db:
@@ -54,7 +54,7 @@ services:
     restart: 'no'
 
   ekartoteka:
-    image: ${APP_IMAGE:-ghcr.io/nasus20202/atu-ekartoteka:latest@sha256:8b3fdd456265c19a76cb743835dd78f731e71890df0d231c8456d901c8e03ed6}
+    image: ${APP_IMAGE:-ghcr.io/nasus20202/atu-ekartoteka:latest@sha256:a369d2f6164f1e93a5e076e7f084ca7afe806fc5fe11144649c5065fa4367aba}
     container_name: atu-ekartoteka-prod
     restart: unless-stopped
     depends_on:
