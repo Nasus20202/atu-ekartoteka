@@ -37,7 +37,7 @@ describe('updateAppSettings', () => {
       where: { id: 1 },
       create: { id: 1, tenantHistoryYearsBack: 3 },
       update: { tenantHistoryYearsBack: 3 },
-      select: { tenantHistoryYearsBack: true },
+      omit: { id: true, updatedAt: true },
     });
   });
 

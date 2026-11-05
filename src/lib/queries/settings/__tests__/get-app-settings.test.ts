@@ -44,7 +44,7 @@ describe('settings queries', () => {
     });
     expect(mockFindUnique).toHaveBeenCalledWith({
       where: { id: 1 },
-      select: { tenantHistoryYearsBack: true },
+      omit: { id: true, updatedAt: true },
     });
   });
 
