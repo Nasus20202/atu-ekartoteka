@@ -754,7 +754,7 @@ The system SHALL calculate the monthly charge of a payment year as the sum of `t
 
 ### Requirement: Balances Derived from Opening Balance
 
-The system SHALL derive the closing balance and the monthly running balance of each payment year as the imported opening balance plus the year's imported payments minus the calculated charges, counting months up to the current month. The imported opening balance SHALL be shown unchanged, and years SHALL NOT be chained: each year starts from its own imported opening balance. The `Razem` row, the summary tiles, the dashboard `Saldo wpłat` card and balance chart, and the admin HOA total closing balance SHALL use the derived closing balance.
+The system SHALL derive the closing balance and the monthly running balance of each payment year as the imported opening balance plus the year's imported payments minus the calculated charges, counting months up to the current month. The imported opening balance SHALL be shown unchanged, and years SHALL NOT be chained: each year starts from its own imported opening balance.
 
 #### Scenario: Derived closing balance
 
@@ -779,8 +779,6 @@ The system SHALL derive the closing balance and the monthly running balance of e
 - **GIVEN** any payment year
 - **WHEN** the payment table renders
 - **THEN** the `Razem` `Wpłaty` value minus the `Razem` `Naliczenia` value equals the derived `Saldo`
-
----
 
 ### Requirement: HOA Header and Footer for Admin
 
@@ -884,3 +882,19 @@ The dashboard charge summary (line count and total for the current and previous 
 - **WHEN** they view the dashboard
 - **THEN** the charge summary shows the number of charge lines and the total for each period
 - **AND** the figures equal the sums of the stored charge records for those periods
+
+### Requirement: Derived Closing Balance Used in Every View
+
+The `Razem` row, the summary tiles, the dashboard `Saldo wpłat` card and balance chart, and the admin HOA total closing balance SHALL use the derived closing balance.
+
+#### Scenario: Dashboard and admin total use the derived balance
+
+- **GIVEN** a payment year whose imported closing balance differs from the derived closing balance
+- **WHEN** the tenant views the dashboard `Saldo wpłat` card and an admin views the HOA total closing balance
+- **THEN** both show the derived closing balance
+
+#### Scenario: Summary tiles use the derived balance
+
+- **GIVEN** a payment year whose imported closing balance differs from the derived closing balance
+- **WHEN** the payment summary tiles render
+- **THEN** the closing balance tile shows the derived closing balance

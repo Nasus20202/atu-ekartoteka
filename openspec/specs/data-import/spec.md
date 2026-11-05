@@ -8,7 +8,7 @@ Allows admins to import apartment, charge, payment, and charge notification data
 
 ### Requirement: Batch File Import
 
-The system SHALL allow admins to upload a collection of legacy files and process them as a batch, grouping files by HOA. A `.txt` file SHALL be recognised by its name prefix (`lok`, `nal_czynsz`, `pow_czynsz`, `wplaty`), ignoring letter case, so suffixed names such as `wplaty_2026.txt` are accepted. A `.wmb` file SHALL be recognised as described in the WMB Files Per Data Type requirement. Several files of one kind in one HOA folder SHALL be merged, and a record present in more than one of them SHALL stop the HOA import with an error naming both files, even when validation is skipped.
+The system SHALL allow admins to upload a collection of legacy files and process them as a batch, grouping files by HOA. A `.wmb` file SHALL be recognised as described in the WMB Files Per Data Type requirement.
 
 #### Scenario: Successful batch import
 
@@ -53,8 +53,6 @@ The system SHALL allow admins to upload a collection of legacy files and process
 - **GIVEN** an admin submitting an import request
 - **WHEN** the request contains no files
 - **THEN** the request is rejected with an appropriate error
-
----
 
 ### Requirement: Apartment Import
 
@@ -203,11 +201,7 @@ The system SHALL return statistics for each HOA import showing totals and counts
 
 ### Requirement: WMB Files Per Data Type
 
-The system SHALL track each `.wmb` file by its associated data type and store the data-as-of date per type on the HOA record. A `.wmb` file SHALL be routed to a data type by the same name prefix as the `.txt` files (`lok` for apartments, `nal_czynsz` and `nalicz` for charges, `pow_czynsz` for notifications), ignoring letter case, so suffixed names such as `lok2026.wmb` are accepted. The legacy names `lokal_ost_wys.wmb`, `nalicz_ost_wys.wmb` and `pow_czynsz_ost_wys.wmb` SHALL route to the same types. A `.wmb` file that matches no data type (such as `wplaty.wmb`) SHALL be accepted and ignored.
-
-A WMB date SHALL only be stored when the `.txt` files of its data type are part of the same HOA import. Without them, the stored date SHALL be kept unchanged, even when the WMB file is present.
-
-When several WMB files of one data type are present for an HOA, the newest valid date among them SHALL be stored.
+The system SHALL track each `.wmb` file by its associated data type and store the data-as-of date per type on the HOA record. A `.wmb` file SHALL be routed to a data type by the same name prefix as the `.txt` files (`lok` for apartments, `nal_czynsz` and `nalicz` for charges, `pow_czynsz` for notifications), ignoring letter case, so suffixed names such as `lok2026.wmb` are accepted.
 
 #### Scenario: WMB files routed by filename
 
@@ -257,8 +251,6 @@ When several WMB files of one data type are present for an HOA, the newest valid
 - **GIVEN** a completed HOA import where WMB dates were parsed
 - **WHEN** the admin views the import result card for that HOA
 - **THEN** each entity type (apartments, charges, notifications) shows its data-as-of date
-
----
 
 ### Requirement: HOA Header and Footer Saved on Notification Import
 
@@ -410,7 +402,7 @@ The system SHALL provide a mechanism to download validation errors and warnings 
 
 ### Requirement: On-Demand Database Validation
 
-The system SHALL let an administrator run, from the import page, the import validation checks (line totals, payment balance identity, calculated versus imported monthly charges, year-to-year balance drift) against the data already stored in the database, without importing files and without modifying data. Validation SHALL process HOAs with the same bounded concurrency as the import. Results SHALL be reported per HOA in the same warning and error format and download options as an import result. A result banner and the year balance table SHALL be shown above those results. The admin SHALL be able to skip the full validation with the checkbox "Pomiń pełną walidację"; when it is checked, only the year balances SHALL be loaded and checked, and no file checks, cross-year checks or drift checks run.
+The system SHALL let an administrator run, from the import page, the import validation checks (line totals, payment balance identity, calculated versus imported monthly charges, year-to-year balance drift) against the data already stored in the database, without importing files and without modifying data. Validation SHALL process HOAs with the same bounded concurrency as the import.
 
 #### Scenario: Validation of stored data
 
@@ -447,7 +439,7 @@ The system SHALL let an administrator run, from the import page, the import vali
 
 ### Requirement: Naliczenia Import Validation Severity
 
-The system SHALL validate each entry in `nal_czynsz.txt` before committing to the database. The Wplaty closing-balance check SHALL abort the HOA import on failure. The cross-file charge check SHALL compare charges per owner, apartment and billing period against the monthly charges imported from `wplaty.txt`; because those imported columns are known to be unreliable and are no longer used for display, a mismatch SHALL be reported as a warning and SHALL NOT abort the import. Each such warning SHALL state that the field from the files is ignored by the application. Mismatches SHALL be rolled up into one warning per owner, apartment and year that lists each differing month with both values, and states when a month's difference equals the sum of its `Wyrównanie` lines; otherwise it states the unexplained difference. The line-total identity check (`totalAmount ≈ quantity × unitPrice`) SHALL be reported as a warning only and SHALL NOT abort the import.
+The system SHALL validate each entry in `nal_czynsz.txt` before committing to the database. The Wplaty closing-balance check SHALL abort the HOA import on failure. The line-total identity check (`totalAmount ≈ quantity × unitPrice`) SHALL be reported as a warning only and SHALL NOT abort the import.
 
 #### Scenario: Line total mismatch reported as warning, import continues
 
@@ -510,11 +502,9 @@ The system SHALL validate each entry in `nal_czynsz.txt` before committing to th
 - **THEN** the card shows an `Ostrzeżenia` section listing each warning with its apartment and message
 - **AND** period, line and line-total difference are shown for warnings that carry them
 
----
-
 ### Requirement: Payment Import Validation Severity
 
-The system SHALL validate the closing balance of each entry in `wplaty.txt` before committing, and abort the HOA import if any entry fails the identity check. The system SHALL also compare the opening balance of year N+1 with the closing balance of year N stored from the files when the database contains a complete record for year N, meaning one whose period ends on 31 December. A mismatch SHALL be reported as one warning per apartment that states the closing balance from the file is ignored by the application, and SHALL NOT abort the import, because the closing balances of closed years in the files omit settlement lines and are not used for display.
+The system SHALL validate the closing balance of each entry in `wplaty.txt` before committing, and abort the HOA import if any entry fails the identity check.
 
 #### Scenario: Closing balance identity check
 
@@ -553,11 +543,9 @@ The system SHALL validate the closing balance of each entry in `wplaty.txt` befo
 - **WHEN** import validation runs
 - **THEN** one warning per mismatching apartment is recorded for that HOA and the import completes
 
----
-
 ### Requirement: Imported Payment Values Kept in Legacy Fields
 
-The system SHALL store the monthly charges and the closing balance of each `wplaty.txt` entry unchanged in the legacy payment fields when it creates the payment record, SHALL overwrite them on re-import when any of them differs from the stored value, and SHALL keep validating them: the closing-balance identity check (which aborts the import), the cross-file charge check and the year-to-year check on the stored closing balance (both warnings) all run on the values from the files. These values SHALL NOT be presented anywhere in the application and SHALL NOT be changed by any calculation.
+The system SHALL store the monthly charges and the closing balance of each `wplaty.txt` entry unchanged in the legacy payment fields when it creates the payment record, and SHALL overwrite them on re-import when any of them differs from the stored value.
 
 #### Scenario: Created with the file values
 
@@ -587,8 +575,6 @@ The system SHALL store the monthly charges and the closing balance of each `wpla
 - **GIVEN** a `wplaty.txt` entry whose closing balance breaks the identity check
 - **WHEN** import validation runs
 - **THEN** the same error as before is recorded and the HOA import is aborted
-
----
 
 ### Requirement: Derived Balance Drift Warning
 
@@ -823,8 +809,6 @@ Each import warning SHALL carry a kind from a fixed set: `line-total`, `charges-
 
 The system SHALL read the start date and the end date of each apartment row in a `lok` file and store them on the apartment as `validFrom` and `validTo`. Both dates are optional. A blank or non-`YYYYMMDD` value SHALL be stored as null without failing the row. Dates SHALL be updated on reimport when they change.
 
-The WMB export always contains both date columns, so a missing column is not a supported file variant. A blank end date means the owner is still current, not that the end date is unknown. Every reimport replaces the stored dates, so a later export without an end date clears a previously stored one.
-
 #### Scenario: Start and end dates stored
 
 - **GIVEN** a `lok` row with a start date `20250210` and an end date `20250209` for a former owner
@@ -877,3 +861,167 @@ The system SHALL mark an apartment row as inactive when its `validTo` date is on
 - **GIVEN** a row that was active and whose `validTo` is on or before the import date
 - **WHEN** the import runs with the updated file
 - **THEN** the row is set to `isActive: false` and counted as updated in the import statistics
+
+### Requirement: TXT Files Recognised by Name Prefix
+
+A `.txt` file SHALL be recognised by its name prefix (`lok`, `nal_czynsz`, `pow_czynsz`, `wplaty`), ignoring letter case, so suffixed names such as `wplaty_2026.txt` are accepted.
+
+#### Scenario: Letter case ignored
+
+- **GIVEN** an HOA folder containing `LOK.txt` and `Wplaty_2026.txt`
+- **WHEN** the admin imports the folder
+- **THEN** the files are imported as apartments and payments
+
+#### Scenario: Each prefix maps to its data type
+
+- **GIVEN** an HOA folder containing `lok.txt`, `nal_czynsz.txt`, `pow_czynsz.txt` and `wplaty.txt`
+- **WHEN** the admin imports the folder
+- **THEN** they are imported as apartments, charges, notifications and payments respectively
+
+### Requirement: Files of One Kind Merged
+
+Several files of one kind in one HOA folder SHALL be merged, and a record present in more than one of them SHALL stop the HOA import with an error naming both files, even when validation is skipped.
+
+#### Scenario: Three files merged
+
+- **GIVEN** an HOA folder containing `lok1.txt`, `lok2.txt` and `lok3.txt` with different apartments
+- **WHEN** the admin imports the folder
+- **THEN** the apartments from all three files are imported together
+
+#### Scenario: Repeated record stops the import with validation skipped
+
+- **GIVEN** two `nal_czynsz` files in one HOA folder that contain the same charge line
+- **WHEN** the admin imports the folder with full validation skipped
+- **THEN** the HOA import stops before any data is written and the error names both files
+
+### Requirement: Legacy and Unmatched WMB Names
+
+The legacy names `lokal_ost_wys.wmb`, `nalicz_ost_wys.wmb` and `pow_czynsz_ost_wys.wmb` SHALL route to the same types. A `.wmb` file that matches no data type (such as `wplaty.wmb`) SHALL be accepted and ignored.
+
+#### Scenario: Legacy name routes to its type
+
+- **GIVEN** an HOA folder containing `pow_czynsz_ost_wys.wmb` with a date and the notification `.txt` file
+- **WHEN** import completes for that HOA
+- **THEN** `notificationsDataDate` is updated from the file
+
+#### Scenario: Unmatched WMB name is ignored
+
+- **GIVEN** an HOA folder containing `wplaty.wmb` and `other.wmb`
+- **WHEN** the admin imports the folder
+- **THEN** both files are accepted without an error and no data date changes
+
+### Requirement: WMB Date Stored Only With Its Data Type
+
+A WMB date SHALL only be stored when the `.txt` files of its data type are part of the same HOA import. Without them, the stored date SHALL be kept unchanged, even when the WMB file is present.
+
+#### Scenario: Stored date kept without its TXT files
+
+- **GIVEN** an HOA whose `chargesDataDate` is 2025-12-31 and an import containing `nal_czynsz.wmb` dated `20260301` but no charges `.txt` file
+- **WHEN** import completes for that HOA
+- **THEN** `chargesDataDate` is still 2025-12-31
+
+### Requirement: Newest WMB Date Stored
+
+When several WMB files of one data type are present for an HOA, the newest valid date among them SHALL be stored.
+
+#### Scenario: Invalid date does not win
+
+- **GIVEN** `lok2025.wmb` dated `20250101`, `lok2026.wmb` with a malformed date, and the apartments `.txt` files
+- **WHEN** import completes for that HOA
+- **THEN** `apartmentsDataDate` is set to 2025-01-01, the newest valid date
+
+### Requirement: Validation Results Layout
+
+Results SHALL be reported per HOA in the same warning and error format and download options as an import result. A result banner and the year balance table SHALL be shown above those results.
+
+#### Scenario: Download options match import results
+
+- **GIVEN** completed database validation with warnings for an HOA
+- **WHEN** the admin views that HOA's result
+- **THEN** it offers the same download options as an import result
+
+#### Scenario: Banner and table above the results
+
+- **GIVEN** completed database validation
+- **WHEN** the result renders
+- **THEN** the result banner and then the year balance table appear above the per-HOA results
+
+### Requirement: Skip Full Validation Option
+
+The admin SHALL be able to skip the full validation with the checkbox "Pomiń pełną walidację"; when it is checked, only the year balances SHALL be loaded and checked, and no file checks, cross-year checks or drift checks run.
+
+#### Scenario: Skipped checks do not run
+
+- **GIVEN** the checkbox is checked and stored data with a year-to-year balance drift
+- **WHEN** validation runs
+- **THEN** no drift warning is reported and only the year balances are checked
+
+### Requirement: Cross-File Charge Check Is a Warning
+
+The cross-file charge check SHALL compare charges per owner, apartment and billing period against the monthly charges imported from `wplaty.txt`; because those imported columns are known to be unreliable and are no longer used for display, a mismatch SHALL be reported as a warning and SHALL NOT abort the import. Each such warning SHALL state that the field from the files is ignored by the application.
+
+#### Scenario: Warning says the file field is ignored
+
+- **GIVEN** a monthly charge from `wplaty.txt` that differs from the sum of the `nal_czynsz.txt` lines
+- **WHEN** import validation runs
+- **THEN** the warning states that the field from the files is ignored by the application and the import is not aborted
+
+### Requirement: Cross-File Warnings Rolled Up Per Year
+
+Mismatches SHALL be rolled up into one warning per owner, apartment and year that lists each differing month with both values, and states when a month's difference equals the sum of its `Wyrównanie` lines; otherwise it states the unexplained difference.
+
+#### Scenario: One warning per owner, apartment and year
+
+- **GIVEN** an owner and apartment whose charges differ in March and in May of one year
+- **WHEN** import validation runs
+- **THEN** a single warning lists March and May, each with both values
+
+### Requirement: Cross-Year Balance Compared Against Complete Years
+
+The system SHALL also compare the opening balance of year N+1 with the closing balance of year N stored from the files when the database contains a complete record for year N, meaning one whose period ends on 31 December.
+
+#### Scenario: Year ending on 31 December is compared
+
+- **GIVEN** a stored payment record for year N whose period ends on 31 December
+- **WHEN** an entry for year N+1 is imported with a different opening balance
+- **THEN** the two balances are compared
+
+### Requirement: Cross-Year Balance Mismatch Is a Warning
+
+A cross-year balance mismatch SHALL be reported as one warning per apartment that states the closing balance from the file is ignored by the application, and SHALL NOT abort the import, because the closing balances of closed years in the files omit settlement lines and are not used for display.
+
+#### Scenario: Warning says the closing balance is ignored
+
+- **GIVEN** a cross-year opening and closing balance mismatch for an apartment
+- **WHEN** import validation runs
+- **THEN** one warning for that apartment states that the closing balance from the file is ignored by the application and the import is not aborted
+
+### Requirement: Legacy Payment Fields Keep Being Validated
+
+The system SHALL keep validating the legacy payment values: the closing-balance identity check (which aborts the import), the cross-file charge check and the year-to-year check on the stored closing balance (both warnings) all run on the values from the files.
+
+#### Scenario: Cross-file warning uses the file values
+
+- **GIVEN** a `wplaty.txt` entry whose monthly charges differ from the `nal_czynsz.txt` sums
+- **WHEN** import validation runs
+- **THEN** the cross-file warning is produced from the values in the files and the import continues
+
+### Requirement: Legacy Payment Fields Never Presented
+
+The legacy payment values SHALL NOT be presented anywhere in the application and SHALL NOT be changed by any calculation.
+
+#### Scenario: Legacy values not displayed
+
+- **GIVEN** a payment whose legacy closing balance is 500.00 and whose derived closing balance is -200.00
+- **WHEN** the tenant views the payment
+- **THEN** -200.00 is shown and 500.00 appears nowhere
+
+### Requirement: Blank End Date Means Current Owner
+
+A blank end date SHALL mean the owner is still current, not that the end date is unknown. Every reimport SHALL replace the stored dates, so a later export without an end date clears a previously stored one. The WMB export always contains both date columns, so a missing column is not a supported file variant.
+
+#### Scenario: Blank end date marks the current owner
+
+- **GIVEN** a `lok` row with a start date and a blank end date
+- **WHEN** import runs
+- **THEN** `validTo` is null and the owner is treated as current
