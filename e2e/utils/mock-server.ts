@@ -5,7 +5,7 @@ import {
   TURNSTILE_INVALID_TOKEN,
   TURNSTILE_VALID_TOKEN,
 } from '../mocks/constants';
-import type { CapturedMail } from '../mocks/mail';
+import type { CapturedMail } from '../mocks/mail-store';
 
 export { TURNSTILE_INVALID_TOKEN, TURNSTILE_VALID_TOKEN };
 export const MOCK_URL = process.env.MOCK_URL ?? 'http://localhost:4010';

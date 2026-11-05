@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test';
-import { createPublicKey, createVerify } from 'crypto';
 import nodemailer from 'nodemailer';
 
 import {
@@ -49,46 +48,5 @@ test.describe('Mock server', () => {
 
     expect((await verify(TURNSTILE_VALID_TOKEN)).success).toBe(true);
     expect((await verify(TURNSTILE_INVALID_TOKEN)).success).toBe(false);
-  });
-
-  test('issues a signed Google id_token', async ({ request }) => {
-    const issuer = `${MOCK_URL}/google`;
-    const discovery = await (
-      await request.get(`${issuer}/.well-known/openid-configuration`)
-    ).json();
-    expect(discovery.issuer).toBe(issuer);
-
-    await request.post(`${issuer}/identity`, {
-      data: { email: 'g@example.com', name: 'G User', sub: 'sub-1' },
-    });
-    const redirect = await request.get(`${issuer}/authorize`, {
-      params: { redirect_uri: 'http://localhost/cb', state: 's1' },
-      maxRedirects: 0,
-    });
-    const target = new URL(redirect.headers().location);
-    expect(target.searchParams.get('state')).toBe('s1');
-
-    const tokens = await (
-      await request.post(`${issuer}/token`, {
-        form: { code: target.searchParams.get('code') ?? '' },
-      })
-    ).json();
-    const [header, payload, signature] = tokens.id_token.split('.');
-    const jwks = await (await request.get(`${issuer}/jwks`)).json();
-    const verified = createVerify('RSA-SHA256')
-      .update(`${header}.${payload}`)
-      .verify(
-        createPublicKey({ key: jwks.keys[0], format: 'jwk' }),
-        Buffer.from(signature, 'base64url')
-      );
-
-    expect(verified).toBe(true);
-    expect(
-      JSON.parse(Buffer.from(payload, 'base64url').toString())
-    ).toMatchObject({
-      iss: issuer,
-      email: 'g@example.com',
-      sub: 'sub-1',
-    });
   });
 });

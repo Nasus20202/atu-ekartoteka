@@ -1,31 +1,9 @@
 import { simpleParser } from 'mailparser';
 import { SMTPServer } from 'smtp-server';
 
-export interface CapturedMail {
-  to: string[];
-  from: string;
-  subject: string;
-  html: string;
-  text: string;
-  date: string;
-}
+import { addMail } from './mail-store';
 
-const messages: CapturedMail[] = [];
-
-export function listMail(to?: string): CapturedMail[] {
-  const wanted = to?.trim().toLowerCase();
-  return messages
-    .filter((message) => !wanted || message.to.includes(wanted))
-    .reverse();
-}
-
-export function clearMail(to?: string): void {
-  const wanted = to?.trim().toLowerCase();
-  for (let i = messages.length - 1; i >= 0; i--) {
-    if (!wanted || messages[i].to.includes(wanted)) messages.splice(i, 1);
-  }
-}
-
+/** Accepts plain SMTP without TLS or AUTH, which is how the app sends in E2E. */
 export function startSmtpServer(port: number): Promise<SMTPServer> {
   const server = new SMTPServer({
     disabledCommands: ['STARTTLS', 'AUTH'],
@@ -33,7 +11,7 @@ export function startSmtpServer(port: number): Promise<SMTPServer> {
       simpleParser(stream)
         .then((parsed) => {
           const recipients = [parsed.to ?? []].flat();
-          messages.push({
+          addMail({
             to: recipients.flatMap((group) =>
               group.value.map((entry) => entry.address?.toLowerCase() ?? '')
             ),
