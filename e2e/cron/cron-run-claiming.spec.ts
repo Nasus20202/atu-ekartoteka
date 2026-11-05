@@ -7,6 +7,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { randomUUID } from 'crypto';
 
 import { PrismaClient } from '@/generated/prisma/client';
+import { CRON_RUN_RETENTION_MS } from '@/lib/cron/constants';
 import { createRunCoordinator } from '@/lib/cron/run-coordinator';
 import { CronScheduler } from '@/lib/cron/scheduler';
 import { claimCronRun } from '@/lib/mutations/cron/claim-cron-run';
@@ -92,5 +93,33 @@ test.describe('Cron run claiming', () => {
     const claimed = await runsWithPrefix(replicas[0].client, `${jobName}:`);
     expect(executions).toBeGreaterThanOrEqual(MIN_RUNS);
     expect(claimed).toHaveLength(executions);
+  });
+
+  test('winning a claim removes claims older than the retention period', async () => {
+    const client = createReplicaClient();
+    clients.push(client);
+    const now = Date.now();
+    const oldKey = `${prefix}:old`;
+    const recentKey = `${prefix}:recent`;
+    const newKey = `${prefix}:new:${new Date(now).toISOString()}`;
+    await client.cronRun.createMany({
+      data: [
+        {
+          key: oldKey,
+          claimedAt: new Date(now - CRON_RUN_RETENTION_MS - 60_000),
+        },
+        {
+          key: recentKey,
+          claimedAt: new Date(now - CRON_RUN_RETENTION_MS + 60_000),
+        },
+      ],
+    });
+
+    const allowed = await createRunCoordinator(client).shouldRun(newKey, 0);
+
+    expect(allowed).toBe(true);
+    expect(await runsWithPrefix(client, `${prefix}:old`)).toHaveLength(0);
+    expect(await runsWithKey(client, recentKey)).toHaveLength(1);
+    expect(await runsWithKey(client, newKey)).toHaveLength(1);
   });
 });
