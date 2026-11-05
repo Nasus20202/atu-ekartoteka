@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.4] - 2026-11-05
+
+- build(deps): move @react-email/components to devDependencies
+- test(e2e): log mock server activity with pino
+- docs: split README into topic pages under docs/ and explain what, how and why
+- test(e2e): run functional suites on Firefox and default to Chromium locally
+- feat(pdf): set PDFs in Geist and check rendered pages with snapshots
+- chore(deps): update github/codeql-action digest to 33d7b85 (#873)
+- chore(deps): update nextjs monorepo to v16.4.4 (#872)
+- chore(deps): update dependency eslint-plugin-playwright to v2.12.2 (#871)
+- chore(deps): update ghcr.io/nasus20202/atu-ekartoteka:latest docker digest to a369d2f (#870)
+
 ## [0.9.3] - 2026-11-05
 
 - refactor(email): move the email components to components/email
