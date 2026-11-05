@@ -1,7 +1,10 @@
 import { cache } from 'react';
 
 import { prisma } from '@/lib/database/prisma';
-import { APP_SETTINGS_ROW_ID } from '@/lib/settings/constants';
+import {
+  APP_SETTINGS_NON_SETTING_COLUMNS,
+  APP_SETTINGS_ROW_ID,
+} from '@/lib/settings/constants';
 import {
   type AppSettingsValues,
   getDefaultAppSettings,
@@ -11,7 +14,7 @@ import {
 export async function readAppSettings(): Promise<AppSettingsValues> {
   const row = await prisma.appSettings.findUnique({
     where: { id: APP_SETTINGS_ROW_ID },
-    select: { tenantHistoryYearsBack: true },
+    omit: APP_SETTINGS_NON_SETTING_COLUMNS,
   });
 
   return row ?? getDefaultAppSettings();

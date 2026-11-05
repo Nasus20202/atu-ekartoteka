@@ -1,6 +1,9 @@
 import { prisma } from '@/lib/database/prisma';
 import { readAppSettings } from '@/lib/queries/settings/get-app-settings';
-import { APP_SETTINGS_ROW_ID } from '@/lib/settings/constants';
+import {
+  APP_SETTINGS_NON_SETTING_COLUMNS,
+  APP_SETTINGS_ROW_ID,
+} from '@/lib/settings/constants';
 import type { AppSettingsValues } from '@/lib/settings/registry';
 
 /**
@@ -21,6 +24,6 @@ export async function updateAppSettings(
     where: { id: APP_SETTINGS_ROW_ID },
     create: { id: APP_SETTINGS_ROW_ID, ...values },
     update: values,
-    select: { tenantHistoryYearsBack: true },
+    omit: APP_SETTINGS_NON_SETTING_COLUMNS,
   });
 }
