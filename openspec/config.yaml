@@ -11,7 +11,7 @@ context: |
   - Framework: Next.js 16, App Router, React 19
   - Database: PostgreSQL via Prisma ORM
   - Auth: NextAuth v5 (JWT strategy) — the JWT carries only `sub` and `mustChangePassword`; role and account status are read from the database on every check
-  - Email: nodemailer (SMTP); templates are HTML+TXT files in src/lib/email/templates/ rendered with {{VARIABLE}} substitution
+  - Email: nodemailer (SMTP); HTML bodies are React Email components (src/lib/email/components, emails, email-theme.ts), plain-text bodies are TXT files in src/lib/email/templates/ rendered with {{VARIABLE}} substitution
   - Styling: Tailwind CSS v4, shadcn/ui component library
   - Package manager: pnpm
   - Build: Next.js (standalone output), Vite via Vitest for unit tests
