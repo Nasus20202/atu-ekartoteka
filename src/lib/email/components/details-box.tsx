@@ -5,7 +5,7 @@ import { emailColors, emailStyles } from '@/lib/email/email-theme';
 
 const ROW_STYLE: CSSProperties = {
   margin: '0 0 6px 0',
-  color: emailColors.text,
+  color: emailColors.foreground,
   fontSize: '14px',
   lineHeight: 1.5,
 };

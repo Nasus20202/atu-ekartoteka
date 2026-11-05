@@ -9,21 +9,26 @@ export const emailColors = {
   mutedForeground: '#64748b',
   border: '#e2e8f0',
   card: '#ffffff',
-  text: '#0f172a',
+  foreground: '#020817',
   subtle: '#94a3b8',
 } as const;
 
 export const EMAIL_RADIUS = '8px';
+export const EMAIL_BUTTON_RADIUS = '6px';
+export const EMAIL_CARD_RADIUS = '12px';
+
+const APP_SHADOW =
+  '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)';
 const CARD_PADDING = '32px';
 
 const fonts = {
-  sans: "-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-  mono: "'SFMono-Regular', Consolas, Menlo, monospace",
+  sans: "Geist, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+  mono: "'Geist Mono', 'SFMono-Regular', Consolas, Menlo, monospace",
 } as const;
 
 const copy: CSSProperties = {
   margin: '0 0 16px 0',
-  color: emailColors.text,
+  color: emailColors.foreground,
   fontSize: '15px',
   lineHeight: 1.6,
 };
@@ -48,7 +53,8 @@ export const emailStyles = {
     width: '100%',
     backgroundColor: emailColors.card,
     border: `1px solid ${emailColors.border}`,
-    borderRadius: EMAIL_RADIUS,
+    borderRadius: EMAIL_CARD_RADIUS,
+    boxShadow: APP_SHADOW,
   },
   header: {
     padding: '20px 32px',
@@ -60,7 +66,7 @@ export const emailStyles = {
   content: { padding: CARD_PADDING },
   heading: {
     margin: '0 0 20px 0',
-    color: emailColors.text,
+    color: emailColors.foreground,
     fontSize: '22px',
     lineHeight: 1.3,
     fontWeight: 600,
@@ -75,13 +81,14 @@ export const emailStyles = {
   },
   button: {
     display: 'inline-block',
-    padding: '12px 24px',
+    padding: '10px 16px',
     color: emailColors.primaryForeground,
     backgroundColor: emailColors.primary,
-    borderRadius: EMAIL_RADIUS,
+    borderRadius: EMAIL_BUTTON_RADIUS,
+    boxShadow: APP_SHADOW,
     textDecoration: 'none',
-    fontSize: '15px',
-    fontWeight: 600,
+    fontSize: '14px',
+    fontWeight: 500,
   },
   buttonWrap: { margin: '8px 0 20px 0' },
   details: {
