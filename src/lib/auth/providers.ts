@@ -42,6 +42,9 @@ function isGoogleConfigured(): boolean {
 const googleProvider = Google({
   clientId: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  ...(process.env.GOOGLE_ISSUER_URL && {
+    issuer: process.env.GOOGLE_ISSUER_URL,
+  }),
 });
 
 export async function credentialsAuthorize(

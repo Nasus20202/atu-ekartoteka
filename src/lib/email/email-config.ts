@@ -10,7 +10,7 @@ export function readEmailConfig(): EmailServiceConfig {
     fromName: process.env.EMAIL_FROM_NAME,
     host: process.env.SMTP_HOST || DEFAULT_SMTP_HOST,
     port: parseInt(process.env.SMTP_PORT || DEFAULT_SMTP_PORT, 10),
-    secure: process.env.SMTP_SECURE?.toLowerCase() === 'true' || true,
+    secure: process.env.SMTP_SECURE?.toLowerCase() !== 'false',
     auth: {
       user: process.env.SMTP_USER || '',
       pass: process.env.SMTP_PASS || '',

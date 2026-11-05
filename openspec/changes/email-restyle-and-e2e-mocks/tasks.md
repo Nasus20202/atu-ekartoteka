@@ -10,9 +10,9 @@
 
 ## 2. Provider overrides
 
-- [ ] 2.1 Read `TURNSTILE_VERIFY_URL` in `verifyTurnstileToken` with the Cloudflare default; verify with unit tests for default URL, override URL and fail-closed behaviour
-- [ ] 2.2 Configure the Google provider with `GOOGLE_ISSUER_URL` when set; verify with a provider unit test that the default config is unchanged and the override is applied
-- [ ] 2.3 Document both variables in `.env.example` and the config context; verify `pnpm lint` and `pnpm format:check`
+- [x] 2.1 Read `TURNSTILE_VERIFY_URL` in `verifyTurnstileToken` with the Cloudflare default; verify with unit tests for default URL, override URL and fail-closed behaviour
+- [x] 2.2 Configure the Google provider with `GOOGLE_ISSUER_URL` when set; verify with a provider unit test that the default config is unchanged and the override is applied
+- [x] 2.3 Document both variables in `.env.example` and the config context; verify `pnpm lint` and `pnpm format:check`
 
 ## 3. Mock server
 
