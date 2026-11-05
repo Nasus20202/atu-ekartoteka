@@ -34,7 +34,7 @@ The system SHALL send email via a configurable SMTP server. When SMTP is not con
 
 ### Requirement: Email Templates
 
-Every email type SHALL have an HTML body built from shared React components and a plain-text fallback template. HTML emails SHALL share one layout and one theme derived from the website's design tokens, and the delivered HTML SHALL carry inline styles only. Plain-text templates SHALL be loaded eagerly at module initialisation.
+Every email type SHALL be built from shared React components and SHALL have a plain-text part generated from its rendered HTML. HTML emails SHALL share one layout and one theme derived from the website's design tokens, and the delivered HTML SHALL carry inline styles only.
 
 #### Scenario: HTML rendering
 
@@ -44,15 +44,15 @@ Every email type SHALL have an HTML body built from shared React components and 
 
 #### Scenario: Template rendering
 
-- **GIVEN** a template name and a map of variable substitutions
-- **WHEN** `renderEmailTemplate` is called
-- **THEN** every `{{VARIABLE}}` placeholder in the plain-text template is replaced with the corresponding value; unreferenced placeholders remain untouched; the rendered string is returned
+- **GIVEN** an email type and its variables
+- **WHEN** its message is built
+- **THEN** the plain-text part is generated from the rendered HTML, keeps heading case, shows each link once, puts detail labels on their own line and leaves out the brand header and the "copy this address" fallback; values are inserted literally
 
 #### Scenario: Templates loaded at startup
 
 - **GIVEN** the application starts
-- **WHEN** `template-loader` is imported for the first time
-- **THEN** all five plain-text templates are read from disk synchronously and held in memory; subsequent renders do not perform I/O
+- **WHEN** an email is built
+- **THEN** no template file is read or held in memory; HTML and text come from the same React components
 
 #### Scenario: Shared theme
 
@@ -212,15 +212,15 @@ Every HTML email SHALL share one layout that matches the application's visual de
 
 ## Templates
 
-Each email type has a matching pair of files in `src/lib/email/templates/`:
+Each email type is a React component in `src/lib/email/emails/` built from the shared components in `src/lib/email/components/` and the theme in `src/lib/email/email-theme.ts`. The plain-text part is generated from the rendered HTML.
 
-| Template name                 | Files                                                                 |
-| ----------------------------- | --------------------------------------------------------------------- |
-| `verification-email`          | `verification-email.html`, `verification-email.txt`                   |
-| `password-reset`              | `password-reset.html`, `password-reset.txt`                           |
-| `account-approved`            | `account-approved.html`, `account-approved.txt`                       |
-| `account-activation`          | `account-activation.html`, `account-activation.txt`                   |
-| `new-user-registration-admin` | `new-user-registration-admin.html`, `new-user-registration-admin.txt` |
+| Email type                    | Component file                    |
+| ----------------------------- | --------------------------------- |
+| `verification-email`          | `verification-email.tsx`          |
+| `password-reset`              | `password-reset.tsx`              |
+| `account-approved`            | `account-approved.tsx`            |
+| `account-activation`          | `account-activation.tsx`          |
+| `new-user-registration-admin` | `new-user-registration-admin.tsx` |
 
 ## Environment variables
 
