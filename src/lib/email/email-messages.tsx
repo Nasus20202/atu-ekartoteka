@@ -4,23 +4,23 @@ import type { ReactElement } from 'react';
 import {
   ACCOUNT_ACTIVATION_SUBJECT,
   AccountActivationEmail,
-} from '@/lib/email/emails/account-activation';
+} from '@/components/email/emails/account-activation';
 import {
   ACCOUNT_APPROVED_SUBJECT,
   AccountApprovedEmail,
-} from '@/lib/email/emails/account-approved';
+} from '@/components/email/emails/account-approved';
 import {
   NEW_USER_ADMIN_SUBJECT,
   NewUserRegistrationAdminEmail,
-} from '@/lib/email/emails/new-user-registration-admin';
+} from '@/components/email/emails/new-user-registration-admin';
 import {
   PASSWORD_RESET_SUBJECT,
   PasswordResetEmail,
-} from '@/lib/email/emails/password-reset';
+} from '@/components/email/emails/password-reset';
 import {
   VERIFICATION_EMAIL_SUBJECT,
   VerificationEmail,
-} from '@/lib/email/emails/verification-email';
+} from '@/components/email/emails/verification-email';
 
 const PLAIN_TEXT_OPTIONS: Parameters<typeof toPlainText>[1] = {
   selectors: [

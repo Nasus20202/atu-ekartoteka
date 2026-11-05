@@ -1,6 +1,6 @@
-import { ActionButton } from '@/lib/email/components/action-button';
-import { EmailLayout } from '@/lib/email/components/email-layout';
-import { greeting, Note, Paragraph } from '@/lib/email/components/email-text';
+import { ActionButton } from '@/components/email/action-button';
+import { EmailLayout } from '@/components/email/email-layout';
+import { greeting, Note, Paragraph } from '@/components/email/email-text';
 
 export const ACCOUNT_APPROVED_SUBJECT = 'Twoje konto zostało zatwierdzone';
 
