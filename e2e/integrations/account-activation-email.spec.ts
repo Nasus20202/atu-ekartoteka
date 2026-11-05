@@ -12,7 +12,7 @@ import { isServerActionResponse } from '../utils/server-actions';
 import { ADMIN_EMAIL, ADMIN_PASSWORD } from '../utils/test-credentials';
 
 const ACTIVATION_SUBJECT = 'Twoje konto zostało utworzone – ustaw nowe hasło';
-const TEMP_PASSWORD_LINE = /Tymczasowe hasło: (\S+)/;
+const TEMP_PASSWORD_LINE = /Tymczasowe hasło\s+(\S+)/;
 
 test('the owner receives the login email and a temporary password', async ({
   page,

@@ -45,7 +45,9 @@ export function StackedDetail({ label, value, last }: StackedDetailProps) {
         margin: last ? '0 0 6px 0' : '0 0 14px 0',
       }}
     >
-      <span style={emailStyles.detailLabel}>{label}</span>{' '}
+      <span style={emailStyles.detailLabel} data-detail-label="true">
+        {label}
+      </span>
       <strong style={emailStyles.mono}>{value}</strong>
     </Text>
   );
