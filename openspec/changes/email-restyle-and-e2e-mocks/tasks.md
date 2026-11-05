@@ -2,11 +2,11 @@
 
 ## 1. Email restyle and template tests
 
-- [ ] 1.1 Restyle the five `.html` templates to the shared layout (header, card, primary button, fallback URL, footer); verify by rendering each in a browser and checking no horizontal scroll at 375px
-- [ ] 1.2 Align the five `.txt` templates (same links, sign-off); verify with the text/HTML parity test
-- [ ] 1.3 Add `src/lib/email/__tests__/email-templates.test.ts` (placeholders, escaping, APP_URL links, HTML/text parity, subjects); verify with `pnpm vitest --run src/lib/email`
-- [ ] 1.4 Add `e2e/visual/emails.spec.ts` with desktop and phone screenshots for all five emails, generate baselines with `pnpm test:e2e:visual:update`; verify the visual projects pass on a second run
-- [ ] 1.5 Update `openspec/specs/email-notifications` via the change deltas; verify `openspec validate`
+- [x] 1.1 Restyle the five `.html` templates to the shared layout (header, card, primary button, fallback URL, footer); verify by rendering each in a browser and checking no horizontal scroll at 375px
+- [x] 1.2 Align the five `.txt` templates (same links, sign-off); verify with the text/HTML parity test
+- [x] 1.3 Add `src/lib/email/__tests__/email-templates.test.ts` (placeholders, escaping, APP_URL links, HTML/text parity, subjects); verify with `pnpm vitest --run src/lib/email`
+- [x] 1.4 Add `e2e/visual/emails.spec.ts` with desktop and phone screenshots for all five emails, generate baselines with `pnpm test:e2e:visual:update`; verify the visual projects pass on a second run
+- [x] 1.5 Update `openspec/specs/email-notifications` via the change deltas; verify `openspec validate`
 
 ## 2. Provider overrides
 
