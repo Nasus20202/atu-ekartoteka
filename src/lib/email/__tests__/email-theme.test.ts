@@ -26,9 +26,11 @@ const globals = fs.readFileSync(
 const rootBlock = globals.slice(globals.indexOf(':root'));
 
 function token(name: string): string {
-  const match = rootBlock.match(new RegExp(`--${name}:\\s*([^;]+);`));
-  if (!match) throw new Error(`Missing design token --${name}`);
-  return match[1].trim();
+  const marker = `--${name}:`;
+  const start = rootBlock.indexOf(marker);
+  if (start === -1) throw new Error(`Missing design token --${name}`);
+  const end = rootBlock.indexOf(';', start);
+  return rootBlock.slice(start + marker.length, end).trim();
 }
 
 function hslToHex(value: string): string {
