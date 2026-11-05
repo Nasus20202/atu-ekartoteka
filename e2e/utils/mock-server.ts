@@ -41,10 +41,14 @@ export async function waitForMail(
   return found as MockMail;
 }
 
+const LINK_PATTERN = /https?:\/\/\S+/g;
+
 export function extractLink(mail: MockMail, pathname: string): string {
-  const match = mail.text.match(new RegExp(`https?://\\S*${pathname}\\S*`));
-  if (!match) throw new Error(`No ${pathname} link in the email`);
-  return match[0];
+  const link = mail.text
+    .match(LINK_PATTERN)
+    ?.find((candidate) => candidate.includes(pathname));
+  if (!link) throw new Error(`No ${pathname} link in the email`);
+  return link;
 }
 
 export async function queueGoogleIdentity(
