@@ -8,6 +8,8 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
 
+const CHART_RENDER_TIMEOUT_MS = 5000;
+
 describe('ChargesSummaryCard', () => {
   const mockCharges = [
     { totalAmount: new Prisma.Decimal(100) },
@@ -58,8 +60,10 @@ describe('ChargesSummaryCard', () => {
       />
     );
 
-    await waitFor(() =>
-      expect(screen.getAllByText('Styczeń 2025')).toHaveLength(2)
+    // The chart draws its label after the card renders; allow for a slow machine
+    await waitFor(
+      () => expect(screen.getAllByText('Styczeń 2025')).toHaveLength(2),
+      { timeout: CHART_RENDER_TIMEOUT_MS }
     );
     expect(screen.getByText('3 naliczenia')).toBeInTheDocument();
     expect(screen.getByText('600,00 zł')).toBeInTheDocument();

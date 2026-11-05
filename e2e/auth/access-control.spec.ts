@@ -2,8 +2,27 @@
  * Access control tests (redirects, permissions)
  */
 
+import type { Page } from '@playwright/test';
+
 import { expect, test } from '../fixtures';
 import { createMustChangePasswordUser } from '../utils/create-must-change-password-user';
+
+const DASHBOARD_PATH = '/dashboard';
+const REDIRECT_STATUS = 307;
+
+/**
+ * Reads the server's redirect without following it. Browsers abort goto()
+ * when a redirect interrupts it (Firefox), so the response is the
+ * reliable signal.
+ */
+async function getRedirect(page: Page, path: string) {
+  const response = await page.request.get(path, { maxRedirects: 0 });
+
+  return {
+    status: response.status(),
+    pathname: new URL(response.headers().location, page.url()).pathname,
+  };
+}
 
 test.describe('Access Control', () => {
   test('unauthenticated user is redirected to login', async ({ page }) => {
@@ -14,37 +33,35 @@ test.describe('Access Control', () => {
   });
 
   test('non-admin cannot access admin pages', async ({ userPage }) => {
-    await userPage.goto('/admin/users');
-
-    await expect(userPage).not.toHaveURL(/\/admin\/users/);
+    expect(await getRedirect(userPage, '/admin/users')).toEqual({
+      status: REDIRECT_STATUS,
+      pathname: DASHBOARD_PATH,
+    });
   });
 
   test('non-admin cannot access admin apartments page', async ({
     userPage,
   }) => {
-    await userPage.goto('/admin/apartments');
-
-    await expect(userPage).not.toHaveURL(/\/admin\/apartments/);
+    expect(await getRedirect(userPage, '/admin/apartments')).toEqual({
+      status: REDIRECT_STATUS,
+      pathname: DASHBOARD_PATH,
+    });
   });
 
   test('non-admin cannot access import page', async ({ userPage }) => {
-    await userPage.goto('/admin/import');
-
-    await expect(userPage).not.toHaveURL(/\/admin\/import/);
+    expect(await getRedirect(userPage, '/admin/import')).toEqual({
+      status: REDIRECT_STATUS,
+      pathname: DASHBOARD_PATH,
+    });
   });
 
   test('user without mustChangePassword cannot access /change-password', async ({
     userPage,
   }) => {
-    await userPage.goto('/change-password');
-
-    await userPage.waitForURL(
-      (url) => !url.pathname.includes('/change-password'),
-      {
-        timeout: 10000,
-      }
-    );
-    await expect(userPage).not.toHaveURL(/\/change-password/);
+    expect(await getRedirect(userPage, '/change-password')).toEqual({
+      status: REDIRECT_STATUS,
+      pathname: DASHBOARD_PATH,
+    });
   });
 
   test.describe('mustChangePassword guard', () => {

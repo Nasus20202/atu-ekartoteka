@@ -10,6 +10,7 @@ import {
   createScrollTestHoa,
   deleteScrollTestHoa,
 } from '../utils/scroll-test-hoa';
+import { scrollUntilCount } from '../utils/scroll-until-count';
 
 const APARTMENT_COUNT = 45;
 const LOAD_TIMEOUT_MS = 10000;
@@ -59,10 +60,7 @@ async function sortBy(
 }
 
 async function loadAllRows(page: Page, column: Locator) {
-  await expect(async () => {
-    await page.mouse.wheel(0, 20000);
-    await expect(column).toHaveCount(APARTMENT_COUNT, { timeout: 1000 });
-  }).toPass({ timeout: LOAD_TIMEOUT_MS });
+  await scrollUntilCount(page, column, APARTMENT_COUNT);
 }
 
 /** Opens the list in table view (the view choice is remembered) at page one. */

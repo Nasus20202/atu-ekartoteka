@@ -2,55 +2,63 @@ import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 
+import {
+  FUNCTIONAL_BASE_URL,
+  FUNCTIONAL_PORT,
+  INTEGRATIONS_BASE_URL,
+  INTEGRATIONS_PORT,
+  LOCAL_HOST,
+  MOCK_ENDPOINT_PATHS,
+  MOCK_HEALTH_URL,
+  MOCK_HOST,
+  MOCK_SERVER_URL,
+  MOCK_SMTP_PORT,
+  VISUAL_BASE_URL,
+  VISUAL_PORT,
+} from './e2e/config/endpoints';
+import {
+  ADMIN_TEST_MATCH,
+  CRON_TEST_MATCH,
+  INTEGRATIONS_TEST_MATCH,
+  VISUAL_MOBILE_ONLY_MATCH,
+  VISUAL_TEST_MATCH,
+} from './e2e/config/patterns';
 import { getVisualDatabaseUrl } from './e2e/utils/database-urls';
 
 // Load environment variables from .env file
 dotenv.config({ path: fileURLToPath(new URL('./.env', import.meta.url)) });
 
-// Timeout constants
-const WEB_SERVER_TIMEOUT_MS = 120 * 1000;
-const TEST_TIMEOUT_MS = 60 * 1000;
-const EXPECT_TIMEOUT_MS = 10 * 1000;
+const SECOND_MS = 1000;
+const WEB_SERVER_TIMEOUT_MS = 120 * SECOND_MS;
+const TEST_TIMEOUT_MS = 60 * SECOND_MS;
+const EXPECT_TIMEOUT_MS = 10 * SECOND_MS;
+const CI_RETRIES = 2;
+const CI_WORKERS = 2;
+const MAX_SCREENSHOT_DIFF_RATIO = 0.01;
 
-const FUNCTIONAL_PORT = 3000;
-const VISUAL_PORT = 3001;
-const INTEGRATIONS_PORT = 3002;
-const MOCK_HTTP_PORT = 4010;
-const MOCK_SMTP_PORT = 1025;
-const FUNCTIONAL_BASE_URL =
-  process.env.PLAYWRIGHT_BASE_URL || `http://localhost:${FUNCTIONAL_PORT}`;
-const VISUAL_BASE_URL =
-  process.env.PLAYWRIGHT_VISUAL_BASE_URL || `http://localhost:${VISUAL_PORT}`;
+const TIMEZONE_ID = 'Europe/Warsaw';
+const VISUAL_LOCALE = 'pl-PL';
+const VISUAL_SNAPSHOT_PATH =
+  '{testDir}/visual/__screenshots__/{testFileName}/{arg}-{projectName}-{platform}{ext}';
+const SCREENSHOT_STYLE_PATH = './e2e/visual/screenshot.css';
+// The PDF tests render pages, which have no viewport layout: desktop only
+const PDF_TEST_MATCH = '**/visual/pdf-documents.spec.ts';
 
-const INTEGRATIONS_BASE_URL =
-  process.env.PLAYWRIGHT_INTEGRATIONS_BASE_URL ||
-  `http://localhost:${INTEGRATIONS_PORT}`;
-// The mocks are reached from the app server by this host (a service name in Docker)
-const MOCK_HOST = process.env.MOCK_HOST || 'localhost';
-const MOCK_URL = `http://${MOCK_HOST}:${MOCK_HTTP_PORT}`;
-const INTEGRATIONS_TEST_MATCH = '**/integrations/*.spec.ts';
-const VISUAL_TEST_MATCH = '**/visual/*.spec.ts';
-const VISUAL_MOBILE_ONLY_MATCH = '**/*.mobile.spec.ts';
+const functionalDatabaseUrl = process.env.DATABASE_URL ?? '';
+const visualDatabaseUrl = functionalDatabaseUrl
+  ? getVisualDatabaseUrl(functionalDatabaseUrl)
+  : '';
+
 const visualUse = {
   baseURL: VISUAL_BASE_URL,
   colorScheme: 'light' as const,
-  locale: 'pl-PL',
+  locale: VISUAL_LOCALE,
   // Recharts skips its JS animations for reduced motion, so charts render fully drawn
   reducedMotion: 'reduce' as const,
   // Subpixel (LCD) text antialiasing depends on the host font config, so
   // grayscale antialiasing keeps snapshots identical across machines
   launchOptions: { args: ['--disable-lcd-text'] },
 };
-const visualProject = {
-  testMatch: VISUAL_TEST_MATCH,
-  snapshotPathTemplate:
-    '{testDir}/visual/__screenshots__/{testFileName}/{arg}-{projectName}-{platform}{ext}',
-};
-
-const functionalDatabaseUrl = process.env.DATABASE_URL ?? '';
-const visualDatabaseUrl = functionalDatabaseUrl
-  ? getVisualDatabaseUrl(functionalDatabaseUrl)
-  : '';
 
 // Serves the production build on the port with the given database. Both servers
 // run the same build, the way the Docker image runs once per database.
@@ -59,16 +67,17 @@ function appServer(
   databaseUrl: string,
   extraEnv: Record<string, string> = {}
 ) {
+  const appUrl = `http://${LOCAL_HOST}:${port}`;
   return {
     command: `node_modules/.bin/next start --port ${port}`,
-    url: `http://localhost:${port}`,
+    url: appUrl,
     reuseExistingServer: !process.env.CI,
     timeout: WEB_SERVER_TIMEOUT_MS,
     env: {
       ...process.env,
       DATABASE_URL: databaseUrl,
       DATABASE_REPLICA_URLS: databaseUrl,
-      AUTH_URL: `http://localhost:${port}`,
+      AUTH_URL: appUrl,
       AUTH_TRUST_HOST: 'true',
       // Disable Turnstile and SMTP for E2E tests
       TURNSTILE_SITE_KEY: '',
@@ -96,18 +105,24 @@ const integrationEnv = {
   SMTP_SECURE: 'false',
   TURNSTILE_SITE_KEY: 'mock-site-key',
   TURNSTILE_SECRET_KEY: 'mock-secret-key',
-  TURNSTILE_VERIFY_URL: `${MOCK_URL}/turnstile/siteverify`,
+  TURNSTILE_VERIFY_URL: `${MOCK_SERVER_URL}${MOCK_ENDPOINT_PATHS.turnstileVerify}`,
   GOOGLE_CLIENT_ID: 'mock-google-client-id',
   GOOGLE_CLIENT_SECRET: 'mock-google-client-secret',
-  GOOGLE_ISSUER_URL: `${MOCK_URL}/google`,
+  GOOGLE_ISSUER_URL: `${MOCK_SERVER_URL}${MOCK_ENDPOINT_PATHS.google}`,
 };
 
 const mockServer = {
   command: 'node_modules/.bin/tsx e2e/mocks/main.ts',
-  url: `http://localhost:${MOCK_HTTP_PORT}/health`,
+  url: MOCK_HEALTH_URL,
   reuseExistingServer: !process.env.CI,
   timeout: WEB_SERVER_TIMEOUT_MS,
 };
+
+const functionalIgnore = [
+  ADMIN_TEST_MATCH,
+  VISUAL_TEST_MATCH,
+  INTEGRATIONS_TEST_MATCH,
+];
 
 /**
  * Playwright configuration for E2E tests.
@@ -115,54 +130,47 @@ const mockServer = {
  */
 export default defineConfig({
   testDir: './e2e',
-  /* Global setup and teardown */
   globalSetup: './e2e/global-setup.ts',
   globalTeardown: './e2e/global-teardown.ts',
-  /* Run tests in files in parallel */
   fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Use multiple workers for parallel execution */
-  workers: process.env.CI ? 2 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: process.env.CI ? [['github'], ['list'], ['html']] : 'html',
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  retries: process.env.CI ? CI_RETRIES : 0,
+  workers: process.env.CI ? CI_WORKERS : undefined,
+  reporter: process.env.CI ? [['github'], ['list'], ['html']] : [['html']],
   use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: FUNCTIONAL_BASE_URL,
-
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
-
-    /* Take screenshot on failure */
     screenshot: 'only-on-failure',
-    /* Dates come from UTC midnight timestamps; a fixed zone keeps assertions host independent */
-    timezoneId: 'Europe/Warsaw',
+    // Dates come from UTC midnight timestamps; a fixed zone keeps assertions host independent
+    timezoneId: TIMEZONE_ID,
   },
 
-  /* Configure projects for major browsers */
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-      testIgnore: ['**/admin/**', VISUAL_TEST_MATCH, INTEGRATIONS_TEST_MATCH],
+      testIgnore: functionalIgnore,
     },
     {
       name: 'chromium-mobile',
       use: { ...devices['Pixel 7'] },
-      testIgnore: [
-        '**/admin/**',
-        '**/cron/**',
-        VISUAL_TEST_MATCH,
-        INTEGRATIONS_TEST_MATCH,
-      ],
+      testIgnore: [...functionalIgnore, CRON_TEST_MATCH],
     },
     {
       name: 'chromium-admin',
       use: { ...devices['Desktop Chrome'] },
-      testMatch: '**/admin/**',
+      testMatch: ADMIN_TEST_MATCH,
+      fullyParallel: false,
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+      testIgnore: functionalIgnore,
+    },
+    {
+      name: 'firefox-admin',
+      use: { ...devices['Desktop Firefox'] },
+      testMatch: ADMIN_TEST_MATCH,
       fullyParallel: false,
     },
     {
@@ -172,20 +180,23 @@ export default defineConfig({
       fullyParallel: false,
     },
     {
-      ...visualProject,
       name: 'visual-desktop',
+      testMatch: VISUAL_TEST_MATCH,
       testIgnore: VISUAL_MOBILE_ONLY_MATCH,
+      snapshotPathTemplate: VISUAL_SNAPSHOT_PATH,
       use: { ...devices['Desktop Chrome'], ...visualUse },
     },
     {
-      ...visualProject,
       name: 'visual-mobile',
+      testMatch: VISUAL_TEST_MATCH,
+      testIgnore: [PDF_TEST_MATCH],
+      snapshotPathTemplate: VISUAL_SNAPSHOT_PATH,
       use: { ...devices['Pixel 7'], ...visualUse },
     },
   ],
 
-  /* Start the production build three times (functional, visual, integrations) plus the mocks, unless an already running app (e.g. the Docker image) is targeted.
-     The `test:e2e` scripts run `next build` first. */
+  // The production build runs three times (functional, visual, integrations) and the
+  // mocks run once. Set PLAYWRIGHT_SKIP_WEBSERVER to target an app that is already up.
   webServer: process.env.PLAYWRIGHT_SKIP_WEBSERVER
     ? undefined
     : [
@@ -195,18 +206,16 @@ export default defineConfig({
         appServer(INTEGRATIONS_PORT, functionalDatabaseUrl, integrationEnv),
       ],
 
-  /* Global timeout for each test */
   timeout: TEST_TIMEOUT_MS,
 
-  /* Expect timeout */
   expect: {
     timeout: EXPECT_TIMEOUT_MS,
     toHaveScreenshot: {
       animations: 'disabled',
-      maxDiffPixelRatio: 0.01,
+      maxDiffPixelRatio: MAX_SCREENSHOT_DIFF_RATIO,
       caret: 'hide',
       scale: 'css',
-      stylePath: './e2e/visual/screenshot.css',
+      stylePath: SCREENSHOT_STYLE_PATH,
     },
   },
 });
