@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createMockUser, mockUsers } from '@/__tests__/fixtures';
 import { buildProviders, credentialsAuthorize } from '@/lib/auth/providers';
@@ -296,5 +296,42 @@ describe('buildProviders', () => {
 
     delete process.env.GOOGLE_CLIENT_ID;
     delete process.env.GOOGLE_CLIENT_SECRET;
+  });
+});
+
+describe('Google issuer override', () => {
+  const GOOGLE_ISSUER = 'https://accounts.google.com';
+  const MOCK_ISSUER = 'http://localhost:4010/google';
+
+  async function loadGoogleProvider() {
+    vi.resetModules();
+    process.env.GOOGLE_CLIENT_ID = 'id';
+    process.env.GOOGLE_CLIENT_SECRET = 'secret';
+    const { buildProviders: build } = await import('@/lib/auth/providers');
+    return build().find((p) => (p as { id?: string }).id === 'google') as {
+      issuer: string;
+      options: { issuer?: string };
+    };
+  }
+
+  afterEach(() => {
+    delete process.env.GOOGLE_CLIENT_ID;
+    delete process.env.GOOGLE_CLIENT_SECRET;
+    delete process.env.GOOGLE_ISSUER_URL;
+  });
+
+  it('keeps Google as the issuer by default', async () => {
+    const provider = await loadGoogleProvider();
+
+    expect(provider.issuer).toBe(GOOGLE_ISSUER);
+    expect(provider.options.issuer).toBeUndefined();
+  });
+
+  it('uses GOOGLE_ISSUER_URL when it is set', async () => {
+    process.env.GOOGLE_ISSUER_URL = MOCK_ISSUER;
+
+    const provider = await loadGoogleProvider();
+
+    expect(provider.options.issuer).toBe(MOCK_ISSUER);
   });
 });
