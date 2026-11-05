@@ -16,25 +16,25 @@
 
 ## 3. Mock server
 
-- [ ] 3.1 Add dev dependencies `smtp-server`, `mailparser` and their types; verify `pnpm install` and typecheck
-- [ ] 3.2 Implement SMTP capture plus `/mail` API in `e2e/mocks/`; verify with a unit test that sends a message with nodemailer and reads it back
-- [ ] 3.3 Implement the Google OIDC mock (discovery, authorize, token, jwks, userinfo); verify with a unit test that the issued `id_token` validates against the jwks
-- [ ] 3.4 Implement Turnstile siteverify and `/health`; verify with unit tests for valid and invalid tokens
-- [ ] 3.5 Add the typed client `e2e/utils/mock-server.ts`; verify it is used by the specs in group 5
+- [x] 3.1 Add dev dependencies `smtp-server`, `mailparser` and their types; verify `pnpm install` and typecheck
+- [x] 3.2 Implement SMTP capture plus `/mail` API in `e2e/mocks/`; verify with `e2e/integrations/mock-server.spec.ts`, which sends a message with nodemailer and reads it back
+- [x] 3.3 Implement the Google OIDC mock (discovery, authorize, token, jwks, userinfo); verify in the same spec that the issued `id_token` validates against the jwks
+- [x] 3.4 Implement Turnstile siteverify and `/health`; verify in the same spec for valid and invalid tokens
+- [x] 3.5 Add the typed client `e2e/utils/mock-server.ts`; verify it is used by the specs in group 5
 
 ## 4. Playwright and Docker wiring
 
-- [ ] 4.1 Add the mock server and the integrations app (port 3002) to `playwright.config.ts`, plus the `chromium-integrations` project and ignore rules in the other projects; verify `pnpm test:e2e --list` shows the new project
-- [ ] 4.2 Add `mocks` and `ekartoteka-integrations` services to `docker-compose.e2e.yaml` and update the CI e2e workflow to run the new project; verify `docker compose config` and a CI-like run
-- [ ] 4.3 Update `openspec/specs/tooling` and `testing` through the change deltas; verify `openspec validate`
+- [x] 4.1 Add the mock server and the integrations app (port 3002) to `playwright.config.ts`, plus the `chromium-integrations` project and ignore rules in the other projects; verify `pnpm test:e2e --list` shows the new project
+- [x] 4.2 Add `mocks` and `ekartoteka-integrations` services to `docker-compose.e2e.yaml` and update the CI e2e workflow to run the new project; verify `docker compose config` and a CI-like run
+- [x] 4.3 Update `openspec/specs/tooling` and `testing` through the change deltas; verify `openspec validate`
 
 ## 5. Integration E2E specs
 
-- [ ] 5.1 Registration sends a verification email; the spec reads it from the mock and opens the link; verify the account is verified
-- [ ] 5.2 Password reset email flow; verify the new password logs in
-- [ ] 5.3 Admin approval sends the approved email; verify subject and login link
-- [ ] 5.4 Google login for a new and a returning user; verify the pending-account and dashboard outcomes and the admin notification email
-- [ ] 5.5 Turnstile: valid token logs in, invalid token is rejected; verify both on login and registration
+- [x] 5.1 Registration sends a verification email; the spec reads it from the mock and opens the link; verify the account is verified
+- [x] 5.2 Password reset email flow; verify the new password logs in
+- [x] 5.3 Admin approval sends the approved email; verify subject and login link
+- [x] 5.4 Google login for a new and a returning user; verify the pending-account and dashboard outcomes and the admin notification email
+- [x] 5.5 Turnstile: valid token logs in, invalid token is rejected; verify both on login and registration
 - [ ] 5.6 Run the whole suite (`pnpm test:e2e`) and `pnpm test`; verify existing functional and visual projects are unaffected
 
 ## Workflow follow-up
