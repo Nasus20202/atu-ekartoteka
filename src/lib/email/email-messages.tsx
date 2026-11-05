@@ -1,4 +1,4 @@
-import { render } from '@react-email/components';
+import { render, toPlainText } from '@react-email/components';
 import type { ReactElement } from 'react';
 
 import {
@@ -21,10 +21,17 @@ import {
   VERIFICATION_EMAIL_SUBJECT,
   VerificationEmail,
 } from '@/lib/email/emails/verification-email';
-import {
-  renderEmailTemplate,
-  type TemplateName,
-} from '@/lib/email/template-loader';
+
+const PLAIN_TEXT_OPTIONS: Parameters<typeof toPlainText>[1] = {
+  selectors: [
+    { selector: 'h1', options: { uppercase: false } },
+    {
+      selector: '[data-detail-label=true]',
+      format: 'block',
+      options: { leadingLineBreaks: 1, trailingLineBreaks: 1 },
+    },
+  ],
+};
 
 const DEFAULT_APP_URL = 'http://localhost:3000';
 
@@ -38,21 +45,13 @@ function appUrl(path: string): string {
   return `${process.env.APP_URL || DEFAULT_APP_URL}${path}`;
 }
 
-function greeting(name?: string): string {
-  return name ? ` ${name}` : '';
-}
-
 async function buildMessage(
-  template: TemplateName,
   subject: string,
-  email: ReactElement,
-  variables: Record<string, string>
+  email: ReactElement
 ): Promise<EmailMessage> {
-  return {
-    subject,
-    html: await render(email),
-    text: renderEmailTemplate(template, variables),
-  };
+  const html = await render(email);
+
+  return { subject, html, text: toPlainText(html, PLAIN_TEXT_OPTIONS) };
 }
 
 export async function verificationMessage(
@@ -61,10 +60,8 @@ export async function verificationMessage(
 ): Promise<EmailMessage> {
   const url = appUrl(`/verify-email?token=${token}`);
   return buildMessage(
-    'verification-email',
     VERIFICATION_EMAIL_SUBJECT,
-    <VerificationEmail name={name} url={url} />,
-    { NAME: greeting(name), VERIFICATION_URL: url }
+    <VerificationEmail name={name} url={url} />
   );
 }
 
@@ -74,10 +71,8 @@ export async function passwordResetMessage(
 ): Promise<EmailMessage> {
   const url = appUrl(`/reset-password?token=${token}`);
   return buildMessage(
-    'password-reset',
     PASSWORD_RESET_SUBJECT,
-    <PasswordResetEmail name={name} url={url} />,
-    { NAME: greeting(name), RESET_URL: url }
+    <PasswordResetEmail name={name} url={url} />
   );
 }
 
@@ -86,10 +81,8 @@ export async function accountApprovedMessage(
 ): Promise<EmailMessage> {
   const url = appUrl('/login');
   return buildMessage(
-    'account-approved',
     ACCOUNT_APPROVED_SUBJECT,
-    <AccountApprovedEmail name={name} url={url} />,
-    { NAME: greeting(name), LOGIN_URL: url }
+    <AccountApprovedEmail name={name} url={url} />
   );
 }
 
@@ -100,20 +93,13 @@ export async function accountActivationMessage(
 ): Promise<EmailMessage> {
   const url = appUrl('/login');
   return buildMessage(
-    'account-activation',
     ACCOUNT_ACTIVATION_SUBJECT,
     <AccountActivationEmail
       name={name}
       email={email}
       tempPassword={tempPassword}
       url={url}
-    />,
-    {
-      NAME: greeting(name),
-      EMAIL: email,
-      TEMP_PASSWORD: tempPassword,
-      LOGIN_URL: url,
-    }
+    />
   );
 }
 
@@ -124,19 +110,12 @@ export async function newUserAdminMessage(
 ): Promise<EmailMessage> {
   const url = appUrl('/admin/users');
   return buildMessage(
-    'new-user-registration-admin',
     NEW_USER_ADMIN_SUBJECT,
     <NewUserRegistrationAdminEmail
       userName={userName}
       userEmail={userEmail}
       registrationDate={registrationDate}
       url={url}
-    />,
-    {
-      USER_NAME: userName,
-      USER_EMAIL: userEmail,
-      REGISTRATION_DATE: registrationDate,
-      ADMIN_URL: url,
-    }
+    />
   );
 }

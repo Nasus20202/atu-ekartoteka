@@ -22,43 +22,39 @@ describe('plain-text email bodies', () => {
   it('verification', async () => {
     expect((await verificationMessage('tok-1', 'Anna')).text)
       .toMatchInlineSnapshot(`
-      "Witaj Anna!
+        "Potwierdź swój adres email
 
-      Dziękujemy za rejestrację. Aby dokończyć proces rejestracji, potwierdź swój adres email.
+        Witaj Anna!
 
-      Kliknij poniższy link, aby potwierdzić swój adres email:
-      https://ekartoteka.example.com/verify-email?token=tok-1
+        Dziękujemy za rejestrację. Aby dokończyć proces rejestracji, potwierdź swój adres email.
 
-      Link wygaśnie za 24 godziny.
+        Potwierdź adres email https://ekartoteka.example.com/verify-email?token=tok-1
 
-      Jeśli nie rejestrowałeś się w naszym serwisie, zignoruj tę wiadomość.
+        Link wygaśnie za 24 godziny.
 
-      --
-      ATU Ekartoteka
-      "
-    `);
+        Jeśli nie rejestrowałeś się w naszym serwisie, zignoruj tę wiadomość.
+
+        ATU Ekartoteka"
+      `);
   });
 
   it('password reset', async () => {
     expect((await passwordResetMessage('tok-2', 'Anna')).text)
       .toMatchInlineSnapshot(`
-      "Resetowanie hasła
+        "Resetowanie hasła
 
-      Witaj Anna,
+        Witaj Anna,
 
-      Otrzymaliśmy prośbę o zresetowanie hasła do Twojego konta.
+        Otrzymaliśmy prośbę o zresetowanie hasła do Twojego konta. Kliknij poniższy przycisk, aby ustawić nowe hasło:
 
-      Kliknij poniższy link, aby ustawić nowe hasło:
-      https://ekartoteka.example.com/reset-password?token=tok-2
+        Zresetuj hasło https://ekartoteka.example.com/reset-password?token=tok-2
 
-      Link wygaśnie za 1 godzinę.
+        Link wygaśnie za 1 godzinę.
 
-      Jeśli nie prosiłeś o reset hasła, zignoruj tę wiadomość.
+        Jeśli nie prosiłeś o reset hasła, zignoruj tę wiadomość.
 
-      --
-      ATU Ekartoteka
-      "
-    `);
+        ATU Ekartoteka"
+      `);
   });
 
   it('account approved', async () => {
@@ -69,14 +65,11 @@ describe('plain-text email bodies', () => {
 
       Administrator zatwierdził Twoje konto. Możesz teraz zalogować się do systemu.
 
-      Zaloguj się tutaj:
-      https://ekartoteka.example.com/login
+      Zaloguj się https://ekartoteka.example.com/login
 
       Dziękujemy za cierpliwość!
 
-      --
-      ATU Ekartoteka
-      "
+      ATU Ekartoteka"
     `);
   });
 
@@ -96,19 +89,19 @@ describe('plain-text email bodies', () => {
 
       Administrator utworzył dla Ciebie konto w systemie. Możesz zalogować się używając poniższych danych:
 
-      Email: anna@example.com
-      Tymczasowe hasło: Temp-Pass-1
+      Email
+      anna@example.com
+
+      Tymczasowe hasło
+      Temp-Pass-1
 
       Po zalogowaniu zostaniesz poproszony o ustawienie nowego hasła.
 
-      Zaloguj się tutaj:
-      https://ekartoteka.example.com/login
+      Zaloguj się https://ekartoteka.example.com/login
 
       Jeśli nie spodziewałeś się tego maila, możesz go zignorować.
 
-      --
-      ATU Ekartoteka
-      "
+      ATU Ekartoteka"
     `);
   });
 
@@ -126,20 +119,19 @@ describe('plain-text email bodies', () => {
 
       Nowy użytkownik zarejestrował się w systemie i oczekuje na zatwierdzenie.
 
-      Dane użytkownika:
-      - Imię i nazwisko: Anna Nowak
-      - Email: anna@example.com
-      - Data rejestracji: 2026-01-02 10:00
+      Imię i nazwisko: Anna Nowak
+
+      Email: anna@example.com
+
+      Data rejestracji: 2026-01-02 10:00
 
       Aby zatwierdzić lub odrzucić użytkownika, przejdź do panelu administracyjnego:
-      https://ekartoteka.example.com/admin/users
 
-      ---
+      Otwórz panel administracyjny https://ekartoteka.example.com/admin/users
+
       To jest automatyczna wiadomość. Nie odpowiadaj na ten email.
 
-      --
-      ATU Ekartoteka
-      "
+      ATU Ekartoteka"
     `);
   });
 });

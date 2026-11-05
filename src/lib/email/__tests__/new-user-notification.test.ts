@@ -26,12 +26,6 @@ vi.mock('@/lib/logger', () => ({
   })),
 }));
 
-vi.mock('@/lib/email/template-loader', () => ({
-  renderEmailTemplate: vi.fn((name) =>
-    name === 'new-user-registration-admin' ? 'New user notification' : 'Test'
-  ),
-}));
-
 describe('EmailService - New User Notification', () => {
   let emailService: EmailService;
   let mockConfig: EmailServiceConfig;
@@ -110,12 +104,10 @@ describe('EmailService - New User Notification', () => {
         '2024-01-15 10:00'
       );
 
-      const { renderEmailTemplate } =
-        await import('@/lib/email/template-loader');
-      expect(renderEmailTemplate).toHaveBeenCalledWith(
-        'new-user-registration-admin',
+      expect(mockSendMail).toHaveBeenCalledWith(
         expect.objectContaining({
-          ADMIN_URL: 'https://example.com/admin/users',
+          html: expect.stringContaining('https://example.com/admin/users'),
+          text: expect.stringContaining('https://example.com/admin/users'),
         })
       );
 

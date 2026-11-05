@@ -27,7 +27,9 @@ export function EmailLayout({ title, children }: Props) {
       <Body style={emailStyles.body}>
         <Section align="center" style={emailStyles.outer}>
           <Section style={emailStyles.card}>
-            <Section style={emailStyles.header}>{EMAIL_BRAND}</Section>
+            <Section style={emailStyles.header} data-skip-in-text="true">
+              {EMAIL_BRAND}
+            </Section>
             <Section style={emailStyles.content}>
               <Heading as="h1" style={emailStyles.heading}>
                 {title}

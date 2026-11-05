@@ -15,7 +15,7 @@ export function ActionButton({ href, label }: Props) {
           {label}
         </Button>
       </Section>
-      <Text style={emailStyles.fallback}>
+      <Text style={emailStyles.fallback} data-skip-in-text="true">
         Jeśli przycisk nie działa, skopiuj ten adres do przeglądarki:
         <br />
         <Link href={href} style={emailStyles.fallbackLink}>
