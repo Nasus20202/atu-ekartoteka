@@ -1,6 +1,9 @@
-# Stack used by the E2E workflows: the production image run twice, once per database.
-# `ekartoteka` serves the functional suite (port 3000, database e2e) and
-# `ekartoteka-visual` serves the visual suite (port 3001, database e2e_visual).
+# Stack used by the E2E workflows: the production image run three times.
+# `ekartoteka` serves the functional suite (port 3000, database e2e),
+# `ekartoteka-visual` the visual suite (port 3001, database e2e_visual) and
+# `ekartoteka-integrations` the integration suite (port 3002, database e2e),
+# which talks to the local `mocks` service (SMTP, Google OIDC, Turnstile).
+# The mocks run the repository sources, so run `pnpm install` before starting.
 # CI:    docker compose -f docker-compose.e2e.yaml up --no-build --wait
 # Local: docker compose -f docker-compose.e2e.yaml up --build --wait
 x-app-common: &app-common
@@ -72,3 +75,56 @@ services:
       AUTH_URL: http://localhost:3001
     ports:
       - '3001:3000'
+
+  mocks:
+    image: node:22-slim
+    working_dir: /app
+    command: ['node_modules/.bin/tsx', 'e2e/mocks/main.ts']
+    volumes:
+      - .:/app:ro
+    ports:
+      - '4010:4010'
+      - '1025:1025'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:4010/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  ekartoteka-integrations:
+    <<: *app-common
+    # Built by the `ekartoteka` service; the same image is reused
+    pull_policy: never
+    depends_on:
+      db:
+        condition: service_healthy
+      ekartoteka:
+        condition: service_healthy
+      mocks:
+        condition: service_healthy
+    environment:
+      <<: *app-common-environment
+      # `ekartoteka` already migrated the shared `e2e` database
+      RUN_MIGRATIONS_ON_STARTUP: 'false'
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/e2e
+      DATABASE_REPLICA_URLS: postgresql://postgres:postgres@db:5432/e2e
+      AUTH_URL: http://localhost:3002
+      APP_URL: http://localhost:3002
+      EMAIL_FROM: noreply@ekartoteka.test
+      SMTP_HOST: mocks
+      SMTP_PORT: '1025'
+      SMTP_SECURE: 'false'
+      TURNSTILE_SITE_KEY: mock-site-key
+      TURNSTILE_SECRET_KEY: mock-secret-key
+      TURNSTILE_VERIFY_URL: http://mocks:4010/turnstile/siteverify
+      GOOGLE_CLIENT_ID: mock-google-client-id
+      GOOGLE_CLIENT_SECRET: mock-google-client-secret
+      GOOGLE_ISSUER_URL: http://mocks:4010/google
+    ports:
+      - '3002:3000'
