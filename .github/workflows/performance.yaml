@@ -28,7 +28,7 @@ jobs:
             docker-daemon:ekartoteka:e2e
 
       - name: Start application and database
-        run: docker compose -f docker-compose.e2e.yaml up --no-build --wait --wait-timeout 180
+        run: docker compose -f docker-compose.e2e.yaml up --no-build --wait --wait-timeout 180 ekartoteka
 
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
