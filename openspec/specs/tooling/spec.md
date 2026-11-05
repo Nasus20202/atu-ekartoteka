@@ -333,7 +333,7 @@ required. Reads SHALL NOT use Server Actions. Server Actions SHALL live in
 
 ### Requirement: Client Reads With SWR
 
-Data a Client Component fetches by itself SHALL be read with SWR through a `GET` route, using the shared options in `src/lib/swr`. Mutations SHALL be Server Actions, except the stable JSON API write routes `/api/admin/import` and `/api/admin/import/validate`, which SHALL be sent with `useSWRMutation` using the shared `jsonPoster` fetcher. Public (signed-out) mutations SHALL be Server Actions that carry a file-level `eslint-disable local/require-action-auth-guard` comment stating the reason. A client-side config read such as the Google sign-in config SHALL also use SWR. A list seeded with server-loaded data SHALL NOT request that first page again on mount and SHALL sit in a `SwrScope`.
+Data a Client Component fetches by itself SHALL be read with SWR through a `GET` route, using the shared options in `src/lib/swr`. A client-side config read such as the Google sign-in config SHALL also use SWR. A list seeded with server-loaded data SHALL NOT request that first page again on mount and SHALL sit in a `SwrScope`.
 
 #### Scenario: Stable API write
 
@@ -370,3 +370,19 @@ Data a Client Component fetches by itself SHALL be read with SWR through a `GET`
 - **GIVEN** a list with several pages loaded
 - **WHEN** the search text or a filter changes
 - **THEN** the list starts again from the first page of the new query and ignores responses to the old one
+
+### Requirement: Client Writes Are Server Actions
+
+Mutations SHALL be Server Actions, except the stable JSON API write routes `/api/admin/import` and `/api/admin/import/validate`, which SHALL be sent with `useSWRMutation` using the shared `jsonPoster` fetcher. Public (signed-out) mutations SHALL be Server Actions that carry a file-level `eslint-disable local/require-action-auth-guard` comment stating the reason.
+
+#### Scenario: Validation route uses the shared poster
+
+- **GIVEN** a Client Component that submits to `/api/admin/import/validate`
+- **WHEN** the mutation is written
+- **THEN** it uses `useSWRMutation` with `jsonPoster`
+
+#### Scenario: Public mutation is a guarded-exempt Server Action
+
+- **GIVEN** a signed-out registration mutation
+- **WHEN** it is written
+- **THEN** it is a Server Action whose module carries the file-level disable comment with a reason
