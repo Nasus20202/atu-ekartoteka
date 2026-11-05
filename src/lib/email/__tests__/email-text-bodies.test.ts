@@ -19,8 +19,9 @@ describe('plain-text email bodies', () => {
     vi.unstubAllEnvs();
   });
 
-  it('verification', () => {
-    expect(verificationMessage('tok-1', 'Anna').text).toMatchInlineSnapshot(`
+  it('verification', async () => {
+    expect((await verificationMessage('tok-1', 'Anna')).text)
+      .toMatchInlineSnapshot(`
       "Witaj Anna!
 
       Dziękujemy za rejestrację. Aby dokończyć proces rejestracji, potwierdź swój adres email.
@@ -38,8 +39,9 @@ describe('plain-text email bodies', () => {
     `);
   });
 
-  it('password reset', () => {
-    expect(passwordResetMessage('tok-2', 'Anna').text).toMatchInlineSnapshot(`
+  it('password reset', async () => {
+    expect((await passwordResetMessage('tok-2', 'Anna')).text)
+      .toMatchInlineSnapshot(`
       "Resetowanie hasła
 
       Witaj Anna,
@@ -59,8 +61,8 @@ describe('plain-text email bodies', () => {
     `);
   });
 
-  it('account approved', () => {
-    expect(accountApprovedMessage('Anna').text).toMatchInlineSnapshot(`
+  it('account approved', async () => {
+    expect((await accountApprovedMessage('Anna')).text).toMatchInlineSnapshot(`
       "Twoje konto zostało zatwierdzone
 
       Witaj Anna,
@@ -78,9 +80,15 @@ describe('plain-text email bodies', () => {
     `);
   });
 
-  it('account activation', () => {
+  it('account activation', async () => {
     expect(
-      accountActivationMessage('anna@example.com', 'Temp-Pass-1', 'Anna').text
+      (
+        await accountActivationMessage(
+          'anna@example.com',
+          'Temp-Pass-1',
+          'Anna'
+        )
+      ).text
     ).toMatchInlineSnapshot(`
       "Twoje konto zostało utworzone
 
@@ -104,10 +112,15 @@ describe('plain-text email bodies', () => {
     `);
   });
 
-  it('new user notification for admins', () => {
+  it('new user notification for admins', async () => {
     expect(
-      newUserAdminMessage('anna@example.com', 'Anna Nowak', '2026-01-02 10:00')
-        .text
+      (
+        await newUserAdminMessage(
+          'anna@example.com',
+          'Anna Nowak',
+          '2026-01-02 10:00'
+        )
+      ).text
     ).toMatchInlineSnapshot(`
       "Nowa rejestracja użytkownika
 

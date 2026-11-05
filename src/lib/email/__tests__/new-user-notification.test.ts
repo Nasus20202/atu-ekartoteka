@@ -27,14 +27,9 @@ vi.mock('@/lib/logger', () => ({
 }));
 
 vi.mock('@/lib/email/template-loader', () => ({
-  renderEmailTemplate: vi.fn((name, format) => {
-    if (name === 'new-user-registration-admin') {
-      return format === 'html'
-        ? '<html>New user notification</html>'
-        : 'New user notification';
-    }
-    return '<html>Test</html>';
-  }),
+  renderEmailTemplate: vi.fn((name) =>
+    name === 'new-user-registration-admin' ? 'New user notification' : 'Test'
+  ),
 }));
 
 describe('EmailService - New User Notification', () => {
@@ -119,7 +114,6 @@ describe('EmailService - New User Notification', () => {
         await import('@/lib/email/template-loader');
       expect(renderEmailTemplate).toHaveBeenCalledWith(
         'new-user-registration-admin',
-        'html',
         expect.objectContaining({
           ADMIN_URL: 'https://example.com/admin/users',
         })

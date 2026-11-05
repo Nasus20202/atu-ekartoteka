@@ -30,6 +30,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@react-email/components": "1.0.12",
     "forwarded-parse": "2.2.0",
     "prisma": "^7.1.0"
   },

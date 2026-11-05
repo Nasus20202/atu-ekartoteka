@@ -38,7 +38,7 @@ vi.mock('@/lib/logger', () => ({
 }));
 
 vi.mock('@/lib/email/template-loader', () => ({
-  renderEmailTemplate: vi.fn(() => '<html>Test</html>'),
+  renderEmailTemplate: vi.fn(() => 'Test'),
 }));
 
 vi.mock('@/lib/opentelemetry/email-metrics', () => ({
