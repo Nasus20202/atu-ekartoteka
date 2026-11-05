@@ -1,3 +1,5 @@
+export const LOG_LEVEL = process.env.LOG_LEVEL ?? 'info';
+
 export const MOCK_HTTP_PORT = Number(process.env.MOCK_HTTP_PORT ?? 4010);
 export const MOCK_SMTP_PORT = Number(process.env.MOCK_SMTP_PORT ?? 1025);
 export const MOCK_PUBLIC_URL =
