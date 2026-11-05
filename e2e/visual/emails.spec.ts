@@ -16,6 +16,13 @@ const RECIPIENT_NAME = 'Anna Nowak';
 
 process.env.APP_URL = EMAIL_APP_URL;
 
+// Emails use the recipient's system fonts, which differ per machine. Pin the
+// metric-compatible fonts that ship with the Playwright browser dependencies.
+const PINNED_FONTS = `
+  body, body * { font-family: 'Liberation Sans', Arial, sans-serif !important; }
+  body [style*='monospace'] { font-family: 'Liberation Mono', monospace !important; }
+`;
+
 const EMAILS = {
   'verification-email': () => verificationMessage('token', RECIPIENT_NAME),
   'password-reset': () => passwordResetMessage('token', RECIPIENT_NAME),
@@ -38,6 +45,7 @@ test.describe('Visual: emails', () => {
   for (const [name, build] of Object.entries(EMAILS)) {
     test(`${name} email`, async ({ page }) => {
       await page.setContent(build().html);
+      await page.addStyleTag({ content: PINNED_FONTS });
 
       await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true });
     });
