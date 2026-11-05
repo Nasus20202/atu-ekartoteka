@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.3] - 2026-11-05
+
+- refactor(email): move the email components to components/email
+- fix(email): restore the viewport meta tag
+- docs(openspec): archive generated plain-text change and refresh the templates table
+- refactor(email): generate the plain-text part from the rendered html
+- test(email): read design tokens without a dynamic regular expression
+- style(email): match the application's button, card and typography
+- fix(email): substitute plain-text placeholders in a single pass
+- docs(openspec): archive shared email layout change
+- refactor(email): build html emails with react email
+- docs(openspec): propose shared email layout, stylesheet and partials
+- chore(deps): update dependency @vitejs/plugin-react to v6.2.1 (#868)
+- chore(deps): pin dependencies (#867)
+- fix(ci): address scan findings, performance stack and CI-rendered login baselines
+- test(email): pin the plain-text bodies with exact snapshots
+- test(e2e): assert delivered emails in full and show Google sign-in in login snapshots
+- docs(openspec): archive email restyle and e2e mocks change
+- test(e2e): pin fonts in the email screenshots so baselines match across machines
+- style(email): use one smaller monospace font for the login email and password
+- feat(email): show the login email in the account activation email
+- fix(email): shrink the temporary password label and reword the approval email
+- build(docker): add a separate Dockerfile for the e2e mocks
+- refactor(e2e): split mock server into route modules and build it from the app Dockerfile
+- test(e2e): add integrations app and specs for emails, Google and Turnstile
+- test(e2e): add local SMTP, Google OIDC and Turnstile mock server
+- feat(auth): add optional Turnstile verify and Google issuer overrides
+- feat(email): restyle templates to match the site and add template tests
+- docs(openspec): propose email restyle and e2e mocks change
+- test(cron): verify against the database that expired claims are pruned
+- refactor(settings): omit non-setting columns instead of selecting each one
+- docs(openspec): split long requirements so strict validation passes
+- feat(cron): claim scheduled runs so each executes once across replicas
+- refactor(settings): store app settings in one validated row
+- docs(openspec): propose cron-job-claiming change
+- docs(openspec): propose settings-singleton-table change
+- chore(deps): update ghcr.io/nasus20202/atu-ekartoteka:latest docker digest to 8b3fdd4 (#864)
+
 ## [0.9.2] - 2026-11-04
 
 - refactor(routes): remove route loading states and fix admin access skeleton (#863)
