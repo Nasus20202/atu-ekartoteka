@@ -1,0 +1,4 @@
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+export const CRON_RUN_RETENTION_DAYS = 7;
+export const CRON_RUN_RETENTION_MS = CRON_RUN_RETENTION_DAYS * MS_PER_DAY;

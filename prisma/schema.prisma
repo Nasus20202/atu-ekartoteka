@@ -274,3 +274,12 @@ model AppSettings {
   tenantHistoryYearsBack Int      @default(2)
   updatedAt              DateTime @updatedAt
 }
+
+// One row per claimed scheduled run, keyed "<job name>:<scheduled time ISO>".
+// The primary key makes claiming atomic: only one insert of a key succeeds.
+model CronRun {
+  key       String   @id
+  claimedAt DateTime @default(now())
+
+  @@index([claimedAt])
+}

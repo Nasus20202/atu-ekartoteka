@@ -44,6 +44,7 @@ context: |
   - openspec/specs/authentication/spec.md — login, OAuth, registration, email verification, password reset, session, forced password change
   - openspec/specs/charges-and-payments/spec.md — charges, charge notifications, payment history
   - openspec/specs/code-style/spec.md — TypeScript conventions, naming, imports, file size, commits, no magic values
+  - openspec/specs/cron-jobs/spec.md — scheduled cleanup jobs, claiming each run so it executes once across replicas
   - openspec/specs/data-import/spec.md — legacy file import (LOK, NAL-CZYNSZ, WPLATY formats)
   - openspec/specs/email-notifications/spec.md — SMTP transport, templates, all email types, metrics
   - openspec/specs/hoa-management/spec.md — HOA listing and management

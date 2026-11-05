@@ -2,21 +2,26 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CronScheduler, getCronScheduler } from '@/lib/cron/scheduler';
 
+const { mockLogger } = vi.hoisted(() => ({
+  mockLogger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
+
 // Mock node-cron
 vi.mock('node-cron', () => ({
   schedule: vi.fn(() => ({
     start: vi.fn(),
     stop: vi.fn(),
+    on: vi.fn(),
   })),
   validate: vi.fn(() => true),
 }));
 
+vi.mock('@/lib/cron/run-coordinator', () => ({
+  createRunCoordinator: vi.fn(() => ({ shouldRun: vi.fn() })),
+}));
+
 vi.mock('@/lib/logger', () => ({
-  createLogger: vi.fn(() => ({
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-  })),
+  createLogger: vi.fn(() => mockLogger),
 }));
 
 const cron = await import('node-cron');
@@ -38,7 +43,56 @@ describe('CronScheduler', () => {
 
       expect(cron.schedule).toHaveBeenCalledWith(
         schedule,
-        expect.any(Function)
+        expect.any(Function),
+        expect.objectContaining({ name: 'test-task' })
+      );
+    });
+
+    it('claims every run through the run coordinator', () => {
+      const runCoordinator = { shouldRun: vi.fn() };
+
+      new CronScheduler(runCoordinator).scheduleTask(
+        'claimed-task',
+        '0 * * * *',
+        vi.fn()
+      );
+
+      expect(cron.schedule).toHaveBeenCalledWith(
+        '0 * * * *',
+        expect.any(Function),
+        { name: 'claimed-task', distributed: true, runCoordinator }
+      );
+    });
+
+    it('logs runs skipped because another replica claimed them', () => {
+      const mockTask = { start: vi.fn(), stop: vi.fn(), on: vi.fn() };
+      vi.mocked(cron.schedule).mockReturnValueOnce(mockTask as any);
+      scheduler.scheduleTask('skipped-task', '0 * * * *', vi.fn());
+      const slot = new Date('2026-11-05T10:00:00.000Z');
+      const [event, handler] = mockTask.on.mock.calls[0];
+
+      handler({ reason: 'not-elected', date: slot });
+
+      expect(event).toBe('execution:skipped');
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { name: 'skipped-task', slot },
+        'Scheduled run claimed elsewhere, skipped'
+      );
+      expect(mockLogger.error).not.toHaveBeenCalled();
+    });
+
+    it('logs an error when the claim itself failed', () => {
+      const mockTask = { start: vi.fn(), stop: vi.fn(), on: vi.fn() };
+      vi.mocked(cron.schedule).mockReturnValueOnce(mockTask as any);
+      scheduler.scheduleTask('unclaimed-task', '0 * * * *', vi.fn());
+      const slot = new Date('2026-11-05T10:00:00.000Z');
+      const [, handler] = mockTask.on.mock.calls[0];
+
+      handler({ reason: 'coordinator-error', date: slot });
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        { name: 'unclaimed-task', slot },
+        'Scheduled run skipped, claim failed'
       );
     });
 
@@ -104,6 +158,7 @@ describe('CronScheduler', () => {
       const mockScheduledTask = {
         start: vi.fn(),
         stop: vi.fn(),
+        on: vi.fn(),
       };
       vi.mocked(cron.schedule).mockReturnValue(mockScheduledTask as any);
 
@@ -123,8 +178,8 @@ describe('CronScheduler', () => {
 
   describe('stopAll', () => {
     it('should stop all scheduled tasks', () => {
-      const mockTask1 = { start: vi.fn(), stop: vi.fn() };
-      const mockTask2 = { start: vi.fn(), stop: vi.fn() };
+      const mockTask1 = { start: vi.fn(), stop: vi.fn(), on: vi.fn() };
+      const mockTask2 = { start: vi.fn(), stop: vi.fn(), on: vi.fn() };
 
       vi.mocked(cron.schedule)
         .mockReturnValueOnce(mockTask1 as any)
@@ -140,7 +195,7 @@ describe('CronScheduler', () => {
     });
 
     it('should clear all tasks after stopping', () => {
-      const mockTask = { start: vi.fn(), stop: vi.fn() };
+      const mockTask = { start: vi.fn(), stop: vi.fn(), on: vi.fn() };
       vi.mocked(cron.schedule).mockReturnValue(mockTask as any);
 
       scheduler.scheduleTask('task', '0 * * * *', vi.fn());

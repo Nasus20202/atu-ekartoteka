@@ -1,15 +1,22 @@
 import * as cron from 'node-cron';
 
+import { createRunCoordinator } from '@/lib/cron/run-coordinator';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('cron:scheduler');
 
 /**
  * Internal cron scheduler
- * Runs scheduled tasks within the application process
+ * Runs scheduled tasks within the application process. Every replica schedules
+ * every task, but each scheduled run is claimed through the run coordinator and
+ * executed by the one replica that wins the claim.
  */
 export class CronScheduler {
   private tasks: Map<string, cron.ScheduledTask> = new Map();
+
+  constructor(
+    private readonly runCoordinator: cron.RunCoordinator = createRunCoordinator()
+  ) {}
 
   /**
    * Schedule a task
@@ -35,21 +42,39 @@ export class CronScheduler {
     }
 
     // Create and start the task
-    const scheduledTask = cron.schedule(schedule, async () => {
-      logger.info({ name }, 'Starting scheduled task');
-      const startTime = Date.now();
+    const scheduledTask = cron.schedule(
+      schedule,
+      async () => {
+        logger.info({ name }, 'Starting scheduled task');
+        const startTime = Date.now();
 
-      try {
-        await task();
-        const duration = Date.now() - startTime;
-        logger.info(
-          { name, duration },
-          'Scheduled task completed successfully'
+        try {
+          await task();
+          const duration = Date.now() - startTime;
+          logger.info(
+            { name, duration },
+            'Scheduled task completed successfully'
+          );
+        } catch (error) {
+          const duration = Date.now() - startTime;
+          logger.error({ name, error, duration }, 'Scheduled task failed');
+        }
+      },
+      { name, distributed: true, runCoordinator: this.runCoordinator }
+    );
+
+    scheduledTask.on('execution:skipped', ({ reason, date }) => {
+      if (reason === 'coordinator-error') {
+        logger.error(
+          { name, slot: date },
+          'Scheduled run skipped, claim failed'
         );
-      } catch (error) {
-        const duration = Date.now() - startTime;
-        logger.error({ name, error, duration }, 'Scheduled task failed');
+        return;
       }
+      logger.info(
+        { name, slot: date },
+        'Scheduled run claimed elsewhere, skipped'
+      );
     });
 
     this.tasks.set(name, scheduledTask);
