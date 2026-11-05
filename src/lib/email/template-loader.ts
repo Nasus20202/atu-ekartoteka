@@ -33,14 +33,15 @@ function loadTemplates(): Record<TemplateName, string> {
 
 const templates = loadTemplates();
 
+const PLACEHOLDER_PATTERN = /{{([A-Z_]+)}}/g;
+
 export function renderEmailTemplate(
   templateName: TemplateName,
   variables: Record<string, string>
 ): string {
-  let result = templates[templateName];
-  for (const [key, value] of Object.entries(variables)) {
-    result = result.replaceAll(`{{${key}}}`, () => value);
-  }
-
-  return result;
+  return templates[templateName].replace(
+    PLACEHOLDER_PATTERN,
+    (placeholder, key: string) =>
+      Object.hasOwn(variables, key) ? variables[key] : placeholder
+  );
 }

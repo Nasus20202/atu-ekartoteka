@@ -41,4 +41,24 @@ describe('renderEmailTemplate', () => {
 
     expect(result).toContain("$&<b>'x'");
   });
+
+  it('does not substitute placeholders that appear inside a value', () => {
+    const result = renderEmailTemplate('account-approved', {
+      NAME: ' {{LOGIN_URL}}',
+      LOGIN_URL: 'https://example.com/login',
+    });
+
+    expect(result).toContain('Witaj {{LOGIN_URL}},');
+    expect(result).toContain('https://example.com/login');
+  });
+
+  it('leaves placeholders without a value untouched', () => {
+    expect(
+      renderEmailTemplate('account-approved', { NAME: ' Anna' })
+    ).toContain('{{LOGIN_URL}}');
+  });
+
+  it('ignores inherited object keys', () => {
+    expect(renderEmailTemplate('account-approved', {})).toContain('{{NAME}}');
+  });
 });

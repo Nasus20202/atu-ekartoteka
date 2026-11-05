@@ -85,6 +85,17 @@ describe('email templates', () => {
     expect(verification.text).toContain(EVIL_NAME);
   });
 
+  it.each(['$& $1 $`', '{{LOGIN_URL}}'])(
+    'keeps the name %s literal in html and text',
+    async (name) => {
+      const { html, text } = await accountApprovedMessage(name);
+
+      expect(html).toContain(`Witaj ${name},`.replace(/&/g, '&amp;'));
+      expect(text).toContain(`Witaj ${name},`);
+      expect(text).toContain(`${APP_URL}/login`);
+    }
+  );
+
   it('puts each token in its link', async () => {
     expect((await verificationMessage('tok-1')).html).toContain(
       `${APP_URL}/verify-email?token=tok-1`
