@@ -1,13 +1,21 @@
+import { cache } from 'react';
+
 import { prisma } from '@/lib/database/prisma';
+import { APP_SETTINGS_ROW_ID } from '@/lib/settings/constants';
 import {
   type AppSettingsValues,
-  resolveAppSettings,
+  getDefaultAppSettings,
 } from '@/lib/settings/registry';
 
-export async function getAppSettings(): Promise<AppSettingsValues> {
-  const rows = await prisma.appSetting.findMany({
-    select: { key: true, value: true },
+/** Uncached read; a missing row (never saved) yields the defaults. */
+export async function readAppSettings(): Promise<AppSettingsValues> {
+  const row = await prisma.appSettings.findUnique({
+    where: { id: APP_SETTINGS_ROW_ID },
+    select: { tenantHistoryYearsBack: true },
   });
 
-  return resolveAppSettings(rows);
+  return row ?? getDefaultAppSettings();
 }
+
+/** Request-scoped: however many callers render in one request, one query runs. */
+export const getAppSettings = cache(readAppSettings);

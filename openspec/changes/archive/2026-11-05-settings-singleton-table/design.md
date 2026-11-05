@@ -25,20 +25,31 @@
 **Migration order.** In one migration: create `AppSettings`; add the `CHECK`s; insert row `1` from the old table; drop `AppSetting`. The insert is a single `INSERT ... SELECT` that always produces one row:
 
 ```sql
-INSERT INTO "AppSettings" ("id", "tenantHistoryYearsBack", "updatedAt")
-SELECT 1,
+INSERT INTO
+  "AppSettings" ("id", "tenantHistoryYearsBack", "updatedAt")
+SELECT
+  1,
   COALESCE(
-    (SELECT "years" FROM (
-        SELECT CASE
-            WHEN jsonb_typeof("value") = 'number'
-              AND ("value" #>> '{}') ~ '^[0-9]{1,2}$'
-            THEN ("value" #>> '{}')::int
-          END AS "years"
-        FROM "AppSetting"
-        WHERE "key" = 'tenantHistoryYearsBack'
-      ) AS "stored"
-      WHERE "years" BETWEEN 0 AND 20),
-    2),
+    (
+      SELECT
+        "years"
+      FROM
+        (
+          SELECT
+            CASE
+              WHEN jsonb_typeof("value") = 'number'
+              AND ("value" #>> '{}') ~ '^[0-9]{1,2}$' THEN ("value" #>> '{}')::int
+            END AS "years"
+          FROM
+            "AppSetting"
+          WHERE
+            "key" = 'tenantHistoryYearsBack'
+        ) AS "stored"
+      WHERE
+        "years" BETWEEN 0 AND 20
+    ),
+    2
+  ),
   CURRENT_TIMESTAMP;
 ```
 
