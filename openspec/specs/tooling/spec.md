@@ -403,6 +403,14 @@ The repository SHALL contain a local mock server for E2E that Playwright and Doc
 - **WHEN** Playwright starts its web servers
 - **THEN** the mock server is started first and reused if already running; in Docker Compose it runs as its own service
 
+#### Scenario: Mock server logging
+
+- **GIVEN** the mock server is running
+- **WHEN** it handles a request, captures an email, issues or exchanges a Google code, verifies a Turnstile token, or hits an error
+- **THEN** it writes a JSON log line through pino with a `name` of `mock:<subsystem>` (`mock:http`, `mock:smtp`, `mock:google`, `mock:turnstile`), filtered by `LOG_LEVEL` (default `info`)
+- **AND** request lines carry method, path (without the query string), status and duration, and health probes log at `debug`
+- **AND** log lines never contain email bodies, Turnstile tokens, authorization codes or access tokens
+
 #### Scenario: Browser-side Turnstile
 
 - **GIVEN** a spec on the integrations app

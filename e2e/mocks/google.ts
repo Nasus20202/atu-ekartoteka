@@ -1,6 +1,9 @@
 import { createSign, generateKeyPairSync, randomBytes } from 'crypto';
 
 import { GOOGLE_CLIENT_ID, ID_TOKEN_TTL, MOCK_PUBLIC_URL } from './constants';
+import { createMockLogger } from './logger';
+
+const log = createMockLogger('mock:google');
 
 export interface GoogleIdentity {
   email: string;
@@ -23,6 +26,7 @@ let nextIdentity: GoogleIdentity | null = null;
 
 export function setNextIdentity(identity: GoogleIdentity): void {
   nextIdentity = identity;
+  log.info({ sub: identity.sub, email: identity.email }, 'identity queued');
 }
 
 export function discoveryDocument(issuer: string, path: string) {
@@ -55,10 +59,17 @@ export function jwks() {
 /** Returns the redirect back to the app, or null when no identity is queued. */
 export function authorize(params: URLSearchParams): string | null {
   const redirectUri = params.get('redirect_uri');
-  if (!redirectUri || !nextIdentity) return null;
+  if (!redirectUri || !nextIdentity) {
+    log.warn(
+      { hasRedirectUri: Boolean(redirectUri), identityQueued: false },
+      'authorize rejected'
+    );
+    return null;
+  }
 
   const code = randomBytes(16).toString('hex');
   codes.set(code, { identity: nextIdentity, nonce: params.get('nonce') });
+  log.info({ sub: nextIdentity.sub }, 'authorization code issued');
   nextIdentity = null;
 
   const target = new URL(redirectUri);
@@ -95,8 +106,12 @@ function signIdToken(issuer: string, { identity, nonce }: IssuedCode): string {
 
 export function exchangeCode(code: string | null, issuer: string) {
   const issued = code ? codes.get(code) : undefined;
-  if (!code || !issued) return null;
+  if (!code || !issued) {
+    log.warn({ reason: 'invalid_grant' }, 'token exchange rejected');
+    return null;
+  }
   codes.delete(code);
+  log.info({ sub: issued.identity.sub }, 'token exchanged');
 
   return {
     access_token: `mock-access-${code}`,
