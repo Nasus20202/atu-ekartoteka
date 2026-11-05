@@ -6,7 +6,8 @@ interface SettingDefinition<T> {
   parse: (value: unknown) => T | null;
 }
 
-// Adding a setting here needs no DB migration; a missing row uses defaultValue
+// Each setting is also a typed AppSettings column; adding one needs a migration
+// (ADD COLUMN with DEFAULT and CHECK) and an entry here.
 export const APP_SETTINGS = {
   tenantHistoryYearsBack: {
     defaultValue: DEFAULT_TENANT_HISTORY_YEARS_BACK,
@@ -19,28 +20,16 @@ export type AppSettingsValues = {
   [K in AppSettingKey]: (typeof APP_SETTINGS)[K]['defaultValue'];
 };
 
-const SETTING_KEYS = Object.keys(APP_SETTINGS) as AppSettingKey[];
-
 function isSettingKey(key: string): key is AppSettingKey {
   return Object.hasOwn(APP_SETTINGS, key);
 }
 
-/** Stored rows merged over defaults; invalid stored values fall back too. */
-export function resolveAppSettings(
-  rows: Array<{ key: string; value: unknown }>
-): AppSettingsValues {
-  const stored = new Map(rows.map(({ key, value }) => [key, value]));
-
+export function getDefaultAppSettings(): AppSettingsValues {
   return Object.fromEntries(
-    SETTING_KEYS.map((key) => {
-      const { defaultValue, parse } = APP_SETTINGS[key];
-      return [
-        key,
-        stored.has(key)
-          ? (parse(stored.get(key)) ?? defaultValue)
-          : defaultValue,
-      ];
-    })
+    Object.entries(APP_SETTINGS).map(([key, { defaultValue }]) => [
+      key,
+      defaultValue,
+    ])
   ) as AppSettingsValues;
 }
 

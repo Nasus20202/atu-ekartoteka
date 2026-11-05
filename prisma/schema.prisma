@@ -267,8 +267,10 @@ model PasswordReset {
   @@index([expiresAt])
 }
 
-model AppSetting {
-  key       String   @id
-  value     Json
-  updatedAt DateTime @updatedAt
+// Singleton: exactly one row (id = 1). CHECK constraints for the id and the value
+// ranges live in the migration, not tracked by Prisma.
+model AppSettings {
+  id                     Int      @id @default(1)
+  tenantHistoryYearsBack Int      @default(2)
+  updatedAt              DateTime @updatedAt
 }

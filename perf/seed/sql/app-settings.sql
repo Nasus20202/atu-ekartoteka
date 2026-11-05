@@ -1,13 +1,9 @@
 -- Parameters: $1 = tenant history years back
 INSERT INTO
-  "AppSetting" (key, value, "updatedAt")
+  "AppSettings" (id, "tenantHistoryYearsBack", "updatedAt")
 VALUES
-  (
-    'tenantHistoryYearsBack',
-    to_jsonb($1::int),
-    NOW()
-  )
-ON CONFLICT (key) DO UPDATE
+  (1, $1::int, NOW())
+ON CONFLICT (id) DO UPDATE
 SET
-  value = EXCLUDED.value,
+  "tenantHistoryYearsBack" = EXCLUDED."tenantHistoryYearsBack",
   "updatedAt" = NOW();
