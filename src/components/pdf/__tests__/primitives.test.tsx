@@ -6,6 +6,7 @@ import {
   PdfHeader,
   PdfNoteText,
   SectionTitle,
+  styles,
 } from '@/components/pdf/primitives';
 
 type WithChildren = ReactElement<{ children?: React.ReactNode; size?: string }>;
@@ -16,6 +17,10 @@ const texts = (element: WithChildren) =>
     .map((child) => (child as WithChildren).props.children);
 
 describe('PDF primitives', () => {
+  it('sets the Geist typeface on every page', () => {
+    expect(styles.page.fontFamily).toBe('Geist');
+  });
+
   it('renders the content on an A4 page', () => {
     const page = DocumentPage({ children: 'treść' }) as WithChildren;
 
