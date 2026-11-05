@@ -12,6 +12,7 @@ import { emailStyles } from '@/lib/email/email-theme';
 
 export const EMAIL_BRAND = 'ATU Ekartoteka';
 const EMAIL_LANGUAGE = 'pl';
+const VIEWPORT = 'width=device-width, initial-scale=1.0';
 
 interface Props {
   title: string;
@@ -22,6 +23,7 @@ export function EmailLayout({ title, children }: Props) {
   return (
     <Html lang={EMAIL_LANGUAGE}>
       <Head>
+        <meta name="viewport" content={VIEWPORT} />
         <title>{title}</title>
       </Head>
       <Body style={emailStyles.body}>

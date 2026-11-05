@@ -68,6 +68,7 @@ describe('email templates', () => {
       const { html } = await build();
 
       expect(html).toContain('lang="pl"');
+      expect(html).toContain('name="viewport" content="width=device-width');
       expect(html).toContain('ATU Ekartoteka');
       expect(html).toContain(PRIMARY_COLOR);
       expect(html).toContain('width="100%"');
