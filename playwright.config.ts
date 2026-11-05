@@ -57,7 +57,7 @@ const visualDatabaseUrl = functionalDatabaseUrl
 function appServer(
   port: number,
   databaseUrl: string,
-  integrationEnv: Record<string, string> = {}
+  extraEnv: Record<string, string> = {}
 ) {
   return {
     command: `node_modules/.bin/next start --port ${port}`,
@@ -75,10 +75,17 @@ function appServer(
       TURNSTILE_SECRET_KEY: '',
       SMTP_HOST: '',
       E2E_ALLOW_FIXED_NOW: 'true',
-      ...integrationEnv,
+      ...extraEnv,
     },
   };
 }
+
+// Google sign-in is configured on the visual app so the login page snapshot
+// shows the button; nothing there ever starts the OAuth flow
+const visualEnv = {
+  GOOGLE_CLIENT_ID: 'visual-google-client-id',
+  GOOGLE_CLIENT_SECRET: 'visual-google-client-secret',
+};
 
 // Turnstile, SMTP and Google sign-in are on here, pointed at the local mocks
 const integrationEnv = {
@@ -183,7 +190,7 @@ export default defineConfig({
     ? undefined
     : [
         appServer(FUNCTIONAL_PORT, functionalDatabaseUrl),
-        appServer(VISUAL_PORT, visualDatabaseUrl),
+        appServer(VISUAL_PORT, visualDatabaseUrl, visualEnv),
         mockServer,
         appServer(INTEGRATIONS_PORT, functionalDatabaseUrl, integrationEnv),
       ],

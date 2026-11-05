@@ -9,6 +9,7 @@ import {
   userCard,
 } from '../utils/admin-users';
 import { createUniqueUnassignedApartment } from '../utils/create-unique-unassigned-apartment';
+import { expectDeliveredEmail } from '../utils/email-assertions';
 import {
   loginWithTurnstile,
   stubTurnstileWidget,
@@ -51,6 +52,11 @@ test('the user gets an email when an admin approves the account', async ({
   await adminContext.close();
 
   const mail = await waitForMail(request, email, { subject: APPROVED_SUBJECT });
-  expect(mail.html).toContain('Zaloguj się');
-  expect(mail.text).toContain('/login');
+  expectDeliveredEmail(mail, {
+    to: email,
+    subject: APPROVED_SUBJECT,
+    both: ['Approved Mail User', 'Administrator zatwierdził Twoje konto'],
+    html: ['Zaloguj się'],
+    linkPath: '/login',
+  });
 });
