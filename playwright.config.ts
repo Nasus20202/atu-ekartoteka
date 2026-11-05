@@ -108,7 +108,7 @@ export default defineConfig({
     {
       name: 'chromium-mobile',
       use: { ...devices['Pixel 7'] },
-      testIgnore: ['**/admin/**', VISUAL_TEST_MATCH],
+      testIgnore: ['**/admin/**', '**/cron/**', VISUAL_TEST_MATCH],
     },
     {
       name: 'chromium-admin',
