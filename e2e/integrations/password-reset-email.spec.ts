@@ -4,6 +4,7 @@
 
 import { expect, test } from '../fixtures';
 import { createCredentialsUser } from '../utils/create-credentials-user';
+import { expectDeliveredEmail } from '../utils/email-assertions';
 import {
   extractLink,
   loginWithTurnstile,
@@ -33,7 +34,14 @@ test('a user resets the password with the emailed link', async ({
   await page.getByRole('button', { name: /Wyślij link resetowania/i }).click();
 
   const mail = await waitForMail(request, email, { subject: RESET_SUBJECT });
-  expect(mail.html).toContain('Zresetuj hasło');
+  expectDeliveredEmail(mail, {
+    to: email,
+    subject: RESET_SUBJECT,
+    both: ['Reset Mail User', 'zresetowanie hasła'],
+    html: ['Zresetuj hasło'],
+    text: ['Link wygaśnie za 1 godzinę'],
+    linkPath: '/reset-password?token=',
+  });
 
   await page.goto(extractLink(mail, '/reset-password'));
   await page.getByLabel('Nowe hasło').fill(NEW_PASSWORD);

@@ -4,6 +4,7 @@
  */
 
 import { expect, test } from '../fixtures';
+import { expectDeliveredEmail } from '../utils/email-assertions';
 import {
   extractLink,
   stubTurnstileWidget,
@@ -36,8 +37,14 @@ test.describe('Registration emails', () => {
     const mail = await waitForMail(request, email, {
       subject: VERIFICATION_SUBJECT,
     });
-    expect(mail.html).toContain('Mail Verify User');
-    expect(mail.html).toContain('Potwierdź adres email');
+    expectDeliveredEmail(mail, {
+      to: email,
+      subject: VERIFICATION_SUBJECT,
+      both: ['Mail Verify User', 'Dziękujemy za rejestrację'],
+      html: ['Potwierdź adres email'],
+      text: ['Link wygaśnie za 24 godziny'],
+      linkPath: '/verify-email?token=',
+    });
 
     await page.goto(extractLink(mail, '/verify-email'));
 
@@ -62,6 +69,12 @@ test.describe('Registration emails', () => {
       subject: ADMIN_NOTICE_SUBJECT,
       contains: email,
     });
-    expect(notice.text).toContain(email);
+    expectDeliveredEmail(notice, {
+      to: ADMIN_EMAIL,
+      subject: ADMIN_NOTICE_SUBJECT,
+      both: [email, 'Nowy użytkownik zarejestrował się w systemie'],
+      html: ['Otwórz panel administracyjny'],
+      linkPath: '/admin/users',
+    });
   });
 });

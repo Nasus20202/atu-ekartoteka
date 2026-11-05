@@ -122,7 +122,13 @@ The system SHALL provide global setup and teardown that prepares known database 
 
 - **GIVEN** the functional and visual app servers
 - **WHEN** E2E tests run
-- **THEN** Cloudflare Turnstile (`TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`), SMTP (`SMTP_HOST`) and Google sign-in are disabled via environment overrides so UI flows are not blocked by external services
+- **THEN** Cloudflare Turnstile (`TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`) and SMTP (`SMTP_HOST`) are disabled via environment overrides on both, and Google sign-in is disabled on the functional app, so UI flows are not blocked by external services
+
+#### Scenario: Visual app shows the Google button
+
+- **GIVEN** the visual app server
+- **WHEN** it is started
+- **THEN** it has dummy Google client credentials, so the login page renders the Google button, and no flow ever contacts Google
 
 #### Scenario: External services mocked on the integrations server
 
@@ -273,3 +279,29 @@ E2E specs in `e2e/integrations/` SHALL exercise SMTP, Google sign-in and Turnsti
 - **GIVEN** the Turnstile mock returns success or failure
 - **WHEN** a user submits login or registration
 - **THEN** the action succeeds with a valid token and is rejected with an invalid one
+
+### Requirement: Delivered Email Assertions
+
+Integration specs that cause an email to be sent SHALL assert the message captured by the SMTP mock, not only the flow that follows it.
+
+#### Scenario: Whole message is checked
+
+- **GIVEN** an email captured by the SMTP mock
+- **WHEN** a spec asserts it
+- **THEN** it checks the recipient, the sender address, the exact subject, that the HTML and text parts are both non-empty and free of unresolved placeholders, that the expected content and the brand and primary colour are present, that every link in the HTML is on the app origin and also appears in the text part, and that the call-to-action link is present in both parts
+
+#### Scenario: Every email type is delivered
+
+- **GIVEN** the integrations app
+- **WHEN** a user registers, a password reset is requested, an admin approves an account, a user signs in with Google for the first time, or an admin bulk-creates accounts
+- **THEN** the verification, password reset, account approved, admin notification and account activation emails are each captured and asserted, and the activation email's temporary password signs the owner in
+
+### Requirement: Login Snapshot Shows Google Sign-In
+
+The login page visual tests SHALL render the Google sign-in button.
+
+#### Scenario: Login snapshots
+
+- **GIVEN** the visual app with Google credentials configured
+- **WHEN** the login page is snapshotted in light and dark mode at desktop and phone viewports
+- **THEN** the specs assert the Google button is visible and the snapshots include it

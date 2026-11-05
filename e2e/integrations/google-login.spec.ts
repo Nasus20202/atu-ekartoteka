@@ -6,6 +6,7 @@ import { createPublicKey, createVerify, randomUUID } from 'crypto';
 
 import { expect, test } from '../fixtures';
 import { createCredentialsUser } from '../utils/create-credentials-user';
+import { expectDeliveredEmail } from '../utils/email-assertions';
 import {
   MOCK_URL,
   queueGoogleIdentity,
@@ -43,7 +44,12 @@ test('a new Google user lands in the app and admins are notified', async ({
     subject: ADMIN_NOTICE_SUBJECT,
     contains: email,
   });
-  expect(notice.text).toContain('Google New User');
+  expectDeliveredEmail(notice, {
+    to: ADMIN_EMAIL,
+    subject: ADMIN_NOTICE_SUBJECT,
+    both: [email, 'Google New User'],
+    linkPath: '/admin/users',
+  });
 });
 
 test('a returning user signs in to the existing account', async ({

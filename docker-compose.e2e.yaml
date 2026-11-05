@@ -73,6 +73,9 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/e2e_visual
       DATABASE_REPLICA_URLS: postgresql://postgres:postgres@db:5432/e2e_visual
       AUTH_URL: http://localhost:3001
+      # Only makes the login page show the Google button; the flow is never started
+      GOOGLE_CLIENT_ID: visual-google-client-id
+      GOOGLE_CLIENT_SECRET: visual-google-client-secret
     ports:
       - '3001:3000'
 
