@@ -29,6 +29,15 @@
 - **Format**: `### Requirement:` with `SHALL`, followed by `#### Scenario:` blocks using `GIVEN` / `WHEN` / `THEN`. Reuse existing capability names and wording; ask before adding a new capability folder.
 - **Reference**: read the affected spec before coding and keep examples, stories and commands in `openspec/config.yaml` consistent with the code.
 
+## Documentation (`README.md` and `docs/`)
+
+`README.md` and `docs/` are written for humans; `openspec/` is the agent-facing source of truth. Keep them in sync with the code in the same piece of work.
+
+- **Sync every change**: A change to setup, environment variables (also update `.env.example` and `.env.docker.example`), Docker or deployment, scripts, the import (file formats, validation, options), the project layout, or conventions must update the affected page in `docs/`. A task is not done while the docs describe old behaviour.
+- **Layout**: `docs/<topic>.md`, lowercase kebab-case names. Add a new page to the table in `README.md`.
+- **Style**: Plain, accurate and useful to a person doing the task: steps, commands, real values. No filler, no marketing wording, no restating the code, and no pinned version numbers or details that go stale (point to `package.json` instead). Verify claims against the code before writing them.
+- **Not a spec copy**: Do not paste specs or `AGENTS.md` rules into the docs; link or summarise for a human reader.
+
 ## Code Style & Quality
 
 - **UI Framework**: Follow the shadcn/ui style guide for all UI components
