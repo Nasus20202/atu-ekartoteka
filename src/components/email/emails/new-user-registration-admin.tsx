@@ -1,7 +1,7 @@
-import { ActionButton } from '@/lib/email/components/action-button';
-import { DetailsBox, InlineDetail } from '@/lib/email/components/details-box';
-import { EmailLayout } from '@/lib/email/components/email-layout';
-import { Note, Paragraph } from '@/lib/email/components/email-text';
+import { ActionButton } from '@/components/email/action-button';
+import { DetailsBox, InlineDetail } from '@/components/email/details-box';
+import { EmailLayout } from '@/components/email/email-layout';
+import { Note, Paragraph } from '@/components/email/email-text';
 
 export const NEW_USER_ADMIN_TITLE = 'Nowa rejestracja użytkownika';
 export const NEW_USER_ADMIN_SUBJECT =
