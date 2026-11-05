@@ -6,7 +6,7 @@ export const INTEGRATIONS_APP_URL =
   process.env.PLAYWRIGHT_INTEGRATIONS_BASE_URL ?? 'http://localhost:3002';
 export const SENDER_ADDRESS = 'noreply@ekartoteka.test';
 
-const URL_PATTERN = /https?:\/\/[^\s"<>]+/g;
+const HREF_PATTERN = /href="(https?:\/\/[^"]+)"/g;
 const UNRESOLVED_PLACEHOLDER = '{{';
 const BRAND_NAME = 'ATU Ekartoteka';
 const PRIMARY_COLOR = '#2563eb';
@@ -44,7 +44,9 @@ export function expectDeliveredEmail(
   expect(mail.html).toContain(BRAND_NAME);
   expect(mail.html).toContain(PRIMARY_COLOR);
 
-  const htmlLinks = mail.html.match(URL_PATTERN) ?? [];
+  const htmlLinks = [...mail.html.matchAll(HREF_PATTERN)].map(
+    (match) => match[1]
+  );
   expect(htmlLinks.length).toBeGreaterThan(0);
   for (const link of htmlLinks) {
     expect(link.startsWith(INTEGRATIONS_APP_URL)).toBe(true);

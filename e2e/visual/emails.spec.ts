@@ -44,7 +44,7 @@ const EMAILS = {
 test.describe('Visual: emails', () => {
   for (const [name, build] of Object.entries(EMAILS)) {
     test(`${name} email`, async ({ page }) => {
-      await page.setContent(build().html);
+      await page.setContent((await build()).html);
       await page.addStyleTag({ content: PINNED_FONTS });
 
       await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true });

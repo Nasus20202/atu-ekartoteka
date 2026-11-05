@@ -153,7 +153,7 @@ export class EmailService {
     );
 
     const result = await this.sendEmail(
-      { to, ...verificationMessage(token, name) },
+      { to, ...(await verificationMessage(token, name)) },
       'verification'
     );
 
@@ -166,36 +166,36 @@ export class EmailService {
     return result;
   }
 
-  sendPasswordResetEmail(
+  async sendPasswordResetEmail(
     to: string,
     resetToken: string,
     name?: string
   ): Promise<boolean> {
     return this.sendEmail(
-      { to, ...passwordResetMessage(resetToken, name) },
+      { to, ...(await passwordResetMessage(resetToken, name)) },
       'password_reset'
     );
   }
 
-  sendAccountApprovedEmail(to: string, name?: string): Promise<boolean> {
+  async sendAccountApprovedEmail(to: string, name?: string): Promise<boolean> {
     return this.sendEmail(
-      { to, ...accountApprovedMessage(name) },
+      { to, ...(await accountApprovedMessage(name)) },
       'account_approved'
     );
   }
 
-  sendAccountActivationEmail(
+  async sendAccountActivationEmail(
     to: string,
     tempPassword: string,
     name?: string
   ): Promise<boolean> {
     return this.sendEmail(
-      { to, ...accountActivationMessage(to, tempPassword, name) },
+      { to, ...(await accountActivationMessage(to, tempPassword, name)) },
       'account_activation'
     );
   }
 
-  sendNewUserNotificationToAdmin(
+  async sendNewUserNotificationToAdmin(
     adminEmail: string,
     userEmail: string,
     userName: string,
@@ -204,7 +204,7 @@ export class EmailService {
     return this.sendEmail(
       {
         to: adminEmail,
-        ...newUserAdminMessage(userEmail, userName, registrationDate),
+        ...(await newUserAdminMessage(userEmail, userName, registrationDate)),
       },
       'admin_notification'
     );
