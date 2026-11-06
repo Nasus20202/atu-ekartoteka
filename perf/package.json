@@ -1,0 +1,8 @@
+{
+  "name": "ekartoteka-perf",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@types/k6": "2.3.1"
+  }
+}

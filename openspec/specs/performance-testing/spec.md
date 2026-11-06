@@ -9,6 +9,7 @@ Guards response times and error rates under concurrent load. k6 scenarios run in
 - **Load tool**: k6 (`perf/load-test.ts`), version pinned in `.github/workflows/test-and-build.yaml`
 - **Target**: the Docker image started with `docker-compose.e2e.yaml` and seeded with `e2e/utils/seed-test-data.ts` (admin account) and `perf/seed/seed-perf-data.ts` (production-sized dataset)
 - **Configuration**: peak load and timing in `perf/lib/config.ts`, latency limits in `perf/lib/thresholds.ts`
+- **Dependencies**: `perf/` is its own pnpm workspace package (`perf/package.json`) that holds the k6 type package; the k6 binary is not an npm dependency and is installed in CI
 
 ---
 

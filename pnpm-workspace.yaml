@@ -1,6 +1,7 @@
 packages:
   - '.'
   - 'e2e/mocks'
+  - 'perf'
 
 allowBuilds:
   '@prisma/engines': true
