@@ -28,7 +28,8 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/e2e
       DATABASE_REPLICA_URLS: postgresql://postgres:postgres@localhost:5432/e2e
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # WebKit's system dependencies alone can take 20+ minutes on a slow apt mirror
+    timeout-minutes: 45
 
     steps:
       - name: Checkout code
