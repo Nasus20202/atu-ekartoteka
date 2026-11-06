@@ -12,6 +12,7 @@
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "format": "prettier --write .",
+    "mocks": "tsx e2e/mocks/main.ts",
     "format:check": "prettier --check .",
     "precommit": "lint-staged && vitest --run",
     "db:generate": "prisma generate",
