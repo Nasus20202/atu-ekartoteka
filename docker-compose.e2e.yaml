@@ -2,7 +2,7 @@
 # `ekartoteka` serves the functional suite (port 3000, database e2e),
 # `ekartoteka-visual` the visual suite (port 3001, database e2e_visual) and
 # `ekartoteka-integrations` the integration suite (port 3002, database e2e),
-# which talks to the local `mocks` service (SMTP, Google OIDC, Turnstile).
+# which talks to the local `mocks` service (SMTP, Google OIDC, Turnstile, OTLP).
 # `mocks` is built from docker/Dockerfile.mocks (same Node image as the app).
 # CI:    docker compose -f docker-compose.e2e.yaml up --no-build --wait
 # Local: docker compose -f docker-compose.e2e.yaml up --build --wait
@@ -117,5 +117,6 @@ services:
       GOOGLE_CLIENT_ID: mock-google-client-id
       GOOGLE_CLIENT_SECRET: mock-google-client-secret
       GOOGLE_ISSUER_URL: http://mocks:4010/google
+      OTEL_EXPORTER_ENDPOINT: http://mocks:4010/otlp
     ports:
       - '3002:3000'

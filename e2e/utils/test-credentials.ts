@@ -51,3 +51,9 @@ export const VISUAL_PENDING_NAME = 'E2E Visual Pending User';
 // Apartment without a user, listed on the users management page
 export const VISUAL_UNASSIGNED_OWNER = 'E2E Visual Unassigned Owner';
 export const VISUAL_UNASSIGNED_EMAIL = 'visual-unassigned@e2e-test.com';
+
+// Passwords for accounts that tests create or reset. They are not seeded, so
+// every spec that uses one imports it from here instead of repeating the literal.
+export const E2E_PASSWORD = 'SecurePassword123!';
+export const WRONG_PASSWORD = 'WrongPassword123!';
+export const RESET_NEW_PASSWORD = 'BrandNewPassword456!';

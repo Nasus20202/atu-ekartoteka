@@ -134,7 +134,7 @@ The system SHALL provide global setup and teardown that prepares known database 
 
 - **GIVEN** the integrations app server
 - **WHEN** it is started
-- **THEN** SMTP, Turnstile and Google are enabled and point at the local mock server, never at the real services
+- **THEN** SMTP, Turnstile, Google and OpenTelemetry export are enabled and point at the local mock server, never at the real services
 
 #### Scenario: Test data SQL kept in files
 
@@ -317,6 +317,58 @@ E2E specs in `e2e/integrations/` SHALL exercise SMTP, Google sign-in and Turnsti
 - **GIVEN** the Turnstile mock returns success or failure
 - **WHEN** a user submits login or registration
 - **THEN** the action succeeds with a valid token and is rejected with an invalid one
+
+### Requirement: OpenTelemetry E2E Specs
+
+E2E specs in `e2e/integrations/` SHALL verify that the integrations app, with OpenTelemetry enabled, keeps serving requests and exports the expected telemetry to the OTLP mock.
+
+#### Scenario: Export endpoint set on the integrations server
+
+- **GIVEN** the integrations app server
+- **WHEN** it is started
+- **THEN** `OTEL_EXPORTER_ENDPOINT` points at the mock's `/otlp` path, so every integration spec runs with traces, metrics and logs enabled
+
+#### Scenario: Server keeps serving with telemetry enabled
+
+- **GIVEN** the integrations app with OpenTelemetry enabled
+- **WHEN** the readiness probe and pages are requested
+- **THEN** the server answers them successfully, and the HTTP instrumentation creates no server span for the readiness probe
+
+#### Scenario: Requests and queries are traced
+
+- **GIVEN** an incoming request to an application route
+- **WHEN** the spec reads the traces the mock received
+- **THEN** a server span named `{METHOD} {path}` with `service.name` `atu-ekartoteka` exists, and a database span is a child of a server span in the same trace
+
+#### Scenario: Log severity and trace correlation
+
+- **GIVEN** a failed login, a successful login, or a registration that sends the verification email
+- **WHEN** the spec reads the logs the mock received
+- **THEN** each record has the severity of its log line (`WARN` for the failed login, `INFO` otherwise), and its trace id matches the server span of the request that wrote it
+
+#### Scenario: Login metrics are exported
+
+- **GIVEN** credentials logins with a valid password, a wrong password, an unknown email and an invalid Turnstile token
+- **WHEN** the first metric export carrying them arrives
+- **THEN** `ekartoteka.auth.login` has a point for each combination of `result` and `reason`, with `provider` `credentials`
+
+#### Scenario: Registration, verification and password reset metrics are exported
+
+- **GIVEN** a registration, the verification link it emails, and a completed password reset
+- **WHEN** the metric export arrives
+- **THEN** `ekartoteka.auth.registration`, `ekartoteka.auth.email_verification` and `ekartoteka.auth.password_reset` each count the success
+
+#### Scenario: Email metrics are exported
+
+- **GIVEN** the verification, admin notification and password reset emails sent during the flows above
+- **WHEN** the metric export arrives
+- **THEN** `ekartoteka.email.sent` has a `success` point for the `verification`, `admin_notification` and `password_reset` types
+
+#### Scenario: Row counts are exported as metrics
+
+- **GIVEN** the integrations app
+- **WHEN** the metric export arrives
+- **THEN** `ekartoteka.db.size` has a data point for each tracked table, and the `user` count is at least one
 
 ### Requirement: Delivered Email Assertions
 

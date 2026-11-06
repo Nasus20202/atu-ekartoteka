@@ -36,6 +36,7 @@ export const MOCK_HEALTH_URL = `${LOCAL_ORIGIN}:${MOCK_HTTP_PORT}/health`;
 export const MOCK_ENDPOINT_PATHS = {
   turnstileVerify: '/turnstile/siteverify',
   google: '/google',
+  otlp: '/otlp',
 } as const;
 
 export { MOCK_HTTP_PORT, MOCK_SMTP_PORT };

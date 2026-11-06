@@ -80,8 +80,10 @@ Three app instances run from the same build:
   tests do not depend on them.
 - **Visual** (3001, database `e2e_visual`) accepts a fixed "now" so dates in
   screenshots do not change.
-- **Integrations** (3002) has SMTP, Turnstile and Google switched on and
-  pointed at the mock server.
+- **Integrations** (3002) has SMTP, Turnstile, Google and OpenTelemetry
+  switched on and pointed at the mock server. The metrics spec runs its flows,
+  then waits for the first export that carries them, which is sent once a
+  minute, so it takes about two minutes.
 
 Global setup creates both databases if missing, applies migrations, removes
 earlier test data and seeds fresh data, so every run starts from the same
@@ -89,8 +91,10 @@ state. The seed SQL is in `e2e/test-data/seed/*.sql`. Sample import files are
 in `e2e/test-data/import/`.
 
 `e2e/mocks` is a small server Playwright starts for the integrations project: it
-captures email (SMTP on port 1025) and fakes Google's OpenID endpoints and
-Turnstile verification (HTTP on port 4010). It logs JSON lines to stdout; set
+captures email (SMTP on port 1025), fakes Google's OpenID endpoints and
+Turnstile verification, and receives OpenTelemetry exports as OTLP/HTTP JSON at
+`/otlp/v1/{traces,metrics,logs}` (HTTP on port 4010). The specs read them back
+from `/otlp/captured/{signal}`. It logs JSON lines to stdout; set
 `LOG_LEVEL` (default `info`) to change how much. `pnpm mocks` runs it on its own.
 Its dependencies are listed in
 `e2e/mocks/package.json`; `docker/Dockerfile.mocks` exports only that package

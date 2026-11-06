@@ -6,6 +6,7 @@ import {
   MAIL_PATH,
   MOCK_HTTP_PORT,
   MOCK_SMTP_PORT,
+  OTLP_PATH,
   TURNSTILE_PATH,
 } from './constants';
 import { handleGoogle } from './google-routes';
@@ -19,6 +20,7 @@ import {
 } from './http';
 import { createMockLogger } from './logger';
 import { handleMail } from './mail-routes';
+import { handleOtlp } from './otlp-routes';
 import { startSmtpServer } from './smtp';
 import { handleTurnstile } from './turnstile-routes';
 
@@ -27,15 +29,17 @@ const log = createMockLogger('mock:http');
 const PREFIXED_ROUTES: [string, (ctx: RouteContext) => unknown][] = [
   [GOOGLE_PATH, handleGoogle],
   [TURNSTILE_PATH, handleTurnstile],
+  [OTLP_PATH, handleOtlp],
 ];
 
 type RequestLevel = 'debug' | 'info' | 'warn' | 'error';
 
-/** Health probes run every few seconds, so they stay at debug level. */
+/** Health probes and telemetry exports repeat every few seconds, so they stay at debug level. */
 function requestLevel(path: string, status: number): RequestLevel {
   if (status >= HTTP_SERVER_ERROR) return 'error';
   if (status >= HTTP_BAD_REQUEST) return 'warn';
-  return path === HEALTH_PATH ? 'debug' : 'info';
+  const repeated = path === HEALTH_PATH || path.startsWith(`${OTLP_PATH}/v1/`);
+  return repeated ? 'debug' : 'info';
 }
 
 function logRequest(req: IncomingMessage, res: ServerResponse): void {

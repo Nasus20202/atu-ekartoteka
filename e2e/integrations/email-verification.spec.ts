@@ -11,12 +11,11 @@ import {
   TURNSTILE_VALID_TOKEN,
   waitForMail,
 } from '../utils/mock-server';
-import { ADMIN_EMAIL } from '../utils/test-credentials';
+import { ADMIN_EMAIL, E2E_PASSWORD } from '../utils/test-credentials';
 
 const VERIFICATION_SUBJECT = 'Potwierdź swój adres email';
 const ADMIN_NOTICE_SUBJECT =
   'Nowa rejestracja użytkownika - wymaga zatwierdzenia';
-const PASSWORD = 'SecurePassword123!';
 
 test.describe('Registration emails', () => {
   test('the verification email link verifies the address', async ({
@@ -29,8 +28,8 @@ test.describe('Registration emails', () => {
     await page.goto('/register');
     await page.getByLabel('Email').fill(email);
     await page.getByLabel('Imię i nazwisko').fill('Mail Verify User');
-    await page.getByLabel('Hasło', { exact: true }).fill(PASSWORD);
-    await page.getByLabel('Potwierdź hasło').fill(PASSWORD);
+    await page.getByLabel('Hasło', { exact: true }).fill(E2E_PASSWORD);
+    await page.getByLabel('Potwierdź hasło').fill(E2E_PASSWORD);
     await page.getByRole('button', { name: /Zarejestruj się/i }).click();
     await expect(page).toHaveURL(/\/dashboard/);
 
@@ -60,8 +59,8 @@ test.describe('Registration emails', () => {
 
     await page.goto('/register');
     await page.getByLabel('Email').fill(email);
-    await page.getByLabel('Hasło', { exact: true }).fill(PASSWORD);
-    await page.getByLabel('Potwierdź hasło').fill(PASSWORD);
+    await page.getByLabel('Hasło', { exact: true }).fill(E2E_PASSWORD);
+    await page.getByLabel('Potwierdź hasło').fill(E2E_PASSWORD);
     await page.getByRole('button', { name: /Zarejestruj się/i }).click();
     await expect(page).toHaveURL(/\/dashboard/);
 

@@ -12,10 +12,10 @@ import {
   TURNSTILE_VALID_TOKEN,
   waitForMail,
 } from '../utils/mock-server';
+import { RESET_NEW_PASSWORD } from '../utils/test-credentials';
 
 const RESET_SUBJECT = 'Resetowanie hasła';
 const OLD_PASSWORD = 'OldPassword123!';
-const NEW_PASSWORD = 'BrandNewPassword456!';
 
 test('a user resets the password with the emailed link', async ({
   page,
@@ -44,13 +44,13 @@ test('a user resets the password with the emailed link', async ({
   });
 
   await page.goto(extractLink(mail, '/reset-password'));
-  await page.getByLabel('Nowe hasło').fill(NEW_PASSWORD);
-  await page.getByLabel('Potwierdź hasło').fill(NEW_PASSWORD);
+  await page.getByLabel('Nowe hasło').fill(RESET_NEW_PASSWORD);
+  await page.getByLabel('Potwierdź hasło').fill(RESET_NEW_PASSWORD);
   await page.getByRole('button', { name: /Zresetuj hasło/i }).click();
   await expect(
     page.getByText(/Hasło.*zmienione|sukces|zaloguj/i).first()
   ).toBeVisible();
 
-  await loginWithTurnstile(page, email, NEW_PASSWORD);
+  await loginWithTurnstile(page, email, RESET_NEW_PASSWORD);
   await expect(page).toHaveURL(/\/dashboard/);
 });
