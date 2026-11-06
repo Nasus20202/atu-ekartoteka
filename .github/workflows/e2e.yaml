@@ -16,13 +16,20 @@ jobs:
               --project=chromium-admin --project=chromium-integrations
               --project=visual-desktop --project=visual-mobile
           - browser: firefox
-            projects: --project=firefox --project=firefox-admin
+            projects: >-
+              --project=firefox --project=firefox-admin
+              --project=firefox-mobile
+          - browser: webkit
+            projects: >-
+              --project=webkit --project=webkit-admin
+              --project=webkit-mobile
     env:
       # Functional suite database; the visual suite uses e2e_visual on the same server
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/e2e
       DATABASE_REPLICA_URLS: postgresql://postgres:postgres@localhost:5432/e2e
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # WebKit's system dependencies alone can take 20+ minutes on a slow apt mirror
+    timeout-minutes: 45
 
     steps:
       - name: Checkout code
