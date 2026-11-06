@@ -1,5 +1,5 @@
-import { Section, Text } from '@react-email/components';
 import type { CSSProperties, ReactNode } from 'react';
+import { Section, Text } from 'react-email';
 
 import { emailColors, emailStyles } from '@/lib/email/email-theme';
 

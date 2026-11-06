@@ -1,5 +1,5 @@
-import { render, toPlainText } from '@react-email/components';
 import type { ReactElement } from 'react';
+import { render, toPlainText } from 'react-email';
 
 import {
   ACCOUNT_ACTIVATION_SUBJECT,

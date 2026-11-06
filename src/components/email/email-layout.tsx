@@ -1,12 +1,5 @@
-import {
-  Body,
-  Head,
-  Heading,
-  Html,
-  Section,
-  Text,
-} from '@react-email/components';
 import type { ReactNode } from 'react';
+import { Body, Head, Heading, Html, Section, Text } from 'react-email';
 
 import { emailStyles } from '@/lib/email/email-theme';
 
