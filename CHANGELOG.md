@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.5] - 2026-11-06
+
+- test(e2e): cover OpenTelemetry metrics, logs and traces
+- chore(deps): update docker/login-action digest to 8aa5831 (#885)
+- chore(perf): give the k6 scripts their own package
+- chore(deps): remove unused dependencies
+- build(docker): ship only mock runtime dependencies in mocks image
+- chore(deps): update nextjs monorepo to v16.4.5 (#882)
+- chore(deps): update pnpm to v12.17.0 (#881)
+- ci(e2e): run four Playwright workers
+- build(deps): replace @react-email/components with react-email
+- ci(e2e): speed up E2E jobs and render WebKit at scale factor 1
+- test(e2e): run functional suites on WebKit and phone-width Firefox (#877)
+- chore(deps): update dependency lucide-react to v1.67.0 (#879)
+- chore(deps): update postgres:18.6-alpine docker digest to 123b179 (#878)
+- chore(deps): update node.js to 8996bb5 (#876)
+- chore(deps): update ghcr.io/nasus20202/atu-ekartoteka:latest docker digest to dc7df37 (#875)
+
 ## [0.9.4] - 2026-11-05
 
 - build(deps): move @react-email/components to devDependencies
