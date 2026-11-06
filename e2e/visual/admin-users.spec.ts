@@ -7,8 +7,10 @@
 import type { Page } from '@playwright/test';
 
 import { expect, test } from '../fixtures';
+import { userCard } from '../utils/admin-users';
 import { expectNoHorizontalOverflow } from '../utils/expect-no-horizontal-overflow';
 import {
+  VISUAL_MULTI_EMAIL,
   VISUAL_MULTI_NAME,
   VISUAL_PENDING_NAME,
 } from '../utils/test-credentials';
@@ -16,6 +18,18 @@ import {
 async function showAllUsers(page: Page) {
   await page.getByRole('button', { name: 'Wszyscy', exact: true }).click();
   await expect(page.getByText(VISUAL_MULTI_NAME)).toBeVisible();
+}
+
+/** Opens a card action: a button on desktop, a menu item behind "Akcje" on mobile. */
+async function openCardAction(page: Page, email: string, action: string) {
+  const card = userCard(page, email);
+  const inlineButton = card.getByRole('button', { name: action });
+  if (await inlineButton.isVisible()) {
+    await inlineButton.click();
+    return;
+  }
+  await card.getByRole('button', { name: 'Akcje' }).click();
+  await page.getByRole('menuitem', { name: action }).click();
 }
 
 test.describe('Visual: admin users', () => {
@@ -76,5 +90,34 @@ test.describe('Visual: admin users', () => {
     await expect(dialog).toBeVisible();
 
     await expect(dialog).toHaveScreenshot('create-user-dialog.png');
+  });
+
+  test('assign apartment dialog', async ({ visualAdminPage }) => {
+    await visualAdminPage.goto('/admin/users');
+    await showAllUsers(visualAdminPage);
+    await openCardAction(visualAdminPage, VISUAL_MULTI_EMAIL, 'Mieszkania');
+    const dialog = visualAdminPage.getByRole('dialog');
+    await expect(
+      dialog.getByText('Przypisz mieszkanie', { exact: true })
+    ).toBeVisible();
+    await expect(dialog.getByRole('checkbox').first()).toBeVisible();
+
+    await expect(dialog).toHaveScreenshot('assign-apartment-dialog.png');
+  });
+
+  test('reject confirmation dialog', async ({ visualAdminPage }) => {
+    await visualAdminPage.goto('/admin/users');
+    await showAllUsers(visualAdminPage);
+    await openCardAction(visualAdminPage, VISUAL_MULTI_EMAIL, 'Zmień status');
+    await visualAdminPage
+      .getByRole('dialog')
+      .getByRole('button', { name: 'Odrzucony' })
+      .click();
+    const confirm = visualAdminPage.getByRole('dialog', {
+      name: 'Odrzuć użytkownika',
+    });
+    await expect(confirm).toBeVisible();
+
+    await expect(confirm).toHaveScreenshot('reject-confirm-dialog.png');
   });
 });

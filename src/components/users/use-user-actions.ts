@@ -91,8 +91,8 @@ export function useUserActions(refresh: () => Promise<void>) {
       const confirmed = await confirm({
         title: 'Odrzuć użytkownika',
         description:
-          'Odrzucenie użytkownika usunie przypisanie mieszkań. Kontynuować?',
-        confirmText: 'Odrzuć',
+          'Odrzucony użytkownik nie zobaczy przypisanych mieszkań, dopóki konto nie zostanie ponownie zatwierdzone. Przypisania zostaną zachowane.',
+        confirmText: 'Odrzuć użytkownika',
         cancelText: 'Anuluj',
         variant: 'destructive',
       });

@@ -24,6 +24,18 @@ test.describe('Visual: admin apartments', () => {
     });
   });
 
+  test('HOA notices dialog', async ({ visualAdminPage }) => {
+    await visualAdminPage.goto('/admin/apartments');
+    await visualAdminPage
+      .getByRole('button', { name: 'Nagłówki i stopki' })
+      .click();
+    const dialog = visualAdminPage.getByRole('dialog');
+    await expect(dialog.getByText(VISUAL_SECOND_HOA_NAME)).toBeVisible();
+    await expect(dialog.getByText('Ładowanie')).toHaveCount(0);
+
+    await expect(dialog).toHaveScreenshot('hoa-notices-dialog.png');
+  });
+
   test('HOA apartments and apartment details', async ({ visualAdminPage }) => {
     await visualAdminPage.goto('/admin/apartments');
     const hoaHref = await visualAdminPage
