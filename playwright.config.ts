@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices, type Project } from '@playwright/test';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 
@@ -124,6 +124,21 @@ const functionalIgnore = [
   INTEGRATIONS_TEST_MATCH,
 ];
 
+// Admin tests share seeded state, so each browser runs them one at a time
+const adminProject = (name: string, use: Project['use']): Project => ({
+  name,
+  use,
+  testMatch: ADMIN_TEST_MATCH,
+  fullyParallel: false,
+});
+
+// Phone layouts: the functional tests, minus the cron tests
+const phoneProject = (name: string, use: Project['use']): Project => ({
+  name,
+  use,
+  testIgnore: [...functionalIgnore, CRON_TEST_MATCH],
+});
+
 /**
  * Playwright configuration for E2E tests.
  * @see https://playwright.dev/docs/test-configuration
@@ -151,28 +166,27 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
       testIgnore: functionalIgnore,
     },
-    {
-      name: 'chromium-mobile',
-      use: { ...devices['Pixel 7'] },
-      testIgnore: [...functionalIgnore, CRON_TEST_MATCH],
-    },
-    {
-      name: 'chromium-admin',
-      use: { ...devices['Desktop Chrome'] },
-      testMatch: ADMIN_TEST_MATCH,
-      fullyParallel: false,
-    },
+    phoneProject('chromium-mobile', devices['Pixel 7']),
+    adminProject('chromium-admin', devices['Desktop Chrome']),
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
       testIgnore: functionalIgnore,
     },
+    adminProject('firefox-admin', devices['Desktop Firefox']),
     {
-      name: 'firefox-admin',
-      use: { ...devices['Desktop Firefox'] },
-      testMatch: ADMIN_TEST_MATCH,
-      fullyParallel: false,
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+      testIgnore: functionalIgnore,
     },
+    adminProject('webkit-admin', devices['Desktop Safari']),
+    phoneProject('webkit-mobile', devices['iPhone 13']),
+    // Playwright has no Firefox phone profile: this is the phone viewport without touch
+    phoneProject('firefox-mobile', {
+      ...devices['Desktop Firefox'],
+      viewport: devices['Pixel 7'].viewport,
+      isMobile: true,
+    }),
     {
       name: 'chromium-integrations',
       use: { ...devices['Desktop Chrome'], baseURL: INTEGRATIONS_BASE_URL },

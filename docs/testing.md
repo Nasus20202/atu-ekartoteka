@@ -36,7 +36,8 @@ the tests may create databases, for example
 ```bash
 pnpm test:e2e              # Chromium: functional, admin, mobile, integrations, visual
 pnpm test:e2e:visual       # visual projects only
-pnpm test:e2e:firefox      # Firefox: functional and admin tests
+pnpm test:e2e:firefox      # Firefox: functional, admin and phone-width tests
+pnpm test:e2e:webkit       # WebKit (Safari engine): functional, admin and phone tests
 pnpm test:e2e:ui           # Playwright UI mode
 ```
 
@@ -69,6 +70,9 @@ Each Playwright project picks tests, a browser and an app instance:
 | `visual-desktop`           | Chromium        | 3001     | Screenshots and PDFs against committed baselines       |
 | `visual-mobile`            | Chromium, phone | 3001     | Screenshots on a phone                                 |
 | `firefox`, `firefox-admin` | Firefox         | 3000     | Functional and admin tests again                       |
+| `webkit`, `webkit-admin`   | WebKit (Safari) | 3000     | Functional and admin tests in the Safari engine        |
+| `webkit-mobile`            | WebKit, phone   | 3000     | Layout on an iPhone                                    |
+| `firefox-mobile`           | Firefox, phone  | 3000     | Layout at phone width (no touch emulation)             |
 
 Three app instances run from the same build:
 

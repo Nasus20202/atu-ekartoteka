@@ -180,19 +180,25 @@ The system SHALL have end-to-end tests covering all primary user flows.
 
 ### Requirement: E2E Browser Target
 
-The system SHALL run the functional E2E tests on Chromium and Firefox, each as its own desktop project and as a separate CI job.
+The system SHALL run the functional E2E tests on Chromium, Firefox and WebKit, each as its own desktop project and as a separate CI job.
 
 #### Scenario: Browser projects
 
 - **GIVEN** the Playwright configuration
 - **WHEN** tests are executed
-- **THEN** the `chromium` and `firefox` projects run the same functional tests on their `Desktop Chrome` and `Desktop Firefox` profiles, with the admin tests in matching `*-admin` projects
+- **THEN** the `chromium`, `firefox` and `webkit` projects run the same functional tests on their `Desktop Chrome`, `Desktop Firefox` and `Desktop Safari` profiles, with the admin tests in matching `*-admin` projects
+
+#### Scenario: Phone projects
+
+- **GIVEN** the Playwright configuration
+- **WHEN** tests are executed
+- **THEN** the `webkit-mobile` project runs the functional tests, except the cron tests, on the `iPhone 13` profile, and the `firefox-mobile` project runs them on Firefox at a phone viewport without touch emulation
 
 #### Scenario: Default local run is Chromium only
 
 - **GIVEN** a developer machine
 - **WHEN** `pnpm test:e2e` is run
-- **THEN** only the Chromium-based projects (`chromium*` and `visual-*`) run, and Firefox runs through `pnpm test:e2e:firefox` or the CI matrix
+- **THEN** only the Chromium-based projects (`chromium*` and `visual-*`) run, and Firefox and WebKit run through `pnpm test:e2e:firefox`, `pnpm test:e2e:webkit` or the CI matrix
 
 #### Scenario: Browser matrix in CI
 

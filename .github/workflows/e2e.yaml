@@ -16,7 +16,13 @@ jobs:
               --project=chromium-admin --project=chromium-integrations
               --project=visual-desktop --project=visual-mobile
           - browser: firefox
-            projects: --project=firefox --project=firefox-admin
+            projects: >-
+              --project=firefox --project=firefox-admin
+              --project=firefox-mobile
+          - browser: webkit
+            projects: >-
+              --project=webkit --project=webkit-admin
+              --project=webkit-mobile
     env:
       # Functional suite database; the visual suite uses e2e_visual on the same server
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/e2e
