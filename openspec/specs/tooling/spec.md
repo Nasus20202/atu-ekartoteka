@@ -234,7 +234,7 @@ End-to-end tests SHALL be run with Playwright against the Chromium browser.
 
 - **GIVEN** the CI environment variable `CI=true`
 - **WHEN** `pnpm test:e2e` is run
-- **THEN** Playwright starts a fresh `pnpm dev` server, uses 2 workers, retries each failing test up to 2 times, and outputs GitHub Actions annotations alongside the HTML report
+- **THEN** Playwright starts a fresh `pnpm dev` server, uses 4 workers, retries each failing test up to 2 times, and outputs GitHub Actions annotations alongside the HTML report
 
 #### Scenario: Trace and screenshot on failure
 
