@@ -68,7 +68,9 @@ test('confirmed rejection keeps the apartments assigned', async ({
   const confirm = await startRejection(adminPage, email);
   await expect(confirm).toBeVisible();
 
-  await confirm.getByRole('button', { name: 'Odrzuć', exact: true }).click();
+  await confirm
+    .getByRole('button', { name: 'Odrzuć użytkownika', exact: true })
+    .click();
 
   const card = userCard(adminPage, email);
   await expect(card.getByText(/odrzucony/i)).toBeVisible({

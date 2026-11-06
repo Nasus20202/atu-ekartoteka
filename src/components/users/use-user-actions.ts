@@ -92,7 +92,7 @@ export function useUserActions(refresh: () => Promise<void>) {
         title: 'Odrzuć użytkownika',
         description:
           'Odrzucony użytkownik nie zobaczy przypisanych mieszkań, dopóki konto nie zostanie ponownie zatwierdzone. Przypisania zostaną zachowane.',
-        confirmText: 'Odrzuć',
+        confirmText: 'Odrzuć użytkownika',
         cancelText: 'Anuluj',
         variant: 'destructive',
       });
