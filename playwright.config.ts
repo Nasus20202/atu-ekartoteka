@@ -23,6 +23,7 @@ import {
   VISUAL_MOBILE_ONLY_MATCH,
   VISUAL_TEST_MATCH,
 } from './e2e/config/patterns';
+import { webkitUse } from './e2e/config/webkit';
 import { getVisualDatabaseUrl } from './e2e/utils/database-urls';
 
 // Load environment variables from .env file
@@ -176,11 +177,11 @@ export default defineConfig({
     adminProject('firefox-admin', devices['Desktop Firefox']),
     {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      use: webkitUse(devices['Desktop Safari']),
       testIgnore: functionalIgnore,
     },
-    adminProject('webkit-admin', devices['Desktop Safari']),
-    phoneProject('webkit-mobile', devices['iPhone 13']),
+    adminProject('webkit-admin', webkitUse(devices['Desktop Safari'])),
+    phoneProject('webkit-mobile', webkitUse(devices['iPhone 13'])),
     // Playwright has no Firefox phone profile: this is the phone viewport without touch
     phoneProject('firefox-mobile', {
       ...devices['Desktop Firefox'],
