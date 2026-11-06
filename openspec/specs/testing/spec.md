@@ -205,6 +205,14 @@ The system SHALL run the functional E2E tests on Chromium, Firefox and WebKit, e
 - **GIVEN** the E2E workflow runs in CI
 - **WHEN** it starts
 - **THEN** each browser runs in its own job with its own database stack, so the browsers run in parallel
+- **AND** the Chromium job starts the functional, visual and integrations apps with the mocks, while the Firefox and WebKit jobs start only the database and the functional app
+- **AND** the build workflow builds the mocks image in parallel with the app image and uploads it, so the Chromium job loads it instead of building it
+
+#### Scenario: WebKit renders at scale factor 1
+
+- **GIVEN** the `webkit`, `webkit-admin` and `webkit-mobile` projects
+- **WHEN** they run
+- **THEN** they use a device scale factor of 1 instead of the 2x and 3x of the Safari profiles, so software rendering on the CI runner can keep up
 
 #### Scenario: Visual tests stay on Chromium
 

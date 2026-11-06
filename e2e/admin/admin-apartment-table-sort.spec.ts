@@ -91,12 +91,9 @@ test.describe('Admin apartments table sorting', () => {
     await deleteScrollTestHoa(hoaId);
   });
 
-  test('sorts owner, share and status on the server across every page', async ({
-    adminPage,
-  }) => {
+  // Owner: Polish numeric collation, so 45..2 before 1 even across pages
+  test('sorts owner on the server across every page', async ({ adminPage }) => {
     await openApartmentTable(adminPage, hoaId);
-
-    // Owner: Polish numeric collation, so 45..2 before 1 even across pages
     await sortBy(
       adminPage,
       'Właściciel',
@@ -109,8 +106,10 @@ test.describe('Admin apartments table sorting', () => {
     await expect(ownerColumn(adminPage)).toHaveText(
       descendingNumbers().map((n) => `Scroll Owner ${n}`)
     );
+  });
 
-    // Share: ordered by the database share ratio
+  // Share: ordered by the database share ratio
+  test('sorts share on the server across every page', async ({ adminPage }) => {
     await openApartmentTable(adminPage, hoaId);
     await sortBy(
       adminPage,
@@ -124,8 +123,12 @@ test.describe('Admin apartments table sorting', () => {
     await expect(shareColumn(adminPage)).toHaveText(
       descendingNumbers().map((n) => formatShare(n))
     );
+  });
 
-    // Status: descending puts the inactive apartments (every fifth) first
+  // Status: descending puts the inactive apartments (every fifth) first
+  test('sorts status on the server across every page', async ({
+    adminPage,
+  }) => {
     await openApartmentTable(adminPage, hoaId);
     await sortBy(
       adminPage,

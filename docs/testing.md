@@ -98,9 +98,16 @@ browsers.
 
 ### In CI
 
-The `E2E` workflow starts `docker-compose.e2e.yaml` (the production image run
-three times, plus the mocks and a database) and runs one job per browser in
-parallel. Each job uploads its report, and on failure its screenshots.
+The `E2E` workflow runs one job per browser in parallel. Each job uploads its
+report, and on failure its screenshots. `docker-compose.e2e.yaml` is the
+production image run three times, plus the mocks and a database. The Chromium
+job starts all of it; the Firefox and WebKit jobs run only functional projects,
+so they start just the database and the main app (`services` in the matrix).
+The `Build Docker Image` workflow builds the app and the mocks image in parallel
+and uploads both, so the test jobs only load them.
+The WebKit projects render at a device scale factor of 1: the Safari profiles
+default to 2x and 3x, which software rendering on the runner cannot keep up
+with (`e2e/config/webkit.ts`).
 `docker compose -f docker-compose.e2e.yaml up --build --wait` runs the same stack
 locally.
 

@@ -11,15 +11,20 @@ jobs:
       matrix:
         include:
           - browser: chromium
+            # The visual and integrations suites run on Chromium only
+            services: >-
+              db ekartoteka ekartoteka-visual ekartoteka-integrations mocks
             projects: >-
               --project=chromium --project=chromium-mobile
               --project=chromium-admin --project=chromium-integrations
               --project=visual-desktop --project=visual-mobile
           - browser: firefox
+            services: db ekartoteka
             projects: >-
               --project=firefox --project=firefox-admin
               --project=firefox-mobile
           - browser: webkit
+            services: db ekartoteka
             projects: >-
               --project=webkit --project=webkit-admin
               --project=webkit-mobile
@@ -47,11 +52,19 @@ jobs:
             "oci-archive:${{ runner.temp }}/ekartoteka-image.tar" \
             docker-daemon:ekartoteka:e2e
 
-      - name: Build mock services image
-        run: docker compose -f docker-compose.e2e.yaml build mocks
+      - name: Download mock services image
+        if: contains(matrix.services, 'mocks')
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: ekartoteka-mocks-image
+          path: ${{ runner.temp }}
+
+      - name: Load mock services image
+        if: contains(matrix.services, 'mocks')
+        run: docker load --input "${{ runner.temp }}/ekartoteka-mocks-image.tar"
 
       - name: Start application and database
-        run: docker compose -f docker-compose.e2e.yaml up --no-build --wait --wait-timeout 180
+        run: docker compose -f docker-compose.e2e.yaml up --no-build --wait --wait-timeout 180 ${{ matrix.services }}
 
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
