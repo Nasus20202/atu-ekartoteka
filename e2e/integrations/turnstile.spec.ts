@@ -8,9 +8,11 @@ import {
   TURNSTILE_INVALID_TOKEN,
   TURNSTILE_VALID_TOKEN,
 } from '../utils/mock-server';
-import { USER_EMAIL, USER_PASSWORD } from '../utils/test-credentials';
-
-const PASSWORD = 'SecurePassword123!';
+import {
+  E2E_PASSWORD,
+  USER_EMAIL,
+  USER_PASSWORD,
+} from '../utils/test-credentials';
 
 async function submitLogin(page: import('@playwright/test').Page) {
   await page.goto('/login');
@@ -56,8 +58,8 @@ test.describe('Turnstile', () => {
 
     await page.goto('/register');
     await page.getByLabel('Email').fill(`blocked-${Date.now()}@e2e-test.com`);
-    await page.getByLabel('Hasło', { exact: true }).fill(PASSWORD);
-    await page.getByLabel('Potwierdź hasło').fill(PASSWORD);
+    await page.getByLabel('Hasło', { exact: true }).fill(E2E_PASSWORD);
+    await page.getByLabel('Potwierdź hasło').fill(E2E_PASSWORD);
     await page.getByRole('button', { name: /Zarejestruj się/i }).click();
 
     await expect(

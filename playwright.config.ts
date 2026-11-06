@@ -97,7 +97,7 @@ const visualEnv = {
   GOOGLE_CLIENT_SECRET: 'visual-google-client-secret',
 };
 
-// Turnstile, SMTP and Google sign-in are on here, pointed at the local mocks
+// Turnstile, SMTP, Google sign-in and OpenTelemetry are on here, pointed at the local mocks
 const integrationEnv = {
   APP_URL: INTEGRATIONS_BASE_URL,
   EMAIL_FROM: 'noreply@ekartoteka.test',
@@ -110,6 +110,8 @@ const integrationEnv = {
   GOOGLE_CLIENT_ID: 'mock-google-client-id',
   GOOGLE_CLIENT_SECRET: 'mock-google-client-secret',
   GOOGLE_ISSUER_URL: `${MOCK_SERVER_URL}${MOCK_ENDPOINT_PATHS.google}`,
+  // Traces, metrics and logs are exported to the mock, so every integration spec runs with OpenTelemetry on
+  OTEL_EXPORTER_ENDPOINT: `${MOCK_SERVER_URL}${MOCK_ENDPOINT_PATHS.otlp}`,
 };
 
 const mockServer = {

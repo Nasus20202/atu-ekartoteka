@@ -10,6 +10,8 @@ import {
   USER_PASSWORD,
 } from '../utils/test-credentials';
 
+const NEW_PASSWORD = 'NewPassword123!';
+
 test.describe.serial('Password Reset', () => {
   test('user can access forgot password page', async ({ page }) => {
     await page.goto('/login');
@@ -75,8 +77,8 @@ test.describe.serial('Password Reset', () => {
     await page.goto('/reset-password?token=invalid-token-12345');
 
     // Fill new password
-    await page.getByLabel('Nowe hasło').fill('NewPassword123!');
-    await page.getByLabel('Potwierdź hasło').fill('NewPassword123!');
+    await page.getByLabel('Nowe hasło').fill(NEW_PASSWORD);
+    await page.getByLabel('Potwierdź hasło').fill(NEW_PASSWORD);
 
     // Submit
     await page.getByRole('button', { name: /Zresetuj hasło/i }).click();

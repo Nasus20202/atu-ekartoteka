@@ -16,10 +16,13 @@ import {
   TURNSTILE_VALID_TOKEN,
   waitForMail,
 } from '../utils/mock-server';
-import { ADMIN_EMAIL, ADMIN_PASSWORD } from '../utils/test-credentials';
+import {
+  ADMIN_EMAIL,
+  ADMIN_PASSWORD,
+  E2E_PASSWORD,
+} from '../utils/test-credentials';
 
 const APPROVED_SUBJECT = 'Twoje konto zostało zatwierdzone';
-const PASSWORD = 'SecurePassword123!';
 
 test('the user gets an email when an admin approves the account', async ({
   browser,
@@ -33,8 +36,8 @@ test('the user gets an email when an admin approves the account', async ({
   await page.goto('/register');
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Imię i nazwisko').fill('Approved Mail User');
-  await page.getByLabel('Hasło', { exact: true }).fill(PASSWORD);
-  await page.getByLabel('Potwierdź hasło').fill(PASSWORD);
+  await page.getByLabel('Hasło', { exact: true }).fill(E2E_PASSWORD);
+  await page.getByLabel('Potwierdź hasło').fill(E2E_PASSWORD);
   await page.getByRole('button', { name: /Zarejestruj się/i }).click();
   await expect(page).toHaveURL(/\/dashboard/);
 

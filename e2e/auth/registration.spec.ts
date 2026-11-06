@@ -3,12 +3,12 @@
  */
 
 import { expect, test } from '../fixtures';
-import { USER_EMAIL } from '../utils/test-credentials';
+import { E2E_PASSWORD, USER_EMAIL } from '../utils/test-credentials';
 
 test.describe('Registration', () => {
   test('new user can create an account', async ({ page }) => {
     const uniqueEmail = `newuser-${Date.now()}@e2e-test.com`;
-    const password = 'SecurePassword123!';
+    const password = E2E_PASSWORD;
     const name = 'New Test User';
 
     await page.goto('/register');
@@ -26,7 +26,7 @@ test.describe('Registration', () => {
   test('an existing address in a different casing is rejected as taken', async ({
     page,
   }) => {
-    const password = 'SecurePassword123!';
+    const password = E2E_PASSWORD;
 
     await page.goto('/register');
     await page.getByLabel('Email').fill(USER_EMAIL.toUpperCase());

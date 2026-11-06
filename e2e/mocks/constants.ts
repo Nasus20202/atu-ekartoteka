@@ -12,6 +12,9 @@ export const GOOGLE_CLIENT_ID = 'mock-google-client-id';
 export const GOOGLE_PATH = '/google';
 export const TURNSTILE_PATH = '/turnstile';
 export const MAIL_PATH = '/mail';
+export const OTLP_PATH = '/otlp';
+export const OTLP_SIGNALS = ['traces', 'metrics', 'logs'] as const;
+export type OtlpSignal = (typeof OTLP_SIGNALS)[number];
 export const HEALTH_PATH = '/health';
 
 export const ID_TOKEN_TTL = 3600;

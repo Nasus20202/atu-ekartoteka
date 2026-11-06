@@ -115,7 +115,7 @@ Authentication events SHALL be counted and exposed as OTLP metrics under the `ek
 - **THEN** the `ekartoteka.auth.login` counter is incremented with attributes:
   - `provider`: `credentials` | `google`
   - `result`: `success` | `failure`
-  - `reason` (only on failure): one of `invalid_credentials`, `user_not_found`, `no_password`, `invalid_turnstile`, `missing_turnstile`, `google_error`
+  - `reason` (only on failure): one of `invalid_credentials`, `user_not_found`, `no_password`, `invalid_turnstile`, `missing_turnstile`, `google_email_unverified`, `google_error`
 
 #### Scenario: Registration counter
 
