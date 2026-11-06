@@ -91,7 +91,11 @@ in `e2e/test-data/import/`.
 `e2e/mocks` is a small server Playwright starts for the integrations project: it
 captures email (SMTP on port 1025) and fakes Google's OpenID endpoints and
 Turnstile verification (HTTP on port 4010). It logs JSON lines to stdout; set
-`LOG_LEVEL` (default `info`) to change how much.
+`LOG_LEVEL` (default `info`) to change how much. `pnpm mocks` runs it on its own.
+Its dependencies are listed in
+`e2e/mocks/package.json`; `docker/Dockerfile.mocks` exports only that package
+with `pnpm deploy --prod`, so the image does not contain the app's dev
+dependencies.
 
 Visual comparisons run in Chromium only, because pixel output differs between
 browsers.

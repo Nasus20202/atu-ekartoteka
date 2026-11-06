@@ -403,6 +403,18 @@ The repository SHALL contain a local mock server for E2E that Playwright and Doc
 - **WHEN** Playwright starts its web servers
 - **THEN** the mock server is started first and reused if already running; in Docker Compose it runs as its own service
 
+#### Scenario: Mock server runs standalone
+
+- **GIVEN** a developer wants the mocks without Playwright or Docker
+- **WHEN** they run `pnpm mocks`
+- **THEN** the mock server starts with the same entry point as the mocks image, on ports 4010 (HTTP) and 1025 (SMTP)
+
+#### Scenario: Mocks image ships only mock runtime dependencies
+
+- **GIVEN** the mocks image is built from `docker/Dockerfile.mocks`
+- **WHEN** its dependencies are installed
+- **THEN** only the production dependencies of the `e2e/mocks` workspace package are copied into the image, not the application's development dependencies
+
 #### Scenario: Mock server logging
 
 - **GIVEN** the mock server is running
