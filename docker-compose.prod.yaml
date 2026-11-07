@@ -48,7 +48,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-atu_user}:${POSTGRES_PASSWORD:-atu_password}@db:5432/${POSTGRES_DB:-atu_ekartoteka}?schema=public
       NODE_ENV: production
-    command: ['pnpm', 'db:deploy']
+    command: ['./node_modules/.bin/prisma', 'migrate', 'deploy']
     networks:
       - atu-network
     restart: 'no'

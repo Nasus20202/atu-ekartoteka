@@ -45,7 +45,7 @@ becomes one. Do this right after deploying, before anyone else can.
 | Service                 | What it does                                                                         |
 | ----------------------- | ------------------------------------------------------------------------------------ |
 | `db`                    | PostgreSQL 18 with a named volume (`postgres_data`).                                 |
-| `ekartoteka-migrations` | Runs `pnpm db:deploy` once and exits. The app starts only after it succeeds.         |
+| `ekartoteka-migrations` | Runs `prisma migrate deploy` once and exits. The app starts only after it succeeds.  |
 | `ekartoteka`            | The app. Healthy when `/api/health/readiness` answers.                               |
 | `otel-lgtm`             | Optional Grafana stack. Start it with `--profile otel`, see [Telemetry](#telemetry). |
 
