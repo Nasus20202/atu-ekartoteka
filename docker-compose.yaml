@@ -38,8 +38,10 @@ services:
     container_name: atu-ekartoteka
     restart: unless-stopped
     depends_on:
-      - db
-      - ekartoteka-migrations
+      db:
+        condition: service_healthy
+      ekartoteka-migrations:
+        condition: service_completed_successfully
     environment:
       # Database
       DATABASE_URL: postgresql://atu_user:atu_password@db:5432/atu_ekartoteka?schema=public
@@ -107,7 +109,7 @@ services:
     environment:
       DATABASE_URL: postgresql://atu_user:atu_password@db:5432/atu_ekartoteka?schema=public
       NODE_ENV: production
-    command: ['pnpm', 'db:deploy']
+    command: ['./node_modules/.bin/prisma', 'migrate', 'deploy']
     restart: 'no'
 
 volumes:
