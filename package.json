@@ -52,7 +52,7 @@
     "@opentelemetry/sdk-metrics": "3.0.0",
     "@opentelemetry/sdk-node": "0.300.0",
     "@opentelemetry/semantic-conventions": "1.44.0",
-    "@playwright/test": "1.64.1",
+    "@playwright/test": "1.65.0",
     "@prisma/adapter-pg": "7.10.1",
     "@prisma/client": "7.10.1",
     "@prisma/extension-read-replicas": "0.5.0",
