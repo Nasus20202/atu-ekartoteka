@@ -153,7 +153,9 @@ describe('ApartmentCard', () => {
     );
 
     const card = container.firstChild as HTMLElement;
-    expect(card).toHaveStyle({ animationDelay: '200ms' });
+    // toHaveStyle doesn't read inline styles reliably in jsdom 31;
+    // assert on the style property directly instead.
+    expect(card.style.animationDelay).toBe('200ms');
   });
 
   it.each([
