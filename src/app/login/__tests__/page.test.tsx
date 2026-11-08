@@ -94,6 +94,95 @@ function setupMocks() {
   vi.mocked(useSearchParams).mockReturnValue({ get: mockGet } as never);
 }
 
+describe('LoginPage — form fields and actions', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGet.mockReturnValue(null);
+    setupMocks();
+    mockFetch({ googleEnabled: true });
+  });
+
+  it('shows instructional placeholders', () => {
+    render(<LoginPage />);
+
+    expect(screen.getByLabelText('Email')).toHaveAttribute(
+      'placeholder',
+      'Wprowadź adres e-mail'
+    );
+    expect(screen.getByLabelText('Hasło')).toHaveAttribute(
+      'placeholder',
+      'Wprowadź hasło'
+    );
+  });
+
+  it('reveals and hides the password', async () => {
+    const user = userEvent.setup();
+    render(<LoginPage />);
+
+    const password = screen.getByLabelText('Hasło');
+    expect(password).toHaveAttribute('type', 'password');
+
+    await user.click(screen.getByRole('button', { name: 'Pokaż hasło' }));
+    expect(password).toHaveAttribute('type', 'text');
+
+    await user.click(screen.getByRole('button', { name: 'Ukryj hasło' }));
+    expect(password).toHaveAttribute('type', 'password');
+  });
+
+  it('orders submit, Google divider and registration link', async () => {
+    render(<LoginPage />);
+
+    const submit = screen.getByRole('button', { name: 'Zaloguj się' });
+    const google = await screen.findByRole('button', {
+      name: /Zaloguj się przez Google/,
+    });
+    const divider = screen.getByText('Lub');
+    const register = screen.getByRole('link', { name: 'Zarejestruj się' });
+
+    expect(isAfter(divider, submit)).toBe(true);
+    expect(isAfter(google, divider)).toBe(true);
+    expect(isAfter(register, google)).toBe(true);
+  });
+
+  it('reserves the OAuth slot until the config resolves', () => {
+    vi.mocked(fetch).mockImplementation((url) => {
+      if (String(url).includes('/api/config/google')) {
+        return new Promise(() => {});
+      }
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ enabled: false, siteKey: null }),
+      } as Response);
+    });
+
+    render(<LoginPage />);
+
+    expect(screen.getByTestId('google-slot-skeleton')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /Zaloguj się przez Google/ })
+    ).not.toBeInTheDocument();
+  });
+
+  it('shows a spinner and a loading label while submitting', async () => {
+    vi.mocked(signIn).mockImplementation(() => new Promise(() => {}));
+
+    render(<LoginPage />);
+
+    await userEvent.type(screen.getByLabelText('Email'), 'user@example.com');
+    await userEvent.type(screen.getByLabelText('Hasło'), 'password123');
+    await userEvent.click(screen.getByRole('button', { name: 'Zaloguj się' }));
+
+    const button = screen.getByRole('button', { name: /Logowanie/ });
+    expect(button).toBeDisabled();
+  });
+});
+
+function isAfter(node: Node, reference: Node) {
+  return Boolean(
+    reference.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING
+  );
+}
+
 describe('LoginPage — Google sign-in button visibility', () => {
   beforeEach(() => {
     vi.clearAllMocks();

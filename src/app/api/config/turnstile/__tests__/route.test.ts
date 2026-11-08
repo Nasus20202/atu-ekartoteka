@@ -47,4 +47,13 @@ describe('GET /api/config/turnstile', () => {
       enabled: false,
     });
   });
+
+  it('allows the browser to cache the response briefly', async () => {
+    vi.stubEnv('TURNSTILE_SITE_KEY', 'site');
+    vi.stubEnv('TURNSTILE_SECRET_KEY', 'secret');
+
+    const response = await GET();
+
+    expect(response.headers.get('cache-control')).toBe('public, max-age=300');
+  });
 });

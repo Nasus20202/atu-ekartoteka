@@ -19,7 +19,7 @@ describe('useGoogleSignInEnabled', () => {
     vi.unstubAllGlobals();
   });
 
-  it('reports false until the config has loaded', () => {
+  it('reports null until the config has loaded', () => {
     vi.stubGlobal(
       'fetch',
       vi.fn(() => new Promise(() => {}))
@@ -29,7 +29,7 @@ describe('useGoogleSignInEnabled', () => {
       wrapper: freshCache,
     });
 
-    expect(result.current).toBe(false);
+    expect(result.current).toBeNull();
   });
 
   it('reports true when Google sign-in is configured', async () => {
@@ -47,6 +47,22 @@ describe('useGoogleSignInEnabled', () => {
 
     await waitFor(() => expect(result.current).toBe(true));
     expect(fetch).toHaveBeenCalledWith('/api/config/google');
+  });
+
+  it('reports false when Google sign-in is disabled', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ enabled: false }),
+      })
+    );
+
+    const { result } = renderHook(() => useGoogleSignInEnabled(), {
+      wrapper: freshCache,
+    });
+
+    await waitFor(() => expect(result.current).toBe(false));
   });
 
   it('reports false when the config request fails', async () => {

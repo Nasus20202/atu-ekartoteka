@@ -6,12 +6,16 @@ import {
   TURNSTILE_VALID_TOKEN,
 } from '../mocks/constants';
 import type { CapturedMail } from '../mocks/mail-store';
+import { stubTurnstileWidget, TURNSTILE_SCRIPT_URL } from './turnstile-stub';
 
+export { stubTurnstileWidget } from './turnstile-stub';
 export { TURNSTILE_INVALID_TOKEN, TURNSTILE_VALID_TOKEN };
 export const MOCK_URL = process.env.MOCK_URL ?? 'http://localhost:4010';
 
-const TURNSTILE_SCRIPT_URL =
-  'https://challenges.cloudflare.com/turnstile/v0/api.js**';
+const FAKE_TURNSTILE_SCRIPT_URL = new URL(
+  './fake-turnstile-widget.js',
+  import.meta.url
+);
 
 export type MockMail = CapturedMail;
 
@@ -58,29 +62,14 @@ export async function queueGoogleIdentity(
   await request.post(`${MOCK_URL}/google/identity`, { data: identity });
 }
 
-/** Replaces the Cloudflare widget with one that answers with the given token. */
-export async function stubTurnstileWidget(
-  page: Page,
-  token: string
-): Promise<void> {
+/**
+ * Replaces the Cloudflare widget with a visible, deterministic fake so visual
+ * snapshots show the challenge slot. It never solves itself, so the snapshot
+ * does not depend on a token being set.
+ */
+export async function stubVisibleTurnstileWidget(page: Page): Promise<void> {
   await page.route(TURNSTILE_SCRIPT_URL, (route) =>
-    route.fulfill({
-      contentType: 'application/javascript',
-      body: `
-        window.turnstile = {
-          render(container, options) {
-            setTimeout(() => options.callback && options.callback(${JSON.stringify(token)}), 0);
-            return 'mock-widget';
-          },
-          reset() {},
-          remove() {},
-          getResponse() { return ${JSON.stringify(token)}; },
-          isExpired() { return false; },
-        };
-        const onload = new URLSearchParams(document.currentScript.src.split('?')[1]).get('onload');
-        if (onload && window[onload]) window[onload]();
-      `,
-    })
+    route.fulfill({ path: FAKE_TURNSTILE_SCRIPT_URL.pathname })
   );
 }
 

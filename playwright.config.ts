@@ -1,3 +1,5 @@
+/* eslint-disable max-lines */
+// Playwright project definitions legitimately exceed 200 code lines
 import { defineConfig, devices, type Project } from '@playwright/test';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
@@ -29,12 +31,11 @@ import { getVisualDatabaseUrl } from './e2e/utils/database-urls';
 // Load environment variables from .env file
 dotenv.config({ path: fileURLToPath(new URL('./.env', import.meta.url)) });
 
-const SECOND_MS = 1000;
-const WEB_SERVER_TIMEOUT_MS = 120 * SECOND_MS;
-const TEST_TIMEOUT_MS = 60 * SECOND_MS;
-const EXPECT_TIMEOUT_MS = 10 * SECOND_MS;
-const CI_RETRIES = 2;
-const CI_WORKERS = 4;
+const WEB_SERVER_TIMEOUT_MS = 120 * 1000,
+  TEST_TIMEOUT_MS = 60 * 1000,
+  EXPECT_TIMEOUT_MS = 10 * 1000;
+const CI_RETRIES = 2,
+  CI_WORKERS = 4;
 const MAX_SCREENSHOT_DIFF_RATIO = 0.01;
 
 const TIMEZONE_ID = 'Europe/Warsaw';
@@ -80,9 +81,12 @@ function appServer(
       DATABASE_REPLICA_URLS: databaseUrl,
       AUTH_URL: appUrl,
       AUTH_TRUST_HOST: 'true',
-      // Disable Turnstile and SMTP for E2E tests
+      // Disable external services for E2E tests; the visual and integrations
+      // servers turn the ones they need back on through extraEnv
       TURNSTILE_SITE_KEY: '',
       TURNSTILE_SECRET_KEY: '',
+      GOOGLE_CLIENT_ID: '',
+      GOOGLE_CLIENT_SECRET: '',
       SMTP_HOST: '',
       E2E_ALLOW_FIXED_NOW: 'true',
       ...extraEnv,
@@ -90,11 +94,15 @@ function appServer(
   };
 }
 
-// Google sign-in is configured on the visual app so the login page snapshot
-// shows the button; nothing there ever starts the OAuth flow
+// Google sign-in and Turnstile are configured on the visual app so those
+// elements appear in the snapshots; the Turnstile script itself is stubbed, so
+// nothing there talks to Cloudflare or starts the OAuth flow
 const visualEnv = {
   GOOGLE_CLIENT_ID: 'visual-google-client-id',
   GOOGLE_CLIENT_SECRET: 'visual-google-client-secret',
+  TURNSTILE_SITE_KEY: 'visual-site-key',
+  TURNSTILE_SECRET_KEY: 'visual-secret-key',
+  TURNSTILE_VERIFY_URL: 'http://localhost:4010/turnstile/siteverify',
 };
 
 // Turnstile, SMTP, Google sign-in and OpenTelemetry are on here, pointed at the local mocks

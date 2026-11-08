@@ -81,6 +81,26 @@ describe('ResetPasswordPage', () => {
     ).toHaveAttribute('href', '/forgot-password');
   });
 
+  it('shows the instructional placeholders and toggles each password independently', async () => {
+    const user = userEvent.setup();
+    render(<ResetPasswordPage />);
+
+    const password = screen.getByLabelText('Nowe hasło');
+    const confirmPassword = screen.getByLabelText('Potwierdź hasło');
+    expect(password).toHaveAttribute('placeholder', 'Wprowadź nowe hasło');
+    expect(confirmPassword).toHaveAttribute(
+      'placeholder',
+      'Powtórz nowe hasło'
+    );
+
+    const toggles = screen.getAllByRole('button', { name: 'Pokaż hasło' });
+    expect(toggles).toHaveLength(2);
+
+    await user.click(toggles[0]);
+    expect(password).toHaveAttribute('type', 'text');
+    expect(confirmPassword).toHaveAttribute('type', 'password');
+  });
+
   it('confirms the change after a successful reset', async () => {
     await submitPasswords('secret123', 'secret123');
 

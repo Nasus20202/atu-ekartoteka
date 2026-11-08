@@ -68,14 +68,23 @@ services:
     <<: *app-common
     # Built by the `ekartoteka` service; the same image is reused
     pull_policy: never
+    depends_on:
+      db:
+        condition: service_healthy
+      mocks:
+        condition: service_started
     environment:
       <<: *app-common-environment
       DATABASE_URL: postgresql://postgres:postgres@db:5432/e2e_visual
       DATABASE_REPLICA_URLS: postgresql://postgres:postgres@db:5432/e2e_visual
       AUTH_URL: http://localhost:3001
-      # Only makes the login page show the Google button; the flow is never started
+      # Shows Google sign-in and the Turnstile slot in snapshots; widget scripts
+      # are stubbed and login verifies Turnstile through the local mocks
       GOOGLE_CLIENT_ID: visual-google-client-id
       GOOGLE_CLIENT_SECRET: visual-google-client-secret
+      TURNSTILE_SITE_KEY: visual-site-key
+      TURNSTILE_SECRET_KEY: visual-secret-key
+      TURNSTILE_VERIFY_URL: http://mocks:4010/turnstile/siteverify
     ports:
       - '3001:3000'
 

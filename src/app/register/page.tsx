@@ -9,10 +9,12 @@ import { TurnstileField } from '@/components/auth/turnstile-field';
 import { useRegisterForm } from '@/components/auth/use-register-form';
 import { useSetupStatus } from '@/components/auth/use-setup-status';
 import { AuthLayout } from '@/components/layout/auth-layout';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AnimatedAlert } from '@/components/ui/animated-alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PasswordInput } from '@/components/ui/password-input';
+import { AUTH_PLACEHOLDERS } from '@/lib/auth/form-placeholders';
 import {
   MIN_PASSWORD_LENGTH,
   PASSWORD_TOO_SHORT_MESSAGE,
@@ -61,7 +63,7 @@ export default function RegisterPage() {
           <Input
             id="name"
             type="text"
-            placeholder="Imię i nazwisko"
+            placeholder={AUTH_PLACEHOLDERS.name}
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             disabled={loading}
@@ -73,7 +75,7 @@ export default function RegisterPage() {
           <Input
             id="email"
             type="email"
-            placeholder="email@example.com"
+            placeholder={AUTH_PLACEHOLDERS.email}
             value={formData.email}
             onChange={(e) =>
               setFormData({ ...formData, email: e.target.value })
@@ -85,14 +87,12 @@ export default function RegisterPage() {
 
         <div className="space-y-2">
           <Label htmlFor="password">Hasło</Label>
-          <Input
+          <PasswordInput
             id="password"
-            type="password"
-            placeholder="Hasło"
+            placeholder={AUTH_PLACEHOLDERS.password}
+            autoComplete="new-password"
             value={formData.password}
-            onChange={(e) =>
-              setFormData({ ...formData, password: e.target.value })
-            }
+            onChange={(password) => setFormData({ ...formData, password })}
             required
             disabled={loading}
             minLength={MIN_PASSWORD_LENGTH}
@@ -104,13 +104,13 @@ export default function RegisterPage() {
 
         <div className="space-y-2">
           <Label htmlFor="confirmPassword">Potwierdź hasło</Label>
-          <Input
+          <PasswordInput
             id="confirmPassword"
-            type="password"
-            placeholder="Potwierdź hasło"
+            placeholder={AUTH_PLACEHOLDERS.confirmPassword}
+            autoComplete="new-password"
             value={formData.confirmPassword}
-            onChange={(e) =>
-              setFormData({ ...formData, confirmPassword: e.target.value })
+            onChange={(confirmPassword) =>
+              setFormData({ ...formData, confirmPassword })
             }
             required
             disabled={loading}
@@ -120,11 +120,9 @@ export default function RegisterPage() {
 
         <TurnstileField turnstile={turnstile} />
 
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+        <AnimatedAlert show={Boolean(error)} variant="destructive">
+          {error}
+        </AnimatedAlert>
 
         <Button type="submit" className="w-full" disabled={isFormDisabled}>
           {loading ? (

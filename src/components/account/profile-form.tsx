@@ -6,11 +6,11 @@ import { useState } from 'react';
 
 import { updateProfileAction } from '@/actions/account/profile';
 import { getPasswordChangeError } from '@/components/account/password-change';
-import { PasswordInput } from '@/components/account/password-input';
 import { AnimatedAlert } from '@/components/ui/animated-alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PasswordInput } from '@/components/ui/password-input';
 import { logger } from '@/lib/logger';
 import { AuthMethod } from '@/lib/types';
 

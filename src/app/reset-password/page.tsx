@@ -9,10 +9,11 @@ import { AuthLoading } from '@/components/auth/auth-loading';
 import { TurnstileField } from '@/components/auth/turnstile-field';
 import { useResetPasswordForm } from '@/components/auth/use-reset-password-form';
 import { AuthLayout } from '@/components/layout/auth-layout';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AnimatedAlert } from '@/components/ui/animated-alert';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PasswordInput } from '@/components/ui/password-input';
+import { AUTH_PLACEHOLDERS } from '@/lib/auth/form-placeholders';
 import { MIN_PASSWORD_LENGTH } from '@/lib/auth/password-rules';
 
 function ResetPasswordContent() {
@@ -74,12 +75,12 @@ function ResetPasswordContent() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="password">Nowe hasło</Label>
-          <Input
+          <PasswordInput
             id="password"
-            type="password"
-            placeholder="Hasło"
+            placeholder={AUTH_PLACEHOLDERS.newPassword}
+            autoComplete="new-password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={setPassword}
             required
             disabled={loading}
             minLength={MIN_PASSWORD_LENGTH}
@@ -91,23 +92,21 @@ function ResetPasswordContent() {
 
         <div className="space-y-2">
           <Label htmlFor="confirmPassword">Potwierdź hasło</Label>
-          <Input
+          <PasswordInput
             id="confirmPassword"
-            type="password"
-            placeholder="Hasło"
+            placeholder={AUTH_PLACEHOLDERS.confirmNewPassword}
+            autoComplete="new-password"
             value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            onChange={setConfirmPassword}
             required
             disabled={loading}
             minLength={MIN_PASSWORD_LENGTH}
           />
         </div>
 
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+        <AnimatedAlert show={Boolean(error)} variant="destructive">
+          {error}
+        </AnimatedAlert>
 
         <TurnstileField turnstile={turnstile} />
 

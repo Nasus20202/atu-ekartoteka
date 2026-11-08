@@ -1,21 +1,23 @@
 'use client';
 
+import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn, useSession } from 'next-auth/react';
 import { Suspense, useEffect, useState } from 'react';
 
 import { AuthLoading } from '@/components/auth/auth-loading';
-import { GoogleSignIn } from '@/components/auth/google-sign-in';
+import { GoogleSignInSlot } from '@/components/auth/google-sign-in';
 import { TurnstileField } from '@/components/auth/turnstile-field';
-import { useGoogleSignInEnabled } from '@/components/auth/use-google-sign-in-enabled';
 import { AuthLayout } from '@/components/layout/auth-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AnimatedAlert } from '@/components/ui/animated-alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PasswordInput } from '@/components/ui/password-input';
 import { useTurnstile } from '@/hooks/use-turnstile';
+import { AUTH_PLACEHOLDERS } from '@/lib/auth/form-placeholders';
 
 function LoginForm() {
   const [email, setEmail] = useState('');
@@ -23,7 +25,6 @@ function LoginForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const turnstile = useTurnstile();
-  const googleEnabled = useGoogleSignInEnabled();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { status } = useSession();
@@ -80,7 +81,7 @@ function LoginForm() {
           <Input
             id="email"
             type="email"
-            placeholder="email@example.com"
+            placeholder={AUTH_PLACEHOLDERS.email}
             autoComplete="email"
             required
             value={email}
@@ -97,14 +98,13 @@ function LoginForm() {
               Przywracanie hasła
             </Link>
           </div>
-          <Input
+          <PasswordInput
             id="password"
-            type="password"
-            placeholder="Hasło"
+            placeholder={AUTH_PLACEHOLDERS.password}
             autoComplete="current-password"
             required
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={setPassword}
           />
         </div>
 
@@ -123,8 +123,17 @@ function LoginForm() {
         <TurnstileField turnstile={turnstile} />
 
         <Button type="submit" className="w-full" disabled={isFormDisabled}>
-          Zaloguj się
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Logowanie...
+            </>
+          ) : (
+            'Zaloguj się'
+          )}
         </Button>
+
+        <GoogleSignInSlot onClick={handleGoogleSignIn} />
 
         <div className="text-center text-sm">
           <span className="text-muted-foreground">Nie masz konta? </span>
@@ -135,8 +144,6 @@ function LoginForm() {
             Zarejestruj się
           </Link>
         </div>
-
-        {googleEnabled && <GoogleSignIn onClick={handleGoogleSignIn} />}
       </form>
     </AuthLayout>
   );
