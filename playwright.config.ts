@@ -32,8 +32,8 @@ import { getVisualDatabaseUrl } from './e2e/utils/database-urls';
 dotenv.config({ path: fileURLToPath(new URL('./.env', import.meta.url)) });
 
 const WEB_SERVER_TIMEOUT_MS = 120 * 1000,
-  TEST_TIMEOUT_MS = 60 * 1000,
-  EXPECT_TIMEOUT_MS = 10 * 1000;
+  TEST_TIMEOUT_MS = 30 * 1000,
+  EXPECT_TIMEOUT_MS = 5 * 1000;
 const CI_RETRIES = 2,
   CI_WORKERS = 4;
 const MAX_SCREENSHOT_DIFF_RATIO = 0.01;
