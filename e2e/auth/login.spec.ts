@@ -115,6 +115,24 @@ test.describe('Login', () => {
       ).toBeVisible();
     });
 
+    test('a tap near the trailing edge of the password field toggles it', async ({
+      page,
+    }) => {
+      await page.goto('/login');
+
+      const password = page.getByLabel('Hasło', { exact: true });
+      const rect = await password.evaluate((field) => {
+        const { x, y, width, height } = field.getBoundingClientRect();
+        return { x, y, width, height };
+      });
+
+      // Taps just inside the field's right edge must reach the toggle, not focus the input
+      await page.mouse.click(rect.x + rect.width - 6, rect.y + rect.height / 2);
+
+      await expect(password).toHaveAttribute('type', 'text');
+      await expect(password).not.toBeFocused();
+    });
+
     test('keeps submit before the secondary options and registration', async ({
       page,
     }) => {

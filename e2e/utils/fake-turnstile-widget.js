@@ -17,7 +17,9 @@
       ? { background: '#232323', foreground: '#f5f5f5', border: '#4d4d4d' }
       : { background: '#fafafa', foreground: '#232323', border: '#c8c8c8' };
 
+    // Cloudflare's flexible layout never renders narrower than 300px
     container.style.width = '100%';
+    container.style.minWidth = '300px';
     container.setAttribute('data-fake-turnstile', 'visible');
     container.innerHTML = `
       <div

@@ -2,35 +2,27 @@
 
 import { Turnstile } from '@marsidev/react-turnstile';
 
+import { TurnstileFitSlot } from '@/components/auth/turnstile-fit-slot';
+import { useTurnstileFit } from '@/components/auth/use-turnstile-fit';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { TurnstileState } from '@/hooks/use-turnstile';
 
-/**
- * The widget's flexible size is 65px tall. The same slot wraps the loading
- * skeleton, so the card keeps its height while the config is being fetched.
- */
-const WIDGET_SLOT_CLASS =
-  'flex min-h-[65px] w-full items-center justify-center';
-const WIDGET_HEIGHT_CLASS = 'h-[65px] w-[400px]';
-
 export function TurnstileField({ turnstile }: { turnstile: TurnstileState }) {
   const { config, ref, setToken } = turnstile;
+  const { slotRef, fit } = useTurnstileFit();
 
   if (!config) {
     return (
-      <div className={WIDGET_SLOT_CLASS}>
-        <Skeleton
-          className={WIDGET_HEIGHT_CLASS}
-          data-testid="turnstile-skeleton"
-        />
-      </div>
+      <TurnstileFitSlot slotRef={slotRef} fit={fit}>
+        <Skeleton className="h-full w-full" data-testid="turnstile-skeleton" />
+      </TurnstileFitSlot>
     );
   }
 
   if (!config.enabled || !config.siteKey) return null;
 
   return (
-    <div className={WIDGET_SLOT_CLASS}>
+    <TurnstileFitSlot slotRef={slotRef} fit={fit}>
       <Turnstile
         ref={ref}
         siteKey={config.siteKey}
@@ -39,6 +31,6 @@ export function TurnstileField({ turnstile }: { turnstile: TurnstileState }) {
         onExpire={() => setToken(null)}
         onError={() => setToken(null)}
       />
-    </div>
+    </TurnstileFitSlot>
   );
 }
