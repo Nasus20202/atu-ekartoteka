@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn, useSession } from 'next-auth/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import LoginPage from '@/app/login/page';
+import LoginPage from '@/app/(auth)/login/page';
 import { startAuthExit } from '@/components/layout/auth-exit';
 
 vi.mock('@/components/layout/auth-exit', () => ({ startAuthExit: vi.fn() }));

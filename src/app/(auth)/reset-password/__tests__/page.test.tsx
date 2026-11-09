@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import ResetPasswordPage from '@/app/reset-password/page';
+import ResetPasswordPage from '@/app/(auth)/reset-password/page';
 
 const mockPush = vi.fn();
 const mockGet = vi.fn((): string | null => 'reset-token');
