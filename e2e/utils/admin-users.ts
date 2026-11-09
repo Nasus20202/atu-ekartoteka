@@ -1,5 +1,8 @@
 import { expect, type Page } from '@playwright/test';
 
+import { clickToCheck } from './click-to-check';
+import { isServerActionResponse } from './server-actions';
+
 const LOAD_TIMEOUT_MS = 10000;
 
 function isUsersResponse(url: string, status: number) {
@@ -77,11 +80,11 @@ export async function approveWithApartment(
   const apartmentOption = page
     .locator('label')
     .filter({ hasText: apartmentText });
-  await expect(apartmentOption).toBeVisible({ timeout: 5000 });
-  await apartmentOption.click();
+  await expect(apartmentOption).toBeVisible({ timeout: LOAD_TIMEOUT_MS });
+  await clickToCheck(apartmentOption, apartmentOption.getByRole('checkbox'));
 
   await Promise.all([
-    page.waitForResponse((resp) => isUsersResponse(resp.url(), resp.status())),
+    page.waitForResponse(isServerActionResponse),
     page
       .getByRole('dialog')
       .getByRole('button', { name: /^Zatwierdź$/ })
