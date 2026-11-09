@@ -512,6 +512,8 @@ Every password field on the auth pages SHALL provide a control that switches
 the field between masked and visible text. The control SHALL be a button that
 does not submit the form, SHALL be reachable by keyboard, and SHALL be named
 `Pokaż hasło` while the value is masked and `Ukryj hasło` while it is visible.
+The control SHALL cover the full height of the field at its trailing edge, so a
+tap anywhere in that area toggles the value instead of focusing the input.
 
 #### Scenario: Password is masked by default
 
@@ -537,6 +539,13 @@ does not submit the form, SHALL be reachable by keyboard, and SHALL be named
 - **GIVEN** the registration or reset form with two password fields
 - **WHEN** the user reveals the first field
 - **THEN** only the first field becomes visible and the second stays masked
+
+#### Scenario: Tap near the trailing edge reveals the password
+
+- **GIVEN** an auth page with a password field
+- **WHEN** the user taps just inside the field's right edge
+- **THEN** the visibility toggle is activated, the field shows the value as text,
+  and the input does not receive focus
 
 ### Requirement: Stable Auth Card While Widgets Load
 
@@ -619,6 +628,13 @@ Turnstile is disabled or no site key is configured.
 - **WHEN** the widget renders on desktop or mobile
 - **THEN** it spans the width of the form controls and does not overflow the
   card
+
+#### Scenario: Widget on a narrow phone
+
+- **GIVEN** a form column narrower than the widget's minimum width
+- **WHEN** the widget renders
+- **THEN** it is scaled down to the width of the form controls with its
+  proportions kept, and the reserved slot shrinks to the scaled height
 
 #### Scenario: Widget follows the active theme
 
