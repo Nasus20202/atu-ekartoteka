@@ -1,16 +1,10 @@
-import { act, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 
-import packageJson from '@/../package.json';
-import { startAuthExit } from '@/components/layout/auth-exit';
 import { AuthLayout } from '@/components/layout/auth-layout';
 
-vi.mock('@/components/theme/theme-toggle', () => ({
-  ThemeToggle: () => <button>Motyw</button>,
-}));
-
 describe('AuthLayout', () => {
-  it('renders the header, content, version and theme toggle', () => {
+  it('renders the header and content', () => {
     render(
       <AuthLayout
         title="Logowanie"
@@ -25,20 +19,13 @@ describe('AuthLayout', () => {
     expect(screen.getByText('Zaloguj się')).toBeInTheDocument();
     expect(screen.getByText('ikona')).toBeInTheDocument();
     expect(screen.getByText('Formularz')).toBeInTheDocument();
-    expect(screen.getByText(`v${packageJson.version}`)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Motyw' })).toBeInTheDocument();
   });
 
-  it('renders only the content without header props or theme toggle', () => {
-    render(
-      <AuthLayout showThemeToggle={false}>
-        <p>Formularz</p>
-      </AuthLayout>
-    );
+  it('renders only the content without header props', () => {
+    render(<AuthLayout>treść</AuthLayout>);
 
-    const content = screen.getByText('Formularz').parentElement;
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
-    expect(content?.parentElement?.children).toHaveLength(1);
+    const content = screen.getByText('treść');
+    expect(content.parentElement?.children).toHaveLength(1);
   });
 
   it.each([
@@ -49,32 +36,5 @@ describe('AuthLayout', () => {
     render(<AuthLayout {...props}>treść</AuthLayout>);
 
     expect(screen.getByText(text)).toBeInTheDocument();
-  });
-
-  it('renders a decorative skyline behind the card', () => {
-    render(
-      <AuthLayout title="Logowanie">
-        <p>Formularz</p>
-      </AuthLayout>
-    );
-
-    expect(screen.getByTestId('auth-skyline')).toHaveAttribute(
-      'aria-hidden',
-      'true'
-    );
-  });
-
-  it('lowers the skyline when the user signs in', () => {
-    render(
-      <AuthLayout title="Logowanie">
-        <p>Formularz</p>
-      </AuthLayout>
-    );
-    const skyline = screen.getByTestId('auth-skyline');
-    expect(skyline).not.toHaveClass('translate-y-full');
-
-    act(() => startAuthExit());
-
-    expect(skyline).toHaveClass('translate-y-full');
   });
 });

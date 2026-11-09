@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import RegisterPage from '@/app/register/page';
+import RegisterPage from '@/app/(auth)/register/page';
 
 const { registerActionMock } = vi.hoisted(() => ({
   registerActionMock: vi.fn(),

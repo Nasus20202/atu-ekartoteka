@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 
 import { resetAuthExit, useAuthExiting } from '@/components/layout/auth-exit';
@@ -27,11 +28,15 @@ const LAYERS = [
 export function AuthSkyline() {
   const exiting = useAuthExiting();
 
-  // A skyline that mounts after a sign-in (e.g. the forced password change) rises again
+  const pathname = usePathname();
+
+  // Moving to another auth page after signing in (e.g. the forced password
+  // change) raises the skyline again
   useEffect(() => {
     resetAuthExit();
-    return resetAuthExit;
-  }, []);
+  }, [pathname]);
+
+  useEffect(() => resetAuthExit, []);
 
   return (
     <div

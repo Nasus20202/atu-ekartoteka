@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import VerifyEmailPage from '@/app/verify-email/page';
+import VerifyEmailPage from '@/app/(auth)/verify-email/page';
 
 const mockPush = vi.fn();
 const mockGet = vi.fn((): string | null => 'verify-token');

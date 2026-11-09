@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import ChangePasswordPage from '@/app/change-password/page';
+import ChangePasswordPage from '@/app/(auth)/change-password/page';
 
 const mockUpdate = vi.fn();
 const mockReplace = vi.fn();

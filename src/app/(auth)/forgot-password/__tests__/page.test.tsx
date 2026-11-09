@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import ForgotPasswordPage from '@/app/forgot-password/page';
+import ForgotPasswordPage from '@/app/(auth)/forgot-password/page';
 
 const forgotPasswordActionMock = vi.hoisted(() => vi.fn());
 const resetMock = vi.fn();

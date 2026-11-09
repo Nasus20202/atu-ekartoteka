@@ -1,8 +1,5 @@
 import { ReactNode } from 'react';
 
-import packageJson from '@/../package.json';
-import { AuthSkyline } from '@/components/layout/auth-skyline';
-import { ThemeToggle } from '@/components/theme/theme-toggle';
 import {
   Card,
   CardContent,
@@ -16,47 +13,33 @@ interface AuthLayoutProps {
   title?: string;
   description?: string;
   icon?: ReactNode;
-  showThemeToggle?: boolean;
 }
 
+/** The card of an auth page; the backdrop comes from the `(auth)` group layout. */
 export function AuthLayout({
   children,
   title,
   description,
   icon,
-  showThemeToggle = true,
 }: AuthLayoutProps) {
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background p-4 animate-fade-in">
-      <AuthSkyline />
-      {showThemeToggle && (
-        <div className="fixed right-4 top-4 z-10 animate-slide-in-top">
-          <ThemeToggle />
-        </div>
+    <Card className="relative z-10 w-full max-w-md shadow-lg dark:border-border animate-scale-in">
+      {(title || description || icon) && (
+        <CardHeader>
+          {icon && <div className="mb-4 flex justify-center">{icon}</div>}
+          {title && (
+            <CardTitle className="text-center text-2xl font-bold tracking-tight">
+              {title}
+            </CardTitle>
+          )}
+          {description && (
+            <CardDescription className="text-center">
+              {description}
+            </CardDescription>
+          )}
+        </CardHeader>
       )}
-      <div className="fixed bottom-4 left-4 z-10 animate-fade-in">
-        <p className="text-xs text-muted-foreground/60">
-          v{packageJson.version}
-        </p>
-      </div>
-      <Card className="relative z-10 w-full max-w-md shadow-lg dark:border-border animate-scale-in">
-        {(title || description || icon) && (
-          <CardHeader>
-            {icon && <div className="mb-4 flex justify-center">{icon}</div>}
-            {title && (
-              <CardTitle className="text-center text-2xl font-bold tracking-tight">
-                {title}
-              </CardTitle>
-            )}
-            {description && (
-              <CardDescription className="text-center">
-                {description}
-              </CardDescription>
-            )}
-          </CardHeader>
-        )}
-        <CardContent>{children}</CardContent>
-      </Card>
-    </div>
+      <CardContent>{children}</CardContent>
+    </Card>
   );
 }
