@@ -107,6 +107,31 @@ describe('RegisterPage', () => {
     consoleErrorSpy.mockRestore();
   });
 
+  it('shows instructional placeholders and toggles each password independently', async () => {
+    const user = userEvent.setup();
+    render(<RegisterPage />);
+
+    expect(
+      await screen.findByLabelText('Imię i nazwisko (opcjonalne)')
+    ).toHaveAttribute('placeholder', 'Wprowadź imię i nazwisko');
+    expect(screen.getByLabelText('Email')).toHaveAttribute(
+      'placeholder',
+      'Wprowadź adres e-mail'
+    );
+
+    const password = screen.getByLabelText('Hasło');
+    const confirmPassword = screen.getByLabelText('Potwierdź hasło');
+    expect(password).toHaveAttribute('placeholder', 'Wprowadź hasło');
+    expect(confirmPassword).toHaveAttribute('placeholder', 'Powtórz hasło');
+
+    const toggles = screen.getAllByRole('button', { name: 'Pokaż hasło' });
+    expect(toggles).toHaveLength(2);
+
+    await user.click(toggles[0]);
+    expect(password).toHaveAttribute('type', 'text');
+    expect(confirmPassword).toHaveAttribute('type', 'password');
+  });
+
   it('logs in automatically after successful registration', async () => {
     vi.mocked(signIn).mockResolvedValue({ error: undefined } as never);
 

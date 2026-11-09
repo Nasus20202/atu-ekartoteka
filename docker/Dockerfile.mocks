@@ -2,17 +2,19 @@
 # Not part of the release image; it uses the same Node base image as docker/Dockerfile.
 FROM node:26.13.0-alpine@sha256:8996bb5821d62a8fd9bb27c1cb07462f3fdce6e47d640c6a881ead0b064ce216 AS base
 WORKDIR /app
-# Node 26 images no longer bundle corepack, so install it from npm first
+
+# Node 26 images no longer bundle corepack; install it only where pnpm is needed
 # renovate: datasource=npm depName=corepack
+FROM base AS base-corepack
 ARG COREPACK_VERSION=0.36.0
 RUN npm install -g corepack@${COREPACK_VERSION} && corepack enable
 
 # Install the workspace, then export only the mocks package with production dependencies
-FROM base AS deps
+FROM base-corepack AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY e2e/mocks/package.json ./e2e/mocks/package.json
 RUN corepack install
-RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store,sharing=locked \
     pnpm install --frozen-lockfile --ignore-scripts
 RUN pnpm --filter ekartoteka-mocks deploy --prod /deploy
 
@@ -24,5 +26,5 @@ COPY e2e/mocks ./e2e/mocks
 EXPOSE 4010 1025
 USER node
 HEALTHCHECK --interval=5s --timeout=5s --retries=20 \
-    CMD node -e "fetch('http://127.0.0.1:4010/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+    CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:4010/health
 CMD ["node_modules/.bin/tsx", "e2e/mocks/main.ts"]

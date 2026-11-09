@@ -11,13 +11,17 @@ interface GoogleConfig {
   enabled: boolean;
 }
 
-/** Whether Google sign-in is configured; false while loading or on failure. */
-export function useGoogleSignInEnabled(): boolean {
-  const { data } = useSWR<GoogleConfig>(
+/**
+ * Whether Google sign-in is configured; null while loading and false on
+ * failure, so callers can reserve the OAuth slot until the answer is known.
+ */
+export function useGoogleSignInEnabled(): boolean | null {
+  const { data, error } = useSWR<GoogleConfig>(
     GOOGLE_CONFIG_URL,
     fetchJson,
     SWR_OPTIONS
   );
 
-  return data?.enabled ?? false;
+  if (data) return data.enabled;
+  return error ? false : null;
 }

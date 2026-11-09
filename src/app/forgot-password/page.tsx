@@ -8,11 +8,12 @@ import { unwrapResult } from '@/actions/action-result';
 import { forgotPasswordAction } from '@/actions/auth/forgot-password';
 import { TurnstileField } from '@/components/auth/turnstile-field';
 import { AuthLayout } from '@/components/layout/auth-layout';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AnimatedAlert } from '@/components/ui/animated-alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTurnstile } from '@/hooks/use-turnstile';
+import { AUTH_PLACEHOLDERS } from '@/lib/auth/form-placeholders';
 import {
   GENERIC_ERROR_MESSAGE,
   getErrorMessage,
@@ -78,7 +79,7 @@ export default function ForgotPasswordPage() {
           <Input
             id="email"
             type="email"
-            placeholder="email@example.com"
+            placeholder={AUTH_PLACEHOLDERS.email}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -86,11 +87,9 @@ export default function ForgotPasswordPage() {
           />
         </div>
 
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+        <AnimatedAlert show={Boolean(error)} variant="destructive">
+          {error}
+        </AnimatedAlert>
 
         <TurnstileField turnstile={turnstile} />
 

@@ -122,13 +122,19 @@ The system SHALL provide global setup and teardown that prepares known database 
 
 - **GIVEN** the functional and visual app servers
 - **WHEN** E2E tests run
-- **THEN** Cloudflare Turnstile (`TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`) and SMTP (`SMTP_HOST`) are disabled via environment overrides on both, and Google sign-in is disabled on the functional app, so UI flows are not blocked by external services
+- **THEN** Cloudflare Turnstile and SMTP (`SMTP_HOST`) are disabled via environment overrides on the functional server, SMTP is disabled on the visual server, and Google sign-in is disabled on the functional app, so UI flows are not blocked by external services
 
 #### Scenario: Visual app shows the Google button
 
 - **GIVEN** the visual app server
 - **WHEN** it is started
 - **THEN** it has dummy Google client credentials, so the login page renders the Google button, and no flow ever contacts Google
+
+#### Scenario: Visual app stubs the Turnstile widget
+
+- **GIVEN** the visual app server with dummy Turnstile credentials
+- **WHEN** a visual test opens an auth page
+- **THEN** the Cloudflare `api.js` request is intercepted and replaced with a visible, deterministic fake widget that never solves itself or contacts Cloudflare, so the challenge slot is part of the snapshot
 
 #### Scenario: External services mocked on the integrations server
 

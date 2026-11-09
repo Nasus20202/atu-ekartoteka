@@ -58,4 +58,14 @@ describe('GET /api/config/google', () => {
 
     expect(data.enabled).toBe(false);
   });
+
+  it('allows the browser to cache the response briefly', async () => {
+    vi.stubEnv('GOOGLE_CLIENT_ID', 'client-id');
+    vi.stubEnv('GOOGLE_CLIENT_SECRET', 'client-secret');
+
+    const { GET } = await import('../route');
+    const response = await GET();
+
+    expect(response.headers.get('cache-control')).toBe('public, max-age=300');
+  });
 });

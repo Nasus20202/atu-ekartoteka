@@ -1,8 +1,12 @@
+'use client';
+
+import { useGoogleSignInEnabled } from '@/components/auth/use-google-sign-in-enabled';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 
 /** "Or" divider followed by the Google sign-in button. */
-export function GoogleSignIn({ onClick }: { onClick: () => void }) {
+function GoogleSignIn({ onClick }: { onClick: () => void }) {
   return (
     <>
       <div className="relative">
@@ -10,7 +14,7 @@ export function GoogleSignIn({ onClick }: { onClick: () => void }) {
           <Separator className="w-full" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">Lub</span>
+          <span className="bg-card px-2 text-muted-foreground">Lub</span>
         </div>
       </div>
 
@@ -42,4 +46,36 @@ export function GoogleSignIn({ onClick }: { onClick: () => void }) {
       </Button>
     </>
   );
+}
+
+interface GoogleSignInSlotProps {
+  onClick: () => void;
+}
+
+/**
+ * Reserves the OAuth area until the config is known, so the card does not
+ * resize when the Google button appears or disappears.
+ */
+export function GoogleSignInSlot({ onClick }: GoogleSignInSlotProps) {
+  const enabled = useGoogleSignInEnabled();
+
+  if (enabled === null) {
+    return (
+      <div className="space-y-4" data-testid="google-slot-skeleton">
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <Separator className="w-full" />
+          </div>
+          <div className="relative flex justify-center">
+            <Skeleton className="h-4 w-10" />
+          </div>
+        </div>
+        <Skeleton className="h-9 w-[400px]" />
+      </div>
+    );
+  }
+
+  if (!enabled) return null;
+
+  return <GoogleSignIn onClick={onClick} />;
 }

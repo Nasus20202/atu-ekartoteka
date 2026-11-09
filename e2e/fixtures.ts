@@ -6,6 +6,7 @@
 import { Page, test as base } from '@playwright/test';
 
 import { FIXED_NOW_HEADER } from '../src/lib/utils/fixed-now';
+import { TURNSTILE_VALID_TOKEN } from './mocks/constants';
 import {
   ADMIN_EMAIL,
   ADMIN_PASSWORD,
@@ -20,6 +21,7 @@ import {
   VISUAL_MULTI_EMAIL,
   VISUAL_PASSWORD,
 } from './utils/test-credentials';
+import { stubTurnstileWidget } from './utils/turnstile-stub';
 
 // React streams a section into a hidden segment first and swaps it in a moment
 // later, so right after a navigation the same text can exist twice in the DOM.
@@ -197,6 +199,7 @@ export const test = base.extend<{
    */
   visualPage: async ({ page }, use) => {
     await freezeVisualDate(page);
+    await stubTurnstileWidget(page, TURNSTILE_VALID_TOKEN);
     await login(page, VISUAL_EMAIL, VISUAL_PASSWORD);
     await use(page);
   },
@@ -206,6 +209,7 @@ export const test = base.extend<{
    */
   visualMultiPage: async ({ page }, use) => {
     await freezeVisualDate(page);
+    await stubTurnstileWidget(page, TURNSTILE_VALID_TOKEN);
     await login(page, VISUAL_MULTI_EMAIL, VISUAL_PASSWORD);
     await use(page);
   },
@@ -215,6 +219,7 @@ export const test = base.extend<{
    */
   visualAdminPage: async ({ page }, use) => {
     await freezeVisualDate(page);
+    await stubTurnstileWidget(page, TURNSTILE_VALID_TOKEN);
     await login(page, ADMIN_EMAIL, ADMIN_PASSWORD);
     await use(page);
   },

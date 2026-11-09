@@ -92,4 +92,57 @@ test.describe('Login', () => {
       ).toBeVisible();
     });
   });
+
+  test.describe('Public form', () => {
+    test('shows instructional placeholders and reveals the password', async ({
+      page,
+    }) => {
+      await page.goto('/login');
+
+      await expect(page.getByLabel('Email')).toHaveAttribute(
+        'placeholder',
+        'Wprowadź adres e-mail'
+      );
+      const password = page.getByLabel('Hasło', { exact: true });
+      await expect(password).toHaveAttribute('placeholder', 'Wprowadź hasło');
+      await expect(password).toHaveAttribute('type', 'password');
+
+      await page.getByRole('button', { name: 'Pokaż hasło' }).click();
+
+      await expect(password).toHaveAttribute('type', 'text');
+      await expect(
+        page.getByRole('button', { name: 'Ukryj hasło' })
+      ).toBeVisible();
+    });
+
+    test('keeps submit before the secondary options and registration', async ({
+      page,
+    }) => {
+      await page.goto('/login');
+
+      const submit = page.getByRole('button', {
+        name: 'Zaloguj się',
+        exact: true,
+      });
+      const register = page.getByRole('link', { name: 'Zarejestruj się' });
+      await expect(submit).toBeVisible();
+      await expect(register).toBeVisible();
+
+      const submitBox = await submit.boundingBox();
+      const registerBox = await register.boundingBox();
+      expect(
+        Boolean(submitBox && registerBox && submitBox.y < registerBox.y)
+      ).toBe(true);
+
+      // Google sign-in is disabled in this environment, so the divider collapses
+      await expect(page.getByText('Lub')).toHaveCount(0);
+    });
+
+    test('serves a browser-cacheable public config', async ({ request }) => {
+      const response = await request.get('/api/config/turnstile');
+
+      expect(response.ok()).toBe(true);
+      expect(response.headers()['cache-control']).toBe('public, max-age=300');
+    });
+  });
 });
