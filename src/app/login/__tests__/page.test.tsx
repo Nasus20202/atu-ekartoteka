@@ -5,6 +5,9 @@ import { signIn, useSession } from 'next-auth/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import LoginPage from '@/app/login/page';
+import { startAuthExit } from '@/components/layout/auth-exit';
+
+vi.mock('@/components/layout/auth-exit', () => ({ startAuthExit: vi.fn() }));
 
 const mockPush = vi.fn();
 const mockRefresh = vi.fn();
@@ -251,6 +254,7 @@ describe('LoginPage — form submission', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Zaloguj się' }));
 
     await waitFor(() => {
+      expect(startAuthExit).toHaveBeenCalled();
       expect(mockPush).toHaveBeenCalledWith('/dashboard');
     });
   });

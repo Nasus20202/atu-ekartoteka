@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import packageJson from '@/../package.json';
+import { startAuthExit } from '@/components/layout/auth-exit';
 import { AuthLayout } from '@/components/layout/auth-layout';
 
 vi.mock('@/components/theme/theme-toggle', () => ({
@@ -48,5 +49,32 @@ describe('AuthLayout', () => {
     render(<AuthLayout {...props}>treść</AuthLayout>);
 
     expect(screen.getByText(text)).toBeInTheDocument();
+  });
+
+  it('renders a decorative skyline behind the card', () => {
+    render(
+      <AuthLayout title="Logowanie">
+        <p>Formularz</p>
+      </AuthLayout>
+    );
+
+    expect(screen.getByTestId('auth-skyline')).toHaveAttribute(
+      'aria-hidden',
+      'true'
+    );
+  });
+
+  it('lowers the skyline when the user signs in', () => {
+    render(
+      <AuthLayout title="Logowanie">
+        <p>Formularz</p>
+      </AuthLayout>
+    );
+    const skyline = screen.getByTestId('auth-skyline');
+    expect(skyline).not.toHaveClass('translate-y-full');
+
+    act(() => startAuthExit());
+
+    expect(skyline).toHaveClass('translate-y-full');
   });
 });
