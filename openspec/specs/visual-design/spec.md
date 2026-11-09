@@ -53,6 +53,30 @@ The application SHALL use the CSS custom-property token system provided by shadc
 
 ---
 
+### Requirement: Auth Pages Background
+
+The public auth pages (login, register, forgot password, reset password, verify email and change password) SHALL show a barely visible skyline of skeleton-like blocks along the bottom edge, rendered by the shared auth layout behind the card. The skyline SHALL use the primary colour token at low opacity in two depth layers, fade out towards the top, and stay decorative (hidden from assistive technology, no pointer events) so it never reduces text contrast or blocks the form.
+
+#### Scenario: Skyline on auth pages
+
+- **GIVEN** a user opens an auth page
+- **WHEN** it renders in light or dark mode
+- **THEN** a faint skyline of window-grid blocks is visible along the bottom, behind the card
+
+#### Scenario: Skyline lowers on sign-in
+
+- **GIVEN** a user submits valid credentials on the login page
+- **WHEN** the app navigates away from the login page
+- **THEN** the skyline slides down out of view over about one second, starting gently and then picking up speed, while the navigation starts at once and is never delayed for the animation; with reduced motion the skyline disappears
+
+#### Scenario: No skyline after sign-in
+
+- **GIVEN** a signed-in user on a dashboard or admin page
+- **WHEN** the page renders
+- **THEN** no auth skyline is shown
+
+---
+
 ### Requirement: Typography
 
 The application SHALL use a consistent, responsive type scale defined by Tailwind's default scale.

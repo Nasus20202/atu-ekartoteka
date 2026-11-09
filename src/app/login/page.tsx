@@ -9,6 +9,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { AuthLoading } from '@/components/auth/auth-loading';
 import { GoogleSignInSlot } from '@/components/auth/google-sign-in';
 import { TurnstileField } from '@/components/auth/turnstile-field';
+import { startAuthExit } from '@/components/layout/auth-exit';
 import { AuthLayout } from '@/components/layout/auth-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AnimatedAlert } from '@/components/ui/animated-alert';
@@ -58,6 +59,7 @@ function LoginForm() {
       if (result?.error) {
         setError('Nieprawidłowy email lub hasło');
       } else {
+        startAuthExit();
         router.push('/dashboard');
         router.refresh();
       }
