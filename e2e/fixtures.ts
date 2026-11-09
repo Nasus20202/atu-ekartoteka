@@ -30,10 +30,12 @@ const STREAMING_SETTLE_TIMEOUT = 10000;
 const REACT_ROOT_KEY_PREFIX = '__reactContainer';
 
 // A server redirect replaces the navigation that goto() started. Chromium
-// resolves goto() with the redirected page, but Firefox rejects it.
+// resolves goto() with the redirected page, but Firefox rejects it, with
+// NS_ERROR_FAILURE when the redirect also changes the session cookie.
 const REDIRECT_INTERRUPTION_MESSAGES = [
   'interrupted by another navigation',
   'NS_BINDING_ABORTED',
+  'NS_ERROR_FAILURE',
 ];
 
 const wrappedPages = new WeakSet<Page>();

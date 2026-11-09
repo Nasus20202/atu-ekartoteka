@@ -3,6 +3,7 @@
  */
 
 import { expect, test } from '../fixtures';
+import { clickToCheck } from '../utils/click-to-check';
 import { createUniqueUnassignedApartment } from '../utils/create-unique-unassigned-apartment';
 import { deleteApartment } from '../utils/delete-apartment';
 import { isServerActionResponse } from '../utils/server-actions';
@@ -51,19 +52,21 @@ test.describe.serial('Admin Users Filter', () => {
       timeout: 10000,
     });
 
+    // Search by this test's own owner id: other tests share the database and
+    // create apartments at the same address, which would crowd the results
     const searchResponse = adminPage.waitForResponse(
       (resp) =>
         resp.url().includes('/api/admin/apartments') &&
-        resp.url().includes('search=') &&
+        resp.url().includes(`search=${externalOwnerId}`) &&
         resp.status() === 200
     );
-    await adminPage.getByLabel(/Wybierz mieszkanie/i).fill('ul. Testowa 1/2B');
+    await adminPage.getByLabel(/Wybierz mieszkanie/i).fill(externalOwnerId);
     await searchResponse;
     const apartmentOption = adminPage.locator('label').filter({
       hasText: externalOwnerId,
     });
     await expect(apartmentOption).toBeVisible({ timeout: 10000 });
-    await apartmentOption.click();
+    await clickToCheck(apartmentOption, apartmentOption.getByRole('checkbox'));
 
     await Promise.all([
       adminPage.waitForResponse(isServerActionResponse),

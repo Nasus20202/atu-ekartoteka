@@ -37,8 +37,9 @@ test.describe.serial('Profile', () => {
       profilePage.getByText(/zaktualizowany|zapisano|sukces/i)
     ).toBeVisible({ timeout: 10000 });
 
-    // Reload and verify the name persisted
-    await profilePage.reload();
+    // Load the page again and verify the name persisted; goto() tolerates the
+    // navigation the save may still be finishing, which aborts a reload
+    await profilePage.goto('/dashboard/profile');
     await expect(
       profilePage.locator(`input[value="${newName}"]`).filter({ visible: true })
     ).toBeVisible();

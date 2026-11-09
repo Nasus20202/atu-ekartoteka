@@ -8,6 +8,8 @@ import { createUnassignedApartment } from '../utils/create-unassigned-apartment'
 import { openTestHoaCard } from '../utils/open-test-hoa';
 import { isServerActionResponse } from '../utils/server-actions';
 
+const UNASSIGNED_APARTMENT_EMAIL = 'unassigned@e2e-test.com';
+
 test.describe.serial('Admin Bulk User Creation', () => {
   let unassignedApartmentId: string;
 
@@ -95,14 +97,15 @@ test.describe.serial('Admin Bulk User Creation', () => {
       adminPage.getByRole('heading', { name: /Zarządzanie kontami/i })
     ).toBeVisible();
 
-    // Expand the test HOA card then select the first individual apartment
+    // Select this test's own apartment: other specs seed unassigned apartments
+    // in the same HOA concurrently, and inviting one of those would assign it
     await openTestHoaCard(adminPage);
 
-    const apartmentCheckboxes = adminPage.getByRole('checkbox').filter({
-      hasNot: adminPage.locator('[aria-label*="Zaznacz wszystkie"]'),
-    });
-    await expect(apartmentCheckboxes.first()).toBeVisible({ timeout: 5000 });
-    await apartmentCheckboxes.first().click();
+    const apartmentCheckbox = adminPage
+      .locator('label', { hasText: UNASSIGNED_APARTMENT_EMAIL })
+      .getByRole('checkbox');
+    await expect(apartmentCheckbox).toBeVisible({ timeout: 5000 });
+    await apartmentCheckbox.click();
 
     const confirmButton = adminPage.getByRole('button', {
       name: /Zaproś użytkowników/i,
@@ -144,13 +147,13 @@ test.describe.serial('Admin Bulk User Creation', () => {
     await adminPage.getByRole('button', { name: /Wszyscy/i }).click();
 
     // The created user's email is derived from the apartment's email field
-    await expect(adminPage.getByText('unassigned@e2e-test.com')).toBeVisible({
+    await expect(adminPage.getByText(UNASSIGNED_APARTMENT_EMAIL)).toBeVisible({
       timeout: 10000,
     });
 
     const userCard = adminPage
       .locator('[class*="card"]')
-      .filter({ hasText: 'unassigned@e2e-test.com' });
+      .filter({ hasText: UNASSIGNED_APARTMENT_EMAIL });
     await expect(userCard.getByText(/zatwierdzony/i)).toBeVisible({
       timeout: 10000,
     });
