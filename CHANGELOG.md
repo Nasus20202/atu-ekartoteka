@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.6] - 2026-11-09
+
+- feat(auth): improve auth page UX (#900)
+- chore(deps): update dependency jsdom to v31 (#897)
+- chore(deps): update dependency nodemailer to v10.4.0 (#903)
+- chore(deps): update tailwindcss monorepo to v4.3.5 (#902)
+- chore(deps): update opentelemetry-js-contrib monorepo (#904)
+- chore(deps): update dependency react-email to v6.11.8 (#901)
+- chore(deps): update opentelemetry-js monorepo (#899)
+- chore(deps): update dependency @playwright/test to v1.65.0 (#898)
+- chore(deps): update dependency lucide-react to v1.69.0 (#896)
+- chore(deps): update dependency vite to v8.3.6 (#895)
+- chore(deps): update pnpm to v12.18.0 (#894)
+- fix(deps): update dependency mailparser to v3.14.2 (#892)
+- chore(deps): update grafana/otel-lgtm docker tag to v0.40.0 (#893)
+- fix(deploy): run compose migrations with the Prisma CLI (#891)
+- chore(deps): update dependency lucide-react to v1.68.0 (#890)
+- test(e2e): cover user rejection and user dialog snapshots (#889)
+- chore(deps): update semgrep/semgrep docker tag to v1.184.0 (#888)
+- chore(deps): update ghcr.io/nasus20202/atu-ekartoteka:latest docker digest to b3ac4d6 (#887)
+
 ## [0.9.5] - 2026-11-06
 
 - test(e2e): cover OpenTelemetry metrics, logs and traces
