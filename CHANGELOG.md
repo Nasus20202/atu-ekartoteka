@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.7] - 2026-11-09
+
+- refactor(auth): keep the auth backdrop mounted across auth pages
+- test(e2e): stabilise flaky admin, profile and orphaned-session tests
+- test(e2e): lower test and expect timeouts
+- fix(users): ignore repeated apartment selection
+- feat(auth): add skyline background to auth pages that lowers on sign-in
+- fix(auth): fix password toggle tap area and Turnstile width on mobile
+- chore(deps): update dependency lucide-react to v1.70.0 (#909)
+- chore(deps): update dependency @opentelemetry/semantic-conventions to v1.45.0 (#908)
+- chore(deps): lock file maintenance (#906)
+- chore(deps): update ghcr.io/nasus20202/atu-ekartoteka:latest docker digest to 18795d2 (#905)
+
 ## [0.9.6] - 2026-11-09
 
 - feat(auth): improve auth page UX (#900)
