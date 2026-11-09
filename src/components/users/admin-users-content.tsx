@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/layout/page-header';
 import { InfiniteScrollSentinel } from '@/components/ui/infinite-scroll-sentinel';
 import { Input } from '@/components/ui/input';
 import { ListViewSwitch } from '@/components/ui/list-view-switch';
+import { setApartmentSelection } from '@/components/users/apartment-selection';
 import { ApartmentSelectionDialog } from '@/components/users/apartment-selection-dialog';
 import { CreateUserDialog } from '@/components/users/create-user-dialog';
 import { useAdminUsers } from '@/components/users/use-admin-users';
@@ -166,9 +167,7 @@ export function AdminUsersContent({
         }}
         onSelectApartment={(apartmentId, checked) => {
           setSelectedApartments((current) =>
-            checked
-              ? [...current, apartmentId]
-              : current.filter((id) => id !== apartmentId)
+            setApartmentSelection(current, apartmentId, checked)
           );
         }}
         onSetApproved={() => {
