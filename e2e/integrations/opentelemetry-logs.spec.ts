@@ -28,7 +28,7 @@ test.describe('OpenTelemetry logs', () => {
     request,
   }) => {
     const email = `otel-failed-${Date.now()}@e2e-test.com`;
-    await createCredentialsUser({
+    const userId = await createCredentialsUser({
       email,
       password: E2E_PASSWORD,
       name: 'Failed',
@@ -41,12 +41,14 @@ test.describe('OpenTelemetry logs', () => {
         (await listLogs(request)).find(
           (candidate) =>
             candidate.body === 'Failed login attempt: incorrect password' &&
-            candidate.attributes.email === email
+            candidate.attributes.userId === userId
         ),
       EXPORT_TIMEOUT_MS
     );
 
     expect(log.severity).toBe('WARN');
+    // The account is identified by its id, never by the address typed in
+    expect(JSON.stringify(log)).not.toContain(email);
     expect(log.serviceName).toBe(SERVICE_NAME);
     expect(log.traceId).toMatch(TRACE_ID_PATTERN);
     await pollUntil(
@@ -65,7 +67,7 @@ test.describe('OpenTelemetry logs', () => {
     request,
   }) => {
     const email = `otel-success-${Date.now()}@e2e-test.com`;
-    await createCredentialsUser({
+    const userId = await createCredentialsUser({
       email,
       password: E2E_PASSWORD,
       name: 'Success',
@@ -78,12 +80,13 @@ test.describe('OpenTelemetry logs', () => {
         (await listLogs(request)).find(
           (candidate) =>
             candidate.body === 'User logged in successfully' &&
-            candidate.attributes.email === email
+            candidate.attributes.userId === userId
         ),
       EXPORT_TIMEOUT_MS
     );
 
     expect(log.severity).toBe('INFO');
+    expect(JSON.stringify(log)).not.toContain(email);
     expect(log.traceId).toMatch(TRACE_ID_PATTERN);
   });
 
@@ -95,26 +98,27 @@ test.describe('OpenTelemetry logs', () => {
     await submitRegistrationForm(page, email, E2E_PASSWORD);
     await expect(page).toHaveURL(/\/dashboard/);
 
-    const log = await pollUntil(
-      async () =>
-        (await listLogs(request)).find(
-          (candidate) =>
-            candidate.body === 'Email sent successfully' &&
-            candidate.attributes.to === email
-        ),
-      EXPORT_TIMEOUT_MS
-    );
+    // The log names the kind of e-mail, not the recipient, so it is found by
+    // the request it belongs to: the e-mail sent while the form was handled
+    const { log, registration } = await pollUntil(async () => {
+      const [logs, spans] = await Promise.all([
+        listLogs(request),
+        listSpans(request),
+      ]);
+      for (const candidate of logs) {
+        if (candidate.body !== 'Email sent') continue;
+        if (candidate.attributes.type !== 'verification') continue;
+        const span = spans.find(
+          (item) =>
+            item.name === REGISTER_SPAN && item.traceId === candidate.traceId
+        );
+        if (span) return { log: candidate, registration: span };
+      }
+      return undefined;
+    }, EXPORT_TIMEOUT_MS);
 
     expect(log.severity).toBe('INFO');
-    const registration = await pollUntil(
-      async () =>
-        (await listSpans(request)).find(
-          (candidate) =>
-            candidate.name === REGISTER_SPAN &&
-            candidate.traceId === log.traceId
-        ),
-      EXPORT_TIMEOUT_MS
-    );
+    expect(JSON.stringify(log)).not.toContain(email);
     expect(registration.kind).toBe(SERVER_SPAN_KIND);
   });
 });
