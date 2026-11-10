@@ -13,7 +13,7 @@ export function DashboardShell({
   main,
 }: DashboardShellProps) {
   return (
-    <div className="w-full bg-background">
+    <div className="w-full flex-1 bg-background">
       <main className="p-4 md:p-8">
         <div className="mx-auto w-full max-w-7xl">
           {greeting}

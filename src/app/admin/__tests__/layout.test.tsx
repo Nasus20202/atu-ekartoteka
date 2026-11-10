@@ -14,4 +14,19 @@ describe('AdminLayout', () => {
     expect(screen.getByTestId('admin-navbar')).toBeInTheDocument();
     expect(screen.getByText('admin page')).toBeInTheDocument();
   });
+
+  it('ends with the footer after the content and fixes no version label', () => {
+    render(<AdminLayout>{<p>admin page</p>}</AdminLayout>);
+
+    const footer = screen.getByRole('contentinfo');
+
+    expect(
+      screen.getByRole('link', { name: 'Polityka prywatności' })
+    ).toHaveAttribute('href', '/privacy');
+    expect(
+      screen.getByText('admin page').compareDocumentPosition(footer) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    expect(footer.closest('.fixed')).toBeNull();
+  });
 });

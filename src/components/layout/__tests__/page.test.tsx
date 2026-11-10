@@ -54,7 +54,7 @@ describe('Page', () => {
       </Page>
     );
 
-    const outerDiv = container.querySelector('.min-h-screen.bg-background');
+    const outerDiv = container.querySelector('.flex-1.bg-background');
     expect(outerDiv).toBeInTheDocument();
 
     const main = container.querySelector('main.p-4');

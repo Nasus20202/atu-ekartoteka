@@ -13,6 +13,27 @@ vi.mock('@/components/theme/theme-toggle', () => ({
 }));
 
 describe('AuthShell', () => {
+  it('ends with the footer in the page flow, after the content', () => {
+    render(
+      <AuthShell>
+        <p>Formularz</p>
+      </AuthShell>
+    );
+
+    const footer = screen.getByRole('contentinfo');
+    const content = screen.getByText('Formularz').parentElement!;
+
+    expect(footer).toHaveTextContent(`v${packageJson.version}`);
+    expect(
+      screen.getByRole('link', { name: 'Polityka prywatności' })
+    ).toHaveAttribute('href', '/privacy');
+    expect(content).toHaveClass('flex-1');
+    expect(content.compareDocumentPosition(footer)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING
+    );
+    expect(footer.closest('.fixed')).toBeNull();
+  });
+
   it('renders the content, version and theme toggle', () => {
     render(
       <AuthShell>
