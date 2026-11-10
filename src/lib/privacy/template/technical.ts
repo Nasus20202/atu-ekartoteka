@@ -37,5 +37,5 @@ W razie naruszenia ochrony danych zawiadomimy organ nadzorczy w ciągu 72 godzin
 
 Możemy ją zmieniać, na przykład gdy zmieni się sposób przetwarzania danych albo przepisy. Aktualna wersja jest zawsze pod adresem ${p('adres serwisu')}/privacy. O istotnych zmianach powiadomimy Cię ${p('sposób powiadomienia, na przykład wiadomością e-mail albo komunikatem w serwisie')}.
 
-Ta polityka obowiązuje od ${p('data wejścia w życie')}.
+Data wejścia w życie tej polityki: ${p('data wejścia w życie')}
 `;

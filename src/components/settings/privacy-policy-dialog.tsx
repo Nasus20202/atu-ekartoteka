@@ -54,7 +54,7 @@ export function PrivacyPolicyDialog({ editor }: PrivacyPolicyDialogProps) {
       <DialogContent
         className={`flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-3xl ${FULL_SCREEN_ON_PHONE}`}
       >
-        <DialogHeader className="px-5 pb-3 pt-5 pr-12 sm:px-6 sm:pt-6">
+        <DialogHeader className="px-5 pb-3 pr-12 pt-5 text-left sm:px-6 sm:pt-6">
           <DialogTitle>Polityka prywatności</DialogTitle>
           <DialogDescription>
             Tak zobaczą ją odwiedzający stronę /privacy.
@@ -105,7 +105,7 @@ export function PrivacyPolicyDialog({ editor }: PrivacyPolicyDialogProps) {
           </Alert>
         )}
 
-        <DialogFooter className="items-center gap-3 border-t px-5 py-3 sm:justify-between sm:px-6 max-sm:pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <DialogFooter className="flex-col gap-3 border-t px-5 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 max-sm:pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <div className="flex flex-wrap items-center gap-3">
             <Button
               type="button"
@@ -120,7 +120,7 @@ export function PrivacyPolicyDialog({ editor }: PrivacyPolicyDialogProps) {
               </span>
             )}
           </div>
-          <div className="flex flex-col-reverse gap-2 sm:flex-row">
+          <div className="grid grid-cols-2 gap-2 sm:flex">
             <Button
               type="button"
               variant="outline"
