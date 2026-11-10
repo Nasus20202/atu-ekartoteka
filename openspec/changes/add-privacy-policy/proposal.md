@@ -2,33 +2,34 @@
 
 ## Why
 
-The application processes personal data of tenants and owners (accounts, Google sign-in profiles, imported owner names, e-mail addresses, addresses, charges and payments) and sends it through a bot check (Cloudflare Turnstile), Google OAuth and SMTP, but it gives users no information notice. GDPR (RODO) art. 13 and 14 require the controller to inform people at the moment their data is collected, and the people imported from the association's accounting system never see any notice at all.
+The application processes personal data of tenants and owners (accounts, Google sign-in profiles, imported owner names, e-mail addresses, addresses, charges and payments) and sends it through a bot check (Cloudflare Turnstile), Google OAuth and SMTP, but it gives users no information notice. GDPR (RODO) art. 13 and 14 require the controller to inform people when their data is collected, and the owners imported from the association's accounting system, who never register, never see any notice at all.
 
-The app is self-hostable, so the notice text cannot be hard-coded to one controller, and the settings registry cannot currently hold a nullable, large value without every settings read loading it.
+The app is self-hostable, so the notice cannot be hard-coded to one controller. The built-in text must therefore be a strong, generic starting point, and the settings registry cannot currently hold a large nullable value without every settings read loading it.
 
 ## What Changes
 
 - Add a public `/privacy` page that renders an admin-saved policy text.
-- Add an admin-editable `privacyPolicy` application setting (nullable text) on the `Ustawienia` page, with a button that loads a built-in Polish template into the editor and a button that clears the saved text.
-- Ship a generic, RODO-complete Polish template in the repository. It describes only what the application itself does (accounts, imported owner data, e-mail, Turnstile, Google sign-in, cookies) and uses bracketed placeholders for everything an operator decides (controller, hosting and other recipients, retention, transfers). It is never shown to visitors.
-- Link the page from every auth page, the dashboard and admin footers, the profile page and every e-mail; add a short information sentence on the login and register forms.
+- Add an admin-editable `privacyPolicy` application setting (nullable text). A card on the `Ustawienia` page shows its status; editing happens in a modal that opens on a rendered preview and switches to a text editor.
+- Ship a generic, complete Polish template that the editor can load. It describes only what the application does and is written for three kinds of readers: people with an account, owners imported by an administrator who never registered, and people who received an e-mail they did not expect. It uses `[[…]]` placeholders for everything the operator decides. It is never shown to visitors, and saving is blocked while a placeholder remains.
+- Add one footer to every page group (auth pages, tenant panel, admin panel, the policy page): the version on the left, a `Polityka prywatności` link on the right. It sits under the content, or at the bottom of the screen when the content is short, and never covers anything.
+- Add the link to the footer of every e-mail.
 - Allow `/privacy` for signed-out users and for users who must change their password.
 - Refactor settings access: a setting's `parse` returns a result so `null` is a valid value; each setting gets its own cached reader that selects only its column; the full-row read is removed.
 - Add a `docs/` page for operators describing the placeholders and what to check.
 
 ## Non-goals
 
-- Cookie consent banner. The only cookies are strictly necessary or user-initiated preferences; analytics is the operator's decision and is documented as such.
-- Consent checkboxes. The legal basis is not consent, so registration shows an information notice, not a checkbox.
-- Policy versioning, a "last updated" date, or an edit history.
+- A cookie consent banner. The application sets only strictly necessary cookies and a user-initiated preference; analytics is an operator decision documented in the template.
+- Consent checkboxes or an information sentence under the forms. The legal basis is not consent, and the footer link is visible on every page where data is collected.
+- Policy versioning, a "last updated" date or an edit history.
 - Deployment-specific content (hosting, monitoring, analytics, backups) in the repository.
-- Account deletion, data export and retention jobs, and log redaction. They are separate changes.
+- Account deletion, data export and retention jobs. Reviewing what the application writes to logs and traces is a separate change, `redact-personal-data-from-logs`, delivered in the same pull request and applied first, because the template describes the result.
 
 ## Capabilities
 
 ### New Capabilities
 
-- `privacy-policy`: public policy page, admin editor and saved text, built-in template, links and information notices, safe rendering.
+- `privacy-policy`: public policy page, admin editor and saved text, built-in template, footer and links, safe rendering.
 
 ### Modified Capabilities
 
@@ -38,7 +39,8 @@ The app is self-hostable, so the notice text cannot be hard-coded to one control
 
 ## Impact
 
-- Code: `prisma/schema.prisma` and one migration; `src/lib/settings/*`, `src/lib/queries/settings/*`, `src/lib/mutations/settings/*`; `src/actions/settings`; `src/components/settings`; new `src/lib/privacy/*`, `src/components/privacy/*`, `src/app/privacy`; `AuthShell`, dashboard and admin layouts, profile page, login and register pages, `EmailLayout`; `src/lib/auth/proxy-handler.ts`.
+- Code: `prisma/schema.prisma` and one migration; `src/lib/settings/*`, `src/lib/queries/settings/*`, `src/lib/mutations/settings/*`; `src/actions/settings`; `src/components/settings`; new `src/lib/privacy/*`, `src/components/privacy/*`, `src/components/layout/app-footer.tsx`, `src/app/privacy`; `AuthShell`, the dashboard and admin layouts, `Page`, `EmailLayout`; `src/lib/auth/proxy-handler.ts`.
+- Visual baselines for every page that gains a footer.
 - Dependencies: none.
 - Specs, `README.md`, `docs/` and `openspec/config.yaml` index updated.
 - Deployment: no environment variables and no infrastructure change. A migration adds one nullable column.
