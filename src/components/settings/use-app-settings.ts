@@ -26,7 +26,7 @@ export function useAppSettings(initialYearsBack: number) {
         return;
       }
 
-      setYearsBack(result.data.tenantHistoryYearsBack);
+      setYearsBack(result.data.tenantHistoryYearsBack ?? nextYearsBack);
       setStatus({ kind: 'saved' });
     } catch {
       setStatus({ kind: 'error', message: SAVE_ERROR });

@@ -39,6 +39,55 @@ describe('updateSettingsAction', () => {
     });
   });
 
+  it('saves a policy text and returns only the updated key', async () => {
+    mocks.updateAppSettings.mockResolvedValue({ privacyPolicy: 'Tekst' });
+
+    const result = await updateSettingsAction({ privacyPolicy: 'Tekst' });
+
+    expect(result).toEqual({ ok: true, data: { privacyPolicy: 'Tekst' } });
+    expect(mocks.updateAppSettings).toHaveBeenCalledWith({
+      privacyPolicy: 'Tekst',
+    });
+  });
+
+  it('stores an empty policy as null', async () => {
+    mocks.updateAppSettings.mockResolvedValue({ privacyPolicy: null });
+
+    await updateSettingsAction({ privacyPolicy: '  ' });
+
+    expect(mocks.updateAppSettings).toHaveBeenCalledWith({
+      privacyPolicy: null,
+    });
+  });
+
+  it('rejects a policy with an unresolved placeholder and says why', async () => {
+    const result = await updateSettingsAction({
+      privacyPolicy: 'Administrator: [[nazwa]]',
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      code: 'invalid',
+      error: expect.stringContaining('podwójnymi nawiasami'),
+    });
+    expect(mocks.updateAppSettings).not.toHaveBeenCalled();
+  });
+
+  it('rejects a policy over the length limit without writing', async () => {
+    const result = await updateSettingsAction({
+      privacyPolicy: 'a'.repeat(50_001),
+    });
+
+    expect(result).toMatchObject({ ok: false, code: 'invalid' });
+    expect(mocks.updateAppSettings).not.toHaveBeenCalled();
+  });
+
+  it('rejects an unknown setting', async () => {
+    const result = await updateSettingsAction({ unknown: 1 });
+
+    expect(result).toMatchObject({ ok: false, code: 'invalid' });
+  });
+
   it.each([
     ['a negative number', { tenantHistoryYearsBack: -1 }],
     ['a number above the limit', { tenantHistoryYearsBack: 21 }],

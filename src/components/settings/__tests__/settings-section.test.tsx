@@ -5,7 +5,7 @@ import { SettingsSection } from '@/components/settings/settings-section';
 
 const mocks = vi.hoisted(() => ({
   requireAdminAccess: vi.fn(),
-  getAppSettings: vi.fn(),
+  getTenantHistoryYearsBack: vi.fn(),
 }));
 
 vi.mock('@/actions/settings/settings', () => ({
@@ -14,15 +14,15 @@ vi.mock('@/actions/settings/settings', () => ({
 vi.mock('@/lib/auth/require-admin-access', () => ({
   requireAdminAccess: mocks.requireAdminAccess,
 }));
-vi.mock('@/lib/queries/settings/get-app-settings', () => ({
-  getAppSettings: mocks.getAppSettings,
+vi.mock('@/lib/queries/settings/app-settings', () => ({
+  getTenantHistoryYearsBack: mocks.getTenantHistoryYearsBack,
 }));
 
 describe('SettingsSection', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdminAccess.mockResolvedValue({});
-    mocks.getAppSettings.mockResolvedValue({ tenantHistoryYearsBack: 4 });
+    mocks.getTenantHistoryYearsBack.mockResolvedValue(4);
   });
 
   it('renders the form with the stored value', async () => {
@@ -37,6 +37,6 @@ describe('SettingsSection', () => {
     mocks.requireAdminAccess.mockRejectedValue(new Error('NEXT_REDIRECT'));
 
     await expect(SettingsSection()).rejects.toThrow('NEXT_REDIRECT');
-    expect(mocks.getAppSettings).not.toHaveBeenCalled();
+    expect(mocks.getTenantHistoryYearsBack).not.toHaveBeenCalled();
   });
 });

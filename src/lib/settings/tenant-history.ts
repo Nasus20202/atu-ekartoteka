@@ -1,12 +1,12 @@
-import { getAppSettings } from '@/lib/queries/settings/get-app-settings';
+import { getTenantHistoryYearsBack } from '@/lib/queries/settings/app-settings';
 import { getHistoryStartYear } from '@/lib/utils/history-window';
 import { getRequestNow } from '@/lib/utils/request-now';
 
 export async function getTenantHistoryStartYear(): Promise<number> {
-  const [now, { tenantHistoryYearsBack }] = await Promise.all([
+  const [now, yearsBack] = await Promise.all([
     getRequestNow(),
-    getAppSettings(),
+    getTenantHistoryYearsBack(),
   ]);
 
-  return getHistoryStartYear(now, tenantHistoryYearsBack);
+  return getHistoryStartYear(now, yearsBack);
 }

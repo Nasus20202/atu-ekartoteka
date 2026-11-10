@@ -3,8 +3,8 @@ import { describe, expect, it, vi } from 'vitest';
 vi.mock('@/lib/utils/request-now', () => ({
   getRequestNow: vi.fn().mockResolvedValue(new Date(2027, 0, 5)),
 }));
-vi.mock('@/lib/queries/settings/get-app-settings', () => ({
-  getAppSettings: vi.fn().mockResolvedValue({ tenantHistoryYearsBack: 2 }),
+vi.mock('@/lib/queries/settings/app-settings', () => ({
+  getTenantHistoryYearsBack: vi.fn().mockResolvedValue(2),
 }));
 
 const { getTenantHistoryStartYear } =
