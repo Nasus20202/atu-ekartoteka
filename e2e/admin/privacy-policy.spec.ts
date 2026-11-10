@@ -68,6 +68,40 @@ test.describe('Public policy page', () => {
     await expect(page).toHaveTitle(/Polityka prywatności \| /);
   });
 
+  test('goes back to the page it was opened from and offers printing', async ({
+    page,
+  }) => {
+    await setPrivacyPolicy(POLICY);
+    await page.goto('/login');
+    await page
+      .getByRole('contentinfo')
+      .getByRole('link', { name: 'Polityka prywatności' })
+      .click();
+    await expect(page).toHaveURL(/\/privacy$/);
+    await expect(
+      page.getByRole('button', { name: /Drukuj lub zapisz jako PDF/ })
+    ).toBeVisible();
+
+    await page.getByRole('button', { name: /Wróć/ }).click();
+
+    await expect(page).toHaveURL(/\/login$/);
+  });
+
+  test('prints only the policy, without the controls and the footer', async ({
+    page,
+  }) => {
+    await setPrivacyPolicy(POLICY);
+    await page.goto('/privacy');
+
+    await page.emulateMedia({ media: 'print' });
+
+    await expect(page.getByRole('button', { name: /Wróć/ })).toBeHidden();
+    await expect(page.getByRole('contentinfo')).toBeHidden();
+    await expect(
+      page.getByRole('heading', { name: 'Nasza polityka' })
+    ).toBeVisible();
+  });
+
   test('shows the same text to a signed-in tenant', async ({ userPage }) => {
     await setPrivacyPolicy(POLICY);
 

@@ -10,6 +10,9 @@ const mocks = vi.hoisted(() => ({
   getPrivacyPolicy: vi.fn(),
 }));
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ back: vi.fn(), push: vi.fn() }),
+}));
 vi.mock('next/server', () => ({ connection: mocks.connection }));
 vi.mock('@/lib/queries/settings/app-settings', () => ({
   getPrivacyPolicy: mocks.getPrivacyPolicy,

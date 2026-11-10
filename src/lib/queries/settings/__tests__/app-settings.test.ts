@@ -15,8 +15,12 @@ vi.mock('react', () => ({
   },
 }));
 
-const { getPrivacyPolicy, getTenantHistoryYearsBack, readSetting } =
-  await import('@/lib/queries/settings/app-settings');
+const {
+  getPrivacyPolicy,
+  getTenantHistoryYearsBack,
+  readAllSettings,
+  readSetting,
+} = await import('@/lib/queries/settings/app-settings');
 
 function resetRequest() {
   memo = new Map();
@@ -100,5 +104,33 @@ describe('settings queries', () => {
 
     await expect(getTenantHistoryYearsBack()).resolves.toBe(6);
     expect(mockFindUnique).toHaveBeenCalledTimes(2);
+  });
+
+  it('reads every setting in one query for the settings form', async () => {
+    mockFindUnique.mockResolvedValue({
+      tenantHistoryYearsBack: 3,
+      privacyPolicy: 'Tekst',
+    });
+
+    await expect(readAllSettings()).resolves.toEqual({
+      tenantHistoryYearsBack: 3,
+      privacyPolicy: 'Tekst',
+    });
+    expect(mockFindUnique).toHaveBeenCalledTimes(1);
+    expect(mockFindUnique.mock.calls[0][0].select).toEqual({
+      tenantHistoryYearsBack: true,
+      privacyPolicy: true,
+    });
+  });
+
+  it('gives every default when nothing was saved yet', async () => {
+    mockFindUnique.mockResolvedValue(null);
+
+    const all = await readAllSettings();
+
+    expect(all.privacyPolicy).toBeNull();
+    expect(all.tenantHistoryYearsBack).toBe(
+      await readSetting('tenantHistoryYearsBack')
+    );
   });
 });

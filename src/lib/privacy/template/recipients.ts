@@ -24,7 +24,7 @@ ${p('Jeśli dostawca hostingu, poczty lub inny odbiorca ma siedzibę albo przetw
 ## Jak długo przechowujemy dane
 
 - **Dane konta**: do usunięcia konta, a po jego usunięciu ${p('okres, na przykład „nie dłużej niż 30 dni”, albo „usuwamy od razu”')}.
-- **Dane lokali i rozliczeń**: ${p('okres wynikający z przepisów lub umowy, na przykład czas trwania prawa do lokalu i okres przedawnienia roszczeń')}.
+- **Dane lokali i rozliczeń**: ${p('okres wynikający z przepisów lub umowy, na przykład tak długo, jak wymaga tego zarządzanie nieruchomością, oraz okres przedawnienia roszczeń')}.
 - **Jednorazowe linki do potwierdzenia adresu e-mail i przywracania hasła**: wygasają, a serwis usuwa wygasłe i wykorzystane linki automatycznie, co godzinę.
 - **Dzienniki zdarzeń**: ${p('okres przechowywania dzienników, na przykład „7 dni”')}.
 - **Kopie zapasowe**: ${p('okres przechowywania kopii zapasowych albo usuń ten punkt, jeśli ich nie ma')}.

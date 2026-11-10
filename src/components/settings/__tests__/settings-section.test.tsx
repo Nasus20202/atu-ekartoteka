@@ -5,8 +5,7 @@ import { SettingsSection } from '@/components/settings/settings-section';
 
 const mocks = vi.hoisted(() => ({
   requireAdminAccess: vi.fn(),
-  getTenantHistoryYearsBack: vi.fn(),
-  getPrivacyPolicy: vi.fn(),
+  readAllSettings: vi.fn(),
 }));
 
 vi.mock('@/actions/settings/settings', () => ({
@@ -16,8 +15,7 @@ vi.mock('@/lib/auth/require-admin-access', () => ({
   requireAdminAccess: mocks.requireAdminAccess,
 }));
 vi.mock('@/lib/queries/settings/app-settings', () => ({
-  getTenantHistoryYearsBack: mocks.getTenantHistoryYearsBack,
-  getPrivacyPolicy: mocks.getPrivacyPolicy,
+  readAllSettings: mocks.readAllSettings,
 }));
 vi.mock('@/components/providers/confirm-dialog', () => ({
   useConfirm: () => vi.fn(),
@@ -27,8 +25,10 @@ describe('SettingsSection', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdminAccess.mockResolvedValue({});
-    mocks.getTenantHistoryYearsBack.mockResolvedValue(4);
-    mocks.getPrivacyPolicy.mockResolvedValue(null);
+    mocks.readAllSettings.mockResolvedValue({
+      tenantHistoryYearsBack: 4,
+      privacyPolicy: null,
+    });
   });
 
   it('renders the form with the stored value', async () => {
@@ -40,7 +40,10 @@ describe('SettingsSection', () => {
   });
 
   it('shows the stored policy as published', async () => {
-    mocks.getPrivacyPolicy.mockResolvedValue('# Polityka');
+    mocks.readAllSettings.mockResolvedValue({
+      tenantHistoryYearsBack: 4,
+      privacyPolicy: '# Polityka',
+    });
 
     render(await SettingsSection());
 
@@ -57,7 +60,6 @@ describe('SettingsSection', () => {
     mocks.requireAdminAccess.mockRejectedValue(new Error('NEXT_REDIRECT'));
 
     await expect(SettingsSection()).rejects.toThrow('NEXT_REDIRECT');
-    expect(mocks.getTenantHistoryYearsBack).not.toHaveBeenCalled();
-    expect(mocks.getPrivacyPolicy).not.toHaveBeenCalled();
+    expect(mocks.readAllSettings).not.toHaveBeenCalled();
   });
 });

@@ -33,9 +33,9 @@ export function PrivacyPolicyCard({ initialPolicy }: PrivacyPolicyCardProps) {
           </Badge>
         </div>
         <CardDescription>
-          Tekst widoczny pod adresem {PRIVACY_PATH} i linkowany w stopce każdej
-          strony oraz w wiadomościach e-mail. Gdy zmieni się sposób
-          przetwarzania danych, sprawdź, czy polityka jest nadal aktualna.
+          Tekst dostępny publicznie przez link w stopce każdej strony i w
+          wiadomościach e-mail. Gdy zmieni się sposób przetwarzania danych,
+          sprawdź, czy polityka jest nadal aktualna.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

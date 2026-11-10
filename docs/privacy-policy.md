@@ -99,3 +99,5 @@ The application logs the account ID, never an e-mail address, a name, a token or
 an IP address, and spans sent to an OpenTelemetry backend carry no query string
 or client address. See [code conventions](code-conventions.md). Describe in the
 policy where your logs and backups are kept and for how long.
+
+The page has a back button and a print button (print dialog, so also "save as PDF"). The printed page leaves out the buttons and the footer and is always dark on white.

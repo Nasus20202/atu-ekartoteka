@@ -5,9 +5,12 @@
 
 import * as pg from 'pg';
 
-export async function setPrivacyPolicy(text: string | null) {
-  const dbUrl = process.env.DATABASE_URL;
+import { loadSql } from './load-sql';
 
+export async function setPrivacyPolicy(
+  text: string | null,
+  dbUrl = process.env.DATABASE_URL
+) {
   if (!dbUrl) {
     throw new Error('DATABASE_URL environment variable is not set');
   }
@@ -16,12 +19,7 @@ export async function setPrivacyPolicy(text: string | null) {
 
   try {
     await client.connect();
-    await client.query(
-      `INSERT INTO "AppSettings" (id, "privacyPolicy", "updatedAt")
-       VALUES (1, $1, NOW())
-       ON CONFLICT (id) DO UPDATE SET "privacyPolicy" = $1, "updatedAt" = NOW()`,
-      [text]
-    );
+    await client.query(loadSql('upsert-privacy-policy.sql'), [text]);
   } finally {
     await client.end();
   }

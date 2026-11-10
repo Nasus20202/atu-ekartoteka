@@ -33,6 +33,20 @@ The system SHALL serve the saved policy text at `/privacy` to everyone, signed i
 - **WHEN** `/privacy` renders
 - **THEN** the document title is `Polityka prywatności` followed by the application name
 
+### Requirement: Back And Print Controls
+
+The policy page SHALL show a `Wróć` button that returns to the previous page, or opens the start page when the visitor has no history, and, when a policy is published, a button that opens the print dialog so the policy can be printed or saved as PDF. Both buttons and the footer SHALL be left out of the printed page, which SHALL be dark text on white whatever the theme.
+
+#### Scenario: Going back
+
+- **WHEN** a visitor opened the policy from the login page and presses `Wróć`
+- **THEN** the login page is shown again
+
+#### Scenario: Printing
+
+- **WHEN** the policy page is printed
+- **THEN** the buttons and the footer are not part of the printed page
+
 ### Requirement: Safe Policy Rendering
 
 The system SHALL render the saved text as a limited Markdown subset into elements built by the application, never as raw HTML. The subset is headings from `#` to `###`, paragraphs, bulleted and numbered lists, bold text and links.

@@ -213,6 +213,11 @@ describe('privacy policy template', () => {
     }
   });
 
+  it('refers to the policy by name, never by its address in the application', () => {
+    expect(PRIVACY_POLICY_TEMPLATE).not.toMatch(/\/privacy/);
+    expect(PRIVACY_POLICY_TEMPLATE).toMatch(/„Polityka prywatności”/);
+  });
+
   it('renders without any literal Markdown left in the text', () => {
     const leftovers = (block: Block): string[] => {
       if (block.kind === 'list') return block.items.flatMap(textOf);

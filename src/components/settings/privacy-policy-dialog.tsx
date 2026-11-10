@@ -57,7 +57,7 @@ export function PrivacyPolicyDialog({ editor }: PrivacyPolicyDialogProps) {
         <DialogHeader className="px-5 pb-3 pr-12 pt-5 text-left sm:px-6 sm:pt-6">
           <DialogTitle>Polityka prywatności</DialogTitle>
           <DialogDescription>
-            Tak zobaczą ją odwiedzający stronę /privacy.
+            Tak zobaczą ją odwiedzający serwis.
           </DialogDescription>
         </DialogHeader>
 
