@@ -155,6 +155,7 @@ const phoneProject = (name: string, use: Project['use']): Project => ({
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
+  updateSnapshots: 'all',
   testDir: './e2e',
   globalSetup: './e2e/global-setup.ts',
   globalTeardown: './e2e/global-teardown.ts',
