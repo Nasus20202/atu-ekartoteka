@@ -192,7 +192,7 @@ describe('privacy policy template', () => {
 
     expect(cookies).toMatch(/art\. 399 ustawy z 12 lipca 2024 r\./);
     expect(cookies).toContain('Prawo komunikacji elektronicznej');
-    expect(cookies).toMatch(/Nie używamy marketingowych/);
+    expect(cookies).toMatch(/Nie używamy marketingowych plików cookies/);
     expect(cookies).not.toContain('art. 173');
   });
 

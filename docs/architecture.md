@@ -33,8 +33,10 @@ Defined in `prisma/schema.prisma`:
 - `User` - role `ADMIN` or `TENANT`, status `PENDING`, `APPROVED` or
   `REJECTED`.
 - `EmailVerification`, `PasswordReset` - single-use, expiring tokens.
-- `AppSettings` - one row of admin settings (how many previous years residents
-  see).
+- `AppSettings` - one row of admin settings: how many previous years residents
+  see, and the privacy policy text. Each setting has its own reader in
+  `src/lib/queries/settings/app-settings.ts` that selects only its column, so
+  the long policy is never loaded with the history window.
 - `CronRun` - claims for scheduled runs, so each tick runs once across
   instances.
 
@@ -51,7 +53,10 @@ queries. [Importing data](importing-data.md) explains why.
    who must change their password to `/change-password`. That redirect uses a
    flag in the session token as a hint only.
 2. **Pages and layouts** call `getSession()`. Anonymous visitors are redirected
-   to `/login`. Everything under `/admin` also checks, against the database,
+   to `/login`, except on `/privacy`, which is public. The auth, dashboard,
+   admin and privacy layouts are full-height flex columns that end with
+   `AppFooter` (version and policy link), so `Page` fills the free space with
+   `flex-1` instead of forcing a screen-high box. Everything under `/admin` also checks, against the database,
    that the user is an approved admin, and redirects others to `/dashboard`.
 3. **API routes** start with `requireUser()` or `requireAdmin()` and return
    its 401 or 403 response before doing any work.

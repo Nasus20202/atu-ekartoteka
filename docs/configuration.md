@@ -89,7 +89,9 @@ local mock. They exist for the test suites and should not be set in production.
 script may load from or send data to; the Content Security Policy blocks
 anything not listed. See `.env.example` for Plausible and Umami snippets.
 
-Only add a script you trust.
+Only add a script you trust. An analytics script that stores or reads data in the
+browser needs the visitor's consent first, and the privacy policy must describe
+it (see [privacy policy](privacy-policy.md)).
 
 ## Logging and telemetry
 

@@ -12,7 +12,7 @@ Używamy wyłącznie tego, co niezbędne do działania serwisu lub do usługi, o
 - **motyw kolorystyczny**, jasny lub ciemny (pamięć lokalna przeglądarki): zapamiętuje Twój wybór;
 - **sprawdzenie Turnstile** na stronach logowania, rejestracji i przywracania hasła: dostawca może zapisać w przeglądarce dane techniczne niezbędne do jego działania. ${p('Usuń ten punkt, jeśli Turnstile jest wyłączone.')}
 
-Nie używamy marketingowych ani śledzących plików cookies i nie łączymy danych z różnych serwisów.
+Nie używamy marketingowych plików cookies i nie łączymy danych z różnych serwisów.
 
 ${p('Akapit opcjonalny, analityka: jeśli serwis korzysta z narzędzia analitycznego, opisz je tutaj: nazwę, cel, zbierane dane, okres przechowywania i to, że wymaga Twojej zgody przed zapisaniem informacji w urządzeniu. Jeśli nie korzystasz z analityki, usuń cały akapit.')}
 

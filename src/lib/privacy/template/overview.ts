@@ -10,7 +10,7 @@ Ta polityka wyjaśnia, jak przetwarzamy dane osobowe w serwisie e-kartoteki ${p(
 - Administratorem Twoich danych jest ${p('pełna nazwa administratora')}, ${p('adres siedziby administratora')}. Napisz do nas: ${p('adres e-mail do spraw danych osobowych')}.
 - Przetwarzamy dane potrzebne do założenia konta i pokazania Ci naliczeń oraz wpłat za Twój lokal: adres e-mail, imię i nazwisko, dane lokalu i rozliczeń oraz podstawowe dane techniczne o działaniu serwisu.
 - Robimy to, żeby prowadzić Twoje konto, udostępniać rozliczenia lokalu, wysyłać wiadomości o koncie, chronić serwis przed nadużyciami i wypełniać obowiązki wynikające z przepisów.
-- Nie sprzedajemy danych, nie profilujemy Cię i nie podejmujemy wobec Ciebie zautomatyzowanych decyzji. Nie używamy reklamowych ani śledzących plików cookies.
+- Nie sprzedajemy danych, nie profilujemy Cię i nie podejmujemy wobec Ciebie zautomatyzowanych decyzji. Nie używamy reklamowych plików cookies.
 - Masz prawo dostępu do danych, ich poprawiania, usunięcia, ograniczenia przetwarzania, przeniesienia i sprzeciwu oraz prawo do skargi do Prezesa Urzędu Ochrony Danych Osobowych. Jak z nich skorzystać, piszemy w sekcji „Jak skorzystać z praw”.
 
 ## Dla kogo jest ta polityka
