@@ -112,4 +112,8 @@ export const emailStyles = {
     lineHeight: 'normal',
     textAlign: 'center',
   },
+  footerLink: {
+    color: emailColors.mutedForeground,
+    textDecoration: 'underline',
+  },
 } satisfies Record<string, CSSProperties>;

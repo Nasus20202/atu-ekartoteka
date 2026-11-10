@@ -1,11 +1,13 @@
 import type { ReactNode } from 'react';
-import { Body, Head, Heading, Html, Section, Text } from 'react-email';
+import { Body, Head, Heading, Html, Link, Section, Text } from 'react-email';
 
+import { appUrl } from '@/lib/email/app-url';
 import { emailStyles } from '@/lib/email/email-theme';
 
 export const EMAIL_BRAND = 'ATU Ekartoteka';
 const EMAIL_LANGUAGE = 'pl';
 const VIEWPORT = 'width=device-width, initial-scale=1.0';
+export const EMAIL_PRIVACY_LINK_TEXT = 'Polityka prywatności';
 
 interface Props {
   title: string;
@@ -32,7 +34,13 @@ export function EmailLayout({ title, children }: Props) {
               {children}
             </Section>
           </Section>
-          <Text style={emailStyles.footer}>{EMAIL_BRAND}</Text>
+          <Text style={emailStyles.footer}>
+            {EMAIL_BRAND}
+            {' · '}
+            <Link href={appUrl('/privacy')} style={emailStyles.footerLink}>
+              {EMAIL_PRIVACY_LINK_TEXT}
+            </Link>
+          </Text>
         </Section>
       </Body>
     </Html>

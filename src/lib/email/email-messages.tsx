@@ -21,6 +21,7 @@ import {
   VERIFICATION_EMAIL_SUBJECT,
   VerificationEmail,
 } from '@/components/email/emails/verification-email';
+import { appUrl } from '@/lib/email/app-url';
 
 const PLAIN_TEXT_OPTIONS: Parameters<typeof toPlainText>[1] = {
   selectors: [
@@ -33,16 +34,10 @@ const PLAIN_TEXT_OPTIONS: Parameters<typeof toPlainText>[1] = {
   ],
 };
 
-const DEFAULT_APP_URL = 'http://localhost:3000';
-
 export interface EmailMessage {
   subject: string;
   html: string;
   text: string;
-}
-
-function appUrl(path: string): string {
-  return `${process.env.APP_URL || DEFAULT_APP_URL}${path}`;
 }
 
 async function buildMessage(
