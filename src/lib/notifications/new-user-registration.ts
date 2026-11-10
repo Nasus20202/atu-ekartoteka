@@ -40,15 +40,9 @@ export async function notifyAdminsOfNewUser(
           userName,
           formattedDate
         );
-        logger.info(
-          { adminEmail: admin.email, newUserEmail: userEmail },
-          'Admin notified of new user registration'
-        );
+        logger.info('Admin notified of new user registration');
       } catch (error) {
-        logger.error(
-          { error, adminEmail: admin.email, newUserEmail: userEmail },
-          'Failed to send admin notification'
-        );
+        logger.error({ error }, 'Failed to send admin notification');
         // Don't throw - continue with other admins
       }
     });
@@ -56,14 +50,11 @@ export async function notifyAdminsOfNewUser(
     await Promise.allSettled(notifications);
 
     logger.info(
-      { userEmail, adminCount: admins.length },
+      { adminCount: admins.length },
       'New user registration notifications sent to admins'
     );
   } catch (error) {
-    logger.error(
-      { error, userEmail },
-      'Failed to notify admins of new user registration'
-    );
+    logger.error({ error }, 'Failed to notify admins of new user registration');
     // Don't throw - notification failure shouldn't break registration
   }
 }

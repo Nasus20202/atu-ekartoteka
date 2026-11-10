@@ -67,10 +67,7 @@ export async function verifyEmailAction(
       return invalid(TOKEN_USED_MESSAGE);
     }
 
-    logger.info(
-      { userId: verification.userId, email: verification.user.email },
-      'Email verified successfully'
-    );
+    logger.info({ userId: verification.userId }, 'Email verified successfully');
     authMetrics.recordEmailVerification('success');
 
     return { ok: true, data: undefined };

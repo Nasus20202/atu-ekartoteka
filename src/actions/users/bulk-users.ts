@@ -82,7 +82,7 @@ export async function bulkCreateAccountsAction(
       try {
         if (await findUserByEmail(email)) {
           skipped++;
-          logger.info({ email }, 'Skipping existing user');
+          logger.info({ apartmentIds: aptIds }, 'Skipping existing user');
           continue;
         }
 
@@ -100,14 +100,20 @@ export async function bulkCreateAccountsAction(
         emailService
           .sendAccountActivationEmail(email, tempPassword, owner ?? undefined)
           .catch((err) =>
-            logger.error({ err, email }, 'Failed to send activation email')
+            logger.error(
+              { err, apartmentIds: aptIds },
+              'Failed to send activation email'
+            )
           );
 
         created++;
-        logger.info({ email, aptCount: aptIds.length }, 'Created user account');
+        logger.info({ apartmentIds: aptIds }, 'Created user account');
       } catch (err) {
         errors++;
-        logger.error({ err, email }, 'Failed to create user account');
+        logger.error(
+          { err, apartmentIds: aptIds },
+          'Failed to create user account'
+        );
       }
     }
 
@@ -148,7 +154,10 @@ export async function bulkAssignAccountsAction(
 
         if (!existingUser) {
           skipped += aptIds.length;
-          logger.info({ email }, 'No existing user found, skipping');
+          logger.info(
+            { apartmentIds: aptIds },
+            'No existing user found, skipping'
+          );
           continue;
         }
 
@@ -157,12 +166,15 @@ export async function bulkAssignAccountsAction(
         skipped += aptIds.length - count;
 
         logger.info(
-          { email, aptCount: aptIds.length },
+          { apartmentIds: aptIds },
           'Assigned existing user to apartments'
         );
       } catch (err) {
         errors += aptIds.length;
-        logger.error({ err, email }, 'Failed to assign existing user');
+        logger.error(
+          { err, apartmentIds: aptIds },
+          'Failed to assign existing user'
+        );
       }
     }
 

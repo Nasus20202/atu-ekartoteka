@@ -22,10 +22,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    logger.error(
-      { error: error.message, stack: error.stack, digest: error.digest },
-      'Root layout error'
-    );
+    logger.error({ error, digest: error.digest }, 'Root layout error');
   }, [error]);
 
   return (

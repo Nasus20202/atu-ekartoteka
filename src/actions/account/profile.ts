@@ -39,7 +39,7 @@ export async function updateProfileAction(
   if (newPassword) changesRequested.push('password');
 
   logger.info(
-    { email: session.user.email, changes: changesRequested },
+    { userId: session.user.id, changes: changesRequested },
     'Profile update requested'
   );
 
@@ -84,7 +84,7 @@ export async function updateProfileAction(
           !(await bcrypt.compare(currentPassword, user.password))
         ) {
           logger.warn(
-            { email: session.user.email },
+            { userId: session.user.id },
             'Failed password change attempt: incorrect current password'
           );
           return invalid(CURRENT_PASSWORD_WRONG);
@@ -102,7 +102,7 @@ export async function updateProfileAction(
     });
 
     logger.info(
-      { email: session.user.email, changes: changesRequested },
+      { userId: session.user.id, changes: changesRequested },
       'Profile updated successfully'
     );
 

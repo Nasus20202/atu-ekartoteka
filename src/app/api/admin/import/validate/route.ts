@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
 
     logger.info(
       {
-        email: session.user.email,
+        adminId: session.user.id,
         hoaCount: result.results.length,
         skipFullValidation,
       },

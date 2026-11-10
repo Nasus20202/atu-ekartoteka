@@ -67,11 +67,7 @@ export class EmailService {
   ): Promise<boolean> {
     if (!this.isConfigured) {
       logger.info(
-        {
-          to: options.to,
-          subject: options.subject,
-          ...(isDev && { text: options.text }),
-        },
+        { type: emailType, ...(isDev && { text: options.text }) },
         'Email skipped (SMTP not configured)'
       );
       emailMetrics.recordEmailSent(emailType, 'skipped');
@@ -93,24 +89,16 @@ export class EmailService {
       });
 
       logger.info(
-        {
-          to: options.to,
-          subject: options.subject,
-          messageId: info.messageId,
-        },
-        'Email sent successfully'
+        { type: emailType, result: 'success', messageId: info.messageId },
+        'Email sent'
       );
 
       emailMetrics.recordEmailSent(emailType, 'success');
       return true;
     } catch (error) {
       logger.error(
-        {
-          error,
-          to: options.to,
-          subject: options.subject,
-        },
-        'Failed to send email'
+        { error, type: emailType, result: 'failure' },
+        'Email failed'
       );
 
       emailMetrics.recordEmailSent(emailType, 'failure');
@@ -144,7 +132,6 @@ export class EmailService {
   ): Promise<boolean> {
     logger.info(
       {
-        to,
         tokenLength: token.length,
         tokenFingerprint: hashToken(token).slice(0, 12),
         hasName: !!name,
@@ -156,12 +143,6 @@ export class EmailService {
       { to, ...(await verificationMessage(token, name)) },
       'verification'
     );
-
-    if (result) {
-      logger.info({ to }, 'Verification email sent successfully');
-    } else {
-      logger.error({ to }, 'Failed to send verification email');
-    }
 
     return result;
   }

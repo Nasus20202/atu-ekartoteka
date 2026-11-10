@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { expectNoPersonalData } from '@/lib/logging/testing';
 import { AccountStatus, AuthMethod, UserRole } from '@/lib/types';
+
+const { mockLog } = vi.hoisted(() => ({
+  mockLog: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
 
 const mockAuth = vi.fn();
 const mockUserFindUnique = vi.fn();
@@ -45,11 +50,7 @@ vi.mock('@/lib/auth/admin-access', () => ({
 }));
 
 vi.mock('@/lib/logger', () => ({
-  createLogger: () => ({
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-  }),
+  createLogger: () => mockLog,
 }));
 
 function adminSession() {
@@ -154,6 +155,25 @@ describe('bulkCreateAccountsAction', () => {
         }),
       })
     );
+  });
+
+  it('logs apartment IDs and no owner e-mail address', async () => {
+    mockAuth.mockResolvedValueOnce(adminSession());
+    mockApartmentFindMany.mockResolvedValueOnce([
+      { id: 'apt-1', email: 'canary@example.com', owner: 'Canary Owner' },
+    ]);
+    mockUserFindUnique.mockResolvedValueOnce(null);
+    mockUserCreate.mockRejectedValueOnce(new Error('Unique constraint failed'));
+
+    const { bulkCreateAccountsAction } =
+      await import('@/actions/users/bulk-users');
+    await bulkCreateAccountsAction({ apartmentIds: ['apt-1'] });
+
+    expect(mockLog.error).toHaveBeenCalled();
+    expectNoPersonalData(Object.values(mockLog), [
+      'canary@example.com',
+      'Canary Owner',
+    ]);
   });
 
   it('should deduplicate by email (two apartments, one email)', async () => {

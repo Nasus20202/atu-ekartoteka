@@ -24,10 +24,7 @@ export default function Error({
   const router = useRouter();
 
   useEffect(() => {
-    logger.error(
-      { error: error.message, stack: error.stack, digest: error.digest },
-      'Application error'
-    );
+    logger.error({ error, digest: error.digest }, 'Application error');
   }, [error]);
 
   return (

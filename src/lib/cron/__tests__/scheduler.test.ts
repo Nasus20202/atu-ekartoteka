@@ -75,7 +75,7 @@ describe('CronScheduler', () => {
 
       expect(event).toBe('execution:skipped');
       expect(mockLogger.info).toHaveBeenCalledWith(
-        { name: 'skipped-task', slot },
+        { task: 'skipped-task', slot },
         'Scheduled run claimed elsewhere, skipped'
       );
       expect(mockLogger.error).not.toHaveBeenCalled();
@@ -91,7 +91,7 @@ describe('CronScheduler', () => {
       handler({ reason: 'coordinator-error', date: slot });
 
       expect(mockLogger.error).toHaveBeenCalledWith(
-        { name: 'unclaimed-task', slot },
+        { task: 'unclaimed-task', slot },
         'Scheduled run skipped, claim failed'
       );
     });

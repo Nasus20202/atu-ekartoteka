@@ -69,7 +69,7 @@ export async function resendVerificationAction(): Promise<
       user.name || undefined
     );
 
-    logger.info({ email: user.email }, 'Verification email resent');
+    logger.info({ userId: user.id }, 'Verification email resent');
     return {
       ok: true,
       data: { message: 'Email weryfikacyjny został wysłany ponownie' },

@@ -43,7 +43,7 @@ export async function updateUserStatusAction(
   const { userId, status, apartmentIds } = readInput(input);
 
   logger.info(
-    { adminEmail: session.user.email, userId, status },
+    { adminId: session.user.id, userId, status },
     'Admin attempting to update user status'
   );
 
@@ -99,8 +99,8 @@ export async function updateUserStatusAction(
 
     logger.info(
       {
-        adminEmail: session.user.email,
-        userEmail: updatedUser.email,
+        adminId: session.user.id,
+        userId,
         status: nextStatus,
         apartmentCount: updatedUser.apartments.length,
       },
@@ -136,10 +136,7 @@ export async function createUserAction(
   const email = asString(fields.email);
   const password = asString(fields.password);
 
-  logger.info(
-    { adminEmail: session.user.email, newUserEmail: email, role },
-    'Admin creating new user'
-  );
+  logger.info({ adminId: session.user.id, role }, 'Admin creating new user');
 
   const validationError = validateCredentials(email, password);
   if (validationError) return invalid(validationError);
@@ -158,8 +155,8 @@ export async function createUserAction(
   try {
     if (await findUserByEmail(email as string)) {
       logger.warn(
-        { email },
-        `User creation failed: ${email} already exists (attempted by ${session.user.email})`
+        { adminId: session.user.id },
+        'User creation failed: e-mail already in use'
       );
       return invalid(EMAIL_TAKEN_MESSAGE);
     }
@@ -174,6 +171,10 @@ export async function createUserAction(
       status: (status as AccountStatus) || AccountStatus.PENDING,
     });
 
+    logger.info(
+      { adminId: session.user.id, userId: user.id },
+      'Admin created user'
+    );
     return { ok: true, data: user };
   } catch (error) {
     logger.error({ error }, 'Failed to create user');

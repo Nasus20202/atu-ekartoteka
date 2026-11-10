@@ -14,12 +14,9 @@ export async function notifyAccountApproved(
     const emailService = getEmailService();
     await emailService.sendAccountApprovedEmail(email, name || undefined);
 
-    logger.info({ email }, 'Account approved notification sent');
+    logger.info('Account approved notification sent');
   } catch (error) {
-    logger.error(
-      { error, email },
-      'Failed to send account approved notification'
-    );
+    logger.error({ error }, 'Failed to send account approved notification');
     // Don't throw - notification failure shouldn't break the approval process
   }
 }

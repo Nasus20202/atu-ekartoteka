@@ -28,8 +28,8 @@ export async function onRequestError(
   logger.error(
     {
       digest: error.digest,
-      path: request.path,
-      error: error.message,
+      path: request.path.split('?')[0],
+      error,
       ...(traceId ? { traceId } : {}),
     },
     'Request failed'

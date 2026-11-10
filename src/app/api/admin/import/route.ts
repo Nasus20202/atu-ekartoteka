@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
 
     logger.info(
       {
-        email: session.user.email,
+        adminId: session.user.id,
         fileCount: files.length,
         cleanImport,
         skipValidation,
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
     });
 
     logger.info(
-      { email: session.user.email, hoaCount: result.results.length },
+      { adminId: session.user.id, hoaCount: result.results.length },
       'Import completed'
     );
 

@@ -32,7 +32,7 @@ export async function forgotPasswordAction(
   input: ForgotPasswordInput
 ): Promise<ActionResult<void>> {
   if (!(await verifyTurnstileToken(input.turnstileToken ?? undefined))) {
-    logger.warn({}, 'Forgot password failed: invalid Turnstile token');
+    logger.warn('Forgot password failed: invalid Turnstile token');
     return invalid(TURNSTILE_FAILED_MESSAGE);
   }
 
@@ -45,12 +45,15 @@ export async function forgotPasswordAction(
     const user = await findUserByEmail(normalizeEmail(email));
 
     if (!user) {
-      logger.warn({ email }, 'Password reset requested for non-existent user');
+      logger.warn('Password reset requested for non-existent user');
       return { ok: true, data: undefined };
     }
 
     if (user.authMethod === AuthMethod.GOOGLE) {
-      logger.warn({ email }, 'Password reset requested for OAuth user');
+      logger.warn(
+        { userId: user.id },
+        'Password reset requested for OAuth user'
+      );
       return { ok: true, data: undefined };
     }
 
@@ -69,10 +72,7 @@ export async function forgotPasswordAction(
       user.name || undefined
     );
 
-    logger.info(
-      { email: user.email, userId: user.id },
-      'Password reset email sent'
-    );
+    logger.info({ userId: user.id }, 'Password reset email sent');
 
     return { ok: true, data: undefined };
   } catch (error) {

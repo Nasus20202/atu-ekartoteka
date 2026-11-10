@@ -81,7 +81,7 @@ export async function registerAction(
   const name = typeof input.name === 'string' ? input.name : '';
   const isFirstAdmin = input.isFirstAdmin === true;
 
-  logger.info({ email, isFirstAdmin }, 'Registration attempt');
+  logger.info({ isFirstAdmin }, 'Registration attempt');
 
   const validationError = validateCredentials(email, password);
   if (validationError) {
@@ -92,13 +92,13 @@ export async function registerAction(
     isTurnstileEnabled() &&
     !(await verifyTurnstileToken(input.turnstileToken ?? undefined))
   ) {
-    logger.warn({ email }, 'Registration failed: invalid Turnstile token');
+    logger.warn('Registration failed: invalid Turnstile token');
     return invalid(TURNSTILE_FAILED_MESSAGE);
   }
 
   try {
     if (await findUserByEmail(email)) {
-      logger.warn({ email }, 'Registration failed: user already exists');
+      logger.warn('Registration failed: user already exists');
       return invalid(EMAIL_TAKEN_MESSAGE);
     }
 
@@ -112,7 +112,6 @@ export async function registerAction(
 
     if (!user) {
       logger.warn(
-        { email },
         'Attempted first admin registration but admin already exists'
       );
       return invalid(ADMIN_EXISTS_MESSAGE);
@@ -124,7 +123,7 @@ export async function registerAction(
     }
 
     logger.info(
-      { email: user.email, isFirstAdmin },
+      { userId: user.id, isFirstAdmin },
       'User registered successfully'
     );
     authMetrics.recordRegistration('credentials', 'success');

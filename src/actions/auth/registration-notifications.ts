@@ -39,14 +39,11 @@ export async function sendRegistrationVerification(
       user.name || undefined
     );
 
-    logger.info(
-      { email: user.email, userId: user.id },
-      'Verification email sent'
-    );
+    logger.info({ userId: user.id }, 'Verification email sent');
   } catch (error) {
     // Registration still succeeds; the user can request a new email later.
     logger.error(
-      { error, email: user.email },
+      { error, userId: user.id },
       'Failed to send verification email'
     );
   }
@@ -64,7 +61,7 @@ export async function notifyAdminsAboutRegistration(
     );
   } catch (error) {
     logger.error(
-      { error, email: user.email },
+      { error, userId: user.id },
       'Failed to notify admins of new user'
     );
   }

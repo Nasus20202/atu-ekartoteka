@@ -70,7 +70,7 @@ export async function resetPasswordAction(
 
     if (resetToken.user.authMethod === AuthMethod.GOOGLE) {
       logger.warn(
-        { email: resetToken.user.email },
+        { userId: resetToken.userId },
         'Password reset attempted for OAuth user'
       );
       return invalid(GOOGLE_ACCOUNT_MESSAGE);
@@ -90,10 +90,7 @@ export async function resetPasswordAction(
       return invalid(TOKEN_USED_MESSAGE);
     }
 
-    logger.info(
-      { email: resetToken.user.email, userId: resetToken.userId },
-      'Password reset successfully'
-    );
+    logger.info({ userId: resetToken.userId }, 'Password reset successfully');
     authMetrics.recordPasswordReset('success');
 
     return { ok: true, data: undefined };

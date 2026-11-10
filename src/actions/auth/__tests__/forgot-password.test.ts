@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { forgotPasswordAction } from '@/actions/auth/forgot-password';
+import { expectNoPersonalData } from '@/lib/logging/testing';
 import { AuthMethod } from '@/lib/types';
 
 const mocks = vi.hoisted(() => ({
@@ -9,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   createPasswordReset: vi.fn(),
   sendPasswordResetEmail: vi.fn(),
   verifyTurnstileToken: vi.fn(),
+  log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
 vi.mock('@/lib/queries/users/find-user-by-email', () => ({
@@ -36,7 +38,7 @@ vi.mock('@/lib/turnstile', () => ({
   verifyTurnstileToken: mocks.verifyTurnstileToken,
 }));
 vi.mock('@/lib/logger', () => ({
-  createLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() }),
+  createLogger: () => mocks.log,
 }));
 
 const CREDENTIALS_USER = {
@@ -96,6 +98,36 @@ describe('forgotPasswordAction', () => {
     ).toEqual({ ok: true, data: undefined });
     expect(mocks.createPasswordReset).not.toHaveBeenCalled();
     expect(mocks.sendPasswordResetEmail).not.toHaveBeenCalled();
+  });
+
+  it('logs no e-mail address for unknown, OAuth and known accounts', async () => {
+    await forgotPasswordAction({
+      email: 'canary-unknown@example.com',
+      turnstileToken: 't',
+    });
+    mocks.findUserByEmail.mockResolvedValue({
+      ...CREDENTIALS_USER,
+      email: 'canary-known@example.com',
+    });
+    await forgotPasswordAction({
+      email: 'canary-known@example.com',
+      turnstileToken: 't',
+    });
+    mocks.findUserByEmail.mockResolvedValue({
+      ...CREDENTIALS_USER,
+      email: 'canary-google@example.com',
+      authMethod: AuthMethod.GOOGLE,
+    });
+    await forgotPasswordAction({
+      email: 'canary-google@example.com',
+      turnstileToken: 't',
+    });
+
+    expectNoPersonalData(Object.values(mocks.log), [
+      'canary-unknown@example.com',
+      'canary-known@example.com',
+      'canary-google@example.com',
+    ]);
   });
 
   it('normalises the email before looking it up', async () => {
