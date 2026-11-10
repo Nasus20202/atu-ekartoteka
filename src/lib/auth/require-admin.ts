@@ -24,7 +24,7 @@ export async function requireAdmin(attempt?: string): Promise<AdminCheck> {
 
   if (!userId) {
     if (attempt) {
-      logger.warn({ email: 'anonymous' }, attempt);
+      logger.warn(attempt);
     }
 
     return {
@@ -40,7 +40,7 @@ export async function requireAdmin(attempt?: string): Promise<AdminCheck> {
   }
 
   if (attempt) {
-    logger.warn({ email: session.user.email || 'anonymous' }, attempt);
+    logger.warn({ userId: session.user.id }, attempt);
   }
 
   return {

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { requireAdmin, UNAUTHORIZED_MESSAGE } from '@/lib/auth/require-admin';
+import { expectNoPersonalData } from '@/lib/logging/testing';
 import { AccountStatus, UserRole } from '@/lib/types';
 
 const { mockAuth, mockFindUserSessionFields, mockWarn } = vi.hoisted(() => ({
@@ -55,7 +56,11 @@ describe('requireAdmin', () => {
 
     expect(response?.status).toBe(403);
     expect(await response?.json()).toEqual({ error: UNAUTHORIZED_MESSAGE });
-    expect(mockWarn).toHaveBeenCalledWith({ email: 't@b.pl' }, 'attempt');
+    expect(mockWarn).toHaveBeenCalledWith(
+      { userId: expect.any(String) },
+      'attempt'
+    );
+    expectNoPersonalData([mockWarn], ['t@b.pl']);
   });
 
   it('always resolves the role from the database', async () => {
@@ -76,7 +81,11 @@ describe('requireAdmin', () => {
     const { response } = await requireAdmin('attempt');
 
     expect(response?.status).toBe(403);
-    expect(mockWarn).toHaveBeenCalledWith({ email: 'a@b.pl' }, 'attempt');
+    expect(mockWarn).toHaveBeenCalledWith(
+      { userId: expect.any(String) },
+      'attempt'
+    );
+    expectNoPersonalData([mockWarn], ['a@b.pl']);
   });
 
   it('rejects an admin whose account is no longer approved', async () => {
@@ -115,6 +124,6 @@ describe('requireAdmin', () => {
 
     await requireAdmin('attempt');
 
-    expect(mockWarn).toHaveBeenCalledWith({ email: 'anonymous' }, 'attempt');
+    expect(mockWarn).toHaveBeenCalledWith('attempt');
   });
 });

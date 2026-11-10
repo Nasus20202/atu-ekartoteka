@@ -4,6 +4,7 @@ import {
   requireAdminAction,
   requireUserAction,
 } from '@/lib/auth/require-action';
+import { expectNoPersonalData } from '@/lib/logging/testing';
 
 const mocks = vi.hoisted(() => ({
   auth: vi.fn(),
@@ -92,10 +93,7 @@ describe('requireAdminAction', () => {
 
     await requireAdminAction('Settings update attempt');
 
-    expect(mocks.warn).toHaveBeenCalledWith(
-      { email: 'anonymous' },
-      'Settings update attempt'
-    );
+    expect(mocks.warn).toHaveBeenCalledWith('Settings update attempt');
   });
 
   it('does not log an anonymous denial without an attempt label', async () => {
@@ -106,27 +104,16 @@ describe('requireAdminAction', () => {
     expect(mocks.warn).not.toHaveBeenCalled();
   });
 
-  it('logs a forbidden attempt with the caller email', async () => {
+  it('logs a forbidden attempt with the caller ID and no e-mail', async () => {
     mocks.hasAdminAccess.mockResolvedValue(false);
 
     await requireAdminAction('Settings update attempt');
 
     expect(mocks.warn).toHaveBeenCalledWith(
-      { email: 'jan@example.com' },
+      { userId: 'user-1' },
       'Settings update attempt'
     );
-  });
-
-  it('logs a forbidden attempt as anonymous when the session has no email', async () => {
-    mocks.auth.mockResolvedValue({ user: { id: 'user-2', email: null } });
-    mocks.hasAdminAccess.mockResolvedValue(false);
-
-    await requireAdminAction('Settings update attempt');
-
-    expect(mocks.warn).toHaveBeenCalledWith(
-      { email: 'anonymous' },
-      'Settings update attempt'
-    );
+    expectNoPersonalData([mocks.warn], ['jan@example.com']);
   });
 
   it('does not log a forbidden call without an attempt label', async () => {

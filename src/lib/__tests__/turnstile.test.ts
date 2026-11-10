@@ -1,6 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { expectNoPersonalData } from '@/lib/logging/testing';
 import { verifyTurnstileToken } from '@/lib/turnstile';
+
+const { mockLog } = vi.hoisted(() => ({
+  mockLog: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
+
+vi.mock('@/lib/logger', () => ({ createLogger: () => mockLog }));
 
 describe('Turnstile helper', () => {
   beforeEach(() => {
@@ -101,6 +108,36 @@ describe('Turnstile helper', () => {
 
     const result = await verifyTurnstileToken('token-value');
     expect(result).toBe(false);
+  });
+
+  it('logs only the error codes of a failed verification, never the token', async () => {
+    process.env.TURNSTILE_SITE_KEY = 'site';
+    process.env.TURNSTILE_SECRET_KEY = 'secret';
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        Promise.resolve({
+          json: () =>
+            Promise.resolve({
+              success: false,
+              'error-codes': ['invalid-input-response'],
+              hostname: 'canary.example.com',
+            }),
+        } as Response)
+      )
+    );
+
+    await verifyTurnstileToken('canary-token');
+    await verifyTurnstileToken(undefined);
+
+    expect(mockLog.warn).toHaveBeenCalledWith(
+      { errorCodes: ['invalid-input-response'] },
+      'Turnstile verification failed'
+    );
+    expectNoPersonalData(Object.values(mockLog), [
+      'canary-token',
+      'canary.example.com',
+    ]);
   });
 
   it('returns false on network error', async () => {

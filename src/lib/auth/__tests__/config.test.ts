@@ -50,7 +50,7 @@ describe('authConfig', () => {
       'NextAuth warning'
     );
     expect(mockLogger.debug).toHaveBeenCalledWith(
-      { message: 'message', metadata: { a: 1 } },
+      { message: 'message' },
       'NextAuth debug'
     );
   });
