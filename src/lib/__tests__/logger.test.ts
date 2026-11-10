@@ -62,3 +62,46 @@ describe('logger', () => {
     write.mockRestore();
   });
 });
+
+describe('logger redaction', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  async function emit(fn: (logger: import('pino').Logger) => void) {
+    vi.stubEnv('NODE_ENV', 'test');
+    vi.stubEnv('ENABLE_TEST_LOGS', 'true');
+    const lines: string[] = [];
+    const write = vi.spyOn(process.stdout, 'write').mockImplementation(((
+      line: string
+    ) => {
+      lines.push(line);
+      return true;
+    }) as typeof process.stdout.write);
+    const { createLogger } = await loadLogger();
+    fn(createLogger('test'));
+    write.mockRestore();
+    return lines.join('');
+  }
+
+  it('censors personal fields at the top level and one level below', async () => {
+    const output = await emit((log) =>
+      log.info(
+        { email: 'canary@example.com', nested: { to: 'canary2@example.com' } },
+        'x'
+      )
+    );
+
+    expect(output).not.toContain('canary');
+    expect(output).toContain('[redacted]');
+  });
+
+  it('serializes errors without their message arguments', async () => {
+    const output = await emit((log) =>
+      log.error({ error: new Error('send to canary@example.com failed') }, 'x')
+    );
+
+    expect(output).not.toContain('canary@example.com');
+    expect(output).toContain('[redacted-email]');
+  });
+});
