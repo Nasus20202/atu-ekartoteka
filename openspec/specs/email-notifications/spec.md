@@ -28,9 +28,7 @@ The system SHALL send email via a configurable SMTP server. When SMTP is not con
 
 - **GIVEN** SMTP is configured but the server rejects the message
 - **WHEN** `sendEmail` is called
-- **THEN** the error is logged at `error` level with recipient, subject, and the underlying error; the metric is recorded with result `failure`; `sendEmail` returns `false`
-
----
+- **THEN** the error is logged at `error` level with the e-mail type and the underlying error, and no recipient address or subject; the metric is recorded with result `failure`; `sendEmail` returns `false`
 
 ### Requirement: Email Templates
 
@@ -174,7 +172,7 @@ Every email send attempt SHALL be recorded as a metric.
 
 ### Requirement: Email Visual Style
 
-Every HTML email SHALL share one layout that matches the application's visual design.
+Every HTML email SHALL share one layout that matches the application's visual design and ends with a link to the privacy policy.
 
 #### Scenario: Shared design tokens
 
@@ -193,6 +191,19 @@ Every HTML email SHALL share one layout that matches the application's visual de
 - **GIVEN** a viewport of phone width
 - **WHEN** an email is displayed
 - **THEN** the card fills the width without horizontal scrolling
+
+#### Scenario: Privacy policy link in every email
+
+- **GIVEN** any of the five emails
+- **WHEN** it is rendered
+- **THEN** the footer contains a `Polityka prywatności` link to the application's absolute `/privacy` URL
+- **AND** the plain-text part shows that URL once
+
+#### Scenario: Account activation reaches people who never registered
+
+- **GIVEN** an account activation email sent to an owner whose account an admin created
+- **WHEN** it is rendered
+- **THEN** it contains the privacy policy link, so the owner is informed where their data is described
 
 #### Scenario: Text variant stays equivalent
 

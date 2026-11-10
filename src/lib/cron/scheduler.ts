@@ -32,12 +32,12 @@ export class CronScheduler {
     // Stop existing task if it exists
     if (this.tasks.has(name)) {
       this.tasks.get(name)?.stop();
-      logger.info({ name }, 'Stopped existing task');
+      logger.info({ task: name }, 'Stopped existing task');
     }
 
     // Validate cron expression
     if (!cron.validate(schedule)) {
-      logger.error({ name, schedule }, 'Invalid cron schedule');
+      logger.error({ task: name, schedule }, 'Invalid cron schedule');
       throw new Error(`Invalid cron schedule: ${schedule}`);
     }
 
@@ -45,19 +45,22 @@ export class CronScheduler {
     const scheduledTask = cron.schedule(
       schedule,
       async () => {
-        logger.info({ name }, 'Starting scheduled task');
+        logger.info({ task: name }, 'Starting scheduled task');
         const startTime = Date.now();
 
         try {
           await task();
           const duration = Date.now() - startTime;
           logger.info(
-            { name, duration },
+            { task: name, duration },
             'Scheduled task completed successfully'
           );
         } catch (error) {
           const duration = Date.now() - startTime;
-          logger.error({ name, error, duration }, 'Scheduled task failed');
+          logger.error(
+            { task: name, error, duration },
+            'Scheduled task failed'
+          );
         }
       },
       { name, distributed: true, runCoordinator: this.runCoordinator }
@@ -66,19 +69,19 @@ export class CronScheduler {
     scheduledTask.on('execution:skipped', ({ reason, date }) => {
       if (reason === 'coordinator-error') {
         logger.error(
-          { name, slot: date },
+          { task: name, slot: date },
           'Scheduled run skipped, claim failed'
         );
         return;
       }
       logger.info(
-        { name, slot: date },
+        { task: name, slot: date },
         'Scheduled run claimed elsewhere, skipped'
       );
     });
 
     this.tasks.set(name, scheduledTask);
-    logger.info({ name, schedule }, 'Scheduled task registered');
+    logger.info({ task: name, schedule }, 'Scheduled task registered');
   }
 
   /**
@@ -89,7 +92,7 @@ export class CronScheduler {
     if (task) {
       task.stop();
       this.tasks.delete(name);
-      logger.info({ name }, 'Task stopped and removed');
+      logger.info({ task: name }, 'Task stopped and removed');
     }
   }
 
@@ -99,7 +102,7 @@ export class CronScheduler {
   stopAll(): void {
     this.tasks.forEach((task, name) => {
       task.stop();
-      logger.info({ name }, 'Task stopped');
+      logger.info({ task: name }, 'Task stopped');
     });
     this.tasks.clear();
     logger.info('All tasks stopped');

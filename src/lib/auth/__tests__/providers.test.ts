@@ -3,10 +3,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createMockUser, mockUsers } from '@/__tests__/fixtures';
 import { buildProviders, credentialsAuthorize } from '@/lib/auth/providers';
+import { expectNoPersonalData } from '@/lib/logging/testing';
 
-const { mockFindUserByEmail, mockVerifyToken } = vi.hoisted(() => ({
+const { mockFindUserByEmail, mockVerifyToken, mockLog } = vi.hoisted(() => ({
   mockFindUserByEmail: vi.fn(),
   mockVerifyToken: vi.fn(),
+  mockLog: {
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  },
 }));
 
 vi.mock('@/lib/queries/users/find-user-by-email', () => ({
@@ -37,12 +44,7 @@ vi.mock('@/lib/opentelemetry/auth-metrics', () => ({
 }));
 
 vi.mock('@/lib/logger', () => ({
-  createLogger: () => ({
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    debug: vi.fn(),
-  }),
+  createLogger: () => mockLog,
 }));
 
 async function mockTurnstile(enabled: boolean, valid = true) {
@@ -179,6 +181,22 @@ describe('credentialsAuthorize', () => {
 
       expect(result).toBeNull();
       expect(bcrypt.compare).toHaveBeenCalledWith('pw', 'dummy-hash');
+      expectNoPersonalData(Object.values(mockLog), ['nonexistent@example.com']);
+    });
+
+    it('logs no e-mail address for an existing account either', async () => {
+      mockFindUserByEmail.mockResolvedValue(createMockUser());
+      vi.mocked(bcrypt.compare).mockResolvedValue(false as never);
+
+      await credentialsAuthorize({ email: 'test@example.com', password: 'pw' });
+      vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
+      await credentialsAuthorize({ email: 'test@example.com', password: 'pw' });
+
+      expect(mockLog.warn).toHaveBeenCalledWith(
+        { userId: expect.any(String) },
+        'Failed login attempt: incorrect password'
+      );
+      expectNoPersonalData(Object.values(mockLog), ['test@example.com']);
     });
 
     it('returns null when a Google-only user has no password', async () => {

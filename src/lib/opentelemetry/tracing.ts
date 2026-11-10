@@ -9,6 +9,7 @@
  * to allow instrumentations (Pino, Pg) to hook in properly.
  */
 import packageJson from '@/../package.json';
+import { withSanitizedSpans } from '@/lib/opentelemetry/sanitizing-span-exporter';
 import {
   buildResourceAttributes,
   mergeResourceAttributes,
@@ -66,9 +67,9 @@ export async function initTracing() {
 
   const sdk = new NodeSDK({
     serviceName,
-    traceExporter: new OTLPTraceExporter({
-      url: `${collectorEndpoint}/v1/traces`,
-    }),
+    traceExporter: withSanitizedSpans(
+      new OTLPTraceExporter({ url: `${collectorEndpoint}/v1/traces` })
+    ),
     metricReaders: [
       new PeriodicExportingMetricReader({
         exporter: new OTLPMetricExporter({

@@ -34,7 +34,7 @@ describe('plain-text email bodies', () => {
 
         Jeśli nie rejestrowałeś się w naszym serwisie, zignoruj tę wiadomość.
 
-        ATU Ekartoteka"
+        ATU Ekartoteka · Polityka prywatności https://ekartoteka.example.com/privacy"
       `);
   });
 
@@ -53,7 +53,7 @@ describe('plain-text email bodies', () => {
 
         Jeśli nie prosiłeś o reset hasła, zignoruj tę wiadomość.
 
-        ATU Ekartoteka"
+        ATU Ekartoteka · Polityka prywatności https://ekartoteka.example.com/privacy"
       `);
   });
 
@@ -69,7 +69,7 @@ describe('plain-text email bodies', () => {
 
       Dziękujemy za cierpliwość!
 
-      ATU Ekartoteka"
+      ATU Ekartoteka · Polityka prywatności https://ekartoteka.example.com/privacy"
     `);
   });
 
@@ -101,7 +101,7 @@ describe('plain-text email bodies', () => {
 
       Jeśli nie spodziewałeś się tego maila, możesz go zignorować.
 
-      ATU Ekartoteka"
+      ATU Ekartoteka · Polityka prywatności https://ekartoteka.example.com/privacy"
     `);
   });
 
@@ -131,7 +131,7 @@ describe('plain-text email bodies', () => {
 
       To jest automatyczna wiadomość. Nie odpowiadaj na ten email.
 
-      ATU Ekartoteka"
+      ATU Ekartoteka · Polityka prywatności https://ekartoteka.example.com/privacy"
     `);
   });
 });

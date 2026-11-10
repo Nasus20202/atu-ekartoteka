@@ -46,7 +46,8 @@ export function HistoryWindowForm({
   onSave,
 }: HistoryWindowFormProps) {
   const [value, setValue] = useState(String(savedYearsBack));
-  const parsed = value.trim() === '' ? null : parseYearsBack(Number(value));
+  const result = value.trim() === '' ? null : parseYearsBack(Number(value));
+  const parsed = result?.ok ? result.value : null;
   const isUnchanged = parsed === savedYearsBack;
 
   function handleValueChange(next: string) {

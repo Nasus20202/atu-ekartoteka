@@ -23,8 +23,8 @@ export const authConfig: NextAuthConfig = {
     warn: (message) => {
       logger.warn({ message }, 'NextAuth warning');
     },
-    debug: (message, metadata) => {
-      logger.debug({ message, metadata }, 'NextAuth debug');
+    debug: (message) => {
+      logger.debug({ message }, 'NextAuth debug');
     },
   },
   providers: buildProviders(),

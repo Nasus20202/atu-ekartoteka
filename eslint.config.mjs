@@ -188,6 +188,16 @@ const eslintConfig = defineConfig([
       'local/no-raw-sql': 'error',
     },
   },
+  // Logs leave the process: identify people by account ID, never by e-mail,
+  // name, token or address.
+  {
+    files: ['src/**/*.ts', 'src/**/*.tsx'],
+    ignores: ['**/__tests__/**', '**/*.test.ts', '**/*.test.tsx'],
+    plugins: { local: localRules },
+    rules: {
+      'local/no-personal-data-in-logs': 'error',
+    },
+  },
   // Local rule modules and their tests are loaded by path, not through the alias.
   {
     files: ['eslint-rules/**', 'eslint.config.mjs'],

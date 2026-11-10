@@ -102,7 +102,7 @@ export async function parseNalCzynszBuffer(
         totalAmount,
       });
     } catch (error) {
-      logger.debug({ line, error }, 'Failed to parse line');
+      logger.debug({ lineNo: lineNoStr, error }, 'Failed to parse line');
       continue;
     }
   }

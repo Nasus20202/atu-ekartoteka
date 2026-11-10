@@ -24,21 +24,29 @@ describe('onRequestError', () => {
 
   it('logs the digest with the trace ID when tracing is active', async () => {
     mockGetActiveTraceId.mockReturnValue('trace-123');
+    const error = Object.assign(new Error('boom'), { digest: 'abc123' });
 
-    await onRequestError(
-      Object.assign(new Error('boom'), { digest: 'abc123' }),
-      request
-    );
+    await onRequestError(error, request);
 
     expect(mockError).toHaveBeenCalledWith(
       {
         digest: 'abc123',
         path: '/dashboard',
-        error: 'boom',
+        error,
         traceId: 'trace-123',
       },
       'Request failed'
     );
+  });
+
+  it('logs the path without its query string', async () => {
+    mockGetActiveTraceId.mockReturnValue(undefined);
+
+    await onRequestError(new Error('boom'), {
+      path: '/verify-email?token=canary-token',
+    });
+
+    expect(mockError.mock.calls[0][0].path).toBe('/verify-email');
   });
 
   it('omits the trace ID when tracing is disabled', async () => {

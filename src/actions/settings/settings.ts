@@ -16,15 +16,15 @@ const SAVE_FAILED_MESSAGE = 'Nie udało się zapisać ustawień';
 
 export async function updateSettingsAction(
   input: unknown
-): Promise<ActionResult<AppSettingsValues>> {
+): Promise<ActionResult<Partial<AppSettingsValues>>> {
   const { denied } = await requireAdminAction('Settings update attempt');
   if (denied) return denied;
 
   const update = parseAppSettingsUpdate(input);
-  if (update === null) return invalid(INVALID_SETTINGS_MESSAGE);
+  if (!update.ok) return invalid(update.message ?? INVALID_SETTINGS_MESSAGE);
 
   try {
-    return { ok: true, data: await updateAppSettings(update) };
+    return { ok: true, data: await updateAppSettings(update.values) };
   } catch (error) {
     logger.error({ error }, 'Settings update error');
     return failed(SAVE_FAILED_MESSAGE);

@@ -87,7 +87,7 @@
 - **Email identity**: Normalise with `normalizeEmail` on every write and lookup — an address is one identity regardless of case or surrounding whitespace.
 - **Bot protection**: Verify Turnstile server-side (`verifyTurnstileToken`) on registration, login and password reset; fail closed on missing tokens or verification errors.
 - **Security headers**: `src/proxy.ts` sets CSP/HSTS and `src/lib/security-headers.ts` sets the static headers. Don't loosen them (no `unsafe-eval` in production, no new external origins) without a security review.
-- **Inputs and errors**: Validate request bodies before use; return Polish messages that don't reveal whether an email exists or which credential was wrong; log denials and failures through `createLogger` without passwords, tokens or secrets.
+- **Inputs and errors**: Validate request bodies before use; return Polish messages that don't reveal whether an email exists or which credential was wrong; log denials and failures through `createLogger`, identifying people by account ID (`userId`, `adminId`) and never by e-mail address, name, password, token or IP address; log errors as `{ error }` so the serializer reduces them (enforced by `local/no-personal-data-in-logs`).
 - **Spec sync**: Behaviour changes to access control must be reflected in `openspec/specs/authentication` and covered by route or page tests.
 
 ## Best Practices

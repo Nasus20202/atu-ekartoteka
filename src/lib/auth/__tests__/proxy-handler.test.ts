@@ -83,6 +83,23 @@ describe('proxy-handler: handleMustChangePassword', () => {
     expect(result).toBeNull();
   });
 
+  it.each(['/privacy', '/privacy/'])(
+    'does NOT redirect %s when mustChangePassword is true',
+    (pathname) => {
+      const result = handleMustChangePassword(makeRequest(pathname, true));
+      expect(result).toBeNull();
+      expect(NextResponse.redirect).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each(['/privacy-anything', '/privacyx/policy'])(
+    'still redirects %s when mustChangePassword is true',
+    (pathname) => {
+      handleMustChangePassword(makeRequest(pathname, true));
+      expect(NextResponse.redirect).toHaveBeenCalled();
+    }
+  );
+
   it.each(['/login-help', '/logout-anyway', '/api/authx/session'])(
     'does not treat %s as an allowlisted prefix',
     (pathname) => {

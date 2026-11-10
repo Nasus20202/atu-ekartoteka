@@ -11,6 +11,7 @@ const ALLOWED_PREFIXES: string[] = [
   '/favicon.ico',
   '/login',
   '/logout',
+  '/privacy',
 ];
 
 /** Matches a path segment prefix, so `/login-anything` does not pass. */

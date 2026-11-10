@@ -75,7 +75,7 @@ async function importSingleHOA(
     );
   } catch (error) {
     const errorMsg = getErrorMessage(error);
-    logger.error({ hoaId, error: errorMsg }, 'Transaction failed for HOA');
+    logger.error({ hoaId, error }, 'Transaction failed for HOA');
     result.errors.push({
       kind: 'transaction',
       message: `Błąd transakcji: ${errorMsg}`,

@@ -65,11 +65,10 @@ export async function credentialsAuthorize(
   if (isTurnstileEnabled()) {
     if (hasAutoLoginGrant) {
       logger.info(
-        { email },
         'Login Turnstile bypass accepted for post-registration auto-login'
       );
     } else if (!credentials?.turnstileToken) {
-      logger.warn({ email }, 'Login attempt failed: missing Turnstile token');
+      logger.warn('Login attempt failed: missing Turnstile token');
       authMetrics.recordLogin('credentials', 'failure', 'missing_turnstile');
       return null;
     } else {
@@ -77,7 +76,7 @@ export async function credentialsAuthorize(
         credentials.turnstileToken as string
       );
       if (!valid) {
-        logger.warn({ email }, 'Login attempt failed: invalid Turnstile token');
+        logger.warn('Login attempt failed: invalid Turnstile token');
         authMetrics.recordLogin('credentials', 'failure', 'invalid_turnstile');
         return null;
       }
@@ -88,7 +87,7 @@ export async function credentialsAuthorize(
 
   if (!user) {
     await burnPasswordComparison(password);
-    logger.warn({ email }, 'Failed login attempt: user not found');
+    logger.warn('Failed login attempt: user not found');
     authMetrics.recordLogin('credentials', 'failure', 'user_not_found');
     return null;
   }
@@ -96,7 +95,7 @@ export async function credentialsAuthorize(
   if (!user.password) {
     await burnPasswordComparison(password);
     logger.error(
-      { email },
+      { userId: user.id },
       'User has no password but trying to use credentials'
     );
     authMetrics.recordLogin('credentials', 'failure', 'no_password');
@@ -106,14 +105,17 @@ export async function credentialsAuthorize(
   const passwordMatch = await bcrypt.compare(password, user.password);
 
   if (!passwordMatch) {
-    logger.warn({ email }, 'Failed login attempt: incorrect password');
+    logger.warn(
+      { userId: user.id },
+      'Failed login attempt: incorrect password'
+    );
     authMetrics.recordLogin('credentials', 'failure', 'invalid_credentials');
     return null;
   }
 
   logger.info(
     {
-      email: user.email,
+      userId: user.id,
       role: user.role,
       status: user.status,
       emailVerified: user.emailVerified,

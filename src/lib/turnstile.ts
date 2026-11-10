@@ -37,7 +37,7 @@ export async function verifyTurnstileToken(
   }
 
   if (!token) {
-    logger.warn({ token }, 'No turnstile token provided');
+    logger.warn('No turnstile token provided');
     return false;
   }
 
@@ -60,7 +60,10 @@ export async function verifyTurnstileToken(
 
     const json = (await res.json()) as TurnstileServerValidationResponse;
     if (!json.success) {
-      logger.warn({ json }, 'Turnstile verification failed');
+      logger.warn(
+        { errorCodes: json['error-codes'] },
+        'Turnstile verification failed'
+      );
     }
     return Boolean(json.success);
   } catch (error) {

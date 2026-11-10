@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { EmailService, getEmailService } from '@/lib/email/email-service';
 import type { EmailServiceConfig } from '@/lib/email/email-types';
+import { expectNoPersonalData } from '@/lib/logging/testing';
 
 const {
   mockSendMail,
@@ -154,6 +155,29 @@ describe('EmailService', () => {
       });
 
       expect(result).toBe(true);
+    });
+
+    it('logs the e-mail type and result, never the recipient', async () => {
+      await emailService.sendEmail(
+        { to: 'canary@example.com', subject: 'Canary', html: '<p>x</p>' },
+        'verification'
+      );
+      mockSendMail.mockRejectedValueOnce(new Error('Invalid recipient'));
+      await emailService.sendEmail(
+        { to: 'canary@example.com', subject: 'Canary', html: '<p>x</p>' },
+        'verification'
+      );
+
+      expect(mockLoggerInfo).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'verification', result: 'success' }),
+        'Email sent'
+      );
+      expect(mockLoggerError).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'verification', result: 'failure' }),
+        'Email failed'
+      );
+      const calls = [mockLoggerInfo, mockLoggerError];
+      expectNoPersonalData(calls, ['canary@example.com', 'Canary']);
     });
 
     it('should handle email sending errors', async () => {

@@ -46,6 +46,15 @@ describe('email templates', () => {
       }
     });
 
+    it('ends with a link to the privacy policy, once in each variant', async () => {
+      const { html, text } = await build();
+      const policyUrl = `${APP_URL}/privacy`;
+
+      expect(linksOf(html).filter((url) => url === policyUrl)).toHaveLength(1);
+      expect(html).toContain('Polityka prywatności');
+      expect(text.split(policyUrl)).toHaveLength(2);
+    });
+
     it('links to the application with absolute urls', async () => {
       const urls = linksOf((await build()).html);
 

@@ -49,6 +49,7 @@ context: |
   - openspec/specs/email-notifications/spec.md — SMTP transport, templates, all email types, metrics
   - openspec/specs/hoa-management/spec.md — HOA listing and management
   - openspec/specs/observability/spec.md — structured logging, OTLP tracing, auth/email/DB metrics, resource attribution
+  - openspec/specs/privacy-policy/spec.md — public privacy policy page, admin editor with preview, built-in Polish template, footer link
   - openspec/specs/performance-testing/spec.md — k6 load scenarios, stepped load profile, thresholds, reporting
   - openspec/specs/system-health/spec.md — health check endpoints
   - openspec/specs/tenant-history-window/spec.md — admin-configurable tenant history window, app settings

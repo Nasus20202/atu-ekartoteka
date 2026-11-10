@@ -29,7 +29,7 @@ export async function setApartmentActiveAction(
   try {
     const apartment = await updateApartmentStatus(apartmentId, isActive);
     logger.info(
-      { apartmentId, isActive, adminEmail: session.user.email },
+      { apartmentId, isActive, adminId: session.user.id },
       'Apartment status updated'
     );
     return {

@@ -9,9 +9,12 @@ const INPUT_LABEL = 'Liczba poprzednich lat widocznych dla mieszkańców';
 const actionMock = vi.hoisted(() => ({ updateSettingsAction: vi.fn() }));
 
 vi.mock('@/actions/settings/settings', () => actionMock);
+vi.mock('@/components/providers/confirm-dialog', () => ({
+  useConfirm: () => vi.fn(),
+}));
 
 function renderContent() {
-  render(<SettingsContent initialYearsBack={2} />);
+  render(<SettingsContent initialYearsBack={2} initialPrivacyPolicy={null} />);
   return screen.getByLabelText(INPUT_LABEL);
 }
 

@@ -268,10 +268,11 @@ model PasswordReset {
 }
 
 // Singleton: exactly one row (id = 1). CHECK constraints for the id and the value
-// ranges live in the migration, not tracked by Prisma.
+// ranges and text lengths live in the migration, not tracked by Prisma.
 model AppSettings {
   id                     Int      @id @default(1)
   tenantHistoryYearsBack Int      @default(2)
+  privacyPolicy          String?
   updatedAt              DateTime @updatedAt
 }
 

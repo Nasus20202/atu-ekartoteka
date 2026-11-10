@@ -25,6 +25,7 @@ export const PAGE_TITLES = {
   settings: 'Ustawienia',
   users: 'Użytkownicy',
   accountManagement: 'Zarządzanie kontami',
+  privacy: 'Polityka prywatności',
   notFound: 'Strona nie znaleziona',
   appError: 'Coś poszło nie tak!',
   chargesError: 'Wystąpił błąd',

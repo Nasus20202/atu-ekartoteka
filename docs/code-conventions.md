@@ -89,8 +89,18 @@ These are the rules that protect residents' data. Do not work around them.
 - **Bot protection:** register, login and password reset verify Turnstile
   server-side and refuse when the check cannot be completed.
 - **Messages to users** are in Polish and must not reveal whether an account
-  exists or which credential was wrong. Log failures through `createLogger`,
-  never with passwords, tokens or secrets.
+  exists or which credential was wrong.
+- **Logs and traces** leave the process, so they carry no personal data. Log
+  failures through `createLogger` and identify people by `userId` or `adminId`,
+  never by e-mail address, name, password, token or IP address. Log nothing
+  about an identity that does not exist. Pass errors as `{ error }`: the
+  logger reduces them to name, code and a redacted message, because database
+  and mail errors echo the values of the failed call. `local/no-personal-data-in-logs`
+  fails the build on a forbidden key, the logger censors `email`, `to`, `name`,
+  `password` and `token` as a backstop, and the trace exporter drops query
+  strings and client addresses from spans. In tests, `expectNoPersonalData`
+  (`src/lib/logging/testing.ts`) checks that a logger mock never saw a seeded
+  address.
 - **Security headers** are set in `src/proxy.ts` and `src/lib/security-headers.ts`.
   Do not loosen the CSP or add external origins without a security review.
 

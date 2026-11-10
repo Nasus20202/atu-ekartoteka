@@ -22,10 +22,7 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    logger.error(
-      { error: error.message, stack: error.stack },
-      'Charges page error'
-    );
+    logger.error({ error }, 'Charges page error');
   }, [error]);
 
   return (

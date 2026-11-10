@@ -52,10 +52,7 @@ export const callbacks: NextAuthConfig['callbacks'] = {
   async signIn({ user, account, profile }) {
     if (account?.provider === 'google') {
       if (profile?.email_verified === false) {
-        logger.warn(
-          { email: user.email },
-          'Google sign-in refused: unverified email'
-        );
+        logger.warn('Google sign-in refused: unverified email');
         authMetrics.recordLogin('google', 'failure', 'google_email_unverified');
         return false;
       }
@@ -77,7 +74,7 @@ export const callbacks: NextAuthConfig['callbacks'] = {
             );
           } catch (notificationError) {
             logger.error(
-              { notificationError, email: newUser.email },
+              { error: notificationError, userId: newUser.id },
               'Failed to notify admins about new Google user'
             );
           }
@@ -98,10 +95,7 @@ export const callbacks: NextAuthConfig['callbacks'] = {
         authMetrics.recordLogin('google', 'success');
         return true;
       } catch (error) {
-        logger.error(
-          { error, email: user.email },
-          'Error during Google sign in'
-        );
+        logger.error({ error }, 'Error during Google sign in');
         authMetrics.recordLogin('google', 'failure', 'google_error');
         return false;
       }

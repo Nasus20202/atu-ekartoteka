@@ -1,4 +1,4 @@
-import packageJson from '@/../package.json';
+import { AppFooter } from '@/components/layout/app-footer';
 import { DashboardNavbar } from '@/components/navigation/dashboard-navbar';
 
 export default function AdminLayout({
@@ -7,14 +7,10 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex min-h-screen flex-col bg-background">
       <DashboardNavbar mode="admin" />
-      <main>{children}</main>
-      <div className="fixed bottom-4 left-4 z-10">
-        <p className="text-xs text-muted-foreground/60">
-          v{packageJson.version}
-        </p>
-      </div>
+      <main className="flex flex-1 flex-col">{children}</main>
+      <AppFooter />
     </div>
   );
 }
