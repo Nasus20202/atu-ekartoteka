@@ -14,7 +14,7 @@ ESLint SHALL fail on a logger call whose context object has a key that names per
 
 #### Scenario: Pseudonymous keys are allowed
 
-- **GIVEN** a call with `userId`, `adminId`, `tokenLength`, `tokenFingerprint`, `hasName` or a task `name`
+- **GIVEN** a call with `userId`, `adminId`, `tokenLength`, `tokenFingerprint`, `hasName`, `mustChangePassword` or a task `task`
 - **WHEN** ESLint runs
 - **THEN** it reports nothing
 

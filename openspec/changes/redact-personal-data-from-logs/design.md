@@ -42,7 +42,7 @@ Rejected: hashing e-mail addresses. An unsalted hash of an address is still pers
 
 ### 4. Lint rule `local/no-personal-data-in-logs`
 
-`eslint-rules/no-personal-data-in-logs.mjs` reports a `CallExpression` whose callee is `<identifier>.<level>` (levels `trace`, `debug`, `info`, `warn`, `error`, `fatal`; the identifier is `logger` or `log`) when its first argument is an object literal with a forbidden key, including shorthand properties. Forbidden: `email`, `to`, `password`, `token`, `ip`, `phone`, `username`, `fullName`, `firstName`, `lastName`, `ownerName`, and any key ending in `Email`, `Password`, `Token` or `Ip`. Allowed by exact match: `tokenLength`, `tokenFingerprint`, `hasName`. It is registered in `index.mjs`, enabled for application code and off for tests. Test files in `__tests__` and `e2e` are not linted by it.
+`eslint-rules/no-personal-data-in-logs.mjs` reports a `CallExpression` whose callee is `<identifier>.<level>` (levels `trace`, `debug`, `info`, `warn`, `error`, `fatal`; the identifier is `logger` or `log`) when its first argument is an object literal with a forbidden key, including shorthand properties. Forbidden: `email`, `to`, `password`, `token`, `ip`, `phone`, `username`, `fullName`, `firstName`, `lastName`, `ownerName`, and any key ending in `Email`, `Password`, `Token` or `Ip`. Allowed by exact match: `tokenLength`, `tokenFingerprint`, `hasName`, `mustChangePassword`. It is registered in `index.mjs`, enabled for application code and off for tests. Test files in `__tests__` and `e2e` are not linted by it.
 
 ### 5. Call-site inventory
 
