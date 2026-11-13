@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "mailparser": "3.14.2",
+    "mailparser": "3.14.3",
     "pino": "10.4.0",
     "smtp-server": "3.21.3",
     "tsx": "4.23.15"
