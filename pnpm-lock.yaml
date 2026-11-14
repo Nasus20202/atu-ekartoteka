@@ -358,7 +358,7 @@ importers:
         version: 16.4.6(@babel/core@7.29.13)(@opentelemetry/api@1.10.0)(@playwright/test@1.65.0)(@types/node@26.6.6)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       next-auth:
         specifier: 5.0.0-beta.32
-        version: 5.0.0-beta.32(next@16.4.6(@babel/core@7.29.13)(@opentelemetry/api@1.10.0)(@playwright/test@1.65.0)(@types/node@26.6.6)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(nodemailer@10.4.0)(react@19.3.1)
+        version: 5.0.0-beta.32(next@16.4.6(@babel/core@7.29.13)(@opentelemetry/api@1.10.0)(@playwright/test@1.65.0)(@types/node@26.6.6)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(nodemailer@10.5.0)(react@19.3.1)
       next-themes:
         specifier: 1.0.0-beta.0
         version: 1.0.0-beta.0(next@16.4.6(@babel/core@7.29.13)(@opentelemetry/api@1.10.0)(@playwright/test@1.65.0)(@types/node@26.6.6)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -366,8 +366,8 @@ importers:
         specifier: 4.6.0
         version: 4.6.0
       nodemailer:
-        specifier: 10.4.0
-        version: 10.4.0
+        specifier: 10.5.0
+        version: 10.5.0
       pdfjs-dist:
         specifier: 6.5.438
         version: 6.5.438
@@ -4464,10 +4464,6 @@ packages:
     resolution: {integrity: sha512-jVe6Z61gPcPjCElPZ6j8llB3wnqGcuQzefim1ERsqIakxnEy5JlzV7XKdO1KmacRG5TKwPc4vJTgSRQ0LfkbFw==}
     engines: {node: '>=8'}
 
-  nodemailer@10.4.0:
-    resolution: {integrity: sha512-fyy6r4Q5euRJ9Qr3Cts9K7SZrfe9zmz9oLOYiAR02MEJRDRci+99y0OoYBYBgpLffOqkkjXrB/d26VfiMje/kA==}
-    engines: {node: '>=20.0.0'}
-
   nodemailer@10.5.0:
     resolution: {integrity: sha512-L/w/HH5MqpzMDuZD7fQdt/+KqymuvrpaApaIjAH2XA3ILePwlcvXCVVvP75xVrXCEt2ggK2marrrHHFB5Qu0kA==}
     engines: {node: '>=20.0.0'}
@@ -5623,7 +5619,7 @@ snapshots:
 
   '@alloc/quick-lru@5.3.0': {}
 
-  '@auth/core@0.41.3(nodemailer@10.4.0)':
+  '@auth/core@0.41.3(nodemailer@10.5.0)':
     dependencies:
       '@panva/hkdf': 1.2.1
       jose: 6.2.15
@@ -5631,7 +5627,7 @@ snapshots:
       preact: 10.24.3
       preact-render-to-string: 6.5.11(preact@10.24.3)
     optionalDependencies:
-      nodemailer: 10.4.0
+      nodemailer: 10.5.0
 
   '@babel/code-frame@7.29.7':
     dependencies:
@@ -9533,13 +9529,13 @@ snapshots:
 
   negotiator@0.6.3: {}
 
-  next-auth@5.0.0-beta.32(next@16.4.6(@babel/core@7.29.13)(@opentelemetry/api@1.10.0)(@playwright/test@1.65.0)(@types/node@26.6.6)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(nodemailer@10.4.0)(react@19.3.1):
+  next-auth@5.0.0-beta.32(next@16.4.6(@babel/core@7.29.13)(@opentelemetry/api@1.10.0)(@playwright/test@1.65.0)(@types/node@26.6.6)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(nodemailer@10.5.0)(react@19.3.1):
     dependencies:
-      '@auth/core': 0.41.3(nodemailer@10.4.0)
+      '@auth/core': 0.41.3(nodemailer@10.5.0)
       next: 16.4.6(@babel/core@7.29.13)(@opentelemetry/api@1.10.0)(@playwright/test@1.65.0)(@types/node@26.6.6)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react: 19.3.1
     optionalDependencies:
-      nodemailer: 10.4.0
+      nodemailer: 10.5.0
 
   next-themes@1.0.0-beta.0(next@16.4.6(@babel/core@7.29.13)(@opentelemetry/api@1.10.0)(@playwright/test@1.65.0)(@types/node@26.6.6)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
     dependencies:
@@ -9593,8 +9589,6 @@ snapshots:
     dependencies:
       '@types/pegjs': 0.10.6
       big-integer: 1.6.52
-
-  nodemailer@10.4.0: {}
 
   nodemailer@10.5.0: {}
 
