@@ -278,6 +278,18 @@ The page header (back button, title, description and action) SHALL stay visible 
 - **WHEN** the user scrolls back to the top
 - **THEN** the header returns to its resting appearance
 
+#### Scenario: Many actions
+
+- **GIVEN** the header action holds more controls than fit beside the title
+- **WHEN** the header is rendered, at rest or pinned
+- **THEN** the controls wrap onto another line instead of overflowing the viewport
+
+#### Scenario: Navigation lands at the top
+
+- **GIVEN** the user was scrolled down on the previous page
+- **WHEN** they navigate to another page in the dashboard or admin area
+- **THEN** the new page is shown scrolled to the top, unless the URL has a hash
+
 #### Scenario: Reduced motion
 
 - **GIVEN** the user prefers reduced motion
