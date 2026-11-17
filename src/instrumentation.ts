@@ -47,6 +47,11 @@ export async function register() {
     const { createLogger } = await import('@/lib/logger');
     const logger = createLogger('instrumentation');
 
+    if (process.env.NODE_ENV === 'production') {
+      const { patchConsole } = await import('@/lib/logging/patch-console');
+      patchConsole(createLogger('console'));
+    }
+
     logger.info('OpenTelemetry initialized');
 
     // Dynamic import to ensure this code only runs on server

@@ -30,6 +30,18 @@ The application SHALL emit structured JSON logs via `pino`.
 - **WHEN** it calls `createLogger('auth:providers')`
 - **THEN** every log line from that module includes `"name": "auth:providers"` so log aggregation tools can filter by subsystem
 
+#### Scenario: Console output
+
+- **GIVEN** the server runs in production
+- **WHEN** application code or Next.js writes with `console.debug`, `console.log`, `console.info`, `console.warn` or `console.error`
+- **THEN** the line is emitted as a pino record at the matching level (`log` maps to `info`), with terminal colour codes and e-mail addresses removed and an `Error` argument logged as `error`
+
+#### Scenario: Expected framework errors
+
+- **GIVEN** Next.js rejects a request because of the caller, such as an unknown Server Action ID ("The Server Reference ID did not match the expected format") or a failed Server Action origin check ("Invalid Server Actions request")
+- **WHEN** the message reaches `console.error`
+- **THEN** the unknown Server Action ID is logged at `info` and the failed origin check at `warn`, instead of `error`
+
 #### Scenario: Pino instrumentation
 
 - **GIVEN** OpenTelemetry is initialised (OTLP endpoint set)
