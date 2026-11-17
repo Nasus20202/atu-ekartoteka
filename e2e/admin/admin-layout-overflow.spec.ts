@@ -10,6 +10,7 @@ const TABLET_VIEWPORT = { width: 800, height: 900 };
 const PHONE_VIEWPORT = { width: 360, height: 700 };
 const TALL_MAIN_PX = '3000px';
 const SCROLLED_PX = 60;
+const NAVBAR_HEIGHT_PX = 65;
 
 test.describe('Admin layout', () => {
   test('navbar does not overflow at tablet width', async ({ adminPage }) => {
@@ -18,6 +19,14 @@ test.describe('Admin layout', () => {
 
     await expect(adminPage.getByRole('button', { name: 'Menu' })).toBeVisible();
     await expectNoHorizontalOverflow(adminPage);
+  });
+
+  test('closed menu adds no height to the navbar', async ({ adminPage }) => {
+    await adminPage.setViewportSize(PHONE_VIEWPORT);
+    await adminPage.goto('/admin/apartments');
+
+    const navbar = await adminPage.locator('nav').boundingBox();
+    expect(navbar!.height).toBe(NAVBAR_HEIGHT_PX);
   });
 
   test('header controls wrap on a phone', async ({ adminPage }) => {
