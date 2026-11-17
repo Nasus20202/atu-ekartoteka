@@ -16,8 +16,10 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 import { LogoutButton } from '@/components/account/logout-button';
+import { NAVBAR_BREAKPOINT_CLASSES } from '@/components/navigation/navbar-breakpoints';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 const MOBILE_MENU_ID = 'mobile-navigation';
 const MOBILE_MENU_LABEL = 'Menu';
@@ -63,6 +65,7 @@ export function DashboardNavbar({
         : [];
 
   const showProfileLink = mode === 'dashboard';
+  const breakpoint = NAVBAR_BREAKPOINT_CLASSES[mode];
   const settingsLink = mode === 'admin' && (
     <Button variant="ghost" size="icon" asChild>
       <Link
@@ -89,7 +92,7 @@ export function DashboardNavbar({
               ATU Ekartoteka
             </Link>
             {navigationItems.length > 0 && (
-              <div className="hidden md:flex md:gap-4">
+              <div className={breakpoint.links}>
                 {navigationItems.map((item) => {
                   const Icon = item.icon;
                   return (
@@ -108,7 +111,7 @@ export function DashboardNavbar({
           </div>
 
           {/* Desktop Actions */}
-          <div className="hidden items-center gap-4 md:flex">
+          <div className={breakpoint.actions}>
             {showProfileLink && (
               <Link href="/dashboard/profile">
                 <Button variant="ghost" size="sm">
@@ -125,7 +128,7 @@ export function DashboardNavbar({
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden rounded-md p-2 hover:bg-accent"
+            className={cn('rounded-md p-2 hover:bg-accent', breakpoint.toggle)}
             aria-label={MOBILE_MENU_LABEL}
             aria-expanded={isOpen}
             aria-controls={MOBILE_MENU_ID}
@@ -138,11 +141,13 @@ export function DashboardNavbar({
         <div
           id={MOBILE_MENU_ID}
           inert={!isOpen}
-          className={`overflow-hidden transition-all duration-300 ease-in-out md:hidden ${
-            isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-          }`}
+          className={cn(
+            'grid transition-[grid-template-rows,opacity] duration-300 ease-in-out motion-reduce:transition-none',
+            breakpoint.menu,
+            isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+          )}
         >
-          <div className="space-y-2 pb-4 pt-2">
+          <div className="min-h-0 space-y-2 overflow-hidden pb-4 pt-2">
             {navigationItems.map((item) => {
               const Icon = item.icon;
               return (
