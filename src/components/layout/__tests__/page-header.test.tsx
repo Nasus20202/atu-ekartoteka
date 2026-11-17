@@ -51,10 +51,24 @@ describe('PageHeader', () => {
       <PageHeader title="Title" description="Description" />
     );
 
-    const wrapper = container.querySelector(
-      '.mb-6.flex.flex-wrap.items-center'
-    );
+    const wrapper = container.querySelector('.flex.flex-wrap.items-center');
     expect(wrapper).toBeInTheDocument();
+  });
+
+  it('pins below the navbar and is not stuck at rest', () => {
+    const { container } = render(<PageHeader title="Title" />);
+
+    const header = container.querySelector('[data-stuck]');
+    expect(header).toHaveClass('sticky', 'top-[65px]');
+    expect(header).toHaveAttribute('data-stuck', 'false');
+  });
+
+  it('applies a custom class to the sticky header', () => {
+    const { container } = render(
+      <PageHeader title="Title" className="custom-class" />
+    );
+
+    expect(container.querySelector('[data-stuck]')).toHaveClass('custom-class');
   });
 
   it('renders title with correct styling', () => {

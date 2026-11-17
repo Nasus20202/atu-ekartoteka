@@ -262,6 +262,12 @@ The system SHALL keep visual regression tests for the admin and tenant pages in 
 - **WHEN** the page has finished loading
 - **THEN** the document is no wider than the viewport
 
+#### Scenario: Pinned page header is covered
+
+- **GIVEN** the visual suite
+- **WHEN** a tenant page is scrolled past its page header
+- **THEN** the header is asserted to be pinned, and the viewport is compared with a snapshot in light and dark mode at desktop and phone viewports, with the navbar sticky as it is in the app
+
 #### Scenario: Snapshot dates are stable
 
 - **GIVEN** seeded visual users

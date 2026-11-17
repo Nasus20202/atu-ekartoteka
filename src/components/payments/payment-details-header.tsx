@@ -13,20 +13,19 @@ export async function PaymentDetailsHeader({ params }: PaymentDetailsParams) {
   );
 
   return (
-    <div className={REVEAL_CLASS}>
-      <PageHeader
-        title={`Wpłaty - ${formatApartmentLabel(apartment)}`}
-        description={`Szczegóły wpłat za rok ${payment.year}`}
-        action={
-          paymentYears.length > 1 && (
-            <PaymentYearSelect
-              apartmentId={apartment.id}
-              year={payment.year}
-              years={paymentYears}
-            />
-          )
-        }
-      />
-    </div>
+    <PageHeader
+      className={REVEAL_CLASS}
+      title={`Wpłaty - ${formatApartmentLabel(apartment)}`}
+      description={`Szczegóły wpłat za rok ${payment.year}`}
+      action={
+        paymentYears.length > 1 && (
+          <PaymentYearSelect
+            apartmentId={apartment.id}
+            year={payment.year}
+            years={paymentYears}
+          />
+        )
+      }
+    />
   );
 }

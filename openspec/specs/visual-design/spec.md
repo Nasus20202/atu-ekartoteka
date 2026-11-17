@@ -257,6 +257,33 @@ The application SHALL be fully usable on mobile viewports (≥ 375 px) as well a
 
 ---
 
+### Requirement: Sticky Page Header
+
+The page header (back button, title, description and action) SHALL stay visible below the navbar while the page scrolls, and SHALL morph into a compact translucent bar once content scrolls under it.
+
+#### Scenario: Header at rest
+
+- **GIVEN** a page is scrolled to the top
+- **WHEN** the page header is rendered
+- **THEN** it shows the back button at full size, the full title and the description, with no background or border
+
+#### Scenario: Header after scrolling
+
+- **GIVEN** a page header is rendered
+- **WHEN** the user scrolls so the header would leave the viewport
+- **THEN** it stays pinned directly under the navbar with a translucent blurred background, a border and a shadow, the back button and title shrink, and the description collapses; the action stays visible
+
+#### Scenario: Header back at top
+
+- **WHEN** the user scrolls back to the top
+- **THEN** the header returns to its resting appearance
+
+#### Scenario: Reduced motion
+
+- **GIVEN** the user prefers reduced motion
+- **WHEN** the header morphs
+- **THEN** the change is applied without a transition
+
 ### Requirement: Accessibility baseline
 
 The application SHALL meet a basic accessibility baseline.
