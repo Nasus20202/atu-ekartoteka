@@ -19,7 +19,11 @@ export function StickyHeader({ children, className }: StickyHeaderProps) {
 
   return (
     <>
-      <div ref={sentinelRef} aria-hidden className="-mb-px h-px" />
+      <div
+        ref={sentinelRef}
+        aria-hidden
+        className="pointer-events-none absolute h-px w-px"
+      />
       <div
         data-stuck={isStuck}
         style={{ minHeight: restingHeight }}
@@ -31,9 +35,9 @@ export function StickyHeader({ children, className }: StickyHeaderProps) {
         <div
           ref={contentRef}
           className={cn(
-            'pointer-events-auto rounded-b-xl border border-transparent px-2 py-2',
-            'transition-[background-color,border-color,box-shadow,backdrop-filter] duration-200 motion-reduce:transition-none',
-            'group-data-[stuck=true]/header:border-border group-data-[stuck=true]/header:bg-background/70 group-data-[stuck=true]/header:shadow-sm group-data-[stuck=true]/header:backdrop-blur-md'
+            'pointer-events-auto rounded-b-xl px-2 py-2 ring-1 ring-transparent',
+            'transition-[background-color,box-shadow,backdrop-filter] duration-200 motion-reduce:transition-none',
+            'group-data-[stuck=true]/header:ring-border group-data-[stuck=true]/header:bg-background/70 group-data-[stuck=true]/header:shadow-sm group-data-[stuck=true]/header:backdrop-blur-md'
           )}
         >
           {children}
