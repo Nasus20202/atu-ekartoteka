@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 
 import { AppFooter } from '@/components/layout/app-footer';
+import { ScrollToTop } from '@/components/layout/scroll-to-top';
 import { DashboardChrome } from '@/components/navigation/dashboard-chrome';
 import { DashboardNavbarSkeleton } from '@/components/navigation/dashboard-navbar-skeleton';
 
@@ -11,6 +12,7 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col">
+      <ScrollToTop />
       <Suspense fallback={<DashboardNavbarSkeleton />}>
         <DashboardChrome />
       </Suspense>

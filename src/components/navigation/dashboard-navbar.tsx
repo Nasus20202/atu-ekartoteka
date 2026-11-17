@@ -16,8 +16,10 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 import { LogoutButton } from '@/components/account/logout-button';
+import { NAVBAR_BREAKPOINT_CLASSES } from '@/components/navigation/navbar-breakpoints';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 const MOBILE_MENU_ID = 'mobile-navigation';
 const MOBILE_MENU_LABEL = 'Menu';
@@ -63,6 +65,7 @@ export function DashboardNavbar({
         : [];
 
   const showProfileLink = mode === 'dashboard';
+  const breakpoint = NAVBAR_BREAKPOINT_CLASSES[mode];
   const settingsLink = mode === 'admin' && (
     <Button variant="ghost" size="icon" asChild>
       <Link
@@ -89,7 +92,7 @@ export function DashboardNavbar({
               ATU Ekartoteka
             </Link>
             {navigationItems.length > 0 && (
-              <div className="hidden md:flex md:gap-4">
+              <div className={breakpoint.links}>
                 {navigationItems.map((item) => {
                   const Icon = item.icon;
                   return (
@@ -108,7 +111,7 @@ export function DashboardNavbar({
           </div>
 
           {/* Desktop Actions */}
-          <div className="hidden items-center gap-4 md:flex">
+          <div className={breakpoint.actions}>
             {showProfileLink && (
               <Link href="/dashboard/profile">
                 <Button variant="ghost" size="sm">
@@ -125,7 +128,7 @@ export function DashboardNavbar({
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden rounded-md p-2 hover:bg-accent"
+            className={cn('rounded-md p-2 hover:bg-accent', breakpoint.toggle)}
             aria-label={MOBILE_MENU_LABEL}
             aria-expanded={isOpen}
             aria-controls={MOBILE_MENU_ID}
@@ -138,43 +141,47 @@ export function DashboardNavbar({
         <div
           id={MOBILE_MENU_ID}
           inert={!isOpen}
-          className={`overflow-hidden transition-all duration-300 ease-in-out md:hidden ${
-            isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-          }`}
+          className={cn(
+            'grid transition-[grid-template-rows,opacity] duration-300 ease-in-out motion-reduce:transition-none',
+            breakpoint.menu,
+            isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+          )}
         >
-          <div className="space-y-2 pb-4 pt-2">
-            {navigationItems.map((item) => {
-              const Icon = item.icon;
-              return (
+          <div className="min-h-0 overflow-hidden">
+            <div className="space-y-2 pb-4 pt-2">
+              {navigationItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setIsOpen(false)}
+                    className="block"
+                  >
+                    <Button variant="ghost" className="w-full justify-start">
+                      <Icon className="mr-2 h-4 w-4" />
+                      {item.name}
+                    </Button>
+                  </Link>
+                );
+              })}
+              {showProfileLink && (
                 <Link
-                  key={item.name}
-                  href={item.href}
+                  href="/dashboard/profile"
                   onClick={() => setIsOpen(false)}
                   className="block"
                 >
                   <Button variant="ghost" className="w-full justify-start">
-                    <Icon className="mr-2 h-4 w-4" />
-                    {item.name}
+                    <User className="mr-2 h-4 w-4" />
+                    Profil
                   </Button>
                 </Link>
-              );
-            })}
-            {showProfileLink && (
-              <Link
-                href="/dashboard/profile"
-                onClick={() => setIsOpen(false)}
-                className="block"
-              >
-                <Button variant="ghost" className="w-full justify-start">
-                  <User className="mr-2 h-4 w-4" />
-                  Profil
-                </Button>
-              </Link>
-            )}
-            <div className="flex items-center gap-2 px-3 py-2">
-              {settingsLink}
-              <ThemeToggle />
-              <LogoutButton />
+              )}
+              <div className="flex items-center gap-2 px-3 py-2">
+                {settingsLink}
+                <ThemeToggle />
+                <LogoutButton />
+              </div>
             </div>
           </div>
         </div>

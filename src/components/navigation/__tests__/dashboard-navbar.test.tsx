@@ -85,34 +85,49 @@ describe('DashboardNavbar', () => {
   });
 
   describe('Mobile menu', () => {
-    const mobileMenu = () =>
-      screen
-        .getAllByRole('link', { name: /profil/i })[1]
-        .closest('.overflow-hidden');
+    const mobileMenu = () => document.getElementById('mobile-navigation');
 
     it('opens with the toggle and closes after choosing a link', async () => {
       render(<DashboardNavbar mode="dashboard" isAdmin />);
       const toggle = screen.getByRole('button', { name: 'Menu' });
 
-      expect(mobileMenu()).toHaveClass('max-h-0');
+      expect(mobileMenu()).toHaveClass('grid-rows-[0fr]');
       expect(mobileMenu()).toHaveAttribute('inert');
       expect(toggle).toHaveAttribute('aria-expanded', 'false');
 
       await userEvent.click(toggle);
-      expect(mobileMenu()).toHaveClass('max-h-96');
+      expect(mobileMenu()).toHaveClass('grid-rows-[1fr]');
       expect(mobileMenu()).not.toHaveAttribute('inert');
       expect(toggle).toHaveAttribute('aria-expanded', 'true');
 
       await userEvent.click(
         screen.getAllByRole('link', { name: /profil/i })[1]
       );
-      expect(mobileMenu()).toHaveClass('max-h-0');
+      expect(mobileMenu()).toHaveClass('grid-rows-[0fr]');
 
       await userEvent.click(toggle);
       await userEvent.click(
         screen.getAllByRole('link', { name: /panel administratora/i })[1]
       );
-      expect(mobileMenu()).toHaveClass('max-h-0');
+      expect(mobileMenu()).toHaveClass('grid-rows-[0fr]');
+    });
+  });
+
+  describe('Breakpoints', () => {
+    it('collapses the admin bar into the menu below the lg breakpoint', () => {
+      render(<DashboardNavbar mode="admin" />);
+      const toggle = screen.getByRole('button', { name: 'Menu' });
+
+      expect(toggle).toHaveClass('lg:hidden');
+      expect(toggle).not.toHaveClass('md:hidden');
+    });
+
+    it('keeps the dashboard bar expanded from the md breakpoint', () => {
+      render(<DashboardNavbar mode="dashboard" />);
+
+      expect(screen.getByRole('button', { name: 'Menu' })).toHaveClass(
+        'md:hidden'
+      );
     });
   });
 

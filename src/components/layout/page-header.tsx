@@ -20,7 +20,7 @@ export function PageHeader({
 }: PageHeaderProps) {
   return (
     <StickyHeader className={className}>
-      <div className="flex flex-wrap items-center justify-between gap-3 group-data-[stuck=true]/header:flex-nowrap">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-4">
           {showBackButton && <BackButton />}
           <div className="min-w-0">
@@ -36,7 +36,7 @@ export function PageHeader({
             )}
           </div>
         </div>
-        {action && <div className="shrink-0">{action}</div>}
+        {action && <div className="min-w-0 max-w-full">{action}</div>}
       </div>
     </StickyHeader>
   );
