@@ -14,11 +14,10 @@ export async function ApartmentChargesHeader({
   const apartment = await loadApartmentCharges(apartmentId);
 
   return (
-    <div className={REVEAL_CLASS}>
-      <PageHeader
-        title={formatApartmentLabel(apartment)}
-        description={`${apartment.postalCode} ${apartment.city}`}
-      />
-    </div>
+    <PageHeader
+      className={REVEAL_CLASS}
+      title={formatApartmentLabel(apartment)}
+      description={`${apartment.postalCode} ${apartment.city}`}
+    />
   );
 }
