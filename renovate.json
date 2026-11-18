@@ -2,6 +2,14 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["github>Nasus20202/renovate"],
   "minimumReleaseAge": "1 day",
+  "packageRules": [
+    {
+      "description": "The example docker-compose intentionally uses the floating latest tag of our own image; do not pin its digest",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["ghcr.io/nasus20202/atu-ekartoteka"],
+      "pinDigests": false
+    }
+  ],
   "customManagers": [
     {
       "customType": "regex",
