@@ -98,8 +98,6 @@ services:
       - .env
     ports:
       - '${APP_PORT:-3000}:3000'
-    volumes:
-      - app_data:/app/data
     networks:
       - atu-network
     healthcheck:
@@ -115,8 +113,6 @@ services:
 
 volumes:
   postgres_data:
-    driver: local
-  app_data:
     driver: local
 
 networks:
