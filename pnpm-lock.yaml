@@ -438,8 +438,8 @@ importers:
         specifier: 10.4.0
         version: 10.4.0
       smtp-server:
-        specifier: 3.21.4
-        version: 3.21.4
+        specifier: 3.21.6
+        version: 3.21.6
       tsx:
         specifier: 4.23.15
         version: 4.23.15
@@ -3898,9 +3898,6 @@ packages:
     resolution: {integrity: sha512-5Hh7Y1wQbvY5ooGgPbDaL5iYLAPzMTUrjMulskHLH6wnv/A+1q5rgEaiuqEjB+oxGXIVZs1FF+R/KPN3ZSQYYg==}
     engines: {node: '>=12'}
 
-  ipv6-normalize@1.0.1:
-    resolution: {integrity: sha512-Bm6H79i01DjgGTCWjUuCjJ6QDo1HB96PT/xCYuyJUP9WFbVDrLSbG4EZCvOCun2rNswZb0c3e4Jt/ws795esHA==}
-
   is-alphabetical@2.0.1:
     resolution: {integrity: sha512-FWyyY60MeTNyeSRpkM2Iry0G9hpr7/9kD40mD/cGQEuilcZYS4okz8SN2Q6rLCJ8gbCt6fN+rC+6tMGS99LaxQ==}
 
@@ -5071,8 +5068,8 @@ packages:
   sisteransi@1.0.5:
     resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
 
-  smtp-server@3.21.4:
-    resolution: {integrity: sha512-FnkLEd4QAsuUJTd7AK6zSDB8y2Fn3T1EXIC0OIUMqYbUmCv4VH9p6opt8afCiEd6x+hxjlh/CUFCSJKMW+Nfyg==}
+  smtp-server@3.21.6:
+    resolution: {integrity: sha512-QlCb8T8eS6qpiehMRdrDrKUwg4CBCQBSzfNEUQudQUau3xfRUp93X19oOuvjKyryFuEYh1cPEdYhYa09XuePvg==}
     engines: {node: '>=20.0.0'}
 
   socket.io-adapter@2.5.8:
@@ -9063,8 +9060,6 @@ snapshots:
 
   internmap@2.0.3: {}
 
-  ipv6-normalize@1.0.1: {}
-
   is-alphabetical@2.0.1: {}
 
   is-alphanumerical@2.0.1:
@@ -10300,10 +10295,9 @@ snapshots:
 
   sisteransi@1.0.5: {}
 
-  smtp-server@3.21.4:
+  smtp-server@3.21.6:
     dependencies:
-      ipv6-normalize: 1.0.1
-      nodemailer: 10.5.0
+      nodemailer: 10.6.0
       punycode.js: 2.3.1
 
   socket.io-adapter@2.5.8:
