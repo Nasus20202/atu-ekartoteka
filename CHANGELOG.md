@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.3] - 2026-11-22
+
+- fix(users): show a spinner while assignable apartments load
+- fix(charges): keep same-numbered apartments of different HOAs apart
+- chore(deps): update dependency lucide-react to v1.76.0 (#977)
+- chore(deps): update dependency @testing-library/user-event to v14.6.13 (#975)
+- chore(deps): update dependency lucide-react to v1.75.0 (#974)
+- chore(deps): update github/codeql-action digest to 1bd86f2 (#972)
+- chore(deps): update postgres:18.7-alpine docker digest to 0115267 (#973)
+- chore(deps): update vitest monorepo to v5.1.1 (#971)
+- chore(deps): update grafana/otel-lgtm docker tag to v0.41.1 (#970)
+- chore(deps): update dependency react-email to v6.11.15 (#968)
+- chore(deps): update dependency recharts to v3.11.0 (#969)
+- chore(deps): update dependency lucide-react to v1.74.0 (#967)
+- chore(deps): update dependency react-email to v6.11.14 (#965)
+- chore(deps): update dependency nodemailer to v10.6.0 (#963)
+- chore(deps): update semgrep/semgrep docker tag to v1.186.0 (#964)
+- fix(deps): update dependency smtp-server to v3.21.6 (#962)
+- fix(deps): update dependency mailparser to v3.14.5 (#961)
+- chore(deps): update dependency @testing-library/user-event to v14.6.12 (#960)
+- chore(deps): update postgres:18.7-alpine docker digest to ff64c9e (#959)
+- fix(deps): update dependency mailparser to v3.14.4 (#958)
+- chore(deps): update dependency lint-staged to v17.6.1 (#957)
+- chore(docker): remove unused /app/data volume and /data gitignore entry
+- fix(renovate): stop pinning digest of own latest image
+- chore(deps): update ghcr.io/nasus20202/atu-ekartoteka:latest docker digest to 6a537d1 (#954)
+
 ## [0.10.2] - 2026-11-17
 
 - fix(layout): wrap pinned header actions, reset scroll on navigation and fix admin navbar overflow (#953)
