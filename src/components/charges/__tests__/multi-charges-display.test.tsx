@@ -46,6 +46,7 @@ function makeCharge(totalAmount: number) {
 
 function makeApartmentData(totalAmount: number) {
   return {
+    apartmentId: 'apt-101',
     apartmentNumber: '101',
     apartmentAddress: 'ul. Testowa 1 A/101',
     hoaName: 'Wspólnota Testowa',
@@ -117,12 +118,14 @@ describe('MultiChargesDisplay', () => {
       const chargesByPeriod = {
         '2025-01': [
           {
+            apartmentId: 'apt-101',
             apartmentNumber: '101',
             apartmentAddress: 'ul. A 1/101',
             hoaName: 'Wspólnota Testowa',
             charges: [makeCharge(100), makeCharge(50)],
           },
           {
+            apartmentId: 'apt-102',
             apartmentNumber: '102',
             apartmentAddress: 'ul. A 1/102',
             hoaName: 'Wspólnota Testowa',

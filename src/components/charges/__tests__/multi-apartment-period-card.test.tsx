@@ -35,12 +35,14 @@ function makeCharge(id: string, totalAmount: string): ChargeDisplayDto {
 
 const APARTMENTS = [
   {
+    apartmentId: 'apt-1',
     apartmentNumber: '1',
     apartmentAddress: 'ul. Testowa 1/1',
     hoaName: 'Wspólnota A',
     charges: [makeCharge('a1', '100'), makeCharge('a2', '20')],
   },
   {
+    apartmentId: 'apt-2',
     apartmentNumber: '2',
     apartmentAddress: 'ul. Krótka 2/2',
     hoaName: 'Wspólnota B',

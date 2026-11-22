@@ -55,6 +55,38 @@ describe('groupApartmentChargesByPeriod', () => {
     ]);
     expect(result['202501'][0].charges[0].totalAmount).toBe('10.5');
   });
+
+  it('keeps apartments with the same number in different HOAs apart', () => {
+    const result = groupApartmentChargesByPeriod([
+      makeApartment({
+        id: 'apt-1',
+        number: '2',
+        address: 'Lipowa',
+        building: '1',
+        homeownersAssociation: {
+          name: 'Wspólnota A',
+        } as Apartment['homeownersAssociation'],
+        charges: [createMockCharge({ id: 'a', period: '202501' })],
+      }),
+      makeApartment({
+        id: 'apt-2',
+        number: '2',
+        address: 'Lipowa',
+        building: '1',
+        homeownersAssociation: {
+          name: 'Wspólnota B',
+        } as Apartment['homeownersAssociation'],
+        charges: [createMockCharge({ id: 'b', period: '202501' })],
+      }),
+    ]);
+
+    expect(
+      result['202501'].map((a) => [a.apartmentId, a.hoaName, a.charges.length])
+    ).toEqual([
+      ['apt-1', 'Wspólnota A', 1],
+      ['apt-2', 'Wspólnota B', 1],
+    ]);
+  });
 });
 
 describe('getSortedPeriods', () => {

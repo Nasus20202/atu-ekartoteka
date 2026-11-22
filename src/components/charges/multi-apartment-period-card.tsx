@@ -22,6 +22,7 @@ import { cn, formatCurrency } from '@/lib/utils';
 import { sumDecimals } from '@/lib/utils/sum';
 
 type ApartmentChargesData = {
+  apartmentId: string;
   apartmentNumber: string;
   apartmentAddress: string;
   hoaName: string;
@@ -88,7 +89,7 @@ export function MultiApartmentPeriodCard({
       </div>
       {apartmentsData.map((apartmentData) => (
         <ApartmentSection
-          key={`${apartmentData.apartmentAddress}-${apartmentData.apartmentNumber}`}
+          key={apartmentData.apartmentId}
           apartmentData={apartmentData}
           period={period}
         />
