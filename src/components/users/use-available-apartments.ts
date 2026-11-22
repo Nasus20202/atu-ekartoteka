@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { startTransition, useEffect, useState } from 'react';
 import useSWR from 'swr';
 
 import { fetchJson } from '@/lib/swr/fetch-json';
@@ -14,10 +14,15 @@ const NO_APARTMENTS: ApartmentSummaryDto[] = [];
 
 type AvailableApartmentsKey = readonly [string, string, string];
 
-interface AvailableApartments {
-  userId: string;
+export interface AvailableApartments {
   apartments: ApartmentSummaryDto[];
+  failed: boolean;
 }
+
+const NO_APARTMENTS_RESULT: AvailableApartments = {
+  apartments: NO_APARTMENTS,
+  failed: false,
+};
 
 async function fetchAvailableApartments([
   ,
@@ -34,28 +39,40 @@ async function fetchAvailableApartments([
     params.set('search', search);
   }
 
-  const data = await fetchJson<{ apartments: ApartmentSummaryDto[] }>(
-    `/api/admin/apartments?${params}`
-  );
-  return { userId, apartments: data.apartments };
+  try {
+    const data = await fetchJson<{ apartments: ApartmentSummaryDto[] }>(
+      `/api/admin/apartments?${params}`
+    );
+    return { apartments: data.apartments, failed: false };
+  } catch {
+    // A failure is shown in the list; it is not thrown into the Suspense boundary.
+    return { apartments: NO_APARTMENTS, failed: true };
+  }
 }
 
 function useDebounced(value: string): string {
   const [debounced, setDebounced] = useState(value);
 
   useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), SEARCH_DEBOUNCE_MS);
+    const timer = setTimeout(
+      () => startTransition(() => setDebounced(value)),
+      SEARCH_DEBOUNCE_MS
+    );
     return () => clearTimeout(timer);
   }, [value]);
 
   return debounced;
 }
 
-/** Apartments the selected user can be assigned, filtered by the database. */
+/**
+ * Apartments the selected user can be assigned, filtered by the database.
+ * Suspends until the first list for the user arrives; a new search keeps the
+ * previous list on screen while the next one loads.
+ */
 export function useAvailableApartments(
   selectedUser: UserDto | null,
   search: string
-) {
+): AvailableApartments {
   const userId = selectedUser?.id;
   const debouncedSearch = useDebounced(search.trim());
 
@@ -64,9 +81,8 @@ export function useAvailableApartments(
       ? (['available-apartments', userId, debouncedSearch] as const)
       : null,
     fetchAvailableApartments,
-    { ...SWR_OPTIONS, keepPreviousData: true }
+    { ...SWR_OPTIONS, suspense: true }
   );
 
-  // Another user's list is never shown, even while the new one loads.
-  return data && data.userId === userId ? data.apartments : NO_APARTMENTS;
+  return data ?? NO_APARTMENTS_RESULT;
 }

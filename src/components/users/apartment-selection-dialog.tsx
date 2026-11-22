@@ -1,4 +1,5 @@
 import { Check, Search } from 'lucide-react';
+import { Suspense } from 'react';
 
 import { useConfirm } from '@/components/providers/confirm-dialog';
 import { Button } from '@/components/ui/button';
@@ -16,10 +17,10 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ApartmentOption } from '@/components/users/apartment-option';
+import { ApartmentOptionsList } from '@/components/users/apartment-options-list';
+import { ApartmentOptionsLoading } from '@/components/users/apartment-options-loading';
 import { StatusChangePanel } from '@/components/users/status-change-panel';
 import type { EditMode } from '@/components/users/types';
-import { isApartmentMatchingUser } from '@/components/users/utils';
 import { useRetainedValue } from '@/hooks/use-retained-value';
 import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
 import type { UserDto } from '@/lib/types/dto/user-dto';
@@ -28,7 +29,6 @@ interface ApartmentSelectionDialogProps {
   actionLoading: boolean;
   apartmentSearch: string;
   editMode: EditMode;
-  filteredApartments: ApartmentSummaryDto[];
   onApartmentSearchChange: (value: string) => void;
   onApproveOrAssign: () => void;
   onCancel: () => void;
@@ -44,7 +44,6 @@ export function ApartmentSelectionDialog({
   actionLoading,
   apartmentSearch,
   editMode,
-  filteredApartments,
   onApartmentSearchChange,
   onApproveOrAssign,
   onCancel,
@@ -134,23 +133,16 @@ export function ApartmentSelectionDialog({
               </div>
 
               <div className="max-h-60 space-y-2 overflow-y-auto rounded-lg border p-2">
-                {filteredApartments.map((apartment) => (
-                  <ApartmentOption
-                    key={apartment.id}
-                    apartment={apartment}
-                    selected={selectedApartments.includes(apartment.id)}
-                    matching={isApartmentMatchingUser(apartment, user)}
-                    onCheckedChange={(checked) => {
+                <Suspense fallback={<ApartmentOptionsLoading />}>
+                  <ApartmentOptionsList
+                    apartmentSearch={apartmentSearch}
+                    onApartmentCheckedChange={(apartment, checked) => {
                       void handleApartmentCheckedChange(apartment, checked);
                     }}
+                    selectedApartments={selectedApartments}
+                    user={user}
                   />
-                ))}
-
-                {filteredApartments.length === 0 && apartmentSearch && (
-                  <p className="py-4 text-center text-sm text-muted-foreground">
-                    Nie znaleziono mieszkań
-                  </p>
-                )}
+                </Suspense>
               </div>
 
               <div className="flex gap-2">

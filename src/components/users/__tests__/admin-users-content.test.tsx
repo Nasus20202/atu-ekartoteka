@@ -1,4 +1,5 @@
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -120,6 +121,31 @@ function usersResponse(users: unknown[] = []) {
   } as Response;
 }
 
+/** The apartments the pending user can be assigned; a suspended load can fetch them twice. */
+function polnaApartmentsResponse(isActive = true) {
+  return {
+    ok: true,
+    json: async () => ({
+      apartments: [
+        {
+          id: 'apt-2',
+          externalOwnerId: 'own-2',
+          externalApartmentId: 'ext-2',
+          owner: 'Jan Kowalski',
+          email: 'pending@example.com',
+          address: 'Polna',
+          building: '3',
+          number: '1',
+          postalCode: '00-002',
+          city: 'Warszawa',
+          shareRatio: 0.5,
+          isActive,
+        },
+      ],
+    }),
+  } as Response;
+}
+
 const pendingUser = {
   id: 'user-1',
   email: 'pending@example.com',
@@ -230,27 +256,8 @@ describe('AdminUsersContent', () => {
   it('opens approval dialog and loads apartments for pending user', async () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce(usersResponse([pendingUser]))
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          apartments: [
-            {
-              id: 'apt-2',
-              externalOwnerId: 'own-2',
-              externalApartmentId: 'ext-2',
-              owner: 'Jan Kowalski',
-              email: 'pending@example.com',
-              address: 'Polna',
-              building: '3',
-              number: '1',
-              postalCode: '00-002',
-              city: 'Warszawa',
-              shareRatio: 0.3333333333333333,
-              isActive: true,
-            },
-          ],
-        }),
-      } as Response);
+      .mockResolvedValueOnce(polnaApartmentsResponse())
+      .mockResolvedValueOnce(polnaApartmentsResponse());
 
     render(<AdminUsersContent />);
 
@@ -260,7 +267,9 @@ describe('AdminUsersContent', () => {
       ).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getAllByRole('button', { name: /zatwierdź/i })[0]);
+    await act(async () => {
+      fireEvent.click(screen.getAllByRole('button', { name: /zatwierdź/i })[0]);
+    });
 
     await waitFor(() => {
       expect(screen.getByText(/zatwierdź konto/i)).toBeInTheDocument();
@@ -272,27 +281,8 @@ describe('AdminUsersContent', () => {
     const user = userEvent.setup();
     vi.mocked(fetch)
       .mockResolvedValueOnce(usersResponse([pendingUser]))
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          apartments: [
-            {
-              id: 'apt-2',
-              externalOwnerId: 'own-2',
-              externalApartmentId: 'ext-2',
-              owner: 'Jan Kowalski',
-              email: 'pending@example.com',
-              address: 'Polna',
-              building: '3',
-              number: '1',
-              postalCode: '00-002',
-              city: 'Warszawa',
-              shareRatio: 0.3333333333333333,
-              isActive: false,
-            },
-          ],
-        }),
-      } as Response);
+      .mockResolvedValueOnce(polnaApartmentsResponse(false))
+      .mockResolvedValueOnce(polnaApartmentsResponse(false));
 
     render(<AdminUsersContent />);
 
@@ -302,7 +292,11 @@ describe('AdminUsersContent', () => {
       ).toBeInTheDocument();
     });
 
-    await user.click(screen.getAllByRole('button', { name: /zatwierdź/i })[0]);
+    await act(async () => {
+      await user.click(
+        screen.getAllByRole('button', { name: /zatwierdź/i })[0]
+      );
+    });
     await user.click(await screen.findByLabelText(/polna 3\/1/i));
 
     await waitFor(() => {
@@ -552,27 +546,8 @@ describe('AdminUsersContent', () => {
     const user = userEvent.setup();
     vi.mocked(fetch)
       .mockResolvedValueOnce(usersResponse([pendingUser]))
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          apartments: [
-            {
-              id: 'apt-2',
-              externalOwnerId: 'own-2',
-              externalApartmentId: 'ext-2',
-              owner: 'Jan Kowalski',
-              email: 'pending@example.com',
-              address: 'Polna',
-              building: '3',
-              number: '1',
-              postalCode: '00-002',
-              city: 'Warszawa',
-              shareRatio: 0.5,
-              isActive: true,
-            },
-          ],
-        }),
-      } as Response)
+      .mockResolvedValueOnce(polnaApartmentsResponse())
+      .mockResolvedValueOnce(polnaApartmentsResponse())
       .mockResolvedValueOnce(usersResponse([]));
     actionMock.updateUserStatusAction.mockResolvedValueOnce({
       ok: true,
@@ -581,9 +556,11 @@ describe('AdminUsersContent', () => {
 
     render(<AdminUsersContent />);
 
-    await user.click(
-      (await screen.findAllByRole('button', { name: /zatwierdź/i }))[0]
-    );
+    await act(async () => {
+      await user.click(
+        (await screen.findAllByRole('button', { name: /zatwierdź/i }))[0]
+      );
+    });
     await user.click(await screen.findByLabelText(/polna 3\/1/i));
     await user.click(
       within(screen.getByRole('dialog')).getByRole('button', {
@@ -604,33 +581,16 @@ describe('AdminUsersContent', () => {
     const user = userEvent.setup();
     vi.mocked(fetch)
       .mockResolvedValueOnce(usersResponse([pendingUser]))
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          apartments: [
-            {
-              id: 'apt-2',
-              externalOwnerId: 'own-2',
-              externalApartmentId: 'ext-2',
-              owner: 'Jan Kowalski',
-              email: 'pending@example.com',
-              address: 'Polna',
-              building: '3',
-              number: '1',
-              postalCode: '00-002',
-              city: 'Warszawa',
-              shareRatio: 0.5,
-              isActive: true,
-            },
-          ],
-        }),
-      } as Response);
+      .mockResolvedValueOnce(polnaApartmentsResponse())
+      .mockResolvedValueOnce(polnaApartmentsResponse());
 
     render(<AdminUsersContent />);
 
-    await user.click(
-      (await screen.findAllByRole('button', { name: /zatwierdź/i }))[0]
-    );
+    await act(async () => {
+      await user.click(
+        (await screen.findAllByRole('button', { name: /zatwierdź/i }))[0]
+      );
+    });
     const option = await screen.findByLabelText(/polna 3\/1/i);
     await user.click(option);
     expect(option).toBeChecked();

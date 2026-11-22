@@ -8,6 +8,20 @@ import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
 import type { UserDto } from '@/lib/types/dto/user-dto';
 
 const confirmMock = vi.fn().mockResolvedValue(true);
+const availableApartments = vi.hoisted(() => ({
+  current: [] as unknown[],
+}));
+
+vi.mock('@/components/users/use-available-apartments', () => ({
+  useAvailableApartments: () => ({
+    apartments: availableApartments.current,
+    failed: false,
+  }),
+}));
+
+function setAvailableApartments(apartments: unknown[]) {
+  availableApartments.current = apartments;
+}
 
 vi.mock('@/components/providers/confirm-dialog', () => ({
   useConfirm: () => confirmMock,
@@ -70,12 +84,12 @@ describe('ApartmentSelectionDialog', () => {
     const user = userEvent.setup();
     const onSelectApartment = vi.fn();
 
+    setAvailableApartments([{ ...apartment, id: 'apt-2', isActive: false }]);
     render(
       <ApartmentSelectionDialog
         actionLoading={false}
         apartmentSearch=""
         editMode="approve"
-        filteredApartments={[{ ...apartment, id: 'apt-2', isActive: false }]}
         onApartmentSearchChange={() => {}}
         onApproveOrAssign={() => {}}
         onCancel={() => {}}
@@ -101,12 +115,12 @@ describe('ApartmentSelectionDialog', () => {
     const onSelectApartment = vi.fn();
     confirmMock.mockResolvedValueOnce(false);
 
+    setAvailableApartments([{ ...apartment, id: 'apt-2', isActive: false }]);
     render(
       <ApartmentSelectionDialog
         actionLoading={false}
         apartmentSearch=""
         editMode="approve"
-        filteredApartments={[{ ...apartment, id: 'apt-2', isActive: false }]}
         onApartmentSearchChange={() => {}}
         onApproveOrAssign={() => {}}
         onCancel={() => {}}
@@ -126,12 +140,12 @@ describe('ApartmentSelectionDialog', () => {
   });
 
   it('renders nothing when closed', () => {
+    setAvailableApartments([]);
     const { container } = render(
       <ApartmentSelectionDialog
         actionLoading={false}
         apartmentSearch=""
         editMode={null}
-        filteredApartments={[]}
         onApartmentSearchChange={() => {}}
         onApproveOrAssign={() => {}}
         onCancel={() => {}}
@@ -154,12 +168,12 @@ describe('ApartmentSelectionDialog', () => {
     const onCancel = vi.fn();
     const onSelectApartment = vi.fn();
 
+    setAvailableApartments([apartment]);
     render(
       <ApartmentSelectionDialog
         actionLoading={false}
         apartmentSearch=""
         editMode="approve"
-        filteredApartments={[apartment]}
         onApartmentSearchChange={onApartmentSearchChange}
         onApproveOrAssign={onApproveOrAssign}
         onCancel={onCancel}
@@ -191,12 +205,12 @@ describe('ApartmentSelectionDialog', () => {
   });
 
   it('renders assign mode with selected count and empty search state', () => {
+    setAvailableApartments([]);
     render(
       <ApartmentSelectionDialog
         actionLoading={false}
         apartmentSearch="zzz"
         editMode="assign-apartment"
-        filteredApartments={[]}
         onApartmentSearchChange={() => {}}
         onApproveOrAssign={() => {}}
         onCancel={() => {}}
@@ -222,12 +236,12 @@ describe('ApartmentSelectionDialog', () => {
     const onReject = vi.fn();
     const onCancel = vi.fn();
 
+    setAvailableApartments([]);
     render(
       <ApartmentSelectionDialog
         actionLoading={false}
         apartmentSearch=""
         editMode="change-status"
-        filteredApartments={[]}
         onApartmentSearchChange={() => {}}
         onApproveOrAssign={() => {}}
         onCancel={onCancel}
@@ -259,17 +273,17 @@ describe('ApartmentSelectionDialog', () => {
     };
     const other = { ...apartment, owner: 'Ktoś', email: null };
 
+    setAvailableApartments([
+      { ...other, id: 'selected' },
+      { ...other, id: 'matching', email: 'nobody@example.com' },
+      { ...other, id: 'inactive', isActive: false },
+      { ...other, id: 'plain', shareRatio: null },
+    ]);
     render(
       <ApartmentSelectionDialog
         actionLoading={false}
         apartmentSearch=""
         editMode="assign-apartment"
-        filteredApartments={[
-          { ...other, id: 'selected' },
-          { ...other, id: 'matching', email: 'nobody@example.com' },
-          { ...other, id: 'inactive', isActive: false },
-          { ...other, id: 'plain', shareRatio: null },
-        ]}
         onApartmentSearchChange={() => {}}
         onApproveOrAssign={() => {}}
         onCancel={() => {}}
@@ -297,12 +311,12 @@ describe('ApartmentSelectionDialog', () => {
     [AccountStatus.APPROVED, /^zatwierdzony$/i],
     [AccountStatus.REJECTED, /^odrzucony$/i],
   ])('disables the current %s status', (status, name) => {
+    setAvailableApartments([]);
     render(
       <ApartmentSelectionDialog
         actionLoading={false}
         apartmentSearch=""
         editMode="change-status"
-        filteredApartments={[]}
         onApartmentSearchChange={() => {}}
         onApproveOrAssign={() => {}}
         onCancel={() => {}}
