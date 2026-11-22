@@ -12,6 +12,7 @@ type ChargesUser = NonNullable<
 type ChargesApartment = ChargesUser['apartments'][number];
 
 export type ApartmentPeriodData = {
+  apartmentId: string;
   apartmentNumber: string;
   apartmentAddress: string;
   hoaName: string;
@@ -33,11 +34,12 @@ export function groupApartmentChargesByPeriod(
 
       const periodData = chargesByPeriod[charge.period];
       let apartmentData = periodData.find(
-        (a) => a.apartmentNumber === apartment.number
+        (a) => a.apartmentId === apartment.id
       );
 
       if (!apartmentData) {
         apartmentData = {
+          apartmentId: apartment.id,
           apartmentNumber: apartment.number,
           apartmentAddress: apartmentLabel,
           hoaName: apartment.homeownersAssociation.name,

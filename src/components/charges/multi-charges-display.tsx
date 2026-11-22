@@ -17,6 +17,7 @@ import { getPeriodYear, groupByYearDesc } from '@/lib/utils/group-by-year';
 import { sumDecimals } from '@/lib/utils/sum';
 
 interface ApartmentPeriodData {
+  apartmentId: string;
   apartmentNumber: string;
   apartmentAddress: string;
   hoaName: string;

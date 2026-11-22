@@ -52,6 +52,12 @@ The system SHALL present charge summaries per period across multiple apartments 
 - **WHEN** they view the charges dashboard
 - **THEN** a summary card shows the combined or per-apartment charge totals for that period
 
+#### Scenario: Same apartment number in two HOAs
+
+- **GIVEN** a tenant with apartments numbered `2` in two different HOAs and charges in a common billing period
+- **WHEN** they view the charges dashboard
+- **THEN** each apartment has its own entry in the period card with its own charges and its own PDF download button
+
 ---
 
 ### Requirement: Tenant Payment Viewing
