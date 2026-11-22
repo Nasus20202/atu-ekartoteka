@@ -93,6 +93,31 @@ The system SHALL allow admins to assign apartments to admin users (`role = ADMIN
 
 ---
 
+### Requirement: Apartment Selection Loading State
+
+The apartment selection dialog SHALL load the apartments assignable to the selected user behind a React Suspense boundary. While the first list for a user is loading, the dialog SHALL show a spinner with the text `Ładowanie mieszkań...` in the list area, so the dialog keeps its size and the list does not appear late. A search change SHALL keep the previous list on screen until the new results arrive. A failed request SHALL show `Nie udało się załadować mieszkań` in the list area instead of breaking the dialog.
+
+#### Scenario: Spinner while the first list loads
+
+- **GIVEN** an admin opens the apartment selection dialog for a user
+- **WHEN** the assignable apartments are still loading
+- **THEN** a spinner with the text `Ładowanie mieszkań...` is shown in the list area
+- **AND** the list appears in place of the spinner once the apartments arrive
+
+#### Scenario: Search keeps the previous list while loading
+
+- **GIVEN** the apartment selection dialog shows a list for a user
+- **WHEN** the admin changes the search text and the debounced search is sent
+- **THEN** the previous list stays visible until the results for the new search arrive
+
+#### Scenario: Failed load
+
+- **GIVEN** the assignable apartments request fails
+- **WHEN** the dialog shows the list area
+- **THEN** the text `Nie udało się załadować mieszkań` is shown instead of the list
+
+---
+
 ### Requirement: Account Approval and Status Management
 
 The system SHALL allow admins to approve, reject, or change the status of tenant accounts, and optionally assign apartments during approval.

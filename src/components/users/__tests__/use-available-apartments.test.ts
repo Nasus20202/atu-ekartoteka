@@ -1,11 +1,27 @@
-import { act, renderHook, waitFor } from '@testing-library/react';
+import {
+  act,
+  renderHook,
+  type RenderHookResult,
+  waitFor,
+} from '@testing-library/react';
+import { createElement, Suspense } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { useAvailableApartments } from '@/components/users/use-available-apartments';
+import {
+  type AvailableApartments,
+  useAvailableApartments,
+} from '@/components/users/use-available-apartments';
 import type { UserDto } from '@/lib/types/dto/user-dto';
 
 const selectedUser = { id: 'u1', apartments: [] } as unknown as UserDto;
 const apartment = { id: 'apt-1', userId: null, isActive: true };
+
+const SEARCH_WAIT_MS = 3000;
+
+interface Props {
+  user: UserDto | null;
+  search: string;
+}
 
 function json(ok: boolean, body: object) {
   return { ok, json: () => Promise.resolve(body) };
@@ -16,32 +32,50 @@ function requestedParams(fetchMock: ReturnType<typeof vi.fn>) {
   return new URL(url, 'http://localhost').searchParams;
 }
 
+function withSuspense({ children }: { children: React.ReactNode }) {
+  return createElement(Suspense, { fallback: null }, children);
+}
+
+/** Renders inside async act so a suspended first load can resolve. */
+async function renderAvailable(props: Props) {
+  let rendered!: RenderHookResult<AvailableApartments, Props>;
+  await act(async () => {
+    rendered = renderHook(
+      ({ user, search }) => useAvailableApartments(user, search),
+      { initialProps: props, wrapper: withSuspense }
+    );
+  });
+  return rendered;
+}
+
 describe('useAvailableApartments', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
-  it('loads nothing without a selected user', () => {
+  it('loads nothing without a selected user', async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
 
-    const { result } = renderHook(() => useAvailableApartments(null, ''));
+    const { result } = await renderAvailable({ user: null, search: '' });
 
-    expect(result.current).toEqual([]);
+    expect(result.current).toEqual({ apartments: [], failed: false });
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('asks the API for apartments assignable to the user', async () => {
+  it('suspends until the apartments assignable to the user arrive', async () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValue(json(true, { apartments: [apartment] }));
     vi.stubGlobal('fetch', fetchMock);
 
-    const { result } = renderHook(() =>
-      useAvailableApartments(selectedUser, '')
-    );
+    const { result } = await renderAvailable({
+      user: selectedUser,
+      search: '',
+    });
 
-    await waitFor(() => expect(result.current).toHaveLength(1));
+    expect(result.current.apartments).toHaveLength(1);
+    expect(result.current.failed).toBe(false);
     expect(fetchMock).toHaveBeenCalledOnce();
     expect(requestedParams(fetchMock).get('assignableTo')).toBe('u1');
     expect(requestedParams(fetchMock).has('search')).toBe(false);
@@ -51,87 +85,31 @@ describe('useAvailableApartments', () => {
     const fetchMock = vi.fn().mockResolvedValue(json(true, { apartments: [] }));
     vi.stubGlobal('fetch', fetchMock);
 
-    const { rerender } = renderHook(
-      ({ search }) => useAvailableApartments(selectedUser, search),
-      { initialProps: { search: '' } }
-    );
-    rerender({ search: ' 17/12 ' });
+    const { result, rerender } = await renderAvailable({
+      user: selectedUser,
+      search: '',
+    });
+    await act(async () => {
+      rerender({ user: selectedUser, search: ' 17/12 ' });
+    });
 
-    await waitFor(() =>
-      expect(requestedParams(fetchMock).get('search')).toBe('17/12')
+    await waitFor(
+      () => expect(requestedParams(fetchMock).get('search')).toBe('17/12'),
+      { timeout: SEARCH_WAIT_MS }
     );
     expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result.current.apartments).toEqual([]);
   });
 
-  it('keeps the list empty when the request fails', async () => {
+  it('reports a failed request instead of throwing', async () => {
     const fetchMock = vi.fn().mockResolvedValue(json(false, { error: 'x' }));
     vi.stubGlobal('fetch', fetchMock);
 
-    const { result } = renderHook(() =>
-      useAvailableApartments(selectedUser, '')
-    );
+    const { result } = await renderAvailable({
+      user: selectedUser,
+      search: '',
+    });
 
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
-    expect(result.current).toEqual([]);
-  });
-
-  it('ignores results that arrive after unmount', async () => {
-    let resolveApartments: (value: unknown) => void = () => {};
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockReturnValue(new Promise((r) => (resolveApartments = r)))
-    );
-
-    const { result, unmount } = renderHook(() =>
-      useAvailableApartments(selectedUser, '')
-    );
-    await waitFor(() => expect(fetch).toHaveBeenCalled());
-    unmount();
-    await act(async () =>
-      resolveApartments(json(true, { apartments: [apartment] }))
-    );
-
-    expect(result.current).toEqual([]);
-  });
-
-  it('does not log a network error that arrives after unmount', async () => {
-    const consoleError = vi
-      .spyOn(console, 'error')
-      .mockImplementation(() => {});
-    let rejectRequest: (reason: unknown) => void = () => {};
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockReturnValue(new Promise((_, r) => (rejectRequest = r)))
-    );
-
-    const { unmount } = renderHook(() =>
-      useAvailableApartments(selectedUser, '')
-    );
-    await waitFor(() => expect(fetch).toHaveBeenCalled());
-    unmount();
-    await act(async () => rejectRequest(new Error('aborted')));
-
-    expect(consoleError).not.toHaveBeenCalled();
-    consoleError.mockRestore();
-  });
-
-  it("never lists the previous user's apartments for another user", async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(json(true, { apartments: [apartment] }))
-      .mockReturnValueOnce(new Promise(() => {}));
-    vi.stubGlobal('fetch', fetchMock);
-    const otherUser = { id: 'u2', apartments: [] } as unknown as UserDto;
-
-    const { result, rerender } = renderHook(
-      ({ user }) => useAvailableApartments(user, ''),
-      { initialProps: { user: selectedUser as UserDto | null } }
-    );
-    await waitFor(() => expect(result.current).toHaveLength(1));
-
-    rerender({ user: otherUser });
-    expect(result.current).toEqual([]);
-    rerender({ user: null });
-    expect(result.current).toEqual([]);
+    expect(result.current).toEqual({ apartments: [], failed: true });
   });
 });

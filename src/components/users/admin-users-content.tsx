@@ -10,16 +10,12 @@ import { setApartmentSelection } from '@/components/users/apartment-selection';
 import { ApartmentSelectionDialog } from '@/components/users/apartment-selection-dialog';
 import { CreateUserDialog } from '@/components/users/create-user-dialog';
 import { useAdminUsers } from '@/components/users/use-admin-users';
-import { useAvailableApartments } from '@/components/users/use-available-apartments';
 import { usePendingCount } from '@/components/users/use-pending-count';
 import { useUserActions } from '@/components/users/use-user-actions';
 import { UserActionsMenu } from '@/components/users/user-actions-menu';
 import { UserFilters } from '@/components/users/user-filters';
 import { UsersList } from '@/components/users/users-list';
-import {
-  getPendingDescription,
-  pinSelectedAndMatching,
-} from '@/components/users/utils';
+import { getPendingDescription } from '@/components/users/utils';
 import type { InfinitePage } from '@/hooks/use-infinite-list';
 import {
   LIST_VIEW_STORAGE_KEYS,
@@ -79,16 +75,9 @@ export function AdminUsersContent({
     handleCreateUser,
     handleRejectFromStatusDialog,
   } = useUserActions(refreshUsersAndCount);
-  const apartments = useAvailableApartments(selectedUser, apartmentSearch);
   const [viewMode, setViewMode] = useListViewMode(
     LIST_VIEW_STORAGE_KEYS.users,
     initialViewMode
-  );
-
-  const filteredApartments = pinSelectedAndMatching(
-    apartments,
-    selectedApartments,
-    selectedUser
   );
 
   const pendingDescription = getPendingDescription(pendingCount);
@@ -148,7 +137,6 @@ export function AdminUsersContent({
         actionLoading={actionLoading}
         apartmentSearch={apartmentSearch}
         editMode={editMode}
-        filteredApartments={filteredApartments}
         onApartmentSearchChange={setApartmentSearch}
         onApproveOrAssign={() => {
           if (!selectedUser) {
