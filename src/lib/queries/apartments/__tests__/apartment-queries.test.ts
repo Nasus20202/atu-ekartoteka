@@ -60,10 +60,10 @@ describe('apartment queries', () => {
     expect(mockFindFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'apt-1', userId: 'user-1' },
-        include: expect.objectContaining({
+        include: {
           payments: { where: { year: 2025 } },
-          charges: { where: { period: { gte: '202501' } } },
-        }),
+          homeownersAssociation: true,
+        },
       })
     );
   });

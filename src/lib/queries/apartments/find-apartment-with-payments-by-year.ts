@@ -2,7 +2,6 @@ import { cache } from 'react';
 
 import { prisma } from '@/lib/database/prisma';
 import { deriveApartmentPayments } from '@/lib/queries/payments/derive-apartment-payments';
-import { chargesFromYear } from '@/lib/utils/history-window';
 
 export async function findApartmentWithPaymentsByYear(
   apartmentId: string,
@@ -23,9 +22,6 @@ export async function findApartmentWithPaymentsByYear(
     include: {
       payments: {
         where: { year },
-      },
-      charges: {
-        where: chargesFromYear(startYear),
       },
       homeownersAssociation: true,
     },
