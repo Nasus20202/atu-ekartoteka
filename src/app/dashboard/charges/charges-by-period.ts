@@ -22,20 +22,17 @@ export type ApartmentPeriodData = {
 export function groupApartmentChargesByPeriod(
   apartments: ChargesApartment[]
 ): Record<string, ApartmentPeriodData[]> {
-  const chargesByPeriod: Record<string, ApartmentPeriodData[]> = {};
+  const byPeriod = new Map<string, Map<string, ApartmentPeriodData>>();
 
   for (const apartment of apartments) {
     const apartmentLabel = formatApartmentLabel(apartment);
 
     for (const charge of apartment.charges) {
-      if (!chargesByPeriod[charge.period]) {
-        chargesByPeriod[charge.period] = [];
-      }
+      const periodData =
+        byPeriod.get(charge.period) ?? new Map<string, ApartmentPeriodData>();
+      byPeriod.set(charge.period, periodData);
 
-      const periodData = chargesByPeriod[charge.period];
-      let apartmentData = periodData.find(
-        (a) => a.apartmentId === apartment.id
-      );
+      let apartmentData = periodData.get(apartment.id);
 
       if (!apartmentData) {
         apartmentData = {
@@ -45,14 +42,19 @@ export function groupApartmentChargesByPeriod(
           hoaName: apartment.homeownersAssociation.name,
           charges: [],
         };
-        periodData.push(apartmentData);
+        periodData.set(apartment.id, apartmentData);
       }
 
       apartmentData.charges.push(toChargeDisplayDto(charge));
     }
   }
 
-  return chargesByPeriod;
+  return Object.fromEntries(
+    Array.from(byPeriod, ([period, apartmentsById]) => [
+      period,
+      Array.from(apartmentsById.values()),
+    ])
+  );
 }
 
 export function getSortedPeriods(chargesByPeriod: Record<string, unknown>) {
