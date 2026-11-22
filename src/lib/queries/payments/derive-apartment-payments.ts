@@ -1,4 +1,7 @@
-import { findMonthlyChargeSums } from '@/lib/queries/payments/find-monthly-charge-sums';
+import {
+  findMonthlyChargeSums,
+  type MonthlyChargeSums,
+} from '@/lib/queries/payments/find-monthly-charge-sums';
 import {
   applyDerivedFigures,
   type DerivedPayment,
@@ -21,18 +24,19 @@ export async function deriveApartmentPayments<A extends ApartmentWithPayments>(
   apartments: A[],
   maxPeriod: string
 ): Promise<WithDerivedPayments<A>[]> {
-  const withPayments = apartments.filter(({ payments }) => payments.length > 0);
-  const years = withPayments.flatMap(({ payments }) =>
+  const years = apartments.flatMap(({ payments }) =>
     payments.map(({ year }) => year)
   );
-  const chargeSums = await findMonthlyChargeSums(
-    withPayments.map(({ id }) => id),
-    {
-      fromPeriod:
-        years.length > 0 ? yearStartPeriod(Math.min(...years)) : undefined,
-      toPeriod: maxPeriod,
-    }
-  );
+  const chargeSums: MonthlyChargeSums =
+    years.length > 0
+      ? await findMonthlyChargeSums(
+          apartments.map(({ id }) => id),
+          {
+            fromPeriod: yearStartPeriod(Math.min(...years)),
+            toPeriod: maxPeriod,
+          }
+        )
+      : new Map();
 
   return apartments.map((apartment) => ({
     ...apartment,
