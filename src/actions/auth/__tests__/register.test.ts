@@ -101,7 +101,7 @@ function mockSuccessfulTenant(user = makeUser()) {
   mockFindUserByEmail.mockResolvedValue(null);
   mockCreateUser.mockResolvedValue(user);
   mockCreateEmailVerification.mockResolvedValue({});
-  mockSendVerificationEmail.mockResolvedValue(undefined);
+  mockSendVerificationEmail.mockResolvedValue({ ok: true, delivery: 'sent' });
   mockNotifyAdminsOfNewUser.mockResolvedValue(undefined);
 }
 
@@ -247,7 +247,10 @@ describe('registerAction', () => {
 
   it('still succeeds when the verification email fails to send', async () => {
     mockSuccessfulTenant();
-    mockSendVerificationEmail.mockRejectedValue(new Error('SMTP error'));
+    mockSendVerificationEmail.mockResolvedValue({
+      ok: false,
+      reason: 'send-failed',
+    });
 
     const result = await registerAction(TENANT_INPUT);
 

@@ -34,13 +34,20 @@ export async function notifyAdminsOfNewUser(
     // Send notification to each admin
     const notifications = admins.map(async (admin: (typeof admins)[number]) => {
       try {
-        await emailService.sendNewUserNotificationToAdmin(
+        const result = await emailService.sendNewUserNotificationToAdmin(
           admin.email,
           userEmail,
           userName,
           formattedDate
         );
-        logger.info('Admin notified of new user registration');
+        if (result.ok) {
+          logger.info('Admin notified of new user registration');
+        } else {
+          logger.error(
+            { reason: result.reason },
+            'Failed to send admin notification'
+          );
+        }
       } catch (error) {
         logger.error({ error }, 'Failed to send admin notification');
         // Don't throw - continue with other admins

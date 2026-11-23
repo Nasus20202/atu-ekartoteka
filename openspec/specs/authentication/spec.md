@@ -115,6 +115,7 @@ login.
 - **GIVEN** a user whose email is not yet verified
 - **WHEN** they request a new verification email
 - **THEN** a new token is generated and a fresh verification email is sent
+- **AND** a result with `ok: false` is treated as a failure: the unsent code is removed and the request fails
 
 #### Scenario: Verification email fails to send
 
@@ -139,6 +140,8 @@ The system SHALL allow users to reset a forgotten password via email. A reset to
 - **GIVEN** a user account exists with the provided email
 - **WHEN** the user submits a forgot-password request
 - **THEN** a time-limited password reset link is sent to their email
+- **AND** the email is sent after the response has been returned (`after()` from `next/server`, passed in by the Server Action), so the response time does not reveal whether the address is registered
+- **AND** the send is awaited inside that deferred task, so its outcome is logged: `Password reset email sent`, or an error with the failure `reason`
 
 #### Scenario: Reset password with valid token
 
@@ -338,6 +341,12 @@ exactly.
 - **WHEN** the user requests a password reset with the same address in any
   casing
 - **THEN** the reset email is sent to the stored address
+
+#### Scenario: Database refuses a non-normalised email
+
+- **GIVEN** the `User_email_normalized_check` constraint (`email = lower(btrim(email))`), added in migration `20261123130000_user_email_normalized_check`
+- **WHEN** any code path tries to store an email with uppercase letters or surrounding spaces
+- **THEN** the write fails and no account is created
 
 ---
 

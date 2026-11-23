@@ -21,6 +21,19 @@ const {
   mockLoggerWarn: vi.fn(),
 }));
 
+const { mockPasswordResetMessage } = vi.hoisted(() => ({
+  mockPasswordResetMessage: vi.fn(),
+}));
+
+vi.mock('@/lib/platform/email/email-messages', async (importOriginal) => {
+  const original =
+    await importOriginal<
+      typeof import('@/lib/platform/email/email-messages')
+    >();
+  mockPasswordResetMessage.mockImplementation(original.passwordResetMessage);
+  return { ...original, passwordResetMessage: mockPasswordResetMessage };
+});
+
 const mockTransport = {
   sendMail: mockSendMail,
   verify: mockVerify,
@@ -157,7 +170,7 @@ describe('EmailService', () => {
         text: 'Test',
       });
 
-      expect(result).toBe(true);
+      expect(result).toEqual({ ok: true, delivery: 'sent' });
     });
 
     it('logs the e-mail type and result, never the recipient', async () => {
@@ -192,7 +205,7 @@ describe('EmailService', () => {
         html: '<p>Test</p>',
       });
 
-      expect(result).toBe(false);
+      expect(result).toEqual({ ok: false, reason: 'send-failed' });
     });
   });
 
@@ -210,7 +223,7 @@ describe('EmailService', () => {
         text: 'Test',
       });
 
-      expect(result).toBe(true);
+      expect(result).toEqual({ ok: true, delivery: 'skipped' });
       expect(mockSendMail).not.toHaveBeenCalled();
     });
 
@@ -302,7 +315,7 @@ describe('EmailService', () => {
         'test-token-123'
       );
 
-      expect(result).toBe(true);
+      expect(result).toEqual({ ok: true, delivery: 'sent' });
       expect(mockSendMail).toHaveBeenCalledWith(
         expect.objectContaining({
           to: 'user@example.com',
@@ -318,11 +331,11 @@ describe('EmailService', () => {
         'John'
       );
 
-      expect(result).toBe(true);
+      expect(result).toEqual({ ok: true, delivery: 'sent' });
       expect(mockSendMail).toHaveBeenCalled();
     });
 
-    it('should return false when sending fails', async () => {
+    it('should return a failed result when sending fails', async () => {
       mockSendMail.mockRejectedValueOnce(new Error('Send failed'));
 
       const result = await emailService.sendVerificationEmail(
@@ -330,7 +343,7 @@ describe('EmailService', () => {
         'test-token-123'
       );
 
-      expect(result).toBe(false);
+      expect(result).toEqual({ ok: false, reason: 'send-failed' });
     });
   });
 
@@ -340,13 +353,25 @@ describe('EmailService', () => {
       emailService = new EmailService(mockConfig);
     });
 
+    it('returns a failed result instead of throwing when the message cannot be built', async () => {
+      mockPasswordResetMessage.mockRejectedValueOnce(new Error('render'));
+
+      const result = await emailService.sendPasswordResetEmail(
+        'user@example.com',
+        'reset-token-456'
+      );
+
+      expect(result).toEqual({ ok: false, reason: 'send-failed' });
+      expect(mockSendMail).not.toHaveBeenCalled();
+    });
+
     it('should send password reset email', async () => {
       const result = await emailService.sendPasswordResetEmail(
         'user@example.com',
         'reset-token-456'
       );
 
-      expect(result).toBe(true);
+      expect(result).toEqual({ ok: true, delivery: 'sent' });
       expect(mockSendMail).toHaveBeenCalledWith(
         expect.objectContaining({
           to: 'user@example.com',
@@ -362,7 +387,7 @@ describe('EmailService', () => {
         'Jane'
       );
 
-      expect(result).toBe(true);
+      expect(result).toEqual({ ok: true, delivery: 'sent' });
       expect(mockSendMail).toHaveBeenCalled();
     });
   });
@@ -377,7 +402,7 @@ describe('EmailService', () => {
       const result =
         await emailService.sendAccountApprovedEmail('user@example.com');
 
-      expect(result).toBe(true);
+      expect(result).toEqual({ ok: true, delivery: 'sent' });
       expect(mockSendMail).toHaveBeenCalledWith(
         expect.objectContaining({
           to: 'user@example.com',
@@ -392,7 +417,7 @@ describe('EmailService', () => {
         'Bob'
       );
 
-      expect(result).toBe(true);
+      expect(result).toEqual({ ok: true, delivery: 'sent' });
       expect(mockSendMail).toHaveBeenCalled();
     });
   });
@@ -409,7 +434,7 @@ describe('EmailService', () => {
         'TempPass123!'
       );
 
-      expect(result).toBe(true);
+      expect(result).toEqual({ ok: true, delivery: 'sent' });
       expect(mockSendMail).toHaveBeenCalledWith(
         expect.objectContaining({
           to: 'user@example.com',
@@ -425,11 +450,11 @@ describe('EmailService', () => {
         'Anna'
       );
 
-      expect(result).toBe(true);
+      expect(result).toEqual({ ok: true, delivery: 'sent' });
       expect(mockSendMail).toHaveBeenCalled();
     });
 
-    it('should return false when sending fails', async () => {
+    it('should return a failed result when sending fails', async () => {
       mockSendMail.mockRejectedValueOnce(new Error('Send failed'));
 
       const result = await emailService.sendAccountActivationEmail(
@@ -437,7 +462,7 @@ describe('EmailService', () => {
         'TempPass123!'
       );
 
-      expect(result).toBe(false);
+      expect(result).toEqual({ ok: false, reason: 'send-failed' });
     });
   });
 
@@ -455,7 +480,7 @@ describe('EmailService', () => {
         '2024-01-15'
       );
 
-      expect(result).toBe(true);
+      expect(result).toEqual({ ok: true, delivery: 'sent' });
       expect(mockSendMail).toHaveBeenCalledWith(
         expect.objectContaining({
           to: 'admin@example.com',

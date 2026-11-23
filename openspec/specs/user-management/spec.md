@@ -274,6 +274,14 @@ The system SHALL allow admins to create multiple tenant accounts at once for apa
 - **WHEN** the bulk create is processed
 - **THEN** no new account is created for that email; the result includes it in the `skipped` count
 
+#### Scenario: Activation email fails on create
+
+- **GIVEN** an account was created but its activation email was not delivered (the email service returned `ok: false`)
+- **WHEN** the bulk create finishes
+- **THEN** the account stays created and counts in `created`
+- **AND** the result's `emailFailed` count includes it, and the failure is logged
+- **AND** the admin sees how many activation emails were not sent, and that those users can set a password through "Nie pamiętam hasła"
+
 #### Scenario: Bulk assign existing users to apartments
 
 - **GIVEN** an authenticated admin selects one or more apartments in the "assign existing" tab

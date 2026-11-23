@@ -55,6 +55,19 @@ const REQUEST: PasswordResetRequest = {
 
 const SUCCESS = { ok: true, data: undefined };
 
+let deferred: Array<() => Promise<void>> = [];
+
+const afterResponse = (task: () => Promise<void>) => {
+  deferred.push(task);
+};
+
+/** Runs the use case, then the work it scheduled for after the response. */
+async function run(request: PasswordResetRequest) {
+  const result = await requestPasswordReset(request, afterResponse);
+  await Promise.all(deferred.map((task) => task()));
+  return result;
+}
+
 function makeUser(overrides: Record<string, unknown> = {}) {
   return {
     id: 'user-id',
@@ -70,10 +83,14 @@ describe('requestPasswordReset', () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(NOW);
     vi.resetAllMocks();
+    deferred = [];
     mockVerifyTurnstileToken.mockResolvedValue(true);
     mockFindUserByEmail.mockResolvedValue(makeUser());
     mockReplacePasswordReset.mockResolvedValue(undefined);
-    mockSendPasswordResetEmail.mockResolvedValue(undefined);
+    mockSendPasswordResetEmail.mockResolvedValue({
+      ok: true,
+      delivery: 'sent',
+    });
   });
 
   afterEach(() => {
@@ -84,7 +101,7 @@ describe('requestPasswordReset', () => {
     it('rejects a failed Turnstile check before looking up the email', async () => {
       mockVerifyTurnstileToken.mockResolvedValue(false);
 
-      const result = await requestPasswordReset({
+      const result = await run({
         ...REQUEST,
         turnstileToken: 'bad-token',
       });
@@ -102,7 +119,7 @@ describe('requestPasswordReset', () => {
     it('passes a missing Turnstile token to the verifier as undefined', async () => {
       mockVerifyTurnstileToken.mockResolvedValue(false);
 
-      await requestPasswordReset(REQUEST);
+      await run(REQUEST);
 
       expect(mockVerifyTurnstileToken).toHaveBeenCalledWith(undefined);
     });
@@ -110,7 +127,7 @@ describe('requestPasswordReset', () => {
 
   describe('input validation', () => {
     it('requires an email once the Turnstile check has passed', async () => {
-      const result = await requestPasswordReset({ ...REQUEST, email: '' });
+      const result = await run({ ...REQUEST, email: '' });
 
       expect(result).toEqual({
         ok: false,
@@ -126,7 +143,7 @@ describe('requestPasswordReset', () => {
     it('reports success for an unknown email and does no work', async () => {
       mockFindUserByEmail.mockResolvedValue(null);
 
-      const result = await requestPasswordReset(REQUEST);
+      const result = await run(REQUEST);
 
       expect(result).toEqual(SUCCESS);
       expect(mockReplacePasswordReset).not.toHaveBeenCalled();
@@ -138,7 +155,7 @@ describe('requestPasswordReset', () => {
         makeUser({ authMethod: AuthMethod.GOOGLE })
       );
 
-      const result = await requestPasswordReset(REQUEST);
+      const result = await run(REQUEST);
 
       expect(result).toEqual(SUCCESS);
       expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -152,13 +169,13 @@ describe('requestPasswordReset', () => {
 
   describe('successful request', () => {
     it('looks the account up by the normalised email', async () => {
-      await requestPasswordReset({ ...REQUEST, email: '  Test@Example.COM ' });
+      await run({ ...REQUEST, email: '  Test@Example.COM ' });
 
       expect(mockFindUserByEmail).toHaveBeenCalledWith('test@example.com');
     });
 
     it('stores only the hash of a token that expires in one hour', async () => {
-      await requestPasswordReset(REQUEST);
+      await run(REQUEST);
 
       expect(mockReplacePasswordReset).toHaveBeenCalledWith({
         userId: 'user-id',
@@ -168,7 +185,7 @@ describe('requestPasswordReset', () => {
     });
 
     it('emails the plain token to the stored address', async () => {
-      const result = await requestPasswordReset(REQUEST);
+      const result = await run(REQUEST);
 
       expect(mockSendPasswordResetEmail).toHaveBeenCalledWith(
         'test@example.com',
@@ -179,7 +196,7 @@ describe('requestPasswordReset', () => {
     });
 
     it('stores the new token before emailing it', async () => {
-      await requestPasswordReset(REQUEST);
+      await run(REQUEST);
 
       const storeOrder = mockReplacePasswordReset.mock.invocationCallOrder[0];
       const sendOrder = mockSendPasswordResetEmail.mock.invocationCallOrder[0];
@@ -189,7 +206,7 @@ describe('requestPasswordReset', () => {
     it('sends the email without a name when the account has none', async () => {
       mockFindUserByEmail.mockResolvedValue(makeUser({ name: null }));
 
-      await requestPasswordReset(REQUEST);
+      await run(REQUEST);
 
       expect(mockSendPasswordResetEmail).toHaveBeenCalledWith(
         'test@example.com',
@@ -199,7 +216,7 @@ describe('requestPasswordReset', () => {
     });
 
     it('keeps the email address and plain token out of the logs', async () => {
-      await requestPasswordReset(REQUEST);
+      await run(REQUEST);
 
       const logged = JSON.stringify([
         ...mockLogger.info.mock.calls,
@@ -225,7 +242,7 @@ describe('requestPasswordReset', () => {
       async (_label, arrangeFailure) => {
         arrangeFailure();
 
-        const result = await requestPasswordReset(REQUEST);
+        const result = await run(REQUEST);
 
         expect(result).toEqual({
           ok: false,
@@ -240,25 +257,58 @@ describe('requestPasswordReset', () => {
     );
   });
   describe('email delivery', () => {
-    it('does not wait for the email to be sent', async () => {
-      mockSendPasswordResetEmail.mockReturnValue(new Promise(() => {}));
-
-      const result = await requestPasswordReset(REQUEST);
+    it('schedules the email instead of sending it before the response', async () => {
+      const result = await requestPasswordReset(REQUEST, afterResponse);
 
       expect(result).toEqual(SUCCESS);
+      expect(deferred).toHaveLength(1);
+      expect(mockSendPasswordResetEmail).not.toHaveBeenCalled();
     });
 
-    it('logs a failed send and still answers with success', async () => {
+    it('schedules nothing for an unknown email', async () => {
+      mockFindUserByEmail.mockResolvedValue(null);
+
+      await requestPasswordReset(REQUEST, afterResponse);
+
+      expect(deferred).toHaveLength(0);
+    });
+
+    it('logs the email as sent once the send resolves', async () => {
+      await run(REQUEST);
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        { userId: 'user-id' },
+        'Password reset email sent'
+      );
+    });
+
+    it('logs a send the service reports as failed', async () => {
+      mockSendPasswordResetEmail.mockResolvedValue({
+        ok: false,
+        reason: 'send-failed',
+      });
+
+      await run(REQUEST);
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        { userId: 'user-id', reason: 'send-failed' },
+        'Password reset email failed'
+      );
+      expect(mockLogger.info).not.toHaveBeenCalledWith(
+        { userId: 'user-id' },
+        'Password reset email sent'
+      );
+    });
+
+    it('logs a failed send without throwing from the scheduled task', async () => {
       mockSendPasswordResetEmail.mockRejectedValue(new Error('SMTP down'));
 
-      const result = await requestPasswordReset(REQUEST);
+      const result = await run(REQUEST);
 
       expect(result).toEqual(SUCCESS);
-      await vi.waitFor(() =>
-        expect(mockLogger.error).toHaveBeenCalledWith(
-          { error: expect.any(Error), userId: 'user-id' },
-          'Password reset email failed'
-        )
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        { error: expect.any(Error), userId: 'user-id' },
+        'Password reset email failed'
       );
     });
   });

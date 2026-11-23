@@ -13,7 +13,9 @@ const mockUserCreate = vi.fn();
 const mockApartmentFindMany = vi.fn();
 const mockApartmentUpdateMany = vi.fn();
 const mockTransaction = vi.fn();
-const mockSendAccountActivationEmail = vi.fn().mockResolvedValue(true);
+const mockSendAccountActivationEmail = vi
+  .fn()
+  .mockResolvedValue({ ok: true, delivery: 'sent' });
 
 vi.mock('@/auth', () => ({ auth: mockAuth }));
 
@@ -71,7 +73,10 @@ function dataOf(result: { ok: boolean }) {
 describe('bulkCreateAccountsAction', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockSendAccountActivationEmail.mockResolvedValue(true);
+    mockSendAccountActivationEmail.mockResolvedValue({
+      ok: true,
+      delivery: 'sent',
+    });
 
     // Default transaction: run the callback with a tx proxy
     mockTransaction.mockImplementation(async (fn: (tx: unknown) => unknown) => {
@@ -144,7 +149,7 @@ describe('bulkCreateAccountsAction', () => {
     const data = dataOf(result);
 
     expect(result.ok).toBe(true);
-    expect(data).toEqual({ created: 1, skipped: 0, errors: 0 });
+    expect(data).toEqual({ created: 1, skipped: 0, errors: 0, emailFailed: 0 });
     expect(mockUserCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
@@ -217,7 +222,7 @@ describe('bulkCreateAccountsAction', () => {
     const data = dataOf(result);
 
     expect(result.ok).toBe(true);
-    expect(data).toEqual({ created: 0, skipped: 1, errors: 0 });
+    expect(data).toEqual({ created: 0, skipped: 1, errors: 0, emailFailed: 0 });
     expect(mockUserCreate).not.toHaveBeenCalled();
   });
 
@@ -250,7 +255,7 @@ describe('bulkCreateAccountsAction', () => {
     const data = dataOf(result);
 
     expect(result.ok).toBe(true);
-    expect(data).toEqual({ created: 0, skipped: 0, errors: 1 });
+    expect(data).toEqual({ created: 0, skipped: 0, errors: 1, emailFailed: 0 });
   });
 
   it('should handle multiple apartments across multiple emails', async () => {
@@ -273,7 +278,7 @@ describe('bulkCreateAccountsAction', () => {
     const data = dataOf(result);
 
     expect(result.ok).toBe(true);
-    expect(data).toEqual({ created: 2, skipped: 0, errors: 0 });
+    expect(data).toEqual({ created: 2, skipped: 0, errors: 0, emailFailed: 0 });
   });
 
   it('still creates the account when the activation email fails', async () => {
@@ -283,13 +288,21 @@ describe('bulkCreateAccountsAction', () => {
     ]);
     mockUserFindUnique.mockResolvedValueOnce(null);
     mockUserCreate.mockResolvedValueOnce({ id: 'new-user-id' });
-    mockSendAccountActivationEmail.mockRejectedValueOnce(new Error('smtp'));
+    mockSendAccountActivationEmail.mockResolvedValueOnce({
+      ok: false,
+      reason: 'send-failed',
+    });
 
     const { bulkCreateAccountsAction } =
       await import('@/actions/users/bulk-users');
     const result = await bulkCreateAccountsAction({ apartmentIds: ['apt-1'] });
 
-    expect(dataOf(result)).toEqual({ created: 1, skipped: 0, errors: 0 });
+    expect(dataOf(result)).toEqual({
+      created: 1,
+      skipped: 0,
+      errors: 0,
+      emailFailed: 1,
+    });
     expect(mockSendAccountActivationEmail).toHaveBeenCalledWith(
       'owner@example.com',
       expect.any(String),

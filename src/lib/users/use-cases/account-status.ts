@@ -12,9 +12,19 @@ export async function notifyAccountApproved(
 ): Promise<void> {
   try {
     const emailService = getEmailService();
-    await emailService.sendAccountApprovedEmail(email, name || undefined);
+    const result = await emailService.sendAccountApprovedEmail(
+      email,
+      name || undefined
+    );
 
-    logger.info('Account approved notification sent');
+    if (result.ok) {
+      logger.info('Account approved notification sent');
+    } else {
+      logger.error(
+        { reason: result.reason },
+        'Failed to send account approved notification'
+      );
+    }
   } catch (error) {
     logger.error({ error }, 'Failed to send account approved notification');
     // Don't throw - notification failure shouldn't break the approval process

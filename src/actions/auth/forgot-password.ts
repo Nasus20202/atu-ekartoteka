@@ -1,6 +1,8 @@
 /* eslint-disable local/require-action-auth-guard -- public: requested by a signed-out visitor; the Turnstile check guards it */
 'use server';
 
+import { after } from 'next/server';
+
 import { type ActionResult, fromUseCaseResult } from '@/actions/action-result';
 import { requestPasswordReset } from '@/lib/auth/use-cases/request-password-reset';
 
@@ -17,9 +19,12 @@ export async function forgotPasswordAction(
   input: ForgotPasswordInput
 ): Promise<ActionResult<void>> {
   return fromUseCaseResult(
-    await requestPasswordReset({
-      email: typeof input.email === 'string' ? input.email : '',
-      turnstileToken: input.turnstileToken,
-    })
+    await requestPasswordReset(
+      {
+        email: typeof input.email === 'string' ? input.email : '',
+        turnstileToken: input.turnstileToken,
+      },
+      after
+    )
   );
 }

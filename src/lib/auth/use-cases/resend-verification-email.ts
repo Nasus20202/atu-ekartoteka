@@ -61,16 +61,22 @@ export async function resendVerificationEmail(
       expiresAt: getVerificationExpiration(),
     });
 
-    try {
-      await getEmailService().sendVerificationEmail(
-        user.email,
-        token,
-        user.name || undefined
+    const result = await getEmailService().sendVerificationEmail(
+      user.email,
+      token,
+      user.name || undefined
+    );
+
+    if (!result.ok) {
+      // The code never reached the user: remove it so the rate limit does not block a retry.
+      // A failed cleanup is logged so it cannot hide the send failure.
+      await deleteVerificationsForUser(user.id).catch((cleanupError: unknown) =>
+        logger.error(
+          { error: cleanupError, userId: user.id },
+          'Failed to remove unsent verification code'
+        )
       );
-    } catch (error) {
-      // The code never reached the user: remove it so the rate limit does not block a retry
-      await deleteVerificationsForUser(user.id);
-      throw error;
+      return failedResult(SEND_FAILED_MESSAGE);
     }
 
     logger.info({ userId: user.id }, 'Verification email resent');
