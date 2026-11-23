@@ -115,13 +115,21 @@ login.
 - **GIVEN** a user whose email is not yet verified
 - **WHEN** they request a new verification email
 - **THEN** a new token is generated and a fresh verification email is sent
-- **AND** a result with `ok: false` is treated as a failure: the unsent code is removed and the request fails
+- **AND** the earlier codes are removed only after the new email was sent, so a failed send never invalidates a code the user already received
+- **AND** a result with `ok: false` is treated as a failure: only the unsent code is removed and the request fails
 
 #### Scenario: Verification email fails to send
 
 - **GIVEN** a verification email that cannot be delivered
 - **WHEN** the user requests a new one
 - **THEN** the request reports a failure and the unsent code is removed, so the user is not rate-limited on a code they never received
+
+#### Scenario: Registration verification email fails to send
+
+- **GIVEN** a new registration whose first verification email cannot be delivered
+- **WHEN** the send returns `ok: false`
+- **THEN** the unsent code is removed and the failure is logged, so the user can request a new email at once instead of waiting out the resend rate limit
+- **AND** the registration itself still succeeds
 
 #### Scenario: Unverified user signs in
 
@@ -140,7 +148,7 @@ The system SHALL allow users to reset a forgotten password via email. A reset to
 - **GIVEN** a user account exists with the provided email
 - **WHEN** the user submits a forgot-password request
 - **THEN** a time-limited password reset link is sent to their email
-- **AND** the email is sent after the response has been returned (`after()` from `next/server`, passed in by the Server Action), so the response time does not reveal whether the address is registered
+- **AND** the email is sent after the response has been returned (`after()` from `next/server`, passed in by the Server Action), so the response does not wait for SMTP. A small timing difference remains for a registered address, which still stores a token in one database transaction; Turnstile limits how far that can be probed
 - **AND** the send is awaited inside that deferred task, so its outcome is logged: `Password reset email sent`, or an error with the failure `reason`
 
 #### Scenario: Reset password with valid token

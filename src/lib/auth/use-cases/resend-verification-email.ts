@@ -1,5 +1,5 @@
 import { createEmailVerification } from '@/lib/auth/mutations/create-verification';
-import { deleteVerificationsForUser } from '@/lib/auth/mutations/delete-verifications-for-user';
+import { deleteOtherVerificationsForUser } from '@/lib/auth/mutations/delete-verification-codes';
 import {
   findRecentVerification,
   RATE_LIMIT_WINDOW_MS,
@@ -9,6 +9,7 @@ import {
   getVerificationExpiration,
   hashToken,
 } from '@/lib/auth/rules/verification-tokens';
+import { discardUnsentVerification } from '@/lib/auth/use-cases/discard-unsent-verification';
 import { getEmailService } from '@/lib/platform/email/email-service';
 import { createLogger } from '@/lib/platform/logging/logger';
 import {
@@ -52,10 +53,9 @@ export async function resendVerificationEmail(
       );
     }
 
-    await deleteVerificationsForUser(user.id);
-
+    // The earlier code stays valid until the new one is delivered.
     const token = generateSecureToken();
-    await createEmailVerification({
+    const verification = await createEmailVerification({
       userId: user.id,
       hashedCode: hashToken(token),
       expiresAt: getVerificationExpiration(),
@@ -68,16 +68,18 @@ export async function resendVerificationEmail(
     );
 
     if (!result.ok) {
-      // The code never reached the user: remove it so the rate limit does not block a retry.
-      // A failed cleanup is logged so it cannot hide the send failure.
-      await deleteVerificationsForUser(user.id).catch((cleanupError: unknown) =>
-        logger.error(
-          { error: cleanupError, userId: user.id },
-          'Failed to remove unsent verification code'
-        )
-      );
+      await discardUnsentVerification(verification.id, user.id);
       return failedResult(SEND_FAILED_MESSAGE);
     }
+
+    // Superseded codes expire on their own if this cleanup fails.
+    await deleteOtherVerificationsForUser(user.id, verification.id).catch(
+      (error: unknown) =>
+        logger.error(
+          { error, userId: user.id },
+          'Failed to remove superseded verification codes'
+        )
+    );
 
     logger.info({ userId: user.id }, 'Verification email resent');
     return { ok: true, data: { message: RESENT_MESSAGE } };

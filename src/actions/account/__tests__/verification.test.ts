@@ -4,7 +4,7 @@ const mocks = vi.hoisted(() => ({
   requireUserAction: vi.fn(),
   findUserById: vi.fn(),
   findRecentVerification: vi.fn(),
-  deleteVerificationsForUser: vi.fn(),
+  deleteOtherVerifications: vi.fn(),
   createEmailVerification: vi.fn(),
   sendVerificationEmail: vi.fn(),
 }));
@@ -19,8 +19,9 @@ vi.mock('@/lib/auth/queries/find-recent-verification', () => ({
   RATE_LIMIT_WINDOW_MS: 5 * 60 * 1000,
   findRecentVerification: mocks.findRecentVerification,
 }));
-vi.mock('@/lib/auth/mutations/delete-verifications-for-user', () => ({
-  deleteVerificationsForUser: mocks.deleteVerificationsForUser,
+vi.mock('@/lib/auth/mutations/delete-verification-codes', () => ({
+  deleteOtherVerificationsForUser: mocks.deleteOtherVerifications,
+  deleteVerificationById: vi.fn(),
 }));
 vi.mock('@/lib/auth/mutations/create-verification', () => ({
   createEmailVerification: mocks.createEmailVerification,
@@ -63,6 +64,8 @@ describe('resendVerificationAction', () => {
     });
     mocks.findUserById.mockResolvedValue(user);
     mocks.findRecentVerification.mockResolvedValue(null);
+    mocks.createEmailVerification.mockResolvedValue({ id: 'code-1' });
+    mocks.deleteOtherVerifications.mockResolvedValue({ count: 0 });
   });
 
   afterEach(() => {
@@ -118,7 +121,10 @@ describe('resendVerificationAction', () => {
       ok: true,
       data: { message: 'Email weryfikacyjny został wysłany ponownie' },
     });
-    expect(mocks.deleteVerificationsForUser).toHaveBeenCalledWith('user-1');
+    expect(mocks.deleteOtherVerifications).toHaveBeenCalledWith(
+      'user-1',
+      'code-1'
+    );
     expect(mocks.createEmailVerification).toHaveBeenCalledWith({
       userId: 'user-1',
       hashedCode: 'hashed-plain-token',

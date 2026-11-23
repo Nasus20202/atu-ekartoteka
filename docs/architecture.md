@@ -14,8 +14,8 @@
 - **Nodemailer** sends email over SMTP. Message bodies are React Email
   components.
 - The password reset email is sent with `after()` from `next/server`, so the
-  response does not wait for SMTP and its timing does not reveal whether an
-  address is registered. This relies on the long-lived Node process of the
+  response does not wait for SMTP. A small timing difference remains for a
+  registered address (one token transaction), so Turnstile stays in front. This relies on the long-lived Node process of the
   standalone build. The email service returns a typed result (`ok`, `delivery`
   or `reason`) instead of throwing, so callers check `ok`.
 - **Cloudflare Turnstile** protects register, login and password reset.

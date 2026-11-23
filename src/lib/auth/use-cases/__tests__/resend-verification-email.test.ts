@@ -11,7 +11,8 @@ const {
   mockLogger,
   mockFindUserById,
   mockFindRecentVerification,
-  mockDeleteVerificationsForUser,
+  mockDeleteOtherVerifications,
+  mockDeleteVerificationById,
   mockCreateEmailVerification,
   mockSendVerificationEmail,
   mockGetVerificationExpiration,
@@ -19,7 +20,8 @@ const {
   mockLogger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
   mockFindUserById: vi.fn(),
   mockFindRecentVerification: vi.fn(),
-  mockDeleteVerificationsForUser: vi.fn(),
+  mockDeleteOtherVerifications: vi.fn(),
+  mockDeleteVerificationById: vi.fn(),
   mockCreateEmailVerification: vi.fn(),
   mockSendVerificationEmail: vi.fn(),
   mockGetVerificationExpiration: vi.fn(),
@@ -35,8 +37,9 @@ vi.mock('@/lib/auth/queries/find-recent-verification', () => ({
   findRecentVerification: mockFindRecentVerification,
   RATE_LIMIT_WINDOW_MS: 5 * 60 * 1000,
 }));
-vi.mock('@/lib/auth/mutations/delete-verifications-for-user', () => ({
-  deleteVerificationsForUser: mockDeleteVerificationsForUser,
+vi.mock('@/lib/auth/mutations/delete-verification-codes', () => ({
+  deleteOtherVerificationsForUser: mockDeleteOtherVerifications,
+  deleteVerificationById: mockDeleteVerificationById,
 }));
 vi.mock('@/lib/auth/mutations/create-verification', () => ({
   createEmailVerification: mockCreateEmailVerification,
@@ -71,8 +74,9 @@ describe('resendVerificationEmail', () => {
     vi.resetAllMocks();
     mockFindUserById.mockResolvedValue(makeUser());
     mockFindRecentVerification.mockResolvedValue(null);
-    mockDeleteVerificationsForUser.mockResolvedValue(undefined);
-    mockCreateEmailVerification.mockResolvedValue(undefined);
+    mockDeleteOtherVerifications.mockResolvedValue(undefined);
+    mockDeleteVerificationById.mockResolvedValue(undefined);
+    mockCreateEmailVerification.mockResolvedValue({ id: 'new-code-id' });
     mockSendVerificationEmail.mockResolvedValue({ ok: true, delivery: 'sent' });
     mockGetVerificationExpiration.mockReturnValue(EXPIRES_AT);
   });
@@ -133,7 +137,7 @@ describe('resendVerificationEmail', () => {
 
       expect(result).toEqual({ ok: false, code: 'failed', message });
       expect(mockFindRecentVerification).toHaveBeenCalledWith('user-id');
-      expect(mockDeleteVerificationsForUser).not.toHaveBeenCalled();
+      expect(mockDeleteOtherVerifications).not.toHaveBeenCalled();
       expect(mockCreateEmailVerification).not.toHaveBeenCalled();
       expect(mockSendVerificationEmail).not.toHaveBeenCalled();
     });
@@ -150,17 +154,33 @@ describe('resendVerificationEmail', () => {
       });
     });
 
-    it('deletes the previous codes before issuing a new one and emailing it', async () => {
+    it('keeps the previous codes until the new one is delivered, then removes them', async () => {
       await resendVerificationEmail('user-id');
 
-      expect(mockDeleteVerificationsForUser).toHaveBeenCalledWith('user-id');
-      const deleteOrder =
-        mockDeleteVerificationsForUser.mock.invocationCallOrder[0];
+      expect(mockDeleteOtherVerifications).toHaveBeenCalledWith(
+        'user-id',
+        'new-code-id'
+      );
       const createOrder =
         mockCreateEmailVerification.mock.invocationCallOrder[0];
       const sendOrder = mockSendVerificationEmail.mock.invocationCallOrder[0];
-      expect(deleteOrder).toBeLessThan(createOrder);
+      const deleteOrder =
+        mockDeleteOtherVerifications.mock.invocationCallOrder[0];
       expect(createOrder).toBeLessThan(sendOrder);
+      expect(sendOrder).toBeLessThan(deleteOrder);
+      expect(mockDeleteVerificationById).not.toHaveBeenCalled();
+    });
+
+    it('still succeeds and logs when removing the superseded codes fails', async () => {
+      mockDeleteOtherVerifications.mockRejectedValueOnce(new Error('DB down'));
+
+      const result = await resendVerificationEmail('user-id');
+
+      expect(result.ok).toBe(true);
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        { error: expect.any(Error), userId: 'user-id' },
+        'Failed to remove superseded verification codes'
+      );
     });
 
     it('emails the plain code to the stored address', async () => {
@@ -207,9 +227,7 @@ describe('resendVerificationEmail', () => {
         ok: false,
         reason: 'send-failed',
       });
-      mockDeleteVerificationsForUser
-        .mockResolvedValueOnce(undefined)
-        .mockRejectedValueOnce(new Error('DB down'));
+      mockDeleteVerificationById.mockRejectedValueOnce(new Error('DB down'));
 
       const result = await resendVerificationEmail('user-id');
 
@@ -224,7 +242,7 @@ describe('resendVerificationEmail', () => {
       );
     });
 
-    it('removes the stored code when the send fails, so the rate limit does not block a retry', async () => {
+    it('removes only the unsent code when the send fails, keeping the earlier delivered one', async () => {
       mockSendVerificationEmail.mockResolvedValueOnce({
         ok: false,
         reason: 'send-failed',
@@ -237,44 +255,9 @@ describe('resendVerificationEmail', () => {
         code: 'failed',
         message: 'Nie udało się wysłać emaila',
       });
-      expect(mockDeleteVerificationsForUser).toHaveBeenCalledTimes(2);
-      expect(mockDeleteVerificationsForUser).toHaveBeenLastCalledWith(
-        'user-id'
-      );
+      expect(mockDeleteVerificationById).toHaveBeenCalledWith('new-code-id');
+      expect(mockDeleteOtherVerifications).not.toHaveBeenCalled();
     });
-
-    it.each<[string, () => void]>([
-      [
-        'throws',
-        () =>
-          mockSendVerificationEmail.mockResolvedValue({
-            ok: false,
-            reason: 'send-failed',
-          }),
-      ],
-      [
-        'reports failure',
-        () =>
-          mockSendVerificationEmail.mockResolvedValue({
-            ok: false,
-            reason: 'send-failed',
-          }),
-      ],
-    ])(
-      'removes the unsent code and fails when the email service %s',
-      async (_label, arrangeFailure) => {
-        arrangeFailure();
-
-        const result = await resendVerificationEmail('user-id');
-
-        expect(result).toEqual({
-          ok: false,
-          code: 'failed',
-          message: 'Nie udało się wysłać emaila',
-        });
-        expect(mockDeleteVerificationsForUser).toHaveBeenCalledTimes(2);
-      }
-    );
 
     it.each<[string, () => void]>([
       [

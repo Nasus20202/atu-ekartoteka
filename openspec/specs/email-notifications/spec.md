@@ -114,7 +114,7 @@ The system SHALL notify a tenant when an admin approves their account.
 
 ### Requirement: Email Send Outcome
 
-Every `EmailService` send method SHALL resolve to an `EmailSendResult` and SHALL NOT throw: `{ ok: true, delivery: 'sent' | 'skipped' }` or `{ ok: false, reason: 'send-failed' }`. `skipped` means SMTP is not configured and nothing was sent, which is not an error. A message that cannot be rendered is a `send-failed` result too. Callers SHALL branch on `ok` and log the `reason`. The password reset email is sent after the response (`after()`), so the response time does not depend on the SMTP round trip. The app runs as a long-lived Node process (standalone build), so the deferred send completes; a serverless host would need the same `after()` contract to be honoured.
+Every `EmailService` send method SHALL resolve to an `EmailSendResult` and SHALL NOT throw: `{ ok: true, delivery: 'sent' | 'skipped' }` or `{ ok: false, reason: 'send-failed' }`. `skipped` means SMTP is not configured and nothing was sent, which is not an error. A message that cannot be rendered is a `send-failed` result too. Callers SHALL branch on `ok` and log the `reason`. The password reset email is sent after the response (`after()`), so the response time does not include the SMTP round trip (a registered address still does one token transaction, which the unknown-address path does not). The app runs as a long-lived Node process (standalone build), so the deferred send completes; a serverless host would need the same `after()` contract to be honoured.
 
 #### Scenario: SMTP failure is a failed result
 
@@ -143,7 +143,7 @@ The system SHALL send the login email and a temporary password to users whose ac
 - **GIVEN** an admin bulk-creates accounts for unassigned apartments
 - **WHEN** each account is created
 - **THEN** an `account_activation` email is sent with subject "Twoje konto zostało utworzone – ustaw nowe hasło", containing the recipient's email address, the temporary password and a link to `/login`
-- **AND** each send is awaited; a result with `ok: false` is counted in the bulk result's `emailFailed` and logged, and does not undo the account
+- **AND** accounts are created first, then the emails are sent in chunks of five at once and awaited; a result with `ok: false` is counted in the bulk result's `emailFailed` and logged, and does not undo the account
 
 ### Requirement: Admin New-User Notification
 
