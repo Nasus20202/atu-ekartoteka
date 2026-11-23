@@ -246,7 +246,7 @@ The system SHALL enforce stricter test behaviour in continuous integration envir
 
 #### Scenario: Flaky tests fail the run
 
-- **GIVEN** the Playwright configuration with `failOnFlakyTests: !!process.env.CI`
+- **GIVEN** the Playwright configuration with `failOnFlakyTests: true`
 - **WHEN** a test fails on one attempt and passes on a retry
 - **THEN** the run is reported as failed even though every test ended green, so the flake is fixed instead of hidden by the retry
 

@@ -124,9 +124,10 @@ with (`e2e/config/webkit.ts`).
 `docker compose -f docker-compose.e2e.yaml up --build --wait` runs the same stack
 locally.
 
-CI retries a failing test up to twice. `failOnFlakyTests` is on there as well,
+CI retries a failing test up to twice. `failOnFlakyTests` is enabled as well,
 so a test that only passes on a retry still fails the job and the flake gets
-fixed instead of staying hidden. Local runs neither retry nor fail on flakes.
+fixed instead of staying hidden. Local runs do not retry, so nothing is marked
+flaky there.
 
 ## Visual snapshots
 
