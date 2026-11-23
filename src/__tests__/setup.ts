@@ -42,6 +42,9 @@ Object.defineProperty(window, 'matchMedia', {
   }),
 });
 
+// jsdom does not implement scrolling and logs a "Not implemented" error for it
+Object.defineProperty(window, 'scrollTo', { writable: true, value: () => {} });
+
 class ResizeObserverMock {
   observe() {}
 

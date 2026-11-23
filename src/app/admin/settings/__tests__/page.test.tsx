@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { use } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { renderSuspended } from '@/__tests__/render-suspended';
 import SettingsPage from '@/app/admin/settings/page';
 import { requireAdminAccess } from '@/lib/framework/auth/require-admin-access';
 
@@ -29,7 +30,7 @@ describe('SettingsPage', () => {
 
   it('renders the form section when its data is ready', async () => {
     pending.section = false;
-    render(await SettingsPage());
+    await renderSuspended(await SettingsPage());
 
     expect(screen.getByText('Ustawienia')).toBeInTheDocument();
     expect(screen.getByText('settings-loaded')).toBeInTheDocument();
@@ -37,7 +38,7 @@ describe('SettingsPage', () => {
 
   it('shows the header and a skeleton while the section loads', async () => {
     pending.section = true;
-    const { container } = render(await SettingsPage());
+    const { container } = await renderSuspended(await SettingsPage());
 
     expect(screen.getByText('Ustawienia')).toBeInTheDocument();
     expect(screen.queryByText('settings-loaded')).not.toBeInTheDocument();

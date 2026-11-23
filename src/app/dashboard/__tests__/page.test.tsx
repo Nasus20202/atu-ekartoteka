@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { use } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { renderSuspended } from '@/__tests__/render-suspended';
 import DashboardPage from '@/app/dashboard/page';
 
 const pending = vi.hoisted(() => ({ section: '' }));
@@ -57,10 +58,10 @@ describe('DashboardPage', () => {
 
   it.each(SECTIONS)(
     'keeps the other sections visible while %s is still loading',
-    (name) => {
+    async (name) => {
       pending.section = name;
 
-      const { container } = render(<DashboardPage />);
+      const { container } = await renderSuspended(<DashboardPage />);
 
       expect(screen.queryByText(`${name}-loaded`)).not.toBeInTheDocument();
       expect(container.querySelector('[aria-hidden="true"]')).not.toBeNull();

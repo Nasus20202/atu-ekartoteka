@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { use } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { renderSuspended } from '@/__tests__/render-suspended';
 import AdminUsersPage from '@/app/admin/users/page';
 
 const pending = vi.hoisted(() => ({ section: false }));
@@ -25,7 +26,7 @@ vi.mock('@/lib/framework/auth/require-admin-access', () => ({
 describe('AdminUsersPage', () => {
   it('renders the users when they are ready', async () => {
     pending.section = false;
-    render(await AdminUsersPage());
+    await renderSuspended(await AdminUsersPage());
 
     expect(screen.getByText('users-loaded')).toBeInTheDocument();
   });
@@ -33,7 +34,7 @@ describe('AdminUsersPage', () => {
   it('shows a skeleton while the users load', async () => {
     pending.section = true;
     modeMock.value = 'cards';
-    render(await AdminUsersPage());
+    await renderSuspended(await AdminUsersPage());
 
     expect(screen.queryByText('users-loaded')).not.toBeInTheDocument();
     expect(screen.getByTestId('users-page-skeleton')).toBeInTheDocument();
@@ -45,7 +46,7 @@ describe('AdminUsersPage', () => {
   it('shows a table skeleton when the user chose the table view', async () => {
     pending.section = true;
     modeMock.value = 'table';
-    render(await AdminUsersPage());
+    await renderSuspended(await AdminUsersPage());
 
     expect(screen.getByTestId('users-table-skeleton')).toBeInTheDocument();
   });

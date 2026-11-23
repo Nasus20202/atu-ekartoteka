@@ -1,5 +1,4 @@
 import {
-  act,
   fireEvent,
   render,
   screen,
@@ -25,6 +24,22 @@ vi.mock('@/components/users/use-pending-count', () => ({
     pendingCount: pendingCountMock.value,
     reload: () => {},
   }),
+}));
+
+/**
+ * The apartment list has its own tests; returning it synchronously keeps this
+ * page test out of SWR Suspense, where a fetch can resolve mid-render.
+ */
+const availableApartmentsMock = vi.hoisted(() => ({
+  apartments: [] as unknown[],
+  calls: vi.fn(),
+}));
+
+vi.mock('@/components/users/use-available-apartments', () => ({
+  useAvailableApartments: (user: unknown) => {
+    availableApartmentsMock.calls(user);
+    return { apartments: availableApartmentsMock.apartments, failed: false };
+  },
 }));
 
 vi.mock('@/components/layout/page', () => ({
@@ -121,30 +136,21 @@ function usersResponse(users: unknown[] = []) {
   } as Response;
 }
 
-/** The apartments the pending user can be assigned; a suspended load can fetch them twice. */
-function polnaApartmentsResponse(isActive = true) {
-  return {
-    ok: true,
-    json: async () => ({
-      apartments: [
-        {
-          id: 'apt-2',
-          externalOwnerId: 'own-2',
-          externalApartmentId: 'ext-2',
-          owner: 'Jan Kowalski',
-          email: 'pending@example.com',
-          address: 'Polna',
-          building: '3',
-          number: '1',
-          postalCode: '00-002',
-          city: 'Warszawa',
-          shareRatio: 0.5,
-          isActive,
-        },
-      ],
-    }),
-  } as Response;
-}
+/** An apartment the pending user can be assigned, returned by the mocked hook. */
+const POLNA_APARTMENT = {
+  id: 'apt-2',
+  externalOwnerId: 'own-2',
+  externalApartmentId: 'ext-2',
+  owner: 'Jan Kowalski',
+  email: 'pending@example.com',
+  address: 'Polna',
+  building: '3',
+  number: '1',
+  postalCode: '00-002',
+  city: 'Warszawa',
+  shareRatio: 0.5,
+  isActive: true,
+};
 
 const pendingUser = {
   id: 'user-1',
@@ -193,6 +199,7 @@ describe('AdminUsersContent', () => {
     window.localStorage.clear();
     confirmMock.mockResolvedValue(true);
     pendingCountMock.value = 0;
+    availableApartmentsMock.apartments = [];
     vi.mocked(fetch).mockReset();
     vi.mocked(fetch).mockResolvedValue(usersResponse());
   });
@@ -254,56 +261,39 @@ describe('AdminUsersContent', () => {
   });
 
   it('opens approval dialog and loads apartments for pending user', async () => {
-    vi.mocked(fetch)
-      .mockResolvedValueOnce(usersResponse([pendingUser]))
-      .mockResolvedValueOnce(polnaApartmentsResponse())
-      .mockResolvedValueOnce(polnaApartmentsResponse());
+    availableApartmentsMock.apartments = [POLNA_APARTMENT];
+    vi.mocked(fetch).mockResolvedValueOnce(usersResponse([pendingUser]));
 
     render(<AdminUsersContent />);
 
-    await waitFor(() => {
-      expect(
-        screen.getAllByRole('button', { name: /zatwierdź/i })[0]
-      ).toBeInTheDocument();
-    });
+    fireEvent.click(
+      (await screen.findAllByRole('button', { name: /zatwierdź/i }))[0]
+    );
 
-    await act(async () => {
-      fireEvent.click(screen.getAllByRole('button', { name: /zatwierdź/i })[0]);
-    });
-
-    await waitFor(() => {
-      expect(screen.getByText(/zatwierdź konto/i)).toBeInTheDocument();
-      expect(screen.getByText(/polna 3\/1/i)).toBeInTheDocument();
-    });
+    expect(await screen.findByText(/zatwierdź konto/i)).toBeInTheDocument();
+    expect(screen.getByText(/polna 3\/1/i)).toBeInTheDocument();
+    expect(availableApartmentsMock.calls).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'user-1' })
+    );
   });
 
   it('asks for confirmation before selecting an inactive apartment', async () => {
     const user = userEvent.setup();
-    vi.mocked(fetch)
-      .mockResolvedValueOnce(usersResponse([pendingUser]))
-      .mockResolvedValueOnce(polnaApartmentsResponse(false))
-      .mockResolvedValueOnce(polnaApartmentsResponse(false));
+    availableApartmentsMock.apartments = [
+      { ...POLNA_APARTMENT, isActive: false },
+    ];
+    vi.mocked(fetch).mockResolvedValueOnce(usersResponse([pendingUser]));
 
     render(<AdminUsersContent />);
 
-    await waitFor(() => {
-      expect(
-        screen.getAllByRole('button', { name: /zatwierdź/i })[0]
-      ).toBeInTheDocument();
-    });
-
-    await act(async () => {
-      await user.click(
-        screen.getAllByRole('button', { name: /zatwierdź/i })[0]
-      );
-    });
+    await user.click(
+      (await screen.findAllByRole('button', { name: /zatwierdź/i }))[0]
+    );
     await user.click(await screen.findByLabelText(/polna 3\/1/i));
 
-    await waitFor(() => {
-      expect(confirmMock).toHaveBeenCalledWith(
-        expect.objectContaining({ title: 'Nieaktywne mieszkanie' })
-      );
-    });
+    expect(confirmMock).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Nieaktywne mieszkanie' })
+    );
   });
 
   it('switches to the table without reloading users', async () => {
@@ -457,10 +447,6 @@ describe('AdminUsersContent', () => {
     };
     vi.mocked(fetch)
       .mockResolvedValueOnce(usersResponse([rejectedUser]))
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ apartments: [] }),
-      } as Response)
       .mockResolvedValueOnce(usersResponse([approvedUser]));
     actionMock.updateUserStatusAction.mockResolvedValueOnce({
       ok: true,
@@ -491,10 +477,6 @@ describe('AdminUsersContent', () => {
     const user = userEvent.setup();
     vi.mocked(fetch)
       .mockResolvedValueOnce(usersResponse([approvedUser]))
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ apartments: [] }),
-      } as Response)
       .mockResolvedValueOnce(usersResponse([]));
 
     render(<AdminUsersContent />);
@@ -544,10 +526,9 @@ describe('AdminUsersContent', () => {
 
   it('approves a pending user with the chosen apartments', async () => {
     const user = userEvent.setup();
+    availableApartmentsMock.apartments = [POLNA_APARTMENT];
     vi.mocked(fetch)
       .mockResolvedValueOnce(usersResponse([pendingUser]))
-      .mockResolvedValueOnce(polnaApartmentsResponse())
-      .mockResolvedValueOnce(polnaApartmentsResponse())
       .mockResolvedValueOnce(usersResponse([]));
     actionMock.updateUserStatusAction.mockResolvedValueOnce({
       ok: true,
@@ -556,11 +537,9 @@ describe('AdminUsersContent', () => {
 
     render(<AdminUsersContent />);
 
-    await act(async () => {
-      await user.click(
-        (await screen.findAllByRole('button', { name: /zatwierdź/i }))[0]
-      );
-    });
+    await user.click(
+      (await screen.findAllByRole('button', { name: /zatwierdź/i }))[0]
+    );
     await user.click(await screen.findByLabelText(/polna 3\/1/i));
     await user.click(
       within(screen.getByRole('dialog')).getByRole('button', {
@@ -579,18 +558,14 @@ describe('AdminUsersContent', () => {
 
   it('deselects an apartment that was chosen before', async () => {
     const user = userEvent.setup();
-    vi.mocked(fetch)
-      .mockResolvedValueOnce(usersResponse([pendingUser]))
-      .mockResolvedValueOnce(polnaApartmentsResponse())
-      .mockResolvedValueOnce(polnaApartmentsResponse());
+    availableApartmentsMock.apartments = [POLNA_APARTMENT];
+    vi.mocked(fetch).mockResolvedValueOnce(usersResponse([pendingUser]));
 
     render(<AdminUsersContent />);
 
-    await act(async () => {
-      await user.click(
-        (await screen.findAllByRole('button', { name: /zatwierdź/i }))[0]
-      );
-    });
+    await user.click(
+      (await screen.findAllByRole('button', { name: /zatwierdź/i }))[0]
+    );
     const option = await screen.findByLabelText(/polna 3\/1/i);
     await user.click(option);
     expect(option).toBeChecked();
@@ -604,10 +579,6 @@ describe('AdminUsersContent', () => {
     const rejectedCandidate = { ...pendingUser, status: 'APPROVED' };
     vi.mocked(fetch)
       .mockResolvedValueOnce(usersResponse([rejectedCandidate]))
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ apartments: [] }),
-      } as Response)
       .mockResolvedValueOnce(usersResponse([]));
     actionMock.updateUserStatusAction.mockResolvedValueOnce({
       ok: true,

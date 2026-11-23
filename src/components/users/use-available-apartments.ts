@@ -81,7 +81,9 @@ export function useAvailableApartments(
       ? (['available-apartments', userId, debouncedSearch] as const)
       : null,
     fetchAvailableApartments,
-    { ...SWR_OPTIONS, suspense: true }
+    // Keep the previous list while a new search loads; without it, every new
+    // key suspends and the dialog falls back to the loading skeleton.
+    { ...SWR_OPTIONS, suspense: true, keepPreviousData: true }
   );
 
   return data ?? NO_APARTMENTS_RESULT;

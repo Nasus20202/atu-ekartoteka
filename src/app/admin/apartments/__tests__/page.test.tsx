@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { use } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { renderSuspended } from '@/__tests__/render-suspended';
 import ApartmentsPage from '@/app/admin/apartments/page';
 
 const pending = vi.hoisted(() => ({ section: false }));
@@ -20,14 +21,14 @@ vi.mock('@/lib/framework/auth/require-admin-access', () => ({
 describe('ApartmentsPage', () => {
   it('renders the list when its data is ready', async () => {
     pending.section = false;
-    render(await ApartmentsPage());
+    await renderSuspended(await ApartmentsPage());
 
     expect(screen.getByText('hoa-list-loaded')).toBeInTheDocument();
   });
 
   it('shows the header and a skeleton while the list loads', async () => {
     pending.section = true;
-    render(await ApartmentsPage());
+    await renderSuspended(await ApartmentsPage());
 
     expect(screen.getByText('Wspólnoty mieszkaniowe')).toBeInTheDocument();
     expect(

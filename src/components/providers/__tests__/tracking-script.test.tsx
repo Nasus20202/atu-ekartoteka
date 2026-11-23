@@ -1,23 +1,21 @@
-import { render } from '@testing-library/react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
-import {
-  TRACKING_SCRIPT_SRC,
-  TrackingScript,
-} from '@/components/providers/tracking-script';
+import { TrackingScript } from '@/components/providers/tracking-script';
 
 describe('TrackingScript', () => {
+  // The component is rendered on the server, so assert on the HTML it ships
+  // instead of mounting a script tag in jsdom, which React never executes.
   it('loads the runtime tracking endpoint as a deferred script', () => {
-    const { container } = render(<TrackingScript />);
-    const script = container.querySelector('script');
+    const markup = renderToStaticMarkup(<TrackingScript />);
 
-    expect(script).toHaveAttribute('src', TRACKING_SCRIPT_SRC);
-    expect(script).toHaveAttribute('defer');
+    expect(markup).toContain('src="/api/tracking"');
+    expect(markup).toContain('defer');
   });
 
   it('does not inline any configuration into the page', () => {
-    const { container } = render(<TrackingScript />);
+    const markup = renderToStaticMarkup(<TrackingScript />);
 
-    expect(container.querySelector('script')?.textContent).toBe('');
+    expect(markup).toBe('<script src="/api/tracking" defer=""></script>');
   });
 });
