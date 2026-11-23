@@ -231,6 +231,25 @@ describe('changeUserStatus', () => {
       });
     });
 
+    it('checks a repeated apartment ID once and assigns it once', async () => {
+      mockCountAvailability.mockResolvedValueOnce({
+        found: 1,
+        occupiedByOthers: 0,
+      });
+
+      const result = await changeUserStatus(
+        change({ apartmentIds: ['apt-1', 'apt-1'] })
+      );
+
+      expect(mockCountAvailability).toHaveBeenCalledWith(['apt-1'], 'user-1');
+      expect(mockUpdateUserStatus).toHaveBeenCalledWith({
+        userId: 'user-1',
+        status: AccountStatus.APPROVED,
+        apartmentIds: ['apt-1'],
+      });
+      expect(result.ok).toBe(true);
+    });
+
     it('approves without a list of apartments and does not check availability', async () => {
       const result = await changeUserStatus(
         change({ apartmentIds: undefined })

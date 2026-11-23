@@ -57,7 +57,10 @@ export async function changeUserStatus({
     return invalidResult('Nieprawidłowy status');
   }
 
-  const nextApartmentIds = apartmentIds as string[] | undefined;
+  // A repeated ID would make the count of existing apartments differ from the list length
+  const nextApartmentIds = Array.isArray(apartmentIds)
+    ? [...new Set<string>(apartmentIds)]
+    : undefined;
 
   try {
     const user = await findUserById(userId);

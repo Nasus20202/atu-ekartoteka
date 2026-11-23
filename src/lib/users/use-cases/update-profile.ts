@@ -5,6 +5,7 @@ import {
   MIN_PASSWORD_LENGTH,
   PASSWORD_TOO_SHORT_MESSAGE,
 } from '@/lib/auth/rules/password-rules';
+import { AuthMethod } from '@/lib/auth/types/account';
 import { createLogger } from '@/lib/platform/logging/logger';
 import {
   failedResult,
@@ -24,6 +25,9 @@ const CURRENT_PASSWORD_WRONG = 'Obecne hasło jest nieprawidłowe';
 const INVALID_PASSWORD_MESSAGE = 'Nieprawidłowe hasło';
 const NOT_FOUND_MESSAGE = 'Nie znaleziono użytkownika';
 const UPDATE_FAILED_MESSAGE = 'Nie udało się zaktualizować profilu';
+const INVALID_NAME_MESSAGE = 'Nieprawidłowe imię';
+const GOOGLE_PASSWORD_MESSAGE =
+  'Konto Google nie może zmienić hasła. Użyj logowania przez Google.';
 
 /**
  * The values as the browser sent them. They are checked here by type, because
@@ -38,6 +42,7 @@ export interface ProfileChanges {
 interface ProfileUser {
   password: string | null;
   mustChangePassword: boolean;
+  authMethod: AuthMethod | null;
 }
 
 function requestedChanges({ name, newPassword }: ProfileChanges): string[] {
@@ -72,6 +77,10 @@ async function hashNewPassword(
   // The database value is authoritative: a stale token must not relax the
   // check (e.g. when an admin forced a password change mid-session).
   if (!user.mustChangePassword) {
+    if (user.authMethod === AuthMethod.GOOGLE) {
+      return invalidResult(GOOGLE_PASSWORD_MESSAGE);
+    }
+
     if (!currentPassword || typeof currentPassword !== 'string') {
       return invalidResult(CURRENT_PASSWORD_REQUIRED);
     }
@@ -102,6 +111,11 @@ export async function updateProfile(
     'Profile update requested'
   );
 
+  const { name } = changes;
+  if (name !== undefined && name !== null && typeof name !== 'string') {
+    return invalidResult(INVALID_NAME_MESSAGE);
+  }
+
   try {
     const user = await findUserById(userId);
 
@@ -110,7 +124,6 @@ export async function updateProfile(
     const passwordHash = await hashNewPassword(user, changes, userId);
     if (!passwordHash.ok) return passwordHash;
 
-    const { name } = changes;
     const updatedUser = await updateUserProfile({
       id: userId,
       ...(name !== undefined && {

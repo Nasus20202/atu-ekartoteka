@@ -97,6 +97,18 @@ describe('createUserByAdmin', () => {
     );
   });
 
+  it('rejects a name that is not a string before any lookup or write', async () => {
+    const result = await createUserByAdmin(request({ name: 42 }));
+
+    expect(result).toEqual({
+      ok: false,
+      code: 'invalid',
+      message: 'Nieprawidłowe imię',
+    });
+    expect(mockFindUserByEmail).not.toHaveBeenCalled();
+    expect(mockCreateAdminUser).not.toHaveBeenCalled();
+  });
+
   it('stores an empty name as null', async () => {
     await createUserByAdmin(request({ name: '' }));
 

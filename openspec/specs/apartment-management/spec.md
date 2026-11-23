@@ -131,6 +131,12 @@ The system SHALL expose an admin endpoint listing apartments that have no linked
 - **WHEN** they call the endpoint
 - **THEN** the request is rejected with 401
 
+#### Scenario: Addresses that differ only in case
+
+- **GIVEN** unassigned apartments whose e-mail addresses differ only in letter case
+- **WHEN** an admin creates accounts or assigns them to existing accounts
+- **THEN** the apartments are grouped by the normalised address, so one account receives all of them
+
 ---
 
 ### Requirement: Apartment Ownership Share
