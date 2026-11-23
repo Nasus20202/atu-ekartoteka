@@ -1,4 +1,4 @@
-import { placeholder as p } from '@/lib/privacy/placeholders';
+import { placeholder as p } from '@/lib/privacy/rules/placeholders';
 
 /** Sections 1–4: summary, readers, controller and the optional processor part. */
 export const OVERVIEW = `# Polityka prywatności

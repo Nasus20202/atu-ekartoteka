@@ -15,7 +15,7 @@ vi.mock('@/lib/auth/queries/find-verification-by-code', () => ({
 vi.mock('@/lib/auth/mutations/verify-email-transaction', () => ({
   verifyEmailTransaction: mocks.verifyEmailTransaction,
 }));
-vi.mock('@/lib/auth/verification-tokens', () => ({
+vi.mock('@/lib/auth/rules/verification-tokens', () => ({
   hashToken: (token: string) => `hashed-${token}`,
   isVerificationExpired: mocks.isVerificationExpired,
 }));

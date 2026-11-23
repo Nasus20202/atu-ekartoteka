@@ -27,11 +27,11 @@ vi.mock('@/lib/platform/email/email-service', () => ({
     sendPasswordResetEmail: mocks.sendPasswordResetEmail,
   }),
 }));
-vi.mock('@/lib/auth/verification-tokens', () => ({
+vi.mock('@/lib/auth/rules/verification-tokens', () => ({
   generateSecureToken: () => 'test-token-123',
   hashToken: (token: string) => `hashed-${token}`,
 }));
-vi.mock('@/lib/auth/turnstile', () => ({
+vi.mock('@/lib/auth/gateways/turnstile', () => ({
   verifyTurnstileToken: mocks.verifyTurnstileToken,
 }));
 vi.mock('@/lib/platform/logging/logger', () => ({

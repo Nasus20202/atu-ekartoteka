@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { createFakeCronRunStore } from '@/lib/cron/__tests__/fake-cron-run-store';
-import { CRON_RUN_RETENTION_MS } from '@/lib/cron/constants';
+import { CRON_RUN_RETENTION_MS } from '@/lib/cron/rules/constants';
 
 vi.mock('@/lib/platform/database/prisma', () => ({ prisma: {} }));
 

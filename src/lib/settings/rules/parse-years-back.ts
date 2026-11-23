@@ -1,8 +1,8 @@
 import {
   MAX_TENANT_HISTORY_YEARS_BACK,
   MIN_TENANT_HISTORY_YEARS_BACK,
-} from '@/lib/settings/constants';
-import type { ParseResult } from '@/lib/settings/parse-result';
+} from '@/lib/settings/rules/constants';
+import type { ParseResult } from '@/lib/settings/rules/parse-result';
 
 export function parseYearsBack(value: unknown): ParseResult<number> {
   if (

@@ -3,7 +3,7 @@ import { gunzipSync } from 'zlib';
 
 import { requireAdmin } from '@/lib/framework/auth/require-admin';
 import { getRequestNow } from '@/lib/framework/request-now';
-import { processBatchImport } from '@/lib/import/import-handler';
+import { processBatchImport } from '@/lib/import/use-cases/process-batch-import';
 import { createLogger } from '@/lib/platform/logging/logger';
 import { getErrorMessage } from '@/lib/shared/utils/error-message';
 

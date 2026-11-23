@@ -1,22 +1,8 @@
-import { isApprovedAccount } from '@/lib/auth/account-access';
-import { AccountStatus, UserRole } from '@/lib/auth/types/account';
+import { isApprovedAdmin } from '@/lib/auth/rules/admin-access';
 import { createLogger } from '@/lib/platform/logging/logger';
 import { findUserSessionFields } from '@/lib/users/queries/find-user-session-fields';
 
 const logger = createLogger('auth:admin-access');
-
-interface AdminCandidate {
-  role: UserRole;
-  status: AccountStatus;
-}
-
-export function isAdminRole(role: UserRole | null | undefined): boolean {
-  return role === UserRole.ADMIN;
-}
-
-export function isApprovedAdmin(user: AdminCandidate | null): boolean {
-  return isApprovedAccount(user) && isAdminRole(user?.role);
-}
 
 /**
  * Admin rights are resolved from the database on every check: the role in the

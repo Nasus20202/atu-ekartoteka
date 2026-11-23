@@ -1,4 +1,4 @@
-import { MIN_PASSWORD_LENGTH } from '@/lib/auth/password-rules';
+import { MIN_PASSWORD_LENGTH } from '@/lib/auth/rules/password-rules';
 
 interface PasswordChangeFields {
   currentPassword: string;

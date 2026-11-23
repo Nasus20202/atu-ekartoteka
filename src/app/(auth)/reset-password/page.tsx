@@ -13,8 +13,8 @@ import { AnimatedAlert } from '@/components/ui/animated-alert';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { PasswordInput } from '@/components/ui/password-input';
-import { AUTH_PLACEHOLDERS } from '@/lib/auth/form-placeholders';
-import { MIN_PASSWORD_LENGTH } from '@/lib/auth/password-rules';
+import { AUTH_PLACEHOLDERS } from '@/lib/auth/rules/form-placeholders';
+import { MIN_PASSWORD_LENGTH } from '@/lib/auth/rules/password-rules';
 
 function ResetPasswordContent() {
   const token = useSearchParams().get('token');

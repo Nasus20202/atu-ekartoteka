@@ -8,7 +8,7 @@ import {
   generateSecureToken,
   getVerificationExpiration,
   hashToken,
-} from '@/lib/auth/verification-tokens';
+} from '@/lib/auth/rules/verification-tokens';
 import { getEmailService } from '@/lib/platform/email/email-service';
 import { createLogger } from '@/lib/platform/logging/logger';
 import {

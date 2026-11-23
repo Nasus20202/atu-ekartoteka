@@ -6,7 +6,7 @@
 
 import type { Page } from '@playwright/test';
 
-import { DEFAULT_TENANT_HISTORY_YEARS_BACK } from '../../src/lib/settings/constants';
+import { DEFAULT_TENANT_HISTORY_YEARS_BACK } from '../../src/lib/settings/rules/constants';
 import { expect, login, test } from '../fixtures';
 import { createMixedPaymentsUser } from '../utils/create-mixed-payments-user';
 import { deleteUserAndApartmentsByEmail } from '../utils/delete-user-and-apartments-by-email';

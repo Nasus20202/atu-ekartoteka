@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
-import { isAdminRole } from '@/lib/auth/admin-access';
+import { isAdminRole } from '@/lib/auth/rules/admin-access';
 import { getSession } from '@/lib/framework/auth/get-session';
 import { findUserByIdCached } from '@/lib/framework/rsc-cache';
 

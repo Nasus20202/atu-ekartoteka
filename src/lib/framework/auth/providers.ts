@@ -4,10 +4,13 @@ import type { Provider } from 'next-auth/providers';
 import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
 
-import { BCRYPT_COST } from '@/lib/auth/bcrypt-cost';
-import { normalizeEmail } from '@/lib/auth/email';
-import { verifyRegistrationAutoLoginToken } from '@/lib/auth/registration-auto-login-token';
-import { isTurnstileEnabled, verifyTurnstileToken } from '@/lib/auth/turnstile';
+import {
+  isTurnstileEnabled,
+  verifyTurnstileToken,
+} from '@/lib/auth/gateways/turnstile';
+import { BCRYPT_COST } from '@/lib/auth/rules/bcrypt-cost';
+import { normalizeEmail } from '@/lib/auth/rules/email';
+import { verifyRegistrationAutoLoginToken } from '@/lib/auth/rules/registration-auto-login-token';
 import { createLogger } from '@/lib/platform/logging/logger';
 import { authMetrics } from '@/lib/platform/opentelemetry/auth-metrics';
 import { findUserByEmail } from '@/lib/users/queries/find-user-by-email';

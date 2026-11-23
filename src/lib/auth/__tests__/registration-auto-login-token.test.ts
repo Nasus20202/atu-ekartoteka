@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createRegistrationAutoLoginToken,
   verifyRegistrationAutoLoginToken,
-} from '@/lib/auth/registration-auto-login-token';
+} from '@/lib/auth/rules/registration-auto-login-token';
 
 const SECRET = 'test-secret-value';
 

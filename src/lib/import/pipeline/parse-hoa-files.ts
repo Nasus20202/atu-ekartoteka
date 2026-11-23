@@ -1,4 +1,3 @@
-import { mergeParsedFiles, parseFiles } from '@/lib/import/merge-files';
 import {
   getUniqueApartments,
   parseApartmentBuffer,
@@ -6,14 +5,18 @@ import {
 import { parseNalCzynszBuffer } from '@/lib/import/parsers/nal-czynsz-parser';
 import { parsePowCzynszFile } from '@/lib/import/parsers/pow-czynsz-parser';
 import { parseWplatyFile } from '@/lib/import/parsers/wplaty-parser';
-import type { ImportErrorItem } from '@/lib/import/types/import-error';
-import type { ImportFileGroup } from '@/lib/import/types/import-options';
-import type { HOAImportResult } from '@/lib/import/types/import-result';
+import {
+  mergeParsedFiles,
+  parseFiles,
+} from '@/lib/import/pipeline/merge-files';
 import {
   createEmptyStats,
   parseFileToBuffer,
   parseWmbDate,
-} from '@/lib/import/utils';
+} from '@/lib/import/rules/utils';
+import type { ImportErrorItem } from '@/lib/import/types/import-error';
+import type { ImportFileGroup } from '@/lib/import/types/import-options';
+import type { HOAImportResult } from '@/lib/import/types/import-result';
 
 export type ParsedHoaFiles = Awaited<ReturnType<typeof parseHoaFiles>>;
 

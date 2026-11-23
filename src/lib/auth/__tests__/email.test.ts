@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { normalizeEmail } from '@/lib/auth/email';
+import { normalizeEmail } from '@/lib/auth/rules/email';
 
 describe('normalizeEmail', () => {
   it('trims surrounding whitespace', () => {

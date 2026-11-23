@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { processBatchImport } from '@/lib/import/import-handler';
+import { processBatchImport } from '@/lib/import/use-cases/process-batch-import';
 
 const {
   mockTransaction,

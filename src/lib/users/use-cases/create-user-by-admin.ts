@@ -1,10 +1,10 @@
 import bcrypt from 'bcrypt';
 
-import { BCRYPT_COST } from '@/lib/auth/bcrypt-cost';
+import { BCRYPT_COST } from '@/lib/auth/rules/bcrypt-cost';
 import {
   EMAIL_TAKEN_MESSAGE,
   validateCredentials,
-} from '@/lib/auth/credential-validation';
+} from '@/lib/auth/rules/credential-validation';
 import { AccountStatus, UserRole } from '@/lib/auth/types/account';
 import { createLogger } from '@/lib/platform/logging/logger';
 import {

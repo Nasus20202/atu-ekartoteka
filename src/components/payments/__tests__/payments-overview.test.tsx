@@ -16,7 +16,7 @@ vi.mock('next/navigation', () => ({ redirect: mocks.redirect }));
 vi.mock('@/lib/framework/auth/get-session', () => ({
   getSession: mocks.getSession,
 }));
-vi.mock('@/lib/auth/account-access', () => ({
+vi.mock('@/lib/auth/rules/account-access', () => ({
   isApprovedAccount: mocks.isApprovedAccount,
 }));
 vi.mock('@/lib/framework/tenant-history', () => ({

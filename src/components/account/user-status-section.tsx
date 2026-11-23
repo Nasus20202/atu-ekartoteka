@@ -6,7 +6,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { isApprovedStatus } from '@/lib/auth/account-access';
+import { isApprovedStatus } from '@/lib/auth/rules/account-access';
 import { AccountStatus } from '@/lib/auth/types/account';
 
 interface UserStatusSectionProps {

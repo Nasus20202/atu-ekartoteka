@@ -1,9 +1,9 @@
+import { NalCzynszEntry } from '@/lib/import/parsers/nal-czynsz-parser';
+import { PaymentEntry } from '@/lib/import/parsers/wplaty-parser';
 import {
   NAL_AMOUNT_TOLERANCE,
   WPLATY_BALANCE_TOLERANCE,
-} from '@/lib/import/constants';
-import { NalCzynszEntry } from '@/lib/import/parsers/nal-czynsz-parser';
-import { PaymentEntry } from '@/lib/import/parsers/wplaty-parser';
+} from '@/lib/import/rules/constants';
 import type { ImportErrorItem } from '@/lib/import/types/import-error';
 import type { ImportWarning } from '@/lib/import/types/import-warning';
 import { toDecimal } from '@/lib/shared/utils/decimal';

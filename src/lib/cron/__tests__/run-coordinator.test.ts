@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createFakeCronRunStore } from '@/lib/cron/__tests__/fake-cron-run-store';
-import { CRON_RUN_RETENTION_MS } from '@/lib/cron/constants';
+import { CRON_RUN_RETENTION_MS } from '@/lib/cron/rules/constants';
 
 const { mockLogger } = vi.hoisted(() => ({
   mockLogger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
@@ -12,7 +12,8 @@ vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => mockLogger,
 }));
 
-const { createRunCoordinator } = await import('@/lib/cron/run-coordinator');
+const { createRunCoordinator } =
+  await import('@/lib/cron/runtime/run-coordinator');
 
 const KEY = 'job:2026-11-05T10:00:00.000Z';
 const TTL_MS = 30_000;

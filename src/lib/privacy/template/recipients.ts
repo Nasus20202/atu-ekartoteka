@@ -1,4 +1,4 @@
-import { placeholder as p } from '@/lib/privacy/placeholders';
+import { placeholder as p } from '@/lib/privacy/rules/placeholders';
 
 /** Sections 9–12: recipients, transfers outside the EEA, retention, automated decisions. */
 export const RECIPIENTS = `## Komu przekazujemy dane

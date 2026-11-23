@@ -4,7 +4,7 @@ import type {
   YearBalanceRow,
   YearStatus,
 } from '@/lib/import/types/year-balance';
-import type { YearBalanceSummary } from '@/lib/import/year-balance-overview';
+import type { YearBalanceSummary } from '@/lib/import/validation/year-balance-overview';
 import { periodToYear } from '@/lib/shared/utils/period';
 
 /** Year a warning belongs to; undefined when it applies to the whole HOA. */

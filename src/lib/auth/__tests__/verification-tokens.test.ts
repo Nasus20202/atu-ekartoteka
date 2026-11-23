@@ -4,7 +4,7 @@ import {
   generateSecureToken,
   getVerificationExpiration,
   isVerificationExpired,
-} from '@/lib/auth/verification-tokens';
+} from '@/lib/auth/rules/verification-tokens';
 
 describe('verification-utils', () => {
   describe('generateSecureToken', () => {

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { CronScheduler, getCronScheduler } from '@/lib/cron/scheduler';
+import { CronScheduler, getCronScheduler } from '@/lib/cron/runtime/scheduler';
 
 const { mockLogger } = vi.hoisted(() => ({
   mockLogger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
@@ -16,7 +16,7 @@ vi.mock('node-cron', () => ({
   validate: vi.fn(() => true),
 }));
 
-vi.mock('@/lib/cron/run-coordinator', () => ({
+vi.mock('@/lib/cron/runtime/run-coordinator', () => ({
   createRunCoordinator: vi.fn(() => ({ shouldRun: vi.fn() })),
 }));
 

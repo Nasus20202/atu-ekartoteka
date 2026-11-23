@@ -4,8 +4,8 @@ import {
   CREDENTIALS_REQUIRED_MESSAGE,
   INVALID_EMAIL_MESSAGE,
   validateCredentials,
-} from '@/lib/auth/credential-validation';
-import { PASSWORD_TOO_SHORT_MESSAGE } from '@/lib/auth/password-rules';
+} from '@/lib/auth/rules/credential-validation';
+import { PASSWORD_TOO_SHORT_MESSAGE } from '@/lib/auth/rules/password-rules';
 
 describe('validateCredentials', () => {
   it.each([

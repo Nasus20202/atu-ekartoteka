@@ -42,10 +42,12 @@ vi.mock('crypto', () => ({
   default: { randomBytes: vi.fn().mockReturnValue(Buffer.alloc(12, 65)) },
 }));
 
-vi.mock('@/lib/auth/admin-access', () => ({
+vi.mock('@/lib/auth/queries/has-admin-access', () => ({
   hasAdminAccess: vi.fn((userId: string) =>
     Promise.resolve(userId.startsWith('admin'))
   ),
+}));
+vi.mock('@/lib/auth/rules/admin-access', () => ({
   isAdminRole: (role: string | null | undefined) => role === 'ADMIN',
 }));
 

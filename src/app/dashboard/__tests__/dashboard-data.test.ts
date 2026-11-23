@@ -13,7 +13,7 @@ import {
 } from '@/app/dashboard/dashboard-data';
 import { getSeriesColor } from '@/components/charts/chart-colors';
 import { Prisma } from '@/generated/prisma/browser';
-import type { MonthlyChargeSums } from '@/lib/payments/queries/find-monthly-charge-sums';
+import type { MonthlyChargeSums } from '@/lib/payments/types/monthly-charge-sums';
 
 type Apartment = Parameters<typeof buildApartmentBalances>[0][number];
 

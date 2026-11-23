@@ -15,7 +15,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { PRIVACY_POLICY_MAX_LENGTH } from '@/lib/settings/constants';
+import { PRIVACY_POLICY_MAX_LENGTH } from '@/lib/settings/rules/constants';
 
 const TEXTAREA_ID = 'privacy-policy-text';
 const SYNTAX_HINT =

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { mergeParsedFiles } from '@/lib/import/merge-files';
+import { mergeParsedFiles } from '@/lib/import/pipeline/merge-files';
 
 const byId = (entry: { id: string }) => entry.id;
 

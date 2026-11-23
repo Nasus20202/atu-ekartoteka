@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { BCRYPT_COST } from '@/lib/auth/bcrypt-cost';
+import { BCRYPT_COST } from '@/lib/auth/rules/bcrypt-cost';
 import {
   CREDENTIALS_REQUIRED_MESSAGE,
   EMAIL_TAKEN_MESSAGE,
   INVALID_EMAIL_MESSAGE,
-} from '@/lib/auth/credential-validation';
-import { PASSWORD_TOO_SHORT_MESSAGE } from '@/lib/auth/password-rules';
+} from '@/lib/auth/rules/credential-validation';
+import { PASSWORD_TOO_SHORT_MESSAGE } from '@/lib/auth/rules/password-rules';
 import { AccountStatus, UserRole } from '@/lib/auth/types/account';
 import { expectNoPersonalData } from '@/lib/platform/logging/testing';
 import {

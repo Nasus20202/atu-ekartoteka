@@ -33,7 +33,7 @@ vi.mock('@/lib/users/queries/find-user-by-id', () => ({
   findUserById: mockFindUserById,
 }));
 
-vi.mock('@/lib/users/account-status', () => ({
+vi.mock('@/lib/users/use-cases/account-status', () => ({
   notifyAccountApproved: mockNotifyApproved,
 }));
 

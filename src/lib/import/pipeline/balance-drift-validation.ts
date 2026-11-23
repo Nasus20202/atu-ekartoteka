@@ -1,7 +1,7 @@
-import { WPLATY_BALANCE_TOLERANCE } from '@/lib/import/constants';
-import { fullYearEndThreshold } from '@/lib/import/cross-year-validation';
+import { WPLATY_BALANCE_TOLERANCE } from '@/lib/import/rules/constants';
 import type { TransactionClient } from '@/lib/import/types/import-context';
 import type { ImportWarning } from '@/lib/import/types/import-warning';
+import { fullYearEndThreshold } from '@/lib/import/validation/cross-year-validation';
 import { findMonthlyChargeSums } from '@/lib/payments/queries/find-monthly-charge-sums';
 import { type DecimalLike, toDecimal } from '@/lib/shared/utils/decimal';
 import { applyDerivedFigures } from '@/lib/shared/utils/payment-balances';

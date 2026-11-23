@@ -1,7 +1,7 @@
 import {
   MIN_PASSWORD_LENGTH,
   PASSWORD_TOO_SHORT_MESSAGE,
-} from '@/lib/auth/password-rules';
+} from '@/lib/auth/rules/password-rules';
 
 export const CREDENTIALS_REQUIRED_MESSAGE = 'Email i hasło są wymagane';
 export const INVALID_EMAIL_MESSAGE = 'Nieprawidłowy format email';

@@ -5,8 +5,8 @@ import {
   CREDENTIALS_REQUIRED_MESSAGE,
   EMAIL_TAKEN_MESSAGE,
   INVALID_EMAIL_MESSAGE,
-} from '@/lib/auth/credential-validation';
-import { PASSWORD_TOO_SHORT_MESSAGE } from '@/lib/auth/password-rules';
+} from '@/lib/auth/rules/credential-validation';
+import { PASSWORD_TOO_SHORT_MESSAGE } from '@/lib/auth/rules/password-rules';
 import { AccountStatus, UserRole } from '@/lib/auth/types/account';
 import {
   registerAccount,
@@ -53,10 +53,10 @@ vi.mock('@/lib/auth/use-cases/registration-notifications', () => ({
   sendRegistrationVerification: mockSendRegistrationVerification,
   notifyAdminsAboutRegistration: mockNotifyAdminsAboutRegistration,
 }));
-vi.mock('@/lib/auth/registration-auto-login-token', () => ({
+vi.mock('@/lib/auth/rules/registration-auto-login-token', () => ({
   createRegistrationAutoLoginToken: mockCreateRegistrationAutoLoginToken,
 }));
-vi.mock('@/lib/auth/turnstile', () => ({
+vi.mock('@/lib/auth/gateways/turnstile', () => ({
   isTurnstileEnabled: mockIsTurnstileEnabled,
   verifyTurnstileToken: mockVerifyTurnstileToken,
 }));

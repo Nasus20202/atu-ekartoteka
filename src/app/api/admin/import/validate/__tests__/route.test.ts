@@ -7,14 +7,16 @@ vi.mock('@/auth', () => ({
   auth: vi.fn(),
 }));
 
-vi.mock('@/lib/import/validate-database', () => ({
+vi.mock('@/lib/import/use-cases/validate-database', () => ({
   validateDatabase: vi.fn(),
 }));
 
-vi.mock('@/lib/auth/admin-access', () => ({
+vi.mock('@/lib/auth/queries/has-admin-access', () => ({
   hasAdminAccess: vi.fn((userId: string) =>
     Promise.resolve(userId.startsWith('admin'))
   ),
+}));
+vi.mock('@/lib/auth/rules/admin-access', () => ({
   isAdminRole: (role: string | null | undefined) => role === 'ADMIN',
 }));
 
@@ -27,7 +29,8 @@ vi.mock('@/lib/platform/logging/logger', () => ({
 }));
 
 const { auth } = await import('@/auth');
-const { validateDatabase } = await import('@/lib/import/validate-database');
+const { validateDatabase } =
+  await import('@/lib/import/use-cases/validate-database');
 const { POST } = await import('../route');
 
 const ENDPOINT = 'http://localhost/api/admin/import/validate';

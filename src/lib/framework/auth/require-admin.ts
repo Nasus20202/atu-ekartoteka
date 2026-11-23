@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { Session } from 'next-auth';
 
 import { auth } from '@/auth';
-import { hasAdminAccess } from '@/lib/auth/admin-access';
+import { hasAdminAccess } from '@/lib/auth/queries/has-admin-access';
 import { createLogger } from '@/lib/platform/logging/logger';
 
 const logger = createLogger('auth:require-admin');

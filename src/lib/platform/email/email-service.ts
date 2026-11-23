@@ -1,6 +1,6 @@
 import nodemailer, { type Transporter } from 'nodemailer';
 
-import { hashToken } from '@/lib/auth/verification-tokens';
+import { hashToken } from '@/lib/auth/rules/verification-tokens';
 import { readEmailConfig } from '@/lib/platform/email/email-config';
 import {
   accountActivationMessage,

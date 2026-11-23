@@ -58,7 +58,8 @@ export async function register() {
     logger.info('OpenTelemetry initialized');
 
     // Dynamic import to ensure this code only runs on server
-    const { initializeCronJobs } = await import('@/lib/cron/init');
+    const { initializeCronJobs } =
+      await import('@/lib/cron/use-cases/initialize-cron-jobs');
 
     initializeCronJobs();
 

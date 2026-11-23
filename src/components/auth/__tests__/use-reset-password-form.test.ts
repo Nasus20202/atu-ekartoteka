@@ -5,7 +5,7 @@ import { useResetPasswordForm } from '@/components/auth/use-reset-password-form'
 import {
   MIN_PASSWORD_LENGTH,
   PASSWORD_TOO_SHORT_MESSAGE,
-} from '@/lib/auth/password-rules';
+} from '@/lib/auth/rules/password-rules';
 
 const mocks = vi.hoisted(() => ({
   push: vi.fn(),

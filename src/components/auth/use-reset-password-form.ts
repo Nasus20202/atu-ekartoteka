@@ -9,7 +9,7 @@ import { useTurnstile } from '@/hooks/use-turnstile';
 import {
   MIN_PASSWORD_LENGTH,
   PASSWORD_TOO_SHORT_MESSAGE,
-} from '@/lib/auth/password-rules';
+} from '@/lib/auth/rules/password-rules';
 import {
   GENERIC_ERROR_MESSAGE,
   getErrorMessage,

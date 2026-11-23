@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { requireAdmin } from '@/lib/framework/auth/require-admin';
-import { validateDatabase } from '@/lib/import/validate-database';
+import { validateDatabase } from '@/lib/import/use-cases/validate-database';
 import { createLogger } from '@/lib/platform/logging/logger';
 import { getErrorMessage } from '@/lib/shared/utils/error-message';
 

@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { EmailVerificationBanner } from '@/components/account/email-verification-banner';
 import { OrphanedSessionSignOut } from '@/components/account/orphaned-session-sign-out';
 import { DashboardNavbar } from '@/components/navigation/dashboard-navbar';
-import { isApprovedAdmin } from '@/lib/auth/admin-access';
+import { isApprovedAdmin } from '@/lib/auth/rules/admin-access';
 import { getSession } from '@/lib/framework/auth/get-session';
 import { findUserByIdCached } from '@/lib/framework/rsc-cache';
 

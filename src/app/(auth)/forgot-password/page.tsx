@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTurnstile } from '@/hooks/use-turnstile';
-import { AUTH_PLACEHOLDERS } from '@/lib/auth/form-placeholders';
+import { AUTH_PLACEHOLDERS } from '@/lib/auth/rules/form-placeholders';
 import {
   GENERIC_ERROR_MESSAGE,
   getErrorMessage,

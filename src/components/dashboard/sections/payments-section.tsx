@@ -6,7 +6,7 @@ import {
 } from '@/app/dashboard/dashboard-loaders';
 import { PaymentsSummaryCard } from '@/components/dashboard/payments-summary-card';
 import { REVEAL_CLASS } from '@/components/layout/reveal';
-import { isApprovedAccount } from '@/lib/auth/account-access';
+import { isApprovedAccount } from '@/lib/auth/rules/account-access';
 
 export async function PaymentsSection() {
   const [account, user, { currentPeriod }] = await Promise.all([

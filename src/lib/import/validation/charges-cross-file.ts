@@ -1,10 +1,10 @@
+import type { NalCzynszEntry } from '@/lib/import/parsers/nal-czynsz-parser';
+import type { PaymentEntry } from '@/lib/import/parsers/wplaty-parser';
 import {
   CROSS_CHARGES_TOLERANCE,
   MONTHLY_CHARGES_IGNORED_NOTE,
   SETTLEMENT_DESCRIPTION_PREFIX,
-} from '@/lib/import/constants';
-import type { NalCzynszEntry } from '@/lib/import/parsers/nal-czynsz-parser';
-import type { PaymentEntry } from '@/lib/import/parsers/wplaty-parser';
+} from '@/lib/import/rules/constants';
 import type { ImportWarning } from '@/lib/import/types/import-warning';
 import { type Decimal, toDecimal } from '@/lib/shared/utils/decimal';
 

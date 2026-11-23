@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { validateBalanceDrift } from '@/lib/import/balance-drift-validation';
+import { validateBalanceDrift } from '@/lib/import/pipeline/balance-drift-validation';
 import type { ImportWarning } from '@/lib/import/types/import-warning';
 
 const MONTHS = [

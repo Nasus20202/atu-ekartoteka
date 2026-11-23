@@ -30,7 +30,7 @@ vi.mock('@/lib/platform/email/email-service', () => ({
     sendVerificationEmail: mocks.sendVerificationEmail,
   }),
 }));
-vi.mock('@/lib/auth/verification-tokens', () => ({
+vi.mock('@/lib/auth/rules/verification-tokens', () => ({
   generateSecureToken: () => 'plain-token',
   hashToken: (token: string) => `hashed-${token}`,
   getVerificationExpiration: () => new Date('2025-01-02T12:00:00.000Z'),

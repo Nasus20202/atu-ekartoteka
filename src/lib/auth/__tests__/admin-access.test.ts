@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { hasAdminAccess, isApprovedAdmin } from '@/lib/auth/admin-access';
+import { hasAdminAccess } from '@/lib/auth/queries/has-admin-access';
+import { isApprovedAdmin } from '@/lib/auth/rules/admin-access';
 import { AccountStatus, UserRole } from '@/lib/auth/types/account';
 
 const { mockFindUserSessionFields, mockWarn } = vi.hoisted(() => ({

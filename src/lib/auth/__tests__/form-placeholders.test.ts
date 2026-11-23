@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { AUTH_PLACEHOLDERS } from '@/lib/auth/form-placeholders';
+import { AUTH_PLACEHOLDERS } from '@/lib/auth/rules/form-placeholders';
 
 describe('AUTH_PLACEHOLDERS', () => {
   it('uses instructional Polish text instead of sample values', () => {

@@ -11,10 +11,12 @@ vi.mock('@/auth', () => ({ auth: mockAuth }));
 vi.mock('@/lib/admin/queries/get-dashboard-stats', () => ({
   getDashboardStats: mockGetDashboardStats,
 }));
-vi.mock('@/lib/auth/admin-access', () => ({
+vi.mock('@/lib/auth/queries/has-admin-access', () => ({
   hasAdminAccess: vi.fn((userId: string) =>
     Promise.resolve(userId.startsWith('admin'))
   ),
+}));
+vi.mock('@/lib/auth/rules/admin-access', () => ({
   isAdminRole: (role: string | null | undefined) => role === 'ADMIN',
 }));
 

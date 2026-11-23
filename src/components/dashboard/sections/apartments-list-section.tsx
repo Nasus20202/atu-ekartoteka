@@ -4,7 +4,7 @@ import {
 } from '@/app/dashboard/dashboard-loaders';
 import { ApartmentsSection } from '@/components/dashboard/apartments-section';
 import { REVEAL_CLASS } from '@/components/layout/reveal';
-import { isApprovedAccount } from '@/lib/auth/account-access';
+import { isApprovedAccount } from '@/lib/auth/rules/account-access';
 
 export async function ApartmentsListSection() {
   const [account, apartments] = await Promise.all([

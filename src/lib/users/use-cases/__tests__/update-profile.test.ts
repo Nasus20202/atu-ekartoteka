@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { BCRYPT_COST } from '@/lib/auth/bcrypt-cost';
-import { PASSWORD_TOO_SHORT_MESSAGE } from '@/lib/auth/password-rules';
+import { BCRYPT_COST } from '@/lib/auth/rules/bcrypt-cost';
+import { PASSWORD_TOO_SHORT_MESSAGE } from '@/lib/auth/rules/password-rules';
 import { AccountStatus, UserRole } from '@/lib/auth/types/account';
 import { expectNoPersonalData } from '@/lib/platform/logging/testing';
 import {

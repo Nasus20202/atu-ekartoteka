@@ -1,4 +1,4 @@
-import { placeholder as p } from '@/lib/privacy/placeholders';
+import { placeholder as p } from '@/lib/privacy/rules/placeholders';
 
 /** Sections 16–18: cookies, security measures and changes to the policy. */
 export const TECHNICAL = `## Pliki cookies i podobne technologie

@@ -1,4 +1,4 @@
-import { CRON_RUN_RETENTION_MS } from '@/lib/cron/constants';
+import { CRON_RUN_RETENTION_MS } from '@/lib/cron/rules/constants';
 import { prisma } from '@/lib/platform/database/prisma';
 
 export interface CronRunStore {

@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { updateSettingsAction } from '@/actions/settings/settings';
 import { useConfirm } from '@/components/providers/confirm-dialog';
 import type { SaveStatus } from '@/components/settings/use-app-settings';
-import { countPlaceholders } from '@/lib/privacy/placeholders';
+import { countPlaceholders } from '@/lib/privacy/rules/placeholders';
 
 const SAVE_ERROR = 'Nie udało się zapisać ustawień';
 

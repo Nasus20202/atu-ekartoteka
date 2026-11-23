@@ -1,6 +1,6 @@
 import type { NalCzynszEntry } from '@/lib/import/parsers/nal-czynsz-parser';
 import type { PaymentEntry } from '@/lib/import/parsers/wplaty-parser';
-import type { BalancePaymentSource } from '@/lib/import/year-balance-overview';
+import type { BalancePaymentSource } from '@/lib/import/validation/year-balance-overview';
 import { prisma } from '@/lib/platform/database/prisma';
 import type { DecimalLike } from '@/lib/shared/utils/decimal';
 import {

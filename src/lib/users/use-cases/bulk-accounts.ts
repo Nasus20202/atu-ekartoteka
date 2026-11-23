@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import { assignApartmentsToUser } from '@/lib/apartments/mutations/assign-apartments-to-user';
 import { findUnassignedApartmentsByIds } from '@/lib/apartments/queries/find-unassigned-apartments-by-ids';
 import { findUnassignedApartmentsForAssign } from '@/lib/apartments/queries/find-unassigned-apartments-for-assign';
-import { BCRYPT_COST } from '@/lib/auth/bcrypt-cost';
+import { BCRYPT_COST } from '@/lib/auth/rules/bcrypt-cost';
 import { getEmailService } from '@/lib/platform/email/email-service';
 import { createLogger } from '@/lib/platform/logging/logger';
 import { failedResult, type UseCaseResult } from '@/lib/shared/use-case-result';

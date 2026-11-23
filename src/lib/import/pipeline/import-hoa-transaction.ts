@@ -1,16 +1,16 @@
-import { validateBalanceDrift } from '@/lib/import/balance-drift-validation';
-import { validateCrossYearBalances } from '@/lib/import/cross-year-validation';
 import {
   importApartments,
   importCharges,
   importNotifications,
   importPayments,
 } from '@/lib/import/importers';
-import type { ParsedHoaFiles } from '@/lib/import/parse-hoa-files';
-import { buildSkippedRecordWarnings } from '@/lib/import/skipped-records';
+import { validateBalanceDrift } from '@/lib/import/pipeline/balance-drift-validation';
+import type { ParsedHoaFiles } from '@/lib/import/pipeline/parse-hoa-files';
 import type { TransactionClient } from '@/lib/import/types/import-context';
 import type { ImportOptions } from '@/lib/import/types/import-options';
 import type { HOAImportResult } from '@/lib/import/types/import-result';
+import { validateCrossYearBalances } from '@/lib/import/validation/cross-year-validation';
+import { buildSkippedRecordWarnings } from '@/lib/import/validation/skipped-records';
 import { createLogger } from '@/lib/platform/logging/logger';
 
 const logger = createLogger('import:handler');

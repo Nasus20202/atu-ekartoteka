@@ -11,8 +11,8 @@ import { SuccessMessage } from '@/components/ui/success-message';
 import {
   MAX_TENANT_HISTORY_YEARS_BACK,
   MIN_TENANT_HISTORY_YEARS_BACK,
-} from '@/lib/settings/constants';
-import { parseYearsBack } from '@/lib/settings/parse-years-back';
+} from '@/lib/settings/rules/constants';
+import { parseYearsBack } from '@/lib/settings/rules/parse-years-back';
 import { getHistoryStartYear } from '@/lib/shared/utils/history-window';
 
 const INPUT_ID = 'tenant-history-years-back';

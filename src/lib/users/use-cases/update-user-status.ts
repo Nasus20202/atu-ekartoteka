@@ -1,6 +1,6 @@
 import { countApartmentAvailability } from '@/lib/apartments/queries/count-apartment-availability';
-import { isApprovedStatus } from '@/lib/auth/account-access';
-import { isAdminRole } from '@/lib/auth/admin-access';
+import { isApprovedStatus } from '@/lib/auth/rules/account-access';
+import { isAdminRole } from '@/lib/auth/rules/admin-access';
 import { AccountStatus } from '@/lib/auth/types/account';
 import { createLogger } from '@/lib/platform/logging/logger';
 import {
@@ -9,10 +9,10 @@ import {
   notFoundResult,
   type UseCaseResult,
 } from '@/lib/shared/use-case-result';
-import { notifyAccountApproved } from '@/lib/users/account-status';
 import { toUserDto, type UserDto } from '@/lib/users/dto/user-dto';
 import { updateUserStatus } from '@/lib/users/mutations/update-user-status';
 import { findUserById } from '@/lib/users/queries/find-user-by-id';
+import { notifyAccountApproved } from '@/lib/users/use-cases/account-status';
 
 const logger = createLogger('action:users');
 

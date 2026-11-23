@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseAppSettingsUpdate } from '@/lib/settings/registry';
+import { parseAppSettingsUpdate } from '@/lib/settings/rules/registry';
 
 describe('parseAppSettingsUpdate', () => {
   it('accepts a valid partial update', () => {

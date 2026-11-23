@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { processBatchImport } from '@/lib/import/import-handler';
+import { processBatchImport } from '@/lib/import/use-cases/process-batch-import';
 
 // Shared hoisted mocks
 const {
@@ -46,12 +46,12 @@ vi.mock('@/lib/import/parsers/wplaty-parser', () => ({
   parseWplatyFile: mockParseWplatyFile,
 }));
 
-vi.mock('@/lib/import/validators', () => ({
+vi.mock('@/lib/import/validation/validators', () => ({
   validateNalCzynsz: mockValidateNalCzynsz,
   validateWplaty: mockValidateWplaty,
 }));
 
-vi.mock('@/lib/import/charges-cross-file', () => ({
+vi.mock('@/lib/import/validation/charges-cross-file', () => ({
   validateChargesCrossFile: mockValidateChargesCrossFile,
 }));
 

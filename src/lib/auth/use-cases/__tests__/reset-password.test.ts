@@ -4,13 +4,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   MIN_PASSWORD_LENGTH,
   PASSWORD_TOO_SHORT_MESSAGE,
-} from '@/lib/auth/password-rules';
+} from '@/lib/auth/rules/password-rules';
+import { hashToken } from '@/lib/auth/rules/verification-tokens';
 import { AuthMethod } from '@/lib/auth/types/account';
 import {
   type ResetPasswordRequest,
   resetPasswordWithToken,
 } from '@/lib/auth/use-cases/reset-password';
-import { hashToken } from '@/lib/auth/verification-tokens';
 
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
@@ -37,7 +37,7 @@ vi.mock('@/lib/auth/queries/find-password-reset-by-token', () => ({
 vi.mock('@/lib/auth/mutations/reset-password-transaction', () => ({
   resetPasswordTransaction: mockResetPasswordTransaction,
 }));
-vi.mock('@/lib/auth/turnstile', () => ({
+vi.mock('@/lib/auth/gateways/turnstile', () => ({
   verifyTurnstileToken: mockVerifyTurnstileToken,
 }));
 vi.mock('@/lib/platform/opentelemetry/auth-metrics', () => ({
