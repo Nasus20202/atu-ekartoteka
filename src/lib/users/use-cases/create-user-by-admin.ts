@@ -14,10 +14,12 @@ import {
 } from '@/lib/shared/use-case-result';
 import { createAdminUser } from '@/lib/users/mutations/create-admin-user';
 import { findUserByEmail } from '@/lib/users/queries/find-user-by-email';
+import {
+  INVALID_NAME_MESSAGE,
+  isNameInputValid,
+} from '@/lib/users/rules/name-input';
 
 const logger = createLogger('action:users');
-
-const INVALID_NAME_MESSAGE = 'Nieprawidłowe imię';
 
 export type CreatedUser = Awaited<ReturnType<typeof createAdminUser>>;
 
@@ -58,7 +60,7 @@ export async function createUserByAdmin({
     return invalidResult('Nieprawidłowy status konta');
   }
 
-  if (name !== undefined && name !== null && typeof name !== 'string') {
+  if (!isNameInputValid(name)) {
     return invalidResult(INVALID_NAME_MESSAGE);
   }
 

@@ -16,6 +16,10 @@ import {
 import { toUserDto, type UserDto } from '@/lib/users/dto/user-dto';
 import { updateUserProfile } from '@/lib/users/mutations/update-user-profile';
 import { findUserById } from '@/lib/users/queries/find-user-by-id';
+import {
+  INVALID_NAME_MESSAGE,
+  isNameInputValid,
+} from '@/lib/users/rules/name-input';
 
 const logger = createLogger('action:profile');
 
@@ -25,7 +29,6 @@ const CURRENT_PASSWORD_WRONG = 'Obecne hasło jest nieprawidłowe';
 const INVALID_PASSWORD_MESSAGE = 'Nieprawidłowe hasło';
 const NOT_FOUND_MESSAGE = 'Nie znaleziono użytkownika';
 const UPDATE_FAILED_MESSAGE = 'Nie udało się zaktualizować profilu';
-const INVALID_NAME_MESSAGE = 'Nieprawidłowe imię';
 const GOOGLE_PASSWORD_MESSAGE =
   'Konto Google nie może zmienić hasła. Użyj logowania przez Google.';
 
@@ -112,7 +115,7 @@ export async function updateProfile(
   );
 
   const { name } = changes;
-  if (name !== undefined && name !== null && typeof name !== 'string') {
+  if (!isNameInputValid(name)) {
     return invalidResult(INVALID_NAME_MESSAGE);
   }
 
