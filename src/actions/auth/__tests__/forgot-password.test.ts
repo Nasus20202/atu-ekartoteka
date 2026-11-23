@@ -7,11 +7,16 @@ import { expectNoPersonalData } from '@/lib/platform/logging/testing';
 const mocks = vi.hoisted(() => ({
   findUserByEmail: vi.fn(),
   replacePasswordReset: vi.fn(),
-  sendPasswordResetEmail: vi.fn(() => Promise.resolve()),
+  sendPasswordResetEmail: vi.fn(() =>
+    Promise.resolve({ ok: true, delivery: 'sent' })
+  ),
   verifyTurnstileToken: vi.fn(),
   log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
+vi.mock('next/server', () => ({
+  after: (task: () => Promise<void>) => void task(),
+}));
 vi.mock('@/lib/users/queries/find-user-by-email', () => ({
   findUserByEmail: mocks.findUserByEmail,
 }));

@@ -33,13 +33,20 @@ export async function sendRegistrationVerification(
       expiresAt: getVerificationExpiration(VERIFICATION_EXPIRY_HOURS),
     });
 
-    await getEmailService().sendVerificationEmail(
+    const result = await getEmailService().sendVerificationEmail(
       user.email,
       verificationToken,
       user.name || undefined
     );
 
-    logger.info({ userId: user.id }, 'Verification email sent');
+    if (result.ok) {
+      logger.info({ userId: user.id }, 'Verification email sent');
+    } else {
+      logger.error(
+        { userId: user.id, reason: result.reason },
+        'Failed to send verification email'
+      );
+    }
   } catch (error) {
     // Registration still succeeds; the user can request a new email later.
     logger.error(

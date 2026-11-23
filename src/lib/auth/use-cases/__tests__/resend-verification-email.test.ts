@@ -73,7 +73,7 @@ describe('resendVerificationEmail', () => {
     mockFindRecentVerification.mockResolvedValue(null);
     mockDeleteVerificationsForUser.mockResolvedValue(undefined);
     mockCreateEmailVerification.mockResolvedValue(undefined);
-    mockSendVerificationEmail.mockResolvedValue(undefined);
+    mockSendVerificationEmail.mockResolvedValue({ ok: true, delivery: 'sent' });
     mockGetVerificationExpiration.mockReturnValue(EXPIRES_AT);
   });
 
@@ -202,8 +202,33 @@ describe('resendVerificationEmail', () => {
   });
 
   describe('unexpected errors', () => {
+    it('still reports the send failure when removing the unsent code also fails', async () => {
+      mockSendVerificationEmail.mockResolvedValueOnce({
+        ok: false,
+        reason: 'send-failed',
+      });
+      mockDeleteVerificationsForUser
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('DB down'));
+
+      const result = await resendVerificationEmail('user-id');
+
+      expect(result).toEqual({
+        ok: false,
+        code: 'failed',
+        message: 'Nie udało się wysłać emaila',
+      });
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        { error: expect.any(Error), userId: 'user-id' },
+        'Failed to remove unsent verification code'
+      );
+    });
+
     it('removes the stored code when the send fails, so the rate limit does not block a retry', async () => {
-      mockSendVerificationEmail.mockRejectedValueOnce(new Error('SMTP down'));
+      mockSendVerificationEmail.mockResolvedValueOnce({
+        ok: false,
+        reason: 'send-failed',
+      });
 
       const result = await resendVerificationEmail('user-id');
 
@@ -220,6 +245,39 @@ describe('resendVerificationEmail', () => {
 
     it.each<[string, () => void]>([
       [
+        'throws',
+        () =>
+          mockSendVerificationEmail.mockResolvedValue({
+            ok: false,
+            reason: 'send-failed',
+          }),
+      ],
+      [
+        'reports failure',
+        () =>
+          mockSendVerificationEmail.mockResolvedValue({
+            ok: false,
+            reason: 'send-failed',
+          }),
+      ],
+    ])(
+      'removes the unsent code and fails when the email service %s',
+      async (_label, arrangeFailure) => {
+        arrangeFailure();
+
+        const result = await resendVerificationEmail('user-id');
+
+        expect(result).toEqual({
+          ok: false,
+          code: 'failed',
+          message: 'Nie udało się wysłać emaila',
+        });
+        expect(mockDeleteVerificationsForUser).toHaveBeenCalledTimes(2);
+      }
+    );
+
+    it.each<[string, () => void]>([
+      [
         'the user lookup',
         () => mockFindUserById.mockRejectedValue(new Error('DB down')),
       ],
@@ -232,11 +290,6 @@ describe('resendVerificationEmail', () => {
         'storing the new code',
         () =>
           mockCreateEmailVerification.mockRejectedValue(new Error('DB down')),
-      ],
-      [
-        'sending the email',
-        () =>
-          mockSendVerificationEmail.mockRejectedValue(new Error('SMTP down')),
       ],
     ])(
       'returns a generic failure and logs the error when %s throws',

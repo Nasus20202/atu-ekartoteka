@@ -28,7 +28,7 @@ The system SHALL send email via a configurable SMTP server. When SMTP is not con
 
 - **GIVEN** SMTP is configured but the server rejects the message
 - **WHEN** `sendEmail` is called
-- **THEN** the error is logged at `error` level with the e-mail type and the underlying error, and no recipient address or subject; the metric is recorded with result `failure`; `sendEmail` returns `false`
+- **THEN** the error is logged at `error` level with the e-mail type and the underlying error, and no recipient address or subject; the metric is recorded with result `failure`; `sendEmail` resolves to `{ ok: false, reason: 'send-failed' }`
 
 ### Requirement: Email Templates
 
@@ -112,6 +112,28 @@ The system SHALL notify a tenant when an admin approves their account.
 
 ---
 
+### Requirement: Email Send Outcome
+
+Every `EmailService` send method SHALL resolve to an `EmailSendResult` and SHALL NOT throw: `{ ok: true, delivery: 'sent' | 'skipped' }` or `{ ok: false, reason: 'send-failed' }`. `skipped` means SMTP is not configured and nothing was sent, which is not an error. A message that cannot be rendered is a `send-failed` result too. Callers SHALL branch on `ok` and log the `reason`. The password reset email is sent after the response (`after()`), so the response time does not depend on the SMTP round trip. The app runs as a long-lived Node process (standalone build), so the deferred send completes; a serverless host would need the same `after()` contract to be honoured.
+
+#### Scenario: SMTP failure is a failed result
+
+- **GIVEN** the SMTP server rejects a message
+- **WHEN** the caller sends the email
+- **THEN** the service logs the failure, records a `failure` metric and resolves to `{ ok: false, reason: 'send-failed' }` without throwing
+
+#### Scenario: SMTP is not configured
+
+- **GIVEN** `SMTP_HOST` is not set
+- **WHEN** the caller sends the email
+- **THEN** nothing is sent, a `skipped` metric is recorded and the result is `{ ok: true, delivery: 'skipped' }`
+
+#### Scenario: Message cannot be built
+
+- **GIVEN** rendering the message throws
+- **WHEN** the caller sends the email
+- **THEN** the result is `{ ok: false, reason: 'send-failed' }` and nothing is sent
+
 ### Requirement: Account Activation Email
 
 The system SHALL send the login email and a temporary password to users whose accounts are created by an admin via bulk creation.
@@ -121,6 +143,7 @@ The system SHALL send the login email and a temporary password to users whose ac
 - **GIVEN** an admin bulk-creates accounts for unassigned apartments
 - **WHEN** each account is created
 - **THEN** an `account_activation` email is sent with subject "Twoje konto zostało utworzone – ustaw nowe hasło", containing the recipient's email address, the temporary password and a link to `/login`
+- **AND** each send is awaited; a result with `ok: false` is counted in the bulk result's `emailFailed` and logged, and does not undo the account
 
 ### Requirement: Admin New-User Notification
 

@@ -61,7 +61,7 @@ describe('EmailService - New User Notification', () => {
         '2024-01-15 10:30'
       );
 
-      expect(result).toBe(true);
+      expect(result).toEqual({ ok: true, delivery: 'sent' });
     });
 
     it('should include all user details in notification', async () => {
@@ -90,7 +90,7 @@ describe('EmailService - New User Notification', () => {
         '2024-01-15 10:00'
       );
 
-      expect(result).toBe(false);
+      expect(result).toEqual({ ok: false, reason: 'send-failed' });
     });
 
     it('should use correct admin URL', async () => {

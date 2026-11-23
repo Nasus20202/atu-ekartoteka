@@ -13,6 +13,11 @@
   Google. Sessions are JWTs.
 - **Nodemailer** sends email over SMTP. Message bodies are React Email
   components.
+- The password reset email is sent with `after()` from `next/server`, so the
+  response does not wait for SMTP and its timing does not reveal whether an
+  address is registered. This relies on the long-lived Node process of the
+  standalone build. The email service returns a typed result (`ok`, `delivery`
+  or `reason`) instead of throwing, so callers check `ok`.
 - **Cloudflare Turnstile** protects register, login and password reset.
 - **node-cron** runs the hourly cleanup jobs inside the app process.
 - **OpenTelemetry** exports traces, metrics and logs when an endpoint is set.

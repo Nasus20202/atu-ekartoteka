@@ -87,6 +87,14 @@ describe('formatBulkResult', () => {
   });
 
   it('summarises assignments and defaults missing counts to zero', () => {
+    expect(
+      formatBulkResult('create', {
+        created: 3,
+        skipped: 0,
+        errors: 0,
+        emailFailed: 2,
+      })
+    ).toContain('Nie wysłano e-maili aktywacyjnych: 2');
     expect(formatBulkResult('assign', { skipped: 0, errors: 0 })).toBe(
       'Przypisano 0 mieszkań. Pominięto 0.'
     );

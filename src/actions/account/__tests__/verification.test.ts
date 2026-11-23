@@ -52,6 +52,10 @@ const user = {
 describe('resendVerificationAction', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.sendVerificationEmail.mockResolvedValue({
+      ok: true,
+      delivery: 'sent',
+    });
     vi.useFakeTimers();
     vi.setSystemTime(NOW);
     mocks.requireUserAction.mockResolvedValue({
@@ -140,7 +144,10 @@ describe('resendVerificationAction', () => {
   });
 
   it('fails when sending fails', async () => {
-    mocks.sendVerificationEmail.mockRejectedValue(new Error('smtp'));
+    mocks.sendVerificationEmail.mockResolvedValue({
+      ok: false,
+      reason: 'send-failed',
+    });
 
     expect(await resendVerificationAction()).toEqual({
       ok: false,

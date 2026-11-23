@@ -8,6 +8,7 @@ import {
 import { AuthMethod } from '@/lib/auth/types/account';
 import { getEmailService } from '@/lib/platform/email/email-service';
 import { createLogger } from '@/lib/platform/logging/logger';
+import type { AfterResponse } from '@/lib/shared/after-response';
 import {
   failedResult,
   invalidResult,
@@ -32,10 +33,10 @@ export interface PasswordResetRequest {
  * Emails a reset link when the account exists. Returns success either way, so
  * the response never reveals whether an email is registered.
  */
-export async function requestPasswordReset({
-  email,
-  turnstileToken,
-}: PasswordResetRequest): Promise<UseCaseResult<void>> {
+export async function requestPasswordReset(
+  { email, turnstileToken }: PasswordResetRequest,
+  afterResponse: AfterResponse
+): Promise<UseCaseResult<void>> {
   if (!(await verifyTurnstileToken(turnstileToken ?? undefined))) {
     logger.warn('Forgot password failed: invalid Turnstile token');
     return invalidResult(TURNSTILE_FAILED_MESSAGE);
@@ -68,15 +69,27 @@ export async function requestPasswordReset({
       expiresAt: new Date(Date.now() + RESET_TOKEN_TTL_MS),
     });
 
-    // Not awaited: an SMTP round trip only for registered accounts would let
-    // the response time reveal which addresses exist
-    getEmailService()
-      .sendPasswordResetEmail(user.email, token, user.name || undefined)
-      .catch((error: unknown) =>
-        logger.error({ error, userId: user.id }, 'Password reset email failed')
-      );
-
-    logger.info({ userId: user.id }, 'Password reset email sent');
+    // Sent after the response: an SMTP round trip only for registered accounts
+    // would let the response time reveal which addresses exist
+    afterResponse(async () => {
+      try {
+        const result = await getEmailService().sendPasswordResetEmail(
+          user.email,
+          token,
+          user.name || undefined
+        );
+        if (result.ok) {
+          logger.info({ userId: user.id }, 'Password reset email sent');
+        } else {
+          logger.error(
+            { userId: user.id, reason: result.reason },
+            'Password reset email failed'
+          );
+        }
+      } catch (error) {
+        logger.error({ error, userId: user.id }, 'Password reset email failed');
+      }
+    });
 
     return { ok: true, data: undefined };
   } catch (error) {

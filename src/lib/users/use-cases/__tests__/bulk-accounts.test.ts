@@ -81,7 +81,7 @@ beforeEach(() => {
   mockFindUserByEmail.mockResolvedValue(null);
   mockCreateUserWithApartments.mockResolvedValue(undefined);
   mockAssignApartmentsToUser.mockResolvedValue(0);
-  mockSendActivationEmail.mockResolvedValue(undefined);
+  mockSendActivationEmail.mockResolvedValue({ ok: true, delivery: 'sent' });
 });
 
 describe('bulkCreateAccounts', () => {
@@ -94,7 +94,7 @@ describe('bulkCreateAccounts', () => {
 
     expect(result).toEqual({
       ok: true,
-      data: { created: 1, skipped: 0, errors: 0 },
+      data: { created: 1, skipped: 0, errors: 0, emailFailed: 0 },
     });
     expect(mockFindUnassignedByIds).toHaveBeenCalledWith(['apt-1']);
     expect(mockFindUserByEmail).toHaveBeenCalledWith('owner@example.com');
@@ -124,7 +124,7 @@ describe('bulkCreateAccounts', () => {
 
     expect(result).toEqual({
       ok: true,
-      data: { created: 1, skipped: 0, errors: 0 },
+      data: { created: 1, skipped: 0, errors: 0, emailFailed: 0 },
     });
     expect(mockFindUserByEmail).toHaveBeenCalledTimes(1);
     expect(mockCreateUserWithApartments).toHaveBeenCalledTimes(1);
@@ -144,7 +144,7 @@ describe('bulkCreateAccounts', () => {
 
     expect(result).toEqual({
       ok: true,
-      data: { created: 1, skipped: 0, errors: 0 },
+      data: { created: 1, skipped: 0, errors: 0, emailFailed: 0 },
     });
     expect(mockCreateUserWithApartments).toHaveBeenCalledTimes(1);
     expect(mockCreateUserWithApartments).toHaveBeenCalledWith(
@@ -165,7 +165,7 @@ describe('bulkCreateAccounts', () => {
 
     expect(result).toEqual({
       ok: true,
-      data: { created: 2, skipped: 0, errors: 0 },
+      data: { created: 2, skipped: 0, errors: 0, emailFailed: 0 },
     });
     expect(mockCreateUserWithApartments).toHaveBeenNthCalledWith(1, {
       email: 'a@example.com',
@@ -197,7 +197,7 @@ describe('bulkCreateAccounts', () => {
 
     expect(result).toEqual({
       ok: true,
-      data: { created: 0, skipped: 1, errors: 0 },
+      data: { created: 0, skipped: 1, errors: 0, emailFailed: 0 },
     });
     expect(mockLog.info).toHaveBeenCalledWith(
       { apartmentIds: ['apt-1'] },
@@ -223,7 +223,7 @@ describe('bulkCreateAccounts', () => {
 
     expect(result).toEqual({
       ok: true,
-      data: { created: 1, skipped: 0, errors: 1 },
+      data: { created: 1, skipped: 0, errors: 1, emailFailed: 0 },
     });
     expect(mockCreateUserWithApartments).toHaveBeenCalledTimes(2);
     expect(mockLog.error).toHaveBeenCalledWith(
@@ -238,24 +238,24 @@ describe('bulkCreateAccounts', () => {
     );
   });
 
-  it('still reports the account as created when the activation e-mail fails, and logs the failure', async () => {
-    const smtpError = new Error('smtp');
+  it('counts an e-mail the service reports as not sent', async () => {
     mockFindUnassignedByIds.mockResolvedValueOnce([
-      apartment('apt-1', 'owner@example.com', 'Jan'),
+      apartment('apt-1', 'a@example.com', 'Jan'),
+      apartment('apt-2', 'b@example.com', 'Ewa'),
     ]);
-    mockSendActivationEmail.mockRejectedValueOnce(smtpError);
+    mockSendActivationEmail
+      .mockResolvedValueOnce({ ok: false, reason: 'send-failed' })
+      .mockResolvedValueOnce({ ok: true, delivery: 'sent' });
 
-    const result = await bulkCreateAccounts(['apt-1']);
+    const result = await bulkCreateAccounts(['apt-1', 'apt-2']);
 
     expect(result).toEqual({
       ok: true,
-      data: { created: 1, skipped: 0, errors: 0 },
+      data: { created: 2, skipped: 0, errors: 0, emailFailed: 1 },
     });
-    await vi.waitFor(() =>
-      expect(mockLog.error).toHaveBeenCalledWith(
-        { err: smtpError, apartmentIds: ['apt-1'] },
-        'Failed to send activation email'
-      )
+    expect(mockLog.error).toHaveBeenCalledWith(
+      { apartmentIds: ['apt-1'], reason: 'send-failed' },
+      'Failed to send activation email'
     );
   });
 
@@ -266,7 +266,7 @@ describe('bulkCreateAccounts', () => {
 
     expect(result).toEqual({
       ok: true,
-      data: { created: 0, skipped: 0, errors: 0 },
+      data: { created: 0, skipped: 0, errors: 0, emailFailed: 0 },
     });
     expect(mockFindUserByEmail).not.toHaveBeenCalled();
     expect(mockCreateUserWithApartments).not.toHaveBeenCalled();

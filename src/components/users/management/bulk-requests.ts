@@ -10,6 +10,7 @@ export interface BulkOperationResult {
   assigned?: number;
   skipped: number;
   errors: number;
+  emailFailed?: number;
 }
 
 type RequestResult<T> =
@@ -47,5 +48,9 @@ export function formatBulkResult(
       ? `Utworzono ${result.created ?? 0} kont.`
       : `Przypisano ${result.assigned ?? 0} mieszkań.`;
   const errors = result.errors > 0 ? ` Błędy: ${result.errors}.` : '';
-  return `${summary} Pominięto ${result.skipped}.${errors}`;
+  const emails =
+    result.emailFailed && result.emailFailed > 0
+      ? ` Nie wysłano e-maili aktywacyjnych: ${result.emailFailed} (konta zostały utworzone, użytkownicy mogą ustawić hasło przez „Nie pamiętam hasła”).`
+      : '';
+  return `${summary} Pominięto ${result.skipped}.${errors}${emails}`;
 }

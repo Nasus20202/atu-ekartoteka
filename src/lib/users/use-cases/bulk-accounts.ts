@@ -20,6 +20,8 @@ export interface BulkCreateSummary {
   created: number;
   skipped: number;
   errors: number;
+  /** Accounts that were created but whose activation email was not delivered. */
+  emailFailed: number;
 }
 
 export interface BulkAssignSummary {
@@ -34,6 +36,27 @@ function generateTempPassword(): string {
   return Array.from(bytes)
     .map((b) => chars[b % chars.length])
     .join('');
+}
+
+/** The account exists either way; a failed email is reported, never thrown. */
+async function sendActivationEmail(
+  email: string,
+  tempPassword: string,
+  owner: string | null,
+  apartmentIds: string[]
+): Promise<boolean> {
+  const result = await getEmailService().sendAccountActivationEmail(
+    email,
+    tempPassword,
+    owner ?? undefined
+  );
+  if (!result.ok) {
+    logger.error(
+      { apartmentIds, reason: result.reason },
+      'Failed to send activation email'
+    );
+  }
+  return result.ok;
 }
 
 /** One account per e-mail address, owning every listed apartment that is unassigned. */
@@ -61,8 +84,7 @@ export async function bulkCreateAccounts(
     let created = 0;
     let skipped = 0;
     let errors = 0;
-
-    const emailService = getEmailService();
+    let emailFailed = 0;
 
     for (const { email, owner, aptIds } of emailMap.values()) {
       try {
@@ -82,15 +104,9 @@ export async function bulkCreateAccounts(
           apartmentIds: aptIds,
         });
 
-        // Fire-and-forget: an email failure does not block the result
-        emailService
-          .sendAccountActivationEmail(email, tempPassword, owner ?? undefined)
-          .catch((err) =>
-            logger.error(
-              { err, apartmentIds: aptIds },
-              'Failed to send activation email'
-            )
-          );
+        if (!(await sendActivationEmail(email, tempPassword, owner, aptIds))) {
+          emailFailed++;
+        }
 
         created++;
         logger.info({ apartmentIds: aptIds }, 'Created user account');
@@ -103,7 +119,7 @@ export async function bulkCreateAccounts(
       }
     }
 
-    return { ok: true, data: { created, skipped, errors } };
+    return { ok: true, data: { created, skipped, errors, emailFailed } };
   } catch (error) {
     logger.error({ error }, 'Bulk create failed');
     return failedResult('Nie udało się utworzyć kont');

@@ -24,3 +24,12 @@ export interface EmailServiceConfig {
     pass: string;
   };
 }
+
+/**
+ * Outcome of sending one email. The service never throws: a failure is a value,
+ * so a caller cannot mistake it for success. `skipped` means SMTP is not
+ * configured and nothing was sent, which is not an error in development.
+ */
+export type EmailSendResult =
+  | { ok: true; delivery: 'sent' | 'skipped' }
+  | { ok: false; reason: 'send-failed' };

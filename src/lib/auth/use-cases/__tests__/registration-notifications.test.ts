@@ -56,7 +56,7 @@ describe('sendRegistrationVerification', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mockCreateEmailVerification.mockResolvedValue(undefined);
-    mockSendVerificationEmail.mockResolvedValue(undefined);
+    mockSendVerificationEmail.mockResolvedValue({ ok: true, delivery: 'sent' });
     mockGetVerificationExpiration.mockReturnValue(EXPIRES_AT);
   });
 
@@ -100,27 +100,32 @@ describe('sendRegistrationVerification', () => {
     );
   });
 
-  it.each([
-    [
-      'storing the code',
-      () => mockCreateEmailVerification.mockRejectedValue(new Error('DB down')),
-    ],
-    [
-      'sending the email',
-      () => mockSendVerificationEmail.mockRejectedValue(new Error('SMTP down')),
-    ],
-  ])(
-    'resolves without throwing and logs the error when %s fails',
-    async (_label, arrangeFailure) => {
-      arrangeFailure();
+  it('resolves without throwing and logs the error when storing the code fails', async () => {
+    mockCreateEmailVerification.mockRejectedValue(new Error('DB down'));
 
-      await expect(sendRegistrationVerification(USER)).resolves.toBeUndefined();
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        { error: expect.any(Error), userId: 'user-id' },
-        'Failed to send verification email'
-      );
-    }
-  );
+    await expect(sendRegistrationVerification(USER)).resolves.toBeUndefined();
+    expect(mockLogger.error).toHaveBeenCalledWith(
+      { error: expect.any(Error), userId: 'user-id' },
+      'Failed to send verification email'
+    );
+  });
+
+  it('resolves without throwing and logs the reason when the email is not sent', async () => {
+    mockSendVerificationEmail.mockResolvedValue({
+      ok: false,
+      reason: 'send-failed',
+    });
+
+    await expect(sendRegistrationVerification(USER)).resolves.toBeUndefined();
+    expect(mockLogger.error).toHaveBeenCalledWith(
+      { userId: 'user-id', reason: 'send-failed' },
+      'Failed to send verification email'
+    );
+    expect(mockLogger.info).not.toHaveBeenCalledWith(
+      { userId: 'user-id' },
+      'Verification email sent'
+    );
+  });
 });
 
 describe('notifyAdminsAboutRegistration', () => {

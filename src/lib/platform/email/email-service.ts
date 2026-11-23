@@ -11,6 +11,7 @@ import {
 } from '@/lib/platform/email/email-messages';
 import type {
   EmailOptions,
+  EmailSendResult,
   EmailServiceConfig,
   EmailType,
 } from '@/lib/platform/email/email-types';
@@ -19,6 +20,10 @@ import { emailMetrics } from '@/lib/platform/opentelemetry/email-metrics';
 
 const logger = createLogger('email-service');
 const isDev = process.env.NODE_ENV === 'development';
+
+const SENT: EmailSendResult = { ok: true, delivery: 'sent' };
+const SKIPPED: EmailSendResult = { ok: true, delivery: 'skipped' };
+const FAILED: EmailSendResult = { ok: false, reason: 'send-failed' };
 
 /**
  * Email service for sending emails via SMTP
@@ -64,14 +69,14 @@ export class EmailService {
   async sendEmail(
     options: EmailOptions,
     emailType: EmailType = 'other'
-  ): Promise<boolean> {
+  ): Promise<EmailSendResult> {
     if (!this.isConfigured) {
       logger.info(
         { type: emailType, ...(isDev && { text: options.text }) },
         'Email skipped (SMTP not configured)'
       );
       emailMetrics.recordEmailSent(emailType, 'skipped');
-      return true;
+      return SKIPPED;
     }
 
     try {
@@ -94,7 +99,7 @@ export class EmailService {
       );
 
       emailMetrics.recordEmailSent(emailType, 'success');
-      return true;
+      return SENT;
     } catch (error) {
       logger.error(
         { error, type: emailType, result: 'failure' },
@@ -102,8 +107,29 @@ export class EmailService {
       );
 
       emailMetrics.recordEmailSent(emailType, 'failure');
-      return false;
+      return FAILED;
     }
+  }
+
+  /** Builds the message and sends it; a message that cannot be built is a failed send. */
+  private async deliver(
+    emailType: EmailType,
+    to: string,
+    buildMessage: () => Promise<Omit<EmailOptions, 'to'>>
+  ): Promise<EmailSendResult> {
+    let message: Omit<EmailOptions, 'to'>;
+    try {
+      message = await buildMessage();
+    } catch (error) {
+      logger.error(
+        { error, type: emailType, result: 'failure' },
+        'Email message could not be built'
+      );
+      emailMetrics.recordEmailSent(emailType, 'failure');
+      return FAILED;
+    }
+
+    return this.sendEmail({ to, ...message }, emailType);
   }
 
   /**
@@ -129,7 +155,7 @@ export class EmailService {
     to: string,
     token: string,
     name?: string
-  ): Promise<boolean> {
+  ): Promise<EmailSendResult> {
     logger.info(
       {
         tokenLength: token.length,
@@ -139,29 +165,27 @@ export class EmailService {
       'Sending verification email'
     );
 
-    const result = await this.sendEmail(
-      { to, ...(await verificationMessage(token, name)) },
-      'verification'
+    return this.deliver('verification', to, () =>
+      verificationMessage(token, name)
     );
-
-    return result;
   }
 
   async sendPasswordResetEmail(
     to: string,
     resetToken: string,
     name?: string
-  ): Promise<boolean> {
-    return this.sendEmail(
-      { to, ...(await passwordResetMessage(resetToken, name)) },
-      'password_reset'
+  ): Promise<EmailSendResult> {
+    return this.deliver('password_reset', to, () =>
+      passwordResetMessage(resetToken, name)
     );
   }
 
-  async sendAccountApprovedEmail(to: string, name?: string): Promise<boolean> {
-    return this.sendEmail(
-      { to, ...(await accountApprovedMessage(name)) },
-      'account_approved'
+  async sendAccountApprovedEmail(
+    to: string,
+    name?: string
+  ): Promise<EmailSendResult> {
+    return this.deliver('account_approved', to, () =>
+      accountApprovedMessage(name)
     );
   }
 
@@ -169,10 +193,9 @@ export class EmailService {
     to: string,
     tempPassword: string,
     name?: string
-  ): Promise<boolean> {
-    return this.sendEmail(
-      { to, ...(await accountActivationMessage(to, tempPassword, name)) },
-      'account_activation'
+  ): Promise<EmailSendResult> {
+    return this.deliver('account_activation', to, () =>
+      accountActivationMessage(to, tempPassword, name)
     );
   }
 
@@ -181,13 +204,9 @@ export class EmailService {
     userEmail: string,
     userName: string,
     registrationDate: string
-  ): Promise<boolean> {
-    return this.sendEmail(
-      {
-        to: adminEmail,
-        ...(await newUserAdminMessage(userEmail, userName, registrationDate)),
-      },
-      'admin_notification'
+  ): Promise<EmailSendResult> {
+    return this.deliver('admin_notification', adminEmail, () =>
+      newUserAdminMessage(userEmail, userName, registrationDate)
     );
   }
 }
