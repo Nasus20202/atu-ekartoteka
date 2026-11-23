@@ -304,6 +304,12 @@ hydration before interacting.
 - **WHEN** the click is lost or the document is too short to scroll past the header
 - **THEN** the test retries the action until the content it needs is on screen, instead of failing on the first attempt
 
+#### Scenario: Tests act on data they own
+
+- **GIVEN** projects that run in parallel against one database and specs that create and delete their own HOA
+- **WHEN** a test needs a record it does not create itself
+- **THEN** it opens the seeded record instead of the first row, so a record that another spec deletes mid-run cannot make the page show "not found"
+
 ### Requirement: Email Template Tests
 
 Email templates SHALL be covered by unit tests and visual screenshot tests.

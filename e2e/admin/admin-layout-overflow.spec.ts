@@ -6,6 +6,7 @@
 import type { Page } from '@playwright/test';
 
 import { expect, test } from '../fixtures';
+import { cardWithText, openHoaList, TEST_HOA } from '../utils/admin-apartments';
 import { expectNoHorizontalOverflow } from '../utils/expect-no-horizontal-overflow';
 
 const TABLET_VIEWPORT = { width: 800, height: 900 };
@@ -13,19 +14,23 @@ const PHONE_VIEWPORT = { width: 360, height: 700 };
 const TALL_MAIN_PX = '3000px';
 const SCROLLED_PX = 60;
 const NAVBAR_HEIGHT_PX = 65;
-const APARTMENT_PATH = /\/admin\/apartments\/[\w-]+/;
+const HOA_PAGE_PATH = /\/admin\/apartments\/[a-f0-9-]+\/?$/;
 
 /**
- * Opens the first apartment from the list. The click can land before the list
- * hydrates, and the page streams in slowly on Firefox and WebKit, so retry
- * until its content is on screen.
+ * Opens the seeded HOA instead of the first card: the list also shows the
+ * temporary HOAs that other specs create and delete while this one runs, so
+ * the first link can point at a HOA that is already gone when it is clicked.
+ * The click can also land before the list hydrates, so retry until the HOA
+ * page renders its content.
  */
-async function openFirstApartment(page: Page) {
+async function openSeededHoa(page: Page) {
   await expect(async () => {
-    if (!APARTMENT_PATH.test(new URL(page.url()).pathname)) {
-      await page.locator('a[href^="/admin/apartments/"]').first().click();
+    if (!HOA_PAGE_PATH.test(new URL(page.url()).pathname)) {
+      await cardWithText(page, TEST_HOA)
+        .getByRole('button', { name: /Zobacz mieszkania/i })
+        .click();
     }
-    await expect(page).toHaveURL(APARTMENT_PATH, { timeout: 5000 });
+    await expect(page).toHaveURL(HOA_PAGE_PATH, { timeout: 5000 });
     await expect(page.getByText('Tylko aktywne')).toBeVisible({
       timeout: 5000,
     });
@@ -51,15 +56,15 @@ test.describe('Admin layout', () => {
 
   test('header controls wrap on a phone', async ({ adminPage }) => {
     await adminPage.setViewportSize(PHONE_VIEWPORT);
-    await adminPage.goto('/admin/apartments');
-    await openFirstApartment(adminPage);
+    await openHoaList(adminPage);
+    await openSeededHoa(adminPage);
 
     await expectNoHorizontalOverflow(adminPage);
   });
 
   test('a new page opens at the top', async ({ adminPage }) => {
     await adminPage.setViewportSize(PHONE_VIEWPORT);
-    await adminPage.goto('/admin/apartments');
+    await openHoaList(adminPage);
     await adminPage.evaluate(
       ([minHeight, top]) => {
         const main = document.querySelector('main') as HTMLElement;
@@ -68,10 +73,11 @@ test.describe('Admin layout', () => {
       },
       [TALL_MAIN_PX, SCROLLED_PX]
     );
+    expect(await adminPage.evaluate(() => window.scrollY)).toBeGreaterThan(0);
 
     // The click happens while the page is scrolled, so the helper also proves
     // the navigation was not lost before the scroll position is checked
-    await openFirstApartment(adminPage);
+    await openSeededHoa(adminPage);
 
     expect(await adminPage.evaluate(() => window.scrollY)).toBe(0);
   });

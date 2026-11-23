@@ -95,6 +95,13 @@ earlier test data and seeds fresh data, so every run starts from the same
 state. The seed SQL is in `e2e/test-data/seed/*.sql`. Sample import files are
 in `e2e/test-data/import/`.
 
+Projects run in parallel against one database, and some specs create their own
+HOA and delete it when they finish (`e2e/utils/scroll-test-hoa.ts`). A test that
+needs a HOA therefore opens the seeded one (`TEST_HOA` in
+`e2e/utils/admin-apartments.ts`) instead of the first card in the list: a card
+another spec owns can disappear between the render and the click, and the page
+then shows "not found".
+
 `e2e/mocks` is a small server Playwright starts for the integrations project: it
 captures email (SMTP on port 1025), fakes Google's OpenID endpoints and
 Turnstile verification, and receives OpenTelemetry exports as OTLP/HTTP JSON at
