@@ -242,7 +242,13 @@ The system SHALL enforce stricter test behaviour in continuous integration envir
 
 - **GIVEN** a flaky E2E test in CI
 - **WHEN** it fails on the first attempt
-- **THEN** Playwright retries it up to 2 times before marking it as failed; no retries occur locally
+- **THEN** Playwright retries it up to 2 times before marking it as passed; no retries occur locally
+
+#### Scenario: Flaky tests fail the run
+
+- **GIVEN** the Playwright configuration with `failOnFlakyTests: true`
+- **WHEN** a test fails on one attempt and passes on a retry
+- **THEN** the run is reported as failed even though every test ended green, so the flake is fixed instead of hidden by the retry
 
 ---
 
@@ -266,7 +272,7 @@ The system SHALL keep visual regression tests for the admin and tenant pages in 
 
 - **GIVEN** the visual suite
 - **WHEN** a tenant page is scrolled past its page header
-- **THEN** the header is asserted to be pinned, and the viewport is compared with a snapshot in light and dark mode at desktop and phone viewports, with the navbar sticky as it is in the app
+- **THEN** the test waits for the scroll the deep link starts, asserts the header is pinned at that position, and compares the viewport with a snapshot in light and dark mode at desktop and phone viewports, with the navbar sticky as it is in the app
 
 #### Scenario: Snapshot dates are stable
 
@@ -285,6 +291,24 @@ hydration before interacting.
 
 - **WHEN** a test navigates to a page whose sections stream in
 - **THEN** it interacts only after hidden streaming segments are gone
+
+#### Scenario: Login survives a lost form interaction
+
+- **GIVEN** a fill or a Turnstile token that arrived before the login form was ready
+- **WHEN** the login page reports the generic credential error or ignores the click
+- **THEN** the login helper waits for the submit button to accept events before filling it, retries from a freshly loaded page, and sends a session that is already authenticated to its destination instead of filling the form again
+
+#### Scenario: Actions wait for streamed content
+
+- **GIVEN** a link click, a scroll or a reload that races a page that is still streaming or saving
+- **WHEN** the click is lost, the reload is aborted, or the document is too short to scroll past the header
+- **THEN** the test retries the action until the content it needs is on screen, instead of failing on the first attempt
+
+#### Scenario: Tests act on data they own
+
+- **GIVEN** projects that run in parallel against one database and specs that create and delete their own HOA
+- **WHEN** a test needs a record it does not create itself
+- **THEN** it opens the seeded record instead of the first row, so a record that another spec deletes mid-run cannot make the page show "not found"
 
 ### Requirement: Email Template Tests
 

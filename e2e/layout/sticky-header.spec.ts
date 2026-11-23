@@ -36,12 +36,25 @@ test.describe('Sticky page header', () => {
     await userPage.goto('/dashboard/payments');
     const header = userPage.locator('[data-stuck]').first();
 
-    await userPage.evaluate(() =>
-      window.scrollTo(0, document.body.scrollHeight)
-    );
-    await expect(header).toHaveAttribute('data-stuck', 'true');
+    // The page can still be growing when the test starts scrolling, and a
+    // scroll to a short document stops short of the header, so retry the
+    // scroll until the page is tall enough and the header is stuck
+    await expect(async () => {
+      await userPage.evaluate(() =>
+        window.scrollTo(0, document.body.scrollHeight)
+      );
+      await expect(header).toHaveAttribute('data-stuck', 'true', {
+        timeout: 2000,
+      });
+    }).toPass({ timeout: 10_000 });
 
-    await userPage.evaluate(() => window.scrollTo(0, 0));
-    await expect(header).toHaveAttribute('data-stuck', 'false');
+    // Re-issue the scroll on every attempt: a scroll event can be dropped when
+    // the page flips direction while the previous scroll is still settling
+    await expect(async () => {
+      await userPage.evaluate(() => window.scrollTo(0, 0));
+      await expect(header).toHaveAttribute('data-stuck', 'false', {
+        timeout: 2000,
+      });
+    }).toPass({ timeout: 10_000 });
   });
 });

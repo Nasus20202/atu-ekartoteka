@@ -275,7 +275,7 @@ The page header (back button, title, description and action) SHALL stay visible 
 
 #### Scenario: Header back at top
 
-- **WHEN** the user scrolls back to the top
+- **WHEN** the user scrolls back to the top, including quickly after scrolling down and on a page that is barely taller than the viewport
 - **THEN** the header returns to its resting appearance
 
 #### Scenario: Many actions

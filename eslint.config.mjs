@@ -116,8 +116,18 @@ const eslintConfig = defineConfig([
       'no-restricted-imports': 'off',
       'react-hooks/rules-of-hooks': 'off',
       // Playwright-specific rules
-      'playwright/expect-expect': 'error',
-      'playwright/no-conditional-in-test': 'warn',
+      'playwright/expect-expect': [
+        'error',
+        {
+          // Helpers that assert on the page and are called from a test
+          assertFunctionNames: [
+            'expect',
+            'expectNoHorizontalOverflow',
+            'openFirstApartment',
+          ],
+        },
+      ],
+      'playwright/no-conditional-in-test': 'error',
       'playwright/no-focused-test': 'error',
       'playwright/no-skipped-test': 'warn',
       'playwright/valid-expect': 'error',

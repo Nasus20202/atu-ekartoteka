@@ -14,20 +14,41 @@ export function useHeaderStuck() {
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
-    if (!sentinel || typeof IntersectionObserver === 'undefined') return;
+    if (!sentinel) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        const stuck =
-          !entry.isIntersecting &&
-          entry.boundingClientRect.top < NAVBAR_HEIGHT_PX;
-        stuckRef.current = stuck;
-        setIsStuck(stuck);
-      },
-      { rootMargin: `-${NAVBAR_HEIGHT_PX}px 0px 0px 0px` }
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
+    const apply = (stuck: boolean) => {
+      if (stuck === stuckRef.current) return;
+      stuckRef.current = stuck;
+      setIsStuck(stuck);
+    };
+
+    // The observer only reports crossings of the navbar edge. WebKit can miss
+    // the way back when the page scrolls twice in quick succession, so every
+    // scroll also measures the sentinel and keeps the state in sync.
+    const measure = () =>
+      apply(sentinel.getBoundingClientRect().top < NAVBAR_HEIGHT_PX);
+
+    let observer: IntersectionObserver | undefined;
+    if (typeof IntersectionObserver !== 'undefined') {
+      observer = new IntersectionObserver(
+        ([entry]) =>
+          apply(
+            !entry.isIntersecting &&
+              entry.boundingClientRect.top < NAVBAR_HEIGHT_PX
+          ),
+        { rootMargin: `-${NAVBAR_HEIGHT_PX}px 0px 0px 0px` }
+      );
+      observer.observe(sentinel);
+    }
+
+    measure();
+    window.addEventListener('scroll', measure, { passive: true });
+    window.addEventListener('resize', measure);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener('scroll', measure);
+      window.removeEventListener('resize', measure);
+    };
   }, []);
 
   useEffect(() => {

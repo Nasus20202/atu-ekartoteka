@@ -5,15 +5,20 @@
 import { type Page } from '@playwright/test';
 
 import { expect, test } from '../fixtures';
+import { waitForScrollSettled } from '../utils/scroll';
 import { VISUAL_YEAR } from '../utils/test-credentials';
 
 const CHARGES_MONTH_QUERY = `?month=${VISUAL_YEAR}-12`;
-const SCROLL_PAST_HEADER_PX = 360;
 // Snapshots turn the navbar static so tall screenshots do not draw it over the
 // page. Here the navbar must stay pinned, with the header sitting right under it.
 const PINNED_NAVBAR_CSS =
   'html body nav.sticky { position: sticky !important; }';
 
+/**
+ * The month in the URL is scrolled under the navbar by the app itself. That
+ * scroll is the position the snapshot expects, so wait for it to happen and
+ * finish instead of scrolling the page a second time.
+ */
 async function openScrolledChargesDetails(page: Page) {
   await page.goto('/dashboard');
   const chargesHref = await page
@@ -22,8 +27,12 @@ async function openScrolledChargesDetails(page: Page) {
   await page.goto(`${chargesHref}${CHARGES_MONTH_QUERY}`);
   await expect(page).toHaveURL(/\/dashboard\/charges\/[\w-]+/);
 
+  await expect
+    .poll(() => page.evaluate(() => window.scrollY), { timeout: 10_000 })
+    .toBeGreaterThan(0);
+  await waitForScrollSettled(page);
+
   await page.addStyleTag({ content: PINNED_NAVBAR_CSS });
-  await page.evaluate((y) => window.scrollTo(0, y), SCROLL_PAST_HEADER_PX);
   await expect(page.locator('[data-stuck]')).toHaveAttribute(
     'data-stuck',
     'true'

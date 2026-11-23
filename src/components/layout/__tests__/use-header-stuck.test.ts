@@ -5,13 +5,31 @@ import { useHeaderStuck } from '@/components/layout/use-header-stuck';
 
 type ObserverCallback = (entries: Partial<IntersectionObserverEntry>[]) => void;
 
+const SENTINEL_TOP_AT_REST = 200;
+
 let callback: ObserverCallback;
 const disconnect = vi.fn();
 
+function createSentinel() {
+  const sentinel = document.createElement('div');
+  let top = SENTINEL_TOP_AT_REST;
+  Object.defineProperty(sentinel, 'getBoundingClientRect', {
+    configurable: true,
+    value: () => ({ top }) as unknown as DOMRect,
+  });
+  return {
+    sentinel,
+    setTop: (value: number) => {
+      top = value;
+    },
+  };
+}
+
 function renderWithSentinel() {
+  const { sentinel } = createSentinel();
   return renderHook(() => {
     const value = useHeaderStuck();
-    value.sentinelRef.current = document.createElement('div');
+    value.sentinelRef.current = sentinel;
     return value;
   });
 }
@@ -79,12 +97,39 @@ describe('useHeaderStuck', () => {
     expect(result.current.isStuck).toBe(false);
   });
 
-  it('disconnects the observer on unmount', () => {
+  it('follows the sentinel on scroll, without waiting for the observer', () => {
+    const { sentinel, setTop } = createSentinel();
+    const { result } = renderHook(() => {
+      const value = useHeaderStuck();
+      value.sentinelRef.current = sentinel;
+      return value;
+    });
+
+    setTop(-20);
+    act(() => {
+      window.dispatchEvent(new Event('scroll'));
+    });
+    expect(result.current.isStuck).toBe(true);
+
+    setTop(SENTINEL_TOP_AT_REST);
+    act(() => {
+      window.dispatchEvent(new Event('scroll'));
+    });
+    expect(result.current.isStuck).toBe(false);
+  });
+
+  it('disconnects the observer and listeners on unmount', () => {
+    const removeEventListener = vi.spyOn(window, 'removeEventListener');
     const { unmount } = renderWithSentinel();
 
     unmount();
 
     expect(disconnect).toHaveBeenCalled();
+    expect(removeEventListener).toHaveBeenCalledWith(
+      'scroll',
+      expect.any(Function)
+    );
+    removeEventListener.mockRestore();
   });
 
   it('stays not stuck without IntersectionObserver support', () => {
@@ -113,9 +158,10 @@ describe('useHeaderStuck', () => {
     let height = 96;
     Object.defineProperty(content, 'offsetHeight', { get: () => height });
 
+    const { sentinel } = createSentinel();
     const { result } = renderHook(() => {
       const value = useHeaderStuck();
-      value.sentinelRef.current = document.createElement('div');
+      value.sentinelRef.current = sentinel;
       value.contentRef.current = content;
       return value;
     });
