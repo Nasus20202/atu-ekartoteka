@@ -55,15 +55,15 @@ first start.
 
 ## Email
 
-| Variable                 | Default               | Notes                                                                                                                        |
-| ------------------------ | --------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `SMTP_HOST`              | unset                 | Turns sending on.                                                                                                            |
-| `SMTP_PORT`              | `465`                 | The compose files default to `587`.                                                                                          |
-| `SMTP_SECURE`            | `true`                | Anything except `false` means implicit TLS (port 465). Set `false` for STARTTLS (587). The compose files default to `false`. |
-| `SMTP_USER`, `SMTP_PASS` | unset                 | Credentials.                                                                                                                 |
-| `EMAIL_FROM`             | `noreply@example.com` | Must be an address your SMTP provider lets you send from.                                                                    |
-| `EMAIL_FROM_NAME`        | unset                 | Display name of the sender.                                                                                                  |
-| `APP_URL`                | unset                 | Base of the links inside emails. Set it to the same value as `AUTH_URL`.                                                     |
+| Variable                 | Default               | Notes                                                                                                                                           |
+| ------------------------ | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SMTP_HOST`              | unset                 | Turns sending on.                                                                                                                               |
+| `SMTP_PORT`              | `465`                 | The compose files default to `587`.                                                                                                             |
+| `SMTP_SECURE`            | `true`                | Anything except `false` means implicit TLS (port 465). Set `false` for STARTTLS (587). The compose files default to `false`.                    |
+| `SMTP_USER`, `SMTP_PASS` | unset                 | Credentials.                                                                                                                                    |
+| `EMAIL_FROM`             | `noreply@example.com` | Must be an address your SMTP provider lets you send from.                                                                                       |
+| `EMAIL_FROM_NAME`        | unset                 | Display name of the sender.                                                                                                                     |
+| `APP_URL`                | unset                 | Public address of the app. Base of the links in emails, the canonical, sitemap and social-preview URLs. Set it to the same value as `AUTH_URL`. |
 
 In production the SMTP server's TLS certificate must be valid. In development
 invalid certificates are accepted.

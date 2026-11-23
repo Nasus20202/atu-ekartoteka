@@ -1,8 +1,6 @@
-import type { Metadata } from 'next';
+import { PUBLIC_PAGES, publicPageMetadata } from '@/lib/framework/seo';
 
-import { PAGE_TITLES } from '@/lib/shared/document-title';
-
-export const metadata: Metadata = { title: PAGE_TITLES.forgotPassword };
+export const metadata = publicPageMetadata(PUBLIC_PAGES.forgotPassword);
 
 export default function ForgotPasswordLayout({
   children,

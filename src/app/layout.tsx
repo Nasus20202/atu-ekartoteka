@@ -1,13 +1,13 @@
 import '@/app/globals.css';
 
-import type { Metadata } from 'next';
+import type { Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 
 import { ConfirmProvider } from '@/components/providers/confirm-dialog';
 import { SessionProvider } from '@/components/providers/session-provider';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { TrackingScript } from '@/components/providers/tracking-script';
-import { APP_NAME, PAGE_TITLE_TEMPLATE } from '@/lib/shared/document-title';
+import { getRootMetadata, THEME_COLOR } from '@/lib/framework/seo';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -19,12 +19,12 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-export const metadata: Metadata = {
-  title: {
-    template: PAGE_TITLE_TEMPLATE,
-    default: APP_NAME,
-  },
-  description: 'System zarządzania mieszkaniami ATU',
+export function generateMetadata() {
+  return getRootMetadata();
+}
+
+export const viewport: Viewport = {
+  themeColor: THEME_COLOR,
 };
 
 export default function RootLayout({

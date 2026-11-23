@@ -21,7 +21,9 @@ Edit `.env`. At minimum:
 - `POSTGRES_PASSWORD` - a strong password for the database.
 - `AUTH_SECRET` - `openssl rand -base64 32`.
 - `AUTH_URL` and `APP_URL` - the public URL, for example
-  `https://ekartoteka.example.com`.
+  `https://ekartoteka.example.com`. The app builds its `robots.txt` and
+  `sitemap.xml` from `APP_URL`, so search engines index only the login,
+  registration, password recovery and privacy pages.
 - `SMTP_*`, `EMAIL_FROM` - so the app can send email. See
   [Configuration](configuration.md).
 

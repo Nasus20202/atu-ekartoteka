@@ -1,8 +1,6 @@
-import type { Metadata } from 'next';
+import { PUBLIC_PAGES, publicPageMetadata } from '@/lib/framework/seo';
 
-import { PAGE_TITLES } from '@/lib/shared/document-title';
-
-export const metadata: Metadata = { title: PAGE_TITLES.login };
+export const metadata = publicPageMetadata(PUBLIC_PAGES.login);
 
 export default function LoginLayout({
   children,
