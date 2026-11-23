@@ -29,8 +29,9 @@ const STREAMING_SEGMENT_SELECTOR = '[id^="S:"][hidden]';
 const STREAMING_SETTLE_TIMEOUT = 10000;
 const REACT_ROOT_KEY_PREFIX = '__reactContainer';
 const LOGIN_PAGE = '/login';
-const LOGIN_SIGNED_IN_TIMEOUT = 5000;
-const LOGIN_TIMEOUT = 15000;
+const LOGIN_SIGNED_IN_TIMEOUT = 6000;
+const LOGIN_FORM_TIMEOUT = 14_000;
+const LOGIN_TIMEOUT = 20_000;
 
 // A server redirect replaces the navigation that goto() started. Chromium
 // resolves goto() with the redirected page, but Firefox rejects it, with
@@ -93,9 +94,11 @@ function waitForStreamedContentAfterGoto(page: Page) {
 /**
  * Login helper function
  *
- * A fill can land before React hydrates the form or before the Turnstile
- * token is solved; the form then reports a generic error or navigates away,
- * so a failed attempt is retried on a freshly loaded login page.
+ * A fill or a click can land before React hydrates the form or before the
+ * Turnstile token is solved; the form then reports a generic error or ignores
+ * the click. The attempt is repeated on the form that is already loaded,
+ * because reloading restarts the hydration the previous attempt was waiting
+ * for; the page is loaded again only when the form itself never works.
  */
 export async function login(
   page: Page,
@@ -105,23 +108,29 @@ export async function login(
 ) {
   waitForStreamedContentAfterGoto(page);
 
-  await expect(async () => {
-    await page.goto(`${origin}${LOGIN_PAGE}`);
+  const signInOnLoadedForm = async () => {
     const emailField = page.getByLabel('Email');
 
     // An already authenticated session is redirected away from the form
-    if (await emailField.isVisible()) {
-      await emailField.fill(email);
-      await page.getByLabel('Hasło', { exact: true }).fill(password);
-      await page
-        .getByRole('button', { name: 'Zaloguj się', exact: true })
-        .click();
+    if (!(await emailField.isVisible())) {
+      return;
     }
+
+    await emailField.fill(email);
+    await page.getByLabel('Hasło', { exact: true }).fill(password);
+    await page
+      .getByRole('button', { name: 'Zaloguj się', exact: true })
+      .click();
 
     await expect(page).toHaveURL(
       (url) => !url.pathname.startsWith(LOGIN_PAGE),
       { timeout: LOGIN_SIGNED_IN_TIMEOUT }
     );
+  };
+
+  await expect(async () => {
+    await page.goto(`${origin}${LOGIN_PAGE}`);
+    await expect(signInOnLoadedForm).toPass({ timeout: LOGIN_FORM_TIMEOUT });
   }).toPass({ timeout: LOGIN_TIMEOUT });
 
   // The forced password change page has no h1 and no refresh to wait for

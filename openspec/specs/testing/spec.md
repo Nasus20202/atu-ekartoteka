@@ -295,8 +295,8 @@ hydration before interacting.
 #### Scenario: Login survives a lost form interaction
 
 - **GIVEN** a fill or a Turnstile token that arrived before the login form was ready
-- **WHEN** the login page reports the generic credential error
-- **THEN** the login helper loads the form again and retries, and a session that is already authenticated is sent to its destination instead of filling the form again
+- **WHEN** the login page reports the generic credential error or ignores the click
+- **THEN** the login helper retries on the form that is already loaded, reloads it only when the form never works, and sends a session that is already authenticated to its destination instead of filling the form again
 
 #### Scenario: Actions wait for streamed content
 
