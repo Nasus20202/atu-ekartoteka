@@ -116,6 +116,11 @@ describe('registerAccount', () => {
       ],
       ['a malformed email', { email: 'notanemail' }, INVALID_EMAIL_MESSAGE],
       [
+        'an e-mail that is not a string',
+        { email: 42 as unknown as string },
+        CREDENTIALS_REQUIRED_MESSAGE,
+      ],
+      [
         'a password shorter than the minimum',
         { password: 'short' },
         PASSWORD_TOO_SHORT_MESSAGE,

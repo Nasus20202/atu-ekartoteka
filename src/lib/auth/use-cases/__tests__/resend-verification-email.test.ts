@@ -202,6 +202,22 @@ describe('resendVerificationEmail', () => {
   });
 
   describe('unexpected errors', () => {
+    it('removes the stored code when the send fails, so the rate limit does not block a retry', async () => {
+      mockSendVerificationEmail.mockRejectedValueOnce(new Error('SMTP down'));
+
+      const result = await resendVerificationEmail('user-id');
+
+      expect(result).toEqual({
+        ok: false,
+        code: 'failed',
+        message: 'Nie udało się wysłać emaila',
+      });
+      expect(mockDeleteVerificationsForUser).toHaveBeenCalledTimes(2);
+      expect(mockDeleteVerificationsForUser).toHaveBeenLastCalledWith(
+        'user-id'
+      );
+    });
+
     it.each<[string, () => void]>([
       [
         'the user lookup',

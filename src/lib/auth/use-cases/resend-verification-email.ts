@@ -61,11 +61,17 @@ export async function resendVerificationEmail(
       expiresAt: getVerificationExpiration(),
     });
 
-    await getEmailService().sendVerificationEmail(
-      user.email,
-      token,
-      user.name || undefined
-    );
+    try {
+      await getEmailService().sendVerificationEmail(
+        user.email,
+        token,
+        user.name || undefined
+      );
+    } catch (error) {
+      // The code never reached the user: remove it so the rate limit does not block a retry
+      await deleteVerificationsForUser(user.id);
+      throw error;
+    }
 
     logger.info({ userId: user.id }, 'Verification email resent');
     return { ok: true, data: { message: RESENT_MESSAGE } };

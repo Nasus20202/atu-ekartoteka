@@ -6,9 +6,8 @@ import { expectNoPersonalData } from '@/lib/platform/logging/testing';
 
 const mocks = vi.hoisted(() => ({
   findUserByEmail: vi.fn(),
-  deletePasswordResetsForUser: vi.fn(),
-  createPasswordReset: vi.fn(),
-  sendPasswordResetEmail: vi.fn(),
+  replacePasswordReset: vi.fn(),
+  sendPasswordResetEmail: vi.fn(() => Promise.resolve()),
   verifyTurnstileToken: vi.fn(),
   log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
@@ -16,11 +15,8 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/users/queries/find-user-by-email', () => ({
   findUserByEmail: mocks.findUserByEmail,
 }));
-vi.mock('@/lib/auth/mutations/delete-password-resets-for-user', () => ({
-  deletePasswordResetsForUser: mocks.deletePasswordResetsForUser,
-}));
-vi.mock('@/lib/auth/mutations/create-password-reset', () => ({
-  createPasswordReset: mocks.createPasswordReset,
+vi.mock('@/lib/auth/mutations/replace-password-reset', () => ({
+  replacePasswordReset: mocks.replacePasswordReset,
 }));
 vi.mock('@/lib/platform/email/email-service', () => ({
   getEmailService: () => ({
@@ -93,7 +89,7 @@ describe('forgotPasswordAction', () => {
         turnstileToken: 'test-turnstile-token',
       })
     ).toEqual({ ok: true, data: undefined });
-    expect(mocks.createPasswordReset).not.toHaveBeenCalled();
+    expect(mocks.replacePasswordReset).not.toHaveBeenCalled();
     expect(mocks.sendPasswordResetEmail).not.toHaveBeenCalled();
   });
 
@@ -146,8 +142,7 @@ describe('forgotPasswordAction', () => {
       })
     ).toEqual({ ok: true, data: undefined });
 
-    expect(mocks.deletePasswordResetsForUser).toHaveBeenCalledWith('user-123');
-    expect(mocks.createPasswordReset).toHaveBeenCalledWith({
+    expect(mocks.replacePasswordReset).toHaveBeenCalledWith({
       userId: 'user-123',
       hashedToken: 'hashed-test-token-123',
       expiresAt: expect.any(Date),
@@ -189,8 +184,7 @@ describe('forgotPasswordAction', () => {
         turnstileToken: 'test-turnstile-token',
       })
     ).toEqual({ ok: true, data: undefined });
-    expect(mocks.deletePasswordResetsForUser).not.toHaveBeenCalled();
-    expect(mocks.createPasswordReset).not.toHaveBeenCalled();
+    expect(mocks.replacePasswordReset).not.toHaveBeenCalled();
     expect(mocks.sendPasswordResetEmail).not.toHaveBeenCalled();
   });
 

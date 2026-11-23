@@ -259,7 +259,7 @@ describe('resetPasswordWithToken', () => {
   });
 
   describe('concurrent consumption', () => {
-    it('reports a token consumed by a concurrent request as already used', async () => {
+    it('reports a token that expired or was consumed concurrently as invalid', async () => {
       mockResetPasswordTransaction.mockResolvedValue(false);
 
       const result = await resetPasswordWithToken(REQUEST);
@@ -267,7 +267,7 @@ describe('resetPasswordWithToken', () => {
       expect(result).toEqual({
         ok: false,
         code: 'invalid',
-        message: 'Token został już użyty',
+        message: 'Nieprawidłowy lub wygasły token',
       });
       expect(mockRecordPasswordReset).not.toHaveBeenCalledWith('success');
     });
