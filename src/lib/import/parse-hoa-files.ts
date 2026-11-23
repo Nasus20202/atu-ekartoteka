@@ -6,11 +6,9 @@ import {
 import { parseNalCzynszBuffer } from '@/lib/import/parsers/nal-czynsz-parser';
 import { parsePowCzynszFile } from '@/lib/import/parsers/pow-czynsz-parser';
 import { parseWplatyFile } from '@/lib/import/parsers/wplaty-parser';
-import type {
-  HOAImportResult,
-  ImportErrorItem,
-  ImportFileGroup,
-} from '@/lib/import/types';
+import type { ImportErrorItem } from '@/lib/import/types/import-error';
+import type { ImportFileGroup } from '@/lib/import/types/import-options';
+import type { HOAImportResult } from '@/lib/import/types/import-result';
 import {
   createEmptyStats,
   parseFileToBuffer,

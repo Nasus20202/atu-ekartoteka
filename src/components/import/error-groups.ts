@@ -2,7 +2,10 @@ import {
   groupByKind,
   type IssueGroupInfo,
 } from '@/components/import/issue-groups';
-import type { ImportErrorItem, ImportErrorKind } from '@/lib/import/types';
+import type {
+  ImportErrorItem,
+  ImportErrorKind,
+} from '@/lib/import/types/import-error';
 
 // Insertion order is the display order of the groups
 export const ERROR_GROUPS: Record<ImportErrorKind, IssueGroupInfo> = {

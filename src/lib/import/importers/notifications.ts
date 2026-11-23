@@ -3,11 +3,11 @@ import { IMPORT_CREATE_BATCH_SIZE } from '@/lib/import/constants';
 import { ParseResult } from '@/lib/import/parsers/parser-utils';
 import { ChargeNotificationEntry } from '@/lib/import/parsers/pow-czynsz-parser';
 import {
-  EntityStats,
   HOAContext,
-  ImportErrorItem,
   TransactionClient,
-} from '@/lib/import/types';
+} from '@/lib/import/types/import-context';
+import { ImportErrorItem } from '@/lib/import/types/import-error';
+import { EntityStats } from '@/lib/import/types/import-result';
 import { processInBatches } from '@/lib/import/utils';
 import { decimalEqualsStored } from '@/lib/shared/utils/decimal';
 import { getErrorMessage } from '@/lib/shared/utils/error-message';

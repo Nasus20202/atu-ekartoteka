@@ -11,11 +11,11 @@ import {
 import { ApartmentEntry } from '@/lib/import/parsers/apartment-parser';
 import {
   ApartmentMap,
-  EntityStats,
   HOAContext,
-  ImportErrorItem,
   TransactionClient,
-} from '@/lib/import/types';
+} from '@/lib/import/types/import-context';
+import { ImportErrorItem } from '@/lib/import/types/import-error';
+import { EntityStats } from '@/lib/import/types/import-result';
 import { processInBatches } from '@/lib/import/utils';
 import { getErrorMessage } from '@/lib/shared/utils/error-message';
 

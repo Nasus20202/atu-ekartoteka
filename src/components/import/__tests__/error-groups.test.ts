@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { ERROR_GROUPS, groupErrors } from '@/components/import/error-groups';
-import type { ImportErrorItem } from '@/lib/import/types';
+import type { ImportErrorItem } from '@/lib/import/types/import-error';
 
 function error(
   kind: ImportErrorItem['kind'],

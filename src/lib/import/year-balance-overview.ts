@@ -1,5 +1,8 @@
 import { WPLATY_BALANCE_TOLERANCE } from '@/lib/import/constants';
-import type { YearBalanceRow, YearRecord } from '@/lib/import/types';
+import type {
+  YearBalanceRow,
+  YearRecord,
+} from '@/lib/import/types/year-balance';
 import type { MonthlyChargeSums } from '@/lib/payments/queries/find-monthly-charge-sums';
 import { type Decimal, toDecimal } from '@/lib/shared/utils/decimal';
 import {

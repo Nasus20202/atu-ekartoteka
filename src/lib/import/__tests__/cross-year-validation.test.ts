@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { CLOSING_BALANCE_IGNORED_NOTE } from '@/lib/import/constants';
 import { validateCrossYearBalances } from '@/lib/import/cross-year-validation';
-import type { ImportWarning } from '@/lib/import/types';
+import type { ImportWarning } from '@/lib/import/types/import-warning';
 
 const FULL_YEAR_END = new Date(2023, 11, 31);
 const PARTIAL_YEAR_END = new Date(2023, 8, 30);

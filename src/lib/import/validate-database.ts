@@ -8,7 +8,10 @@ import {
   toPaymentEntries,
 } from '@/lib/import/load-stored-entries';
 import { loadYearBalances } from '@/lib/import/load-year-balances';
-import type { BatchImportResult, HOAImportResult } from '@/lib/import/types';
+import type {
+  BatchImportResult,
+  HOAImportResult,
+} from '@/lib/import/types/import-result';
 import { createEmptyStats, mapWithConcurrency } from '@/lib/import/utils';
 import { runValidators } from '@/lib/import/validate-hoa-files';
 import { withYearStatus } from '@/lib/import/year-status';

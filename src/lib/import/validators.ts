@@ -4,7 +4,8 @@ import {
 } from '@/lib/import/constants';
 import { NalCzynszEntry } from '@/lib/import/parsers/nal-czynsz-parser';
 import { PaymentEntry } from '@/lib/import/parsers/wplaty-parser';
-import type { ImportErrorItem, ImportWarning } from '@/lib/import/types';
+import type { ImportErrorItem } from '@/lib/import/types/import-error';
+import type { ImportWarning } from '@/lib/import/types/import-warning';
 import { toDecimal } from '@/lib/shared/utils/decimal';
 import { sumDecimals } from '@/lib/shared/utils/sum';
 

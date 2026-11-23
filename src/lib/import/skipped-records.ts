@@ -1,5 +1,5 @@
 import { isOwnerId } from '@/lib/import/parsers/owner-id';
-import type { ImportWarning } from '@/lib/import/types';
+import type { ImportWarning } from '@/lib/import/types/import-warning';
 import {
   CHARGE_FORMS,
   formatCountPl,

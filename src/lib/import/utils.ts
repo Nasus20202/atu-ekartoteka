@@ -1,5 +1,7 @@
 import { decodeBuffer, parseYyyymmdd } from '@/lib/import/parsers/parser-utils';
-import { EntityStats, ImportError, ImportFileGroup } from '@/lib/import/types';
+import { ImportError } from '@/lib/import/types/import-error';
+import { ImportFileGroup } from '@/lib/import/types/import-options';
+import { EntityStats } from '@/lib/import/types/import-result';
 import { getErrorMessage } from '@/lib/shared/utils/error-message';
 
 type TxtFileField = keyof Pick<

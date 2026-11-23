@@ -2,14 +2,16 @@ import { PrismaClient } from '@/generated/prisma/client';
 import { IMPORT_HOA_CONCURRENCY } from '@/lib/import/constants';
 import { importHoaInTransaction } from '@/lib/import/import-hoa-transaction';
 import { parseHoaFiles } from '@/lib/import/parse-hoa-files';
+import { TransactionClient } from '@/lib/import/types/import-context';
+import { ImportError } from '@/lib/import/types/import-error';
+import {
+  ImportFileGroup,
+  ImportOptions,
+} from '@/lib/import/types/import-options';
 import {
   BatchImportResult,
   HOAImportResult,
-  ImportError,
-  ImportFileGroup,
-  ImportOptions,
-  TransactionClient,
-} from '@/lib/import/types';
+} from '@/lib/import/types/import-result';
 import {
   createEmptyStats,
   groupFilesByHOA,

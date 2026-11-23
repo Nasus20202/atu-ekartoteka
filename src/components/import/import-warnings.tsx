@@ -2,7 +2,7 @@ import { AlertCircle } from 'lucide-react';
 
 import { GroupedIssues } from '@/components/import/grouped-issues';
 import { groupWarnings } from '@/components/import/warning-groups';
-import type { ImportWarning } from '@/lib/import/types';
+import type { ImportWarning } from '@/lib/import/types/import-warning';
 
 interface ImportWarningsProps {
   warnings: ImportWarning[];

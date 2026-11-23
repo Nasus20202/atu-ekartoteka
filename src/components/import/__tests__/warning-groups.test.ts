@@ -4,7 +4,7 @@ import {
   groupWarnings,
   WARNING_GROUPS,
 } from '@/components/import/warning-groups';
-import type { ImportWarning } from '@/lib/import/types';
+import type { ImportWarning } from '@/lib/import/types/import-warning';
 
 function warning(
   kind: ImportWarning['kind'],

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ImportWarning } from '@/lib/import/types';
+import type { ImportWarning } from '@/lib/import/types/import-warning';
 import {
   type BalancePaymentSource,
   buildYearBalanceRows,
