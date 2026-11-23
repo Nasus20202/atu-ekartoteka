@@ -7,9 +7,12 @@ import {
   listViewCookieName,
   ListViewMode,
   parseListViewMode,
-} from '@/lib/list-view-mode';
+} from '@/lib/shared/list-view-mode';
 
-export { LIST_VIEW_STORAGE_KEYS, ListViewMode } from '@/lib/list-view-mode';
+export {
+  LIST_VIEW_STORAGE_KEYS,
+  ListViewMode,
+} from '@/lib/shared/list-view-mode';
 
 // Used when the browser refuses site storage, so the switch still works
 const memoryFallback = new Map<string, ListViewMode>();

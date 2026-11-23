@@ -8,7 +8,7 @@ import { verifyEmailAction } from '@/actions/auth/verify-email';
 import {
   GENERIC_ERROR_MESSAGE,
   getErrorMessage,
-} from '@/lib/utils/error-message';
+} from '@/lib/shared/utils/error-message';
 
 const REDIRECT_DELAY_MS = 2000;
 

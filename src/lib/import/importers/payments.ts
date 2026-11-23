@@ -5,14 +5,14 @@ import {
   hasPaymentChanged,
   makePaymentKey,
 } from '@/lib/import/importers/payment-data';
+import { PaymentEntry } from '@/lib/import/parsers/wplaty-parser';
 import {
   EntityStats,
   ImportErrorItem,
   TransactionClient,
 } from '@/lib/import/types';
 import { processInBatches } from '@/lib/import/utils';
-import { PaymentEntry } from '@/lib/parsers/wplaty-parser';
-import { getErrorMessage } from '@/lib/utils/error-message';
+import { getErrorMessage } from '@/lib/shared/utils/error-message';
 
 export async function importPayments(
   tx: TransactionClient,

@@ -1,7 +1,7 @@
 import { loadAccountUser } from '@/app/dashboard/dashboard-loaders';
 import { OrphanedSessionSignOut } from '@/components/account/orphaned-session-sign-out';
 import { REVEAL_CLASS } from '@/components/layout/reveal';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/shared/utils';
 
 export async function DashboardGreeting() {
   const user = await loadAccountUser();

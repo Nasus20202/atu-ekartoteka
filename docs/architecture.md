@@ -35,7 +35,7 @@ Defined in `prisma/schema.prisma`:
 - `EmailVerification`, `PasswordReset` - single-use, expiring tokens.
 - `AppSettings` - one row of admin settings: how many previous years residents
   see, and the privacy policy text. Each setting has its own reader in
-  `src/lib/queries/settings/app-settings.ts` that selects only its column, so
+  `src/lib/settings/queries/app-settings.ts` that selects only its column, so
   the long policy is never loaded with the history window.
 - `CronRun` - claims for scheduled runs, so each tick runs once across
   instances.
@@ -62,8 +62,9 @@ queries. [Importing data](importing-data.md) explains why.
    its 401 or 403 response before doing any work.
 4. **Server Actions** (`src/actions/`) handle browser mutations. Each module
    starts with `requireUserAction()` or `requireAdminAction()`. Actions are
-   public POST endpoints, so they validate their own arguments.
-5. **Queries** (`src/lib/queries`) and **mutations** (`src/lib/mutations`) hold
+   public POST endpoints, so they validate their own arguments, then call a
+   use case in `src/lib/<domain>/use-cases/` and map its result to the browser.
+5. **Queries** (`src/lib/<domain>/queries`) and **mutations** (`src/lib/<domain>/mutations`) hold
    the database access. Tenant queries are scoped to the signed-in user's own
    apartments; the owner is always taken from the session, never from the URL
    or request body.
@@ -87,21 +88,34 @@ Consequences:
 
 ## Where things are
 
-| What                           | Where                                     |
-| ------------------------------ | ----------------------------------------- |
-| Pages and API routes           | `src/app/`                                |
-| Server Actions                 | `src/actions/<feature>/`                  |
-| Feature components             | `src/components/<feature>/`               |
-| shadcn/ui primitives           | `src/components/ui/`                      |
-| Database queries and mutations | `src/lib/queries`, `src/lib/mutations`    |
-| Auth config and guards         | `src/auth.ts`, `src/lib/auth/`            |
-| Import pipeline and parsers    | `src/lib/import/`, `src/lib/parsers/`     |
-| Scheduled jobs                 | `src/lib/cron/`                           |
-| Email components and sending   | `src/components/email/`, `src/lib/email/` |
-| PDF documents                  | `src/components/pdf/`, `src/lib/pdf/`     |
-| Custom lint rules              | `eslint-rules/`                           |
-| Schema and migrations          | `prisma/`                                 |
-| Behaviour specifications       | `openspec/specs/`                         |
+| What                           | Where                                                                |
+| ------------------------------ | -------------------------------------------------------------------- |
+| Pages and API routes           | `src/app/`                                                           |
+| Server Actions                 | `src/actions/<feature>/`                                             |
+| Feature components             | `src/components/<feature>/`                                          |
+| shadcn/ui primitives           | `src/components/ui/`                                                 |
+| Domain slice                   | `src/lib/<domain>/` (`auth`, `users`, `apartments`, `payments`, ...) |
+| Database queries and mutations | `src/lib/<domain>/queries`, `src/lib/<domain>/mutations`             |
+| Domain types and DTOs          | `src/lib/<domain>/types/`, `src/lib/<domain>/dto/`                   |
+| Use cases                      | `src/lib/<domain>/use-cases/`                                        |
+| Auth config and guards         | `src/auth.ts`, `src/lib/framework/auth/`                             |
+| Request, cookie and cache glue | `src/lib/framework/`                                                 |
+| Logging, database, telemetry   | `src/lib/platform/`                                                  |
+| Import pipeline and parsers    | `src/lib/import/`, `src/lib/import/parsers/`                         |
+| Scheduled jobs                 | `src/lib/cron/`                                                      |
+| Email components and sending   | `src/components/email/`, `src/lib/platform/email/`                   |
+| PDF documents                  | `src/components/pdf/`, `src/lib/platform/pdf/`                       |
+| Custom lint rules              | `eslint-rules/`                                                      |
+| Schema and migrations          | `prisma/`                                                            |
+| Behaviour specifications       | `openspec/specs/`                                                    |
+
+The domain slices (`src/lib/<domain>/`, `src/lib/import`, `src/lib/cron`) and
+the shared code in `src/lib/shared/` import no Next.js, React or Auth.js API. Anything that needs
+a request, a render or a session lives in `src/lib/framework/`: `request-now` (the
+request date, faked in E2E), `rsc-cache` (request-scoped reads for server
+components), `tenant-history`, `list-view-mode-server` (the list view cookie) and
+`auth/` (Auth.js config, session and guards). ESLint keeps domain modules out of
+the framework, so they stay callable from a script, a job or another runtime.
 
 ## PDFs
 
@@ -112,7 +126,7 @@ loaded only when someone clicks a download button, so it does not weigh on the
 first page load.
 
 Text is set in Geist (regular and bold, files in `public/fonts`), registered in
-`src/lib/pdf/register-fonts.ts`. react-pdf cannot synthesise bold, so each
+`src/lib/platform/pdf/register-fonts.ts`. react-pdf cannot synthesise bold, so each
 weight is a separate file. The date printed on a document is the browser's
 clock.
 

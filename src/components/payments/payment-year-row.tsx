@@ -3,10 +3,10 @@
 import Link from 'next/link';
 
 import { DownloadPaymentPdfButton } from '@/components/pdf/download-payment-pdf-button';
-import type { PaymentListItemDto } from '@/lib/types/dto/payment-dto';
-import { cn, formatCurrency } from '@/lib/utils';
-import { getBalanceStatusClass } from '@/lib/utils/balance-class';
-import { getPaymentYearHref } from '@/lib/utils/dashboard-links';
+import type { PaymentListItemDto } from '@/lib/payments/dto/payment-dto';
+import { cn, formatCurrency } from '@/lib/shared/utils';
+import { getBalanceStatusClass } from '@/lib/shared/utils/balance-class';
+import { getPaymentYearHref } from '@/lib/shared/utils/dashboard-links';
 
 type PaymentYearRowProps = {
   apartmentId: string;

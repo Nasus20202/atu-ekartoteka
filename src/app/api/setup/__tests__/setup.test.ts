@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { AccountStatus, AuthMethod, UserRole } from '@/lib/types';
+import { AccountStatus, AuthMethod, UserRole } from '@/lib/auth/types/account';
 
 const { mockUserFindFirst } = vi.hoisted(() => ({
   mockUserFindFirst: vi.fn(),
 }));
 
 // Mock the prisma client
-vi.mock('@/lib/database/prisma', () => ({
+vi.mock('@/lib/platform/database/prisma', () => ({
   prisma: {
     user: {
       findFirst: mockUserFindFirst,
@@ -21,7 +21,7 @@ const mockLogger = {
   error: vi.fn(),
 };
 
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => mockLogger,
 }));
 

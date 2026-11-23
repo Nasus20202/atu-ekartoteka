@@ -6,7 +6,7 @@ import {
   UPDATE_USER_FAILED_MESSAGE,
   updateUserRequest,
 } from '@/components/users/user-requests';
-import { AccountStatus, UserRole } from '@/lib/types';
+import { AccountStatus, UserRole } from '@/lib/auth/types/account';
 
 const actionMock = vi.hoisted(() => ({
   updateUserStatusAction: vi.fn(),

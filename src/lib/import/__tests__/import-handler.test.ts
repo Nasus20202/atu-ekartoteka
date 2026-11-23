@@ -14,18 +14,18 @@ const {
   mockParseNalCzynszBuffer: vi.fn(),
 }));
 
-vi.mock('@/lib/database/prisma', () => ({
+vi.mock('@/lib/platform/database/prisma', () => ({
   prisma: {
     $transaction: mockTransaction,
   },
 }));
 
-vi.mock('@/lib/parsers/apartment-parser', () => ({
+vi.mock('@/lib/import/parsers/apartment-parser', () => ({
   parseApartmentBuffer: mockParseApartmentBuffer,
   getUniqueApartments: mockGetUniqueApartments,
 }));
 
-vi.mock('@/lib/parsers/nal-czynsz-parser', () => ({
+vi.mock('@/lib/import/parsers/nal-czynsz-parser', () => ({
   parseNalCzynszBuffer: mockParseNalCzynszBuffer,
 }));
 

@@ -1,13 +1,13 @@
-import { prisma } from '@/lib/database/prisma';
+import type { NalCzynszEntry } from '@/lib/import/parsers/nal-czynsz-parser';
+import type { PaymentEntry } from '@/lib/import/parsers/wplaty-parser';
 import type { BalancePaymentSource } from '@/lib/import/year-balance-overview';
-import type { NalCzynszEntry } from '@/lib/parsers/nal-czynsz-parser';
-import type { PaymentEntry } from '@/lib/parsers/wplaty-parser';
-import type { DecimalLike } from '@/lib/utils/decimal';
+import { prisma } from '@/lib/platform/database/prisma';
+import type { DecimalLike } from '@/lib/shared/utils/decimal';
 import {
   LEGACY_CHARGE_FIELD_KEYS,
   PAYMENT_MONTH_FIELD_KEYS,
-} from '@/lib/utils/payment-months';
-import { sumDecimals } from '@/lib/utils/sum';
+} from '@/lib/shared/utils/payment-months';
+import { sumDecimals } from '@/lib/shared/utils/sum';
 
 const APARTMENT_KEYS_SELECT = {
   select: { externalOwnerId: true, externalApartmentId: true },

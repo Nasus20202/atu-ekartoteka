@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { metadata } from '@/app/admin/apartments/[hoaId]/layout';
-import { PAGE_TITLE_TEMPLATE } from '@/lib/metadata/document-title';
+import { PAGE_TITLE_TEMPLATE } from '@/lib/shared/document-title';
 
 describe('HOA apartments layout metadata', () => {
   it('uses a static title and keeps the app template for nested pages', () => {

@@ -4,12 +4,12 @@ import { describe, expect, it, vi } from 'vitest';
 import { createMockPayment } from '@/__tests__/fixtures';
 import type { PaymentPdfDocumentProps } from '@/components/pdf/payment-pdf-document';
 import { Prisma } from '@/generated/prisma/browser';
-import type { Payment } from '@/lib/types';
-import { formatCurrency } from '@/lib/utils';
+import type { Payment } from '@/lib/payments/types/payment';
+import { formatCurrency } from '@/lib/shared/utils';
 import {
   CALCULATED_CHARGE_FIELD_KEYS,
   PAYMENT_MONTH_FIELD_KEYS,
-} from '@/lib/utils/payment-months';
+} from '@/lib/shared/utils/payment-months';
 
 vi.mock('@react-pdf/renderer', () => ({
   Document: ({ children }: { children: React.ReactNode }) => children,
@@ -21,7 +21,9 @@ vi.mock('@react-pdf/renderer', () => ({
   pdf: vi.fn(() => ({ toBlob: vi.fn().mockResolvedValue(new Blob()) })),
 }));
 
-vi.mock('@/lib/pdf/register-fonts', () => ({ registerPdfFonts: vi.fn() }));
+vi.mock('@/lib/platform/pdf/register-fonts', () => ({
+  registerPdfFonts: vi.fn(),
+}));
 
 const MONTHLY_PAYMENT = 500;
 const MONTHLY_CHARGE = 600;

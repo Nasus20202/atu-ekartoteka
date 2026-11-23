@@ -1,4 +1,5 @@
-import type { ActionDenied } from '@/lib/auth/require-action';
+import type { ActionDenied } from '@/lib/framework/auth/require-action';
+import type { UseCaseResult } from '@/lib/shared/use-case-result';
 
 export type ActionFailure = {
   ok: false;
@@ -36,4 +37,13 @@ export function unwrapResult<T>(result: ActionResult<T>): T {
   }
 
   throw new Error(result.error);
+}
+
+/** Maps a use case outcome onto the shape a Server Action returns. */
+export function fromUseCaseResult<T>(
+  result: UseCaseResult<T>
+): ActionResult<T> {
+  return result.ok
+    ? { ok: true, data: result.data }
+    : { ok: false, error: result.message, code: result.code };
 }

@@ -10,11 +10,11 @@ import { MultiChargesDisplay } from '@/components/charges/multi-charges-display'
 import { REVEAL_CLASS } from '@/components/layout/reveal';
 import { Card, CardContent } from '@/components/ui/card';
 import { isApprovedAccount } from '@/lib/auth/account-access';
-import { getSession } from '@/lib/auth/get-session';
-import { findUserWithApartmentChargesCached } from '@/lib/queries/users/find-user-with-apartment-charges';
-import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
-import { dateToPeriod } from '@/lib/utils/period';
-import { getRequestNow } from '@/lib/utils/request-now';
+import { getSession } from '@/lib/framework/auth/get-session';
+import { getRequestNow } from '@/lib/framework/request-now';
+import { getTenantHistoryStartYear } from '@/lib/framework/tenant-history';
+import { dateToPeriod } from '@/lib/shared/utils/period';
+import { findUserWithApartmentCharges } from '@/lib/users/queries/find-user-with-apartment-charges';
 
 interface ChargesOverviewProps {
   searchParams: Promise<{ month?: string }>;
@@ -29,7 +29,7 @@ export async function ChargesOverview({ searchParams }: ChargesOverviewProps) {
 
   const startYear = await getTenantHistoryStartYear();
   const cutoffPeriod = dateToPeriod(await getRequestNow());
-  const userData = await findUserWithApartmentChargesCached(
+  const userData = await findUserWithApartmentCharges(
     session.user.id,
     startYear,
     cutoffPeriod

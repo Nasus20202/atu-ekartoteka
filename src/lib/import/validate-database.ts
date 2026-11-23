@@ -1,4 +1,3 @@
-import { prisma } from '@/lib/database/prisma';
 import { validateBalanceDrift } from '@/lib/import/balance-drift-validation';
 import { IMPORT_HOA_CONCURRENCY } from '@/lib/import/constants';
 import { validateCrossYearBalances } from '@/lib/import/cross-year-validation';
@@ -13,6 +12,7 @@ import type { BatchImportResult, HOAImportResult } from '@/lib/import/types';
 import { createEmptyStats, mapWithConcurrency } from '@/lib/import/utils';
 import { runValidators } from '@/lib/import/validate-hoa-files';
 import { withYearStatus } from '@/lib/import/year-status';
+import { prisma } from '@/lib/platform/database/prisma';
 
 type ApartmentKeys = { externalOwnerId: string; externalApartmentId: string };
 

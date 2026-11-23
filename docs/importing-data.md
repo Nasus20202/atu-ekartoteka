@@ -269,7 +269,7 @@ Server-side detail is logged under the `import:handler` and
 ## Where the code is
 
 The pipeline is in `src/lib/import/` (grouping in `utils.ts`, parsing in
-`parse-hoa-files.ts` and `src/lib/parsers/`, checks in `validators.ts` and the
+`parse-hoa-files.ts` and `src/lib/import/parsers/`, checks in `validators.ts` and the
 other `*-validation.ts` files, writes in `import-hoa-transaction.ts` and
 `importers/`). The page is `src/components/import/`, the routes are
 `src/app/api/admin/import/` and `.../import/validate/`. The behaviour is

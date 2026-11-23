@@ -17,7 +17,7 @@ import { AUTH_PLACEHOLDERS } from '@/lib/auth/form-placeholders';
 import {
   GENERIC_ERROR_MESSAGE,
   getErrorMessage,
-} from '@/lib/utils/error-message';
+} from '@/lib/shared/utils/error-message';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');

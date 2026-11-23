@@ -2,11 +2,11 @@ import {
   NAL_AMOUNT_TOLERANCE,
   WPLATY_BALANCE_TOLERANCE,
 } from '@/lib/import/constants';
+import { NalCzynszEntry } from '@/lib/import/parsers/nal-czynsz-parser';
+import { PaymentEntry } from '@/lib/import/parsers/wplaty-parser';
 import type { ImportErrorItem, ImportWarning } from '@/lib/import/types';
-import { NalCzynszEntry } from '@/lib/parsers/nal-czynsz-parser';
-import { PaymentEntry } from '@/lib/parsers/wplaty-parser';
-import { toDecimal } from '@/lib/utils/decimal';
-import { sumDecimals } from '@/lib/utils/sum';
+import { toDecimal } from '@/lib/shared/utils/decimal';
+import { sumDecimals } from '@/lib/shared/utils/sum';
 
 export function validateNalCzynsz(entries: NalCzynszEntry[]): ImportWarning[] {
   const warnings: ImportWarning[] = [];

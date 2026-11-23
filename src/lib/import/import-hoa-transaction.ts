@@ -13,7 +13,7 @@ import type {
   ImportOptions,
   TransactionClient,
 } from '@/lib/import/types';
-import { createLogger } from '@/lib/logger';
+import { createLogger } from '@/lib/platform/logging/logger';
 
 const logger = createLogger('import:handler');
 

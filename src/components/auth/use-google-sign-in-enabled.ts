@@ -2,8 +2,8 @@
 
 import useSWR from 'swr';
 
-import { fetchJson } from '@/lib/swr/fetch-json';
-import { SWR_OPTIONS } from '@/lib/swr/swr-options';
+import { fetchJson } from '@/lib/platform/swr/fetch-json';
+import { SWR_OPTIONS } from '@/lib/platform/swr/swr-options';
 
 const GOOGLE_CONFIG_URL = '/api/config/google';
 

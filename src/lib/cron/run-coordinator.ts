@@ -1,12 +1,12 @@
 import type { RunCoordinator } from 'node-cron';
 
-import { prisma } from '@/lib/database/prisma';
-import { createLogger } from '@/lib/logger';
 import {
   claimCronRun,
   type CronRunStore,
   pruneCronRuns,
-} from '@/lib/mutations/cron/claim-cron-run';
+} from '@/lib/cron/mutations/claim-cron-run';
+import { prisma } from '@/lib/platform/database/prisma';
+import { createLogger } from '@/lib/platform/logging/logger';
 
 const logger = createLogger('cron:run-coordinator');
 

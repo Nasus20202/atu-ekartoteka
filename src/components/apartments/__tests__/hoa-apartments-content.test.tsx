@@ -8,7 +8,7 @@ import {
   LIST_VIEW_STORAGE_KEYS,
   ListViewMode,
 } from '@/hooks/use-list-view-mode';
-import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
+import type { ApartmentSummaryDto } from '@/lib/apartments/dto/apartment-dto';
 
 const mocks = vi.hoisted(() => ({
   useHoaApartments: vi.fn(),

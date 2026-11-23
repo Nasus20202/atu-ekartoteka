@@ -1,8 +1,8 @@
 import { Text, View } from '@react-pdf/renderer';
 
 import { styles } from '@/components/pdf/primitives';
-import { formatCurrency, formatQuantity } from '@/lib/utils';
-import { type DecimalLike } from '@/lib/utils/decimal';
+import { formatCurrency, formatQuantity } from '@/lib/shared/utils';
+import { type DecimalLike } from '@/lib/shared/utils/decimal';
 
 export interface PdfItem {
   id: string;

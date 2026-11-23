@@ -3,7 +3,7 @@ import {
   buildYearBalanceRows,
   type YearBalanceSummary,
 } from '@/lib/import/year-balance-overview';
-import { findMonthlyChargeSums } from '@/lib/queries/payments/find-monthly-charge-sums';
+import { findMonthlyChargeSums } from '@/lib/payments/queries/find-monthly-charge-sums';
 
 /** Builds the year balances of an HOA from its already loaded payment rows. */
 export async function loadYearBalances(

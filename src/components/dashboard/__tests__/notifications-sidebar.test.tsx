@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
 import { NotificationsSidebar } from '@/components/dashboard/notifications-sidebar';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency } from '@/lib/shared/utils';
 
 const withExactText =
   (value: string) => (_: string, element: Element | null) => {

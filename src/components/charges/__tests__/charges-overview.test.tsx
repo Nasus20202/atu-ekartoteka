@@ -15,18 +15,20 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('next/navigation', () => ({ redirect: mocks.redirect }));
-vi.mock('@/lib/auth/get-session', () => ({ getSession: mocks.getSession }));
+vi.mock('@/lib/framework/auth/get-session', () => ({
+  getSession: mocks.getSession,
+}));
 vi.mock('@/lib/auth/account-access', () => ({
   isApprovedAccount: mocks.isApprovedAccount,
 }));
-vi.mock('@/lib/settings/tenant-history', () => ({
+vi.mock('@/lib/framework/tenant-history', () => ({
   getTenantHistoryStartYear: vi.fn().mockResolvedValue(2020),
 }));
-vi.mock('@/lib/utils/request-now', () => ({
+vi.mock('@/lib/framework/request-now', () => ({
   getRequestNow: vi.fn().mockResolvedValue(new Date('2025-03-10T00:00:00Z')),
 }));
-vi.mock('@/lib/queries/users/find-user-with-apartment-charges', () => ({
-  findUserWithApartmentChargesCached: mocks.findCharges,
+vi.mock('@/lib/users/queries/find-user-with-apartment-charges', () => ({
+  findUserWithApartmentCharges: mocks.findCharges,
 }));
 vi.mock('@/app/dashboard/charges/charges-by-period', () => ({
   groupApartmentChargesByPeriod: () => ({ '2025-03': [] }),

@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 import { StatusCard } from '@/components/errors/status-card';
 import { Button } from '@/components/ui/button';
-import { PAGE_TITLES } from '@/lib/metadata/document-title';
+import { PAGE_TITLES } from '@/lib/shared/document-title';
 
 export const metadata: Metadata = { title: PAGE_TITLES.notFound };
 

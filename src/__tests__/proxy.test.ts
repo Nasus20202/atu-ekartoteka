@@ -9,7 +9,7 @@ const { mockHandleMustChangePassword } = vi.hoisted(() => ({
 vi.mock('@/auth', () => ({
   auth: <T>(handler: T) => handler,
 }));
-vi.mock('@/lib/auth/proxy-handler', () => ({
+vi.mock('@/lib/framework/auth/proxy-handler', () => ({
   handleMustChangePassword: mockHandleMustChangePassword,
 }));
 

@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ProfileForm } from '@/components/account/profile-form';
-import { AuthMethod } from '@/lib/types';
+import { AuthMethod } from '@/lib/auth/types/account';
 
 vi.mock('next/navigation', () => ({
   useRouter: vi.fn(),

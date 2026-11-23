@@ -9,34 +9,33 @@ const mocks = vi.hoisted(() => ({
   sendVerificationEmail: vi.fn(),
 }));
 
-vi.mock('@/lib/auth/require-action', () => ({
+vi.mock('@/lib/framework/auth/require-action', () => ({
   requireUserAction: mocks.requireUserAction,
 }));
-vi.mock('@/lib/queries/users/find-user-by-id', () => ({
+vi.mock('@/lib/users/queries/find-user-by-id', () => ({
   findUserById: mocks.findUserById,
 }));
-vi.mock('@/lib/queries/email-verification/find-recent-verification', () => ({
+vi.mock('@/lib/auth/queries/find-recent-verification', () => ({
   RATE_LIMIT_WINDOW_MS: 5 * 60 * 1000,
   findRecentVerification: mocks.findRecentVerification,
 }));
-vi.mock(
-  '@/lib/mutations/email-verification/delete-verifications-for-user',
-  () => ({ deleteVerificationsForUser: mocks.deleteVerificationsForUser })
-);
-vi.mock('@/lib/mutations/email-verification/create-verification', () => ({
+vi.mock('@/lib/auth/mutations/delete-verifications-for-user', () => ({
+  deleteVerificationsForUser: mocks.deleteVerificationsForUser,
+}));
+vi.mock('@/lib/auth/mutations/create-verification', () => ({
   createEmailVerification: mocks.createEmailVerification,
 }));
-vi.mock('@/lib/email/email-service', () => ({
+vi.mock('@/lib/platform/email/email-service', () => ({
   getEmailService: () => ({
     sendVerificationEmail: mocks.sendVerificationEmail,
   }),
 }));
-vi.mock('@/lib/email/verification-utils', () => ({
+vi.mock('@/lib/auth/verification-tokens', () => ({
   generateSecureToken: () => 'plain-token',
   hashToken: (token: string) => `hashed-${token}`,
   getVerificationExpiration: () => new Date('2025-01-02T12:00:00.000Z'),
 }));
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => ({ info: vi.fn(), error: vi.fn() }),
 }));
 

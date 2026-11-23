@@ -3,8 +3,8 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import { UserCard } from '@/components/users/user-card';
-import { AccountStatus, UserRole } from '@/lib/types';
-import type { UserDto } from '@/lib/types/dto/user-dto';
+import { AccountStatus, UserRole } from '@/lib/auth/types/account';
+import type { UserDto } from '@/lib/users/dto/user-dto';
 
 vi.mock('@/components/ui/dropdown-menu', () => ({
   DropdownMenu: ({ children }: { children: React.ReactNode }) => (

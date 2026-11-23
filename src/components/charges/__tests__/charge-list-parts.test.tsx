@@ -5,8 +5,8 @@ import {
   ChargeRows,
   PeriodRange,
 } from '@/components/charges/charge-list-parts';
-import type { ChargeDisplayDto } from '@/lib/types/dto/charge-dto';
-import { formatCurrency } from '@/lib/utils';
+import type { ChargeDisplayDto } from '@/lib/charges/dto/charge-dto';
+import { formatCurrency } from '@/lib/shared/utils';
 
 function makeCharge(
   id: string,

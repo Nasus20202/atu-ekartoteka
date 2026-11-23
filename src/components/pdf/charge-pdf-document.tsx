@@ -6,9 +6,9 @@ import {
   PdfHeader,
   SectionTitle,
 } from '@/components/pdf/primitives';
-import { registerPdfFonts } from '@/lib/pdf/register-fonts';
-import type { ChargeDisplay } from '@/lib/types';
-import type { DecimalLike } from '@/lib/utils/decimal';
+import type { ChargeDisplay } from '@/lib/charges/types/charge';
+import { registerPdfFonts } from '@/lib/platform/pdf/register-fonts';
+import type { DecimalLike } from '@/lib/shared/utils/decimal';
 
 registerPdfFonts();
 

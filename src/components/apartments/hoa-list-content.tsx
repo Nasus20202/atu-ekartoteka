@@ -16,10 +16,13 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { fetchJson } from '@/lib/swr/fetch-json';
-import { SWR_OPTIONS } from '@/lib/swr/swr-options';
-import type { HoaListItemDto } from '@/lib/types/dto/hoa-dto';
-import { HOA_ACCUSATIVE_FORMS, pluralizePl } from '@/lib/utils/pluralize';
+import type { HoaListItemDto } from '@/lib/hoa/dto/hoa-dto';
+import { fetchJson } from '@/lib/platform/swr/fetch-json';
+import { SWR_OPTIONS } from '@/lib/platform/swr/swr-options';
+import {
+  HOA_ACCUSATIVE_FORMS,
+  pluralizePl,
+} from '@/lib/shared/utils/pluralize';
 
 interface HoaListContentProps {
   initialHoas: HoaListItemDto[];

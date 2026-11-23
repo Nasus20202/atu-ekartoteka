@@ -1,9 +1,9 @@
 'use server';
 
 import { type ActionResult, failed, invalid } from '@/actions/action-result';
-import { requireAdminAction } from '@/lib/auth/require-action';
-import { createLogger } from '@/lib/logger';
-import { updateHoaName } from '@/lib/mutations/hoa/update-hoa-name';
+import { requireAdminAction } from '@/lib/framework/auth/require-action';
+import { updateHoaName } from '@/lib/hoa/mutations/update-hoa-name';
+import { createLogger } from '@/lib/platform/logging/logger';
 
 const logger = createLogger('action:hoa');
 

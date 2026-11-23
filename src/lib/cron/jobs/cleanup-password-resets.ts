@@ -1,5 +1,5 @@
-import { createLogger } from '@/lib/logger';
-import { deleteExpiredPasswordResets } from '@/lib/mutations/password-reset/delete-expired-password-resets';
+import { deleteExpiredPasswordResets } from '@/lib/auth/mutations/delete-expired-password-resets';
+import { createLogger } from '@/lib/platform/logging/logger';
 
 const logger = createLogger('cron:cleanup-password-resets');
 

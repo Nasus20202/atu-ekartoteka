@@ -6,14 +6,14 @@ import {
   SectionTitle,
   styles,
 } from '@/components/pdf/primitives';
-import { registerPdfFonts } from '@/lib/pdf/register-fonts';
-import type { Payment } from '@/lib/types';
-import { formatCurrency, MONTH_NAMES_PL } from '@/lib/utils';
-import { type Decimal, toDecimal } from '@/lib/utils/decimal';
+import type { Payment } from '@/lib/payments/types/payment';
+import { registerPdfFonts } from '@/lib/platform/pdf/register-fonts';
+import { formatCurrency, MONTH_NAMES_PL } from '@/lib/shared/utils';
+import { type Decimal, toDecimal } from '@/lib/shared/utils/decimal';
 import {
   getNonEmptyMonths,
   getPaymentTotals,
-} from '@/lib/utils/payment-months';
+} from '@/lib/shared/utils/payment-months';
 
 registerPdfFonts();
 

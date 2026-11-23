@@ -14,19 +14,19 @@ vi.mock('react', async (importOriginal) => ({
   cache: <T>(fn: T) => fn,
 }));
 vi.mock('next/navigation', () => ({ notFound: mocks.notFound }));
-vi.mock('@/lib/auth/require-approved-tenant', () => ({
+vi.mock('@/lib/framework/auth/require-approved-tenant', () => ({
   requireApprovedTenant: mocks.requireTenant,
 }));
+vi.mock('@/lib/apartments/queries/find-apartment-payment-years', () => ({
+  findApartmentPaymentYears: mocks.findYears,
+}));
 vi.mock(
-  '@/lib/queries/apartments/find-apartment-with-payments-by-year',
+  '@/lib/apartments/queries/find-apartment-with-payments-by-year',
   () => ({
-    findApartmentWithPaymentsByYearCached: mocks.findApartment,
+    findApartmentWithPaymentsByYear: mocks.findApartment,
   })
 );
-vi.mock('@/lib/queries/apartments/find-apartment-payment-years', () => ({
-  findApartmentPaymentYearsCached: mocks.findYears,
-}));
-vi.mock('@/lib/settings/tenant-history', () => ({
+vi.mock('@/lib/framework/tenant-history', () => ({
   getTenantHistoryStartYear: vi.fn().mockResolvedValue(2024),
 }));
 

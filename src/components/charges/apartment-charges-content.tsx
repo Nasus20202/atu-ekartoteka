@@ -9,7 +9,7 @@ import {
 import { ChargesDisplay } from '@/components/charges/charges-display';
 import { REVEAL_CLASS } from '@/components/layout/reveal';
 import { Card, CardContent } from '@/components/ui/card';
-import { formatApartmentLabel } from '@/lib/utils/apartment-label';
+import { formatApartmentLabel } from '@/lib/shared/utils/apartment-label';
 
 interface ApartmentChargesContentProps {
   params: Promise<{ apartmentId: string }>;

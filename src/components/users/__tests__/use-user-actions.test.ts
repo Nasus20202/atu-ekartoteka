@@ -3,8 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useUserActions } from '@/components/users/use-user-actions';
 import { CREDENTIALS_REQUIRED_MESSAGE } from '@/lib/auth/credential-validation';
-import { AccountStatus, UserRole } from '@/lib/types';
-import type { UserDto } from '@/lib/types/dto/user-dto';
+import { AccountStatus, UserRole } from '@/lib/auth/types/account';
+import type { UserDto } from '@/lib/users/dto/user-dto';
 
 const mocks = vi.hoisted(() => ({
   confirm: vi.fn(),

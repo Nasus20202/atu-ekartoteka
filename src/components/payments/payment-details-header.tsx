@@ -3,7 +3,7 @@ import { PageHeader } from '@/components/layout/page-header';
 import { REVEAL_CLASS } from '@/components/layout/reveal';
 import type { PaymentDetailsParams } from '@/components/payments/payment-details-params';
 import { PaymentYearSelect } from '@/components/payments/payment-year-select';
-import { formatApartmentLabel } from '@/lib/utils/apartment-label';
+import { formatApartmentLabel } from '@/lib/shared/utils/apartment-label';
 
 export async function PaymentDetailsHeader({ params }: PaymentDetailsParams) {
   const { apartmentId, year } = await params;

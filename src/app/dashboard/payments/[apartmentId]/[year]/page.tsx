@@ -13,7 +13,7 @@ import { PaymentTableSection } from '@/components/payments/payment-table-section
 import { CardListSkeleton } from '@/components/skeletons/card-list-skeleton';
 import { PageHeaderSkeleton } from '@/components/skeletons/page-header-skeleton';
 import { SkeletonCard } from '@/components/skeletons/skeleton-card';
-import { PAGE_TITLES } from '@/lib/metadata/document-title';
+import { PAGE_TITLES } from '@/lib/shared/document-title';
 
 export const metadata: Metadata = { title: PAGE_TITLES.paymentsFallback };
 

@@ -9,9 +9,12 @@ import {
 import { useChargeListOpenState } from '@/components/charges/use-charge-list-open-state';
 import { DownloadChargesPdfButton } from '@/components/pdf/download-charges-pdf-button';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
-import type { ChargePeriodItemDto } from '@/lib/types/dto/charge-dto';
-import { getPeriodYear, groupByYearDesc } from '@/lib/utils/group-by-year';
-import { sumDecimals } from '@/lib/utils/sum';
+import type { ChargePeriodItemDto } from '@/lib/charges/dto/charge-dto';
+import {
+  getPeriodYear,
+  groupByYearDesc,
+} from '@/lib/shared/utils/group-by-year';
+import { sumDecimals } from '@/lib/shared/utils/sum';
 
 type AdminCharge = ChargePeriodItemDto;
 

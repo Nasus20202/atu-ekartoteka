@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { getPeriodYear } from '@/lib/utils/group-by-year';
+import { getPeriodYear } from '@/lib/shared/utils/group-by-year';
 
 function useToggleSet(initial: () => Set<string>) {
   const [values, setValues] = useState(initial);

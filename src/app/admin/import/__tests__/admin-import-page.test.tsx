@@ -57,7 +57,7 @@ Object.defineProperty(Blob.prototype, 'stream', {
   },
 });
 
-vi.mock('@/lib/auth/require-admin-access', () => ({
+vi.mock('@/lib/framework/auth/require-admin-access', () => ({
   requireAdminAccess: vi.fn(),
 }));
 

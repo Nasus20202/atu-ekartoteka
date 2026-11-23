@@ -1,4 +1,4 @@
-import type { DecimalLike } from '@/lib/utils/decimal';
+import type { DecimalLike } from '@/lib/shared/utils/decimal';
 
 export type NotificationItem = {
   id: string;

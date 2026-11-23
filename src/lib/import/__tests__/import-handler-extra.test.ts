@@ -25,24 +25,24 @@ const {
   mockValidateChargesCrossFile: vi.fn().mockReturnValue([]),
 }));
 
-vi.mock('@/lib/database/prisma', () => ({
+vi.mock('@/lib/platform/database/prisma', () => ({
   prisma: { $transaction: mockTransaction },
 }));
 
-vi.mock('@/lib/parsers/apartment-parser', () => ({
+vi.mock('@/lib/import/parsers/apartment-parser', () => ({
   parseApartmentBuffer: mockParseApartmentBuffer,
   getUniqueApartments: mockGetUniqueApartments,
 }));
 
-vi.mock('@/lib/parsers/nal-czynsz-parser', () => ({
+vi.mock('@/lib/import/parsers/nal-czynsz-parser', () => ({
   parseNalCzynszBuffer: mockParseNalCzynszBuffer,
 }));
 
-vi.mock('@/lib/parsers/pow-czynsz-parser', () => ({
+vi.mock('@/lib/import/parsers/pow-czynsz-parser', () => ({
   parsePowCzynszFile: mockParsePowCzynszFile,
 }));
 
-vi.mock('@/lib/parsers/wplaty-parser', () => ({
+vi.mock('@/lib/import/parsers/wplaty-parser', () => ({
   parseWplatyFile: mockParseWplatyFile,
 }));
 

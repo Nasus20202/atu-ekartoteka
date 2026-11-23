@@ -3,8 +3,8 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { createFakeCronRunStore } from '@/lib/cron/__tests__/fake-cron-run-store';
 
-vi.mock('@/lib/database/prisma', () => ({ prisma: {} }));
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/lib/platform/database/prisma', () => ({ prisma: {} }));
+vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() }),
 }));
 

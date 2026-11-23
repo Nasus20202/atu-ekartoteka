@@ -18,7 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { ROLE_OPTIONS, STATUS_OPTIONS } from '@/components/users/constants';
 import type { NewUserFormData } from '@/components/users/types';
-import type { AccountStatus, UserRole } from '@/lib/types';
+import type { AccountStatus, UserRole } from '@/lib/auth/types/account';
 
 interface CreateUserDialogProps {
   actionLoading: boolean;

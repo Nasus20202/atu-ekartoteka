@@ -1,10 +1,10 @@
 import { Prisma } from '@/generated/prisma/client';
-import { PaymentEntry } from '@/lib/parsers/wplaty-parser';
-import { decimalEqualsStored } from '@/lib/utils/decimal';
+import { PaymentEntry } from '@/lib/import/parsers/wplaty-parser';
+import { decimalEqualsStored } from '@/lib/shared/utils/decimal';
 import {
   LEGACY_CHARGE_FIELD_KEYS,
   PAYMENT_MONTH_FIELD_KEYS,
-} from '@/lib/utils/payment-months';
+} from '@/lib/shared/utils/payment-months';
 
 export type PaymentKey = {
   apartmentId: string;

@@ -11,12 +11,12 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { isApprovedAccount } from '@/lib/auth/account-access';
-import { getSession } from '@/lib/auth/get-session';
-import { findUserWithApartmentPaymentsCached } from '@/lib/queries/users/find-user-with-apartment-payments';
-import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
-import { formatApartmentLabel } from '@/lib/utils/apartment-label';
-import { dateToPeriod } from '@/lib/utils/period';
-import { getRequestNow } from '@/lib/utils/request-now';
+import { getSession } from '@/lib/framework/auth/get-session';
+import { getRequestNow } from '@/lib/framework/request-now';
+import { getTenantHistoryStartYear } from '@/lib/framework/tenant-history';
+import { formatApartmentLabel } from '@/lib/shared/utils/apartment-label';
+import { dateToPeriod } from '@/lib/shared/utils/period';
+import { findUserWithApartmentPayments } from '@/lib/users/queries/find-user-with-apartment-payments';
 
 export async function PaymentsOverview() {
   const session = await getSession();
@@ -26,7 +26,7 @@ export async function PaymentsOverview() {
   }
 
   const startYear = await getTenantHistoryStartYear();
-  const userData = await findUserWithApartmentPaymentsCached(
+  const userData = await findUserWithApartmentPayments(
     session.user.id,
     startYear,
     dateToPeriod(await getRequestNow())

@@ -2,13 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Prisma } from '@/generated/prisma/browser';
 import { importCharges } from '@/lib/import/importers/charges';
+import { NalCzynszEntry } from '@/lib/import/parsers/nal-czynsz-parser';
 import {
   EntityStats,
   ImportErrorItem,
   TransactionClient,
 } from '@/lib/import/types';
-import { NalCzynszEntry } from '@/lib/parsers/nal-czynsz-parser';
-import type { DecimalLike } from '@/lib/utils/decimal';
+import type { DecimalLike } from '@/lib/shared/utils/decimal';
 
 function createMockTx() {
   return {

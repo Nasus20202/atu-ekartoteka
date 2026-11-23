@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import { Body, Head, Heading, Html, Link, Section, Text } from 'react-email';
 
-import { appUrl } from '@/lib/email/app-url';
-import { emailStyles } from '@/lib/email/email-theme';
+import { appUrl } from '@/lib/platform/email/app-url';
+import { emailStyles } from '@/lib/platform/email/email-theme';
 
 export const EMAIL_BRAND = 'ATU Ekartoteka';
 const EMAIL_LANGUAGE = 'pl';

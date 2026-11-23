@@ -2,7 +2,7 @@
  * E2E tests for hiding empty months on payment details.
  */
 
-import { FIXED_NOW_HEADER } from '../../src/lib/utils/fixed-now';
+import { FIXED_NOW_HEADER } from '../../src/lib/shared/utils/fixed-now';
 import { expect, login, test } from '../fixtures';
 import { createMixedPaymentsUser } from '../utils/create-mixed-payments-user';
 import { deleteUserAndApartmentsByEmail } from '../utils/delete-user-and-apartments-by-email';

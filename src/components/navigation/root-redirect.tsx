@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation';
 
 import { isAdminRole } from '@/lib/auth/admin-access';
-import { getSession } from '@/lib/auth/get-session';
-import { findUserByIdCached } from '@/lib/queries/users/find-user-by-id';
+import { getSession } from '@/lib/framework/auth/get-session';
+import { findUserByIdCached } from '@/lib/framework/rsc-cache';
 
 export async function RootRedirect(): Promise<React.ReactNode> {
   const session = await getSession();

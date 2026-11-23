@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { Section, Text } from 'react-email';
 
-import { emailColors, emailStyles } from '@/lib/email/email-theme';
+import { emailColors, emailStyles } from '@/lib/platform/email/email-theme';
 
 const ROW_STYLE: CSSProperties = {
   margin: '0 0 6px 0',

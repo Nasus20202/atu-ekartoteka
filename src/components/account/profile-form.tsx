@@ -11,8 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PasswordInput } from '@/components/ui/password-input';
-import { logger } from '@/lib/logger';
-import { AuthMethod } from '@/lib/types';
+import { AuthMethod } from '@/lib/auth/types/account';
+import { logger } from '@/lib/platform/logging/logger';
 
 type ProfileFormProps = {
   initialName: string | null;

@@ -7,8 +7,10 @@ const { mockLogger } = vi.hoisted(() => ({
   mockLogger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
-vi.mock('@/lib/database/prisma', () => ({ prisma: {} }));
-vi.mock('@/lib/logger', () => ({ createLogger: () => mockLogger }));
+vi.mock('@/lib/platform/database/prisma', () => ({ prisma: {} }));
+vi.mock('@/lib/platform/logging/logger', () => ({
+  createLogger: () => mockLogger,
+}));
 
 const { createRunCoordinator } = await import('@/lib/cron/run-coordinator');
 

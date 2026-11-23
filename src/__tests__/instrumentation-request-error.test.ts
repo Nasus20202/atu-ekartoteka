@@ -5,10 +5,10 @@ const { mockError, mockGetActiveTraceId } = vi.hoisted(() => ({
   mockGetActiveTraceId: vi.fn(),
 }));
 
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => ({ error: mockError, info: vi.fn() }),
 }));
-vi.mock('@/lib/opentelemetry/active-trace', () => ({
+vi.mock('@/lib/platform/opentelemetry/active-trace', () => ({
   getActiveTraceId: mockGetActiveTraceId,
 }));
 

@@ -7,7 +7,7 @@ import {
   getPaymentMonthlyChartData,
 } from '@/components/charts/chart-data';
 import { Prisma } from '@/generated/prisma/browser';
-import type { PaymentDtoSource } from '@/lib/types/dto/payment-dto';
+import type { PaymentDtoSource } from '@/lib/payments/dto/payment-dto';
 
 const makePayment = (overrides: Partial<PaymentDtoSource> = {}) =>
   createMockPayment({ openingBalance: new Prisma.Decimal(100), ...overrides });

@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import { HoaListCard } from '@/components/apartments/hoa-list-card';
-import type { HoaListItemDto } from '@/lib/types/dto/hoa-dto';
+import type { HoaListItemDto } from '@/lib/hoa/dto/hoa-dto';
 
 const hoa: HoaListItemDto = {
   id: 'hoa-1',

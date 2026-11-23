@@ -9,10 +9,10 @@ import {
   type PageFetcher,
   useInfiniteList,
 } from '@/hooks/use-infinite-list';
-import { fetchJson } from '@/lib/swr/fetch-json';
-import { AccountStatus } from '@/lib/types';
-import type { UserDto } from '@/lib/types/dto/user-dto';
-import type { SortState, UserSortKey } from '@/lib/utils/sort';
+import { AccountStatus } from '@/lib/auth/types/account';
+import { fetchJson } from '@/lib/platform/swr/fetch-json';
+import type { SortState, UserSortKey } from '@/lib/shared/utils/sort';
+import type { UserDto } from '@/lib/users/dto/user-dto';
 
 const SEARCH_DEBOUNCE_MS = 300;
 

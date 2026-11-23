@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { Session } from 'next-auth';
 
 import { auth } from '@/auth';
-import { handleMustChangePassword } from '@/lib/auth/proxy-handler';
-import { STATIC_SECURITY_HEADERS } from '@/lib/security-headers';
+import { handleMustChangePassword } from '@/lib/framework/auth/proxy-handler';
+import { STATIC_SECURITY_HEADERS } from '@/lib/framework/security-headers';
 
 function applySecurityHeaders(response: NextResponse): NextResponse {
   const trackingOrigins = process.env.TRACKING_ORIGINS ?? '';

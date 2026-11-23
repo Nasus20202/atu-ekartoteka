@@ -4,10 +4,10 @@ import { REVEAL_CLASS } from '@/components/layout/reveal';
 import { SwrScope } from '@/components/providers/swr-scope';
 import { AdminUsersContent } from '@/components/users/admin-users-content';
 import { buildUsersQuery } from '@/components/users/utils';
-import { requireAdminAccess } from '@/lib/auth/require-admin-access';
-import { LIST_VIEW_STORAGE_KEYS } from '@/lib/list-view-mode';
-import { getListViewMode } from '@/lib/list-view-mode-server';
-import { AccountStatus } from '@/lib/types';
+import { AccountStatus } from '@/lib/auth/types/account';
+import { requireAdminAccess } from '@/lib/framework/auth/require-admin-access';
+import { getListViewMode } from '@/lib/framework/list-view-mode-server';
+import { LIST_VIEW_STORAGE_KEYS } from '@/lib/shared/list-view-mode';
 
 const FIRST_PAGE = 1;
 

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { UserRole } from '@/lib/types';
+import { UserRole } from '@/lib/auth/types/account';
 
 const mockAuth = vi.fn();
 const mockFindHoaNotices = vi.fn();
@@ -9,7 +9,7 @@ vi.mock('@/auth', () => ({
   auth: mockAuth,
 }));
 
-vi.mock('@/lib/queries/hoa/find-hoa-notices', () => ({
+vi.mock('@/lib/hoa/queries/find-hoa-notices', () => ({
   findHoaNotices: mockFindHoaNotices,
 }));
 
@@ -20,7 +20,7 @@ vi.mock('@/lib/auth/admin-access', () => ({
   isAdminRole: (role: string | null | undefined) => role === 'ADMIN',
 }));
 
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => ({
     info: vi.fn(),
     warn: vi.fn(),

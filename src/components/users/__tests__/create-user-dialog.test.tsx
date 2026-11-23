@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { createEmptyNewUserData } from '@/components/users/constants';
 import { CreateUserDialog } from '@/components/users/create-user-dialog';
-import { AccountStatus, UserRole } from '@/lib/types';
+import { AccountStatus, UserRole } from '@/lib/auth/types/account';
 
 describe('CreateUserDialog', () => {
   it('renders nothing when closed', () => {

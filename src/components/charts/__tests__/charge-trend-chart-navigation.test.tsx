@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ChargeTrendChart } from '@/components/charts/charge-trend-chart';
-import { getChargesHref } from '@/lib/utils/dashboard-links';
+import { getChargesHref } from '@/lib/shared/utils/dashboard-links';
 
 const push = vi.fn();
 

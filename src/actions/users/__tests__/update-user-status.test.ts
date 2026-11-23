@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { AccountStatus, UserRole } from '@/lib/types';
+import { AccountStatus, UserRole } from '@/lib/auth/types/account';
 
 const mockAuth = vi.fn();
 const mockFindTenantUsers = vi.fn();
@@ -18,7 +18,7 @@ vi.mock('@/lib/auth/admin-access', () => ({
   isAdminRole: (role: string | null | undefined) => role === 'ADMIN',
 }));
 
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => ({
     info: vi.fn(),
     warn: vi.fn(),
@@ -26,23 +26,23 @@ vi.mock('@/lib/logger', () => ({
   }),
 }));
 
-vi.mock('@/lib/queries/users/find-tenant-users', () => ({
+vi.mock('@/lib/users/queries/find-tenant-users', () => ({
   findTenantUsers: mockFindTenantUsers,
 }));
 
-vi.mock('@/lib/queries/users/find-user-by-id', () => ({
+vi.mock('@/lib/users/queries/find-user-by-id', () => ({
   findUserById: mockFindUserById,
 }));
 
-vi.mock('@/lib/queries/apartments/count-apartment-availability', () => ({
+vi.mock('@/lib/apartments/queries/count-apartment-availability', () => ({
   countApartmentAvailability: mockCountApartmentAvailability,
 }));
 
-vi.mock('@/lib/mutations/users/update-user-status', () => ({
+vi.mock('@/lib/users/mutations/update-user-status', () => ({
   updateUserStatus: mockUpdateUserStatus,
 }));
 
-vi.mock('@/lib/notifications/account-status', () => ({
+vi.mock('@/lib/users/account-status', () => ({
   notifyAccountApproved: mockNotifyAccountApproved,
 }));
 

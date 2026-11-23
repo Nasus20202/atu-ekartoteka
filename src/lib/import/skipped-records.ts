@@ -1,10 +1,10 @@
+import { isOwnerId } from '@/lib/import/parsers/owner-id';
 import type { ImportWarning } from '@/lib/import/types';
-import { isOwnerId } from '@/lib/parsers/owner-id';
 import {
   CHARGE_FORMS,
   formatCountPl,
   type PolishPluralForms,
-} from '@/lib/utils/pluralize';
+} from '@/lib/shared/utils/pluralize';
 
 const NOTIFICATION_FORMS: PolishPluralForms = {
   one: 'powiadomienie',

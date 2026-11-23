@@ -12,7 +12,7 @@ ruleTester.run('require-action-auth-guard', rule, {
   valid: [
     {
       code: `'use server';
-import { requireAdminAction } from '@/lib/auth/require-action';
+import { requireAdminAction } from '@/lib/framework/auth/require-action';
 export async function renameHoa(id, name) {
   const { denied } = await requireAdminAction();
   if (denied) return denied;
@@ -21,7 +21,7 @@ export async function renameHoa(id, name) {
     },
     {
       code: `'use server';
-import { requireUserAction as guard } from '@/lib/auth/require-action';
+import { requireUserAction as guard } from '@/lib/framework/auth/require-action';
 export async function save() {
   return guard();
 }`,
@@ -30,7 +30,7 @@ export async function save() {
     {
       // Not a Server Action module.
       code: 'export const value = 1;',
-      filename: 'src/lib/utils.ts',
+      filename: 'src/lib/shared/utils.ts',
     },
   ],
 
@@ -51,7 +51,7 @@ export async function renameHoa() {}`,
     {
       // Importing the guard is not enough, it must be called.
       code: `'use server';
-import { requireAdminAction } from '@/lib/auth/require-action';
+import { requireAdminAction } from '@/lib/framework/auth/require-action';
 export async function renameHoa() {}`,
       filename: 'src/actions/hoa.ts',
       errors: [{ messageId: 'missingGuard' }],

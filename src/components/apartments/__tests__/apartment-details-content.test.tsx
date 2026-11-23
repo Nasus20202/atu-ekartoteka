@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ApartmentDetailsContent } from '@/components/apartments/apartment-details-content';
-import type { ApartmentDetailDto } from '@/lib/types/dto/apartment-dto';
+import type { ApartmentDetailDto } from '@/lib/apartments/dto/apartment-dto';
 
 const confirmMock = vi.fn();
 const actionMock = vi.hoisted(() => ({ setApartmentActiveAction: vi.fn() }));

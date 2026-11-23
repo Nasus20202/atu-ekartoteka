@@ -13,7 +13,7 @@ import {
 import {
   GENERIC_ERROR_MESSAGE,
   getErrorMessage,
-} from '@/lib/utils/error-message';
+} from '@/lib/shared/utils/error-message';
 
 const PASSWORDS_MISMATCH_MESSAGE = 'Hasła nie są identyczne';
 const MISSING_TOKEN_MESSAGE = 'Brak tokenu resetowania';

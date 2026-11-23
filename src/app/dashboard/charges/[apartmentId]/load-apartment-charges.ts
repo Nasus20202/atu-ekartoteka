@@ -1,11 +1,11 @@
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
 
-import { requireApprovedTenant } from '@/lib/auth/require-approved-tenant';
-import { findApartmentWithChargesCached } from '@/lib/queries/apartments/find-apartment-with-charges';
-import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
-import { dateToPeriod } from '@/lib/utils/period';
-import { getRequestNow } from '@/lib/utils/request-now';
+import { findApartmentWithCharges } from '@/lib/apartments/queries/find-apartment-with-charges';
+import { requireApprovedTenant } from '@/lib/framework/auth/require-approved-tenant';
+import { getRequestNow } from '@/lib/framework/request-now';
+import { getTenantHistoryStartYear } from '@/lib/framework/tenant-history';
+import { dateToPeriod } from '@/lib/shared/utils/period';
 
 // Memoized per request: the header and the content share one query
 export const loadApartmentCharges = cache(async (apartmentId: string) => {
@@ -14,7 +14,7 @@ export const loadApartmentCharges = cache(async (apartmentId: string) => {
     getTenantHistoryStartYear(),
     getRequestNow(),
   ]);
-  const apartment = await findApartmentWithChargesCached(
+  const apartment = await findApartmentWithCharges(
     apartmentId,
     userId,
     startYear,

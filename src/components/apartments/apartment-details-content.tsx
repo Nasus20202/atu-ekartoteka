@@ -17,8 +17,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import type { ApartmentDetailDto } from '@/lib/types/dto/apartment-dto';
-import { formatApartmentLabel } from '@/lib/utils/apartment-label';
+import type { ApartmentDetailDto } from '@/lib/apartments/dto/apartment-dto';
+import { formatApartmentLabel } from '@/lib/shared/utils/apartment-label';
 
 interface ApartmentDetailsContentProps {
   apartmentId: string;

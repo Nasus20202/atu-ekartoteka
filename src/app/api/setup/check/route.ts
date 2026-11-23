@@ -1,8 +1,8 @@
 /* eslint-disable local/require-api-auth-guard -- Tells the login page whether first-admin setup is needed, before any account exists */
 import { NextResponse } from 'next/server';
 
-import { createLogger } from '@/lib/logger';
-import { findFirstAdmin } from '@/lib/queries/users/find-first-admin';
+import { createLogger } from '@/lib/platform/logging/logger';
+import { findFirstAdmin } from '@/lib/users/queries/find-first-admin';
 
 const logger = createLogger('api:setup:check');
 

@@ -21,9 +21,9 @@ import {
   LIST_VIEW_STORAGE_KEYS,
   useListViewMode,
 } from '@/hooks/use-list-view-mode';
-import type { ListViewMode } from '@/lib/list-view-mode';
-import { AccountStatus } from '@/lib/types';
-import type { UserDto } from '@/lib/types/dto/user-dto';
+import { AccountStatus } from '@/lib/auth/types/account';
+import type { ListViewMode } from '@/lib/shared/list-view-mode';
+import type { UserDto } from '@/lib/users/dto/user-dto';
 
 interface AdminUsersContentProps {
   initialViewMode?: ListViewMode;

@@ -3,7 +3,7 @@ import {
   updateUserStatusAction,
 } from '@/actions/users/users';
 import type { NewUserFormData } from '@/components/users/types';
-import type { AccountStatus } from '@/lib/types';
+import type { AccountStatus } from '@/lib/auth/types/account';
 
 export const UPDATE_USER_FAILED_MESSAGE =
   'Nie udało się zaktualizować użytkownika';

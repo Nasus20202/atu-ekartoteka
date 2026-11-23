@@ -10,7 +10,7 @@ import {
 import { useSWRConfig } from 'swr';
 import useSWRInfinite, { unstable_serialize } from 'swr/infinite';
 
-import { SWR_OPTIONS } from '@/lib/swr/swr-options';
+import { SWR_OPTIONS } from '@/lib/platform/swr/swr-options';
 
 export const LOAD_MORE_FAILED = 'Nie udało się wczytać kolejnych pozycji';
 

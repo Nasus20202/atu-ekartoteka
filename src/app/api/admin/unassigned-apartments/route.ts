@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { requireAdmin } from '@/lib/auth/require-admin';
-import { createLogger } from '@/lib/logger';
-import { findAssignedApartmentAddressKeys } from '@/lib/queries/apartments/find-assigned-apartment-address-keys';
-import { findHoasWithUnassignedApartments } from '@/lib/queries/apartments/find-hoas-with-unassigned-apartments';
-import { findUnassignedApartments } from '@/lib/queries/apartments/find-unassigned-apartments';
-import { findAllUserEmails } from '@/lib/queries/users/find-all-user-emails';
+import { findAssignedApartmentAddressKeys } from '@/lib/apartments/queries/find-assigned-apartment-address-keys';
+import { findHoasWithUnassignedApartments } from '@/lib/apartments/queries/find-hoas-with-unassigned-apartments';
+import { findUnassignedApartments } from '@/lib/apartments/queries/find-unassigned-apartments';
+import { requireAdmin } from '@/lib/framework/auth/require-admin';
+import { createLogger } from '@/lib/platform/logging/logger';
+import { findAllUserEmails } from '@/lib/users/queries/find-all-user-emails';
 
 const logger = createLogger('api:admin:unassigned-apartments');
 

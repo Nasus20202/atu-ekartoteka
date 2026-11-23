@@ -9,7 +9,7 @@ import {
   type ApartmentGroupSelectionProps,
   SelectableApartmentGroup,
 } from '@/components/users/management/selectable-apartment-group';
-import { APARTMENT_FORMS, formatCountPl } from '@/lib/utils/pluralize';
+import { APARTMENT_FORMS, formatCountPl } from '@/lib/shared/utils/pluralize';
 
 export function DuplicateAddressGroup(props: ApartmentGroupSelectionProps) {
   const { group } = props;

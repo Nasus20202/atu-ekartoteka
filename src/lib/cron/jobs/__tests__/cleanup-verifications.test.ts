@@ -5,11 +5,12 @@ const { mockDeleteExpiredVerifications, mockLogger } = vi.hoisted(() => ({
   mockLogger: { info: vi.fn(), error: vi.fn() },
 }));
 
-vi.mock(
-  '@/lib/mutations/email-verification/delete-expired-verifications',
-  () => ({ deleteExpiredVerifications: mockDeleteExpiredVerifications })
-);
-vi.mock('@/lib/logger', () => ({ createLogger: () => mockLogger }));
+vi.mock('@/lib/auth/mutations/delete-expired-verifications', () => ({
+  deleteExpiredVerifications: mockDeleteExpiredVerifications,
+}));
+vi.mock('@/lib/platform/logging/logger', () => ({
+  createLogger: () => mockLogger,
+}));
 
 import { cleanupExpiredVerifications } from '@/lib/cron/jobs/cleanup-verifications';
 

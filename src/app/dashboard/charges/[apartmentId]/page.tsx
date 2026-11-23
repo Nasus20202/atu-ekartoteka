@@ -6,7 +6,7 @@ import { ApartmentChargesHeader } from '@/components/charges/apartment-charges-h
 import { Page } from '@/components/layout/page';
 import { CardListSkeleton } from '@/components/skeletons/card-list-skeleton';
 import { PageHeaderSkeleton } from '@/components/skeletons/page-header-skeleton';
-import { PAGE_TITLES } from '@/lib/metadata/document-title';
+import { PAGE_TITLES } from '@/lib/shared/document-title';
 
 export const metadata: Metadata = { title: PAGE_TITLES.chargesFallback };
 

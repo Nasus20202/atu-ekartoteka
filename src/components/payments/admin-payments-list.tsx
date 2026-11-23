@@ -15,18 +15,18 @@ import {
 import {
   type PaymentDtoSource,
   toPaymentPdfDto,
-} from '@/lib/types/dto/payment-dto';
-import { formatCurrency } from '@/lib/utils';
+} from '@/lib/payments/dto/payment-dto';
+import { formatCurrency } from '@/lib/shared/utils';
 import {
   getBalanceStatusClass,
   getSignedBalanceClass,
-} from '@/lib/utils/balance-class';
-import { toDecimal } from '@/lib/utils/decimal';
+} from '@/lib/shared/utils/balance-class';
+import { toDecimal } from '@/lib/shared/utils/decimal';
 import {
   CALCULATED_CHARGE_FIELD_KEYS,
   PAYMENT_MONTH_FIELD_KEYS,
-} from '@/lib/utils/payment-months';
-import { sumDecimals } from '@/lib/utils/sum';
+} from '@/lib/shared/utils/payment-months';
+import { sumDecimals } from '@/lib/shared/utils/sum';
 
 type PaymentMonthKey = (typeof PAYMENT_MONTH_FIELD_KEYS)[number];
 type ChargeMonthKey = (typeof CALCULATED_CHARGE_FIELD_KEYS)[number];

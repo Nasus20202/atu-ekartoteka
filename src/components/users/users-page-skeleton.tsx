@@ -2,7 +2,7 @@ import { CardListSkeleton } from '@/components/skeletons/card-list-skeleton';
 import { PageHeaderSkeleton } from '@/components/skeletons/page-header-skeleton';
 import { TableSkeleton } from '@/components/skeletons/table-skeleton';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ListViewMode } from '@/lib/list-view-mode';
+import { ListViewMode } from '@/lib/shared/list-view-mode';
 
 interface UsersListSkeletonProps {
   mode: ListViewMode;

@@ -5,7 +5,7 @@
  * encrypts with a per-build key that every replica would have to share.
  */
 
-const GUARD_MODULE = '@/lib/auth/require-action';
+const GUARD_MODULE = '@/lib/framework/auth/require-action';
 const GUARD_NAMES = new Set(['requireUserAction', 'requireAdminAction']);
 
 function isUseServer(statement) {
@@ -24,7 +24,7 @@ const requireActionAuthGuard = {
     },
     messages: {
       missingGuard:
-        "Server Action module never calls requireUserAction()/requireAdminAction() from '@/lib/auth/require-action'. Add the guard call, or disable this rule for the file with a reason (/* eslint-disable local/require-action-auth-guard -- reason */) if it is intentionally public.",
+        "Server Action module never calls requireUserAction()/requireAdminAction() from '@/lib/framework/auth/require-action'. Add the guard call, or disable this rule for the file with a reason (/* eslint-disable local/require-action-auth-guard -- reason */) if it is intentionally public.",
       inlineAction:
         "Inline Server Actions capture variables. Move the action to a module-level 'use server' file and pass explicit arguments.",
     },

@@ -4,8 +4,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { ApartmentOptionsList } from '@/components/users/apartment-options-list';
 import { ApartmentOptionsLoading } from '@/components/users/apartment-options-loading';
-import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
-import type { UserDto } from '@/lib/types/dto/user-dto';
+import type { ApartmentSummaryDto } from '@/lib/apartments/dto/apartment-dto';
+import type { UserDto } from '@/lib/users/dto/user-dto';
 
 const user = { id: 'user-1', name: 'Jan Kowalski' } as unknown as UserDto;
 

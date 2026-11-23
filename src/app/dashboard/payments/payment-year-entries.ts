@@ -1,7 +1,7 @@
-import type { findUserWithApartmentPayments } from '@/lib/queries/users/find-user-with-apartment-payments';
-import { toPaymentListItemDto } from '@/lib/types/dto/payment-dto';
-import { formatDate } from '@/lib/utils';
-import { formatApartmentLabel } from '@/lib/utils/apartment-label';
+import { toPaymentListItemDto } from '@/lib/payments/dto/payment-dto';
+import { formatDate } from '@/lib/shared/utils';
+import { formatApartmentLabel } from '@/lib/shared/utils/apartment-label';
+import type { findUserWithApartmentPayments } from '@/lib/users/queries/find-user-with-apartment-payments';
 
 type PaymentsUser = NonNullable<
   Awaited<ReturnType<typeof findUserWithApartmentPayments>>

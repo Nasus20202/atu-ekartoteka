@@ -170,6 +170,18 @@ All source files SHALL pass ESLint with zero errors.
 - **WHEN** ESLint runs
 - **THEN** `eslint-plugin-playwright` rules are applied: `expect-expect` is an error, `no-focused-test` is an error, `valid-expect` is an error, `no-conditional-in-test` is a warning, `no-skipped-test` is a warning, `no-wait-for-timeout` is a warning
 
+#### Scenario: Framework boundary enforced
+
+- **GIVEN** a module under `src/lib/` outside `src/lib/framework/` and `src/lib/platform/email/`
+- **WHEN** ESLint runs
+- **THEN** `no-restricted-imports` rejects `next`, `next/*`, `next-auth`, `next-auth/*`, `react` and `react-dom`, so the domain layer stays runnable outside a request
+
+#### Scenario: Writes only through actions
+
+- **GIVEN** a file under `src/app/` or `src/components/`
+- **WHEN** ESLint runs
+- **THEN** importing `@/lib/*/mutations/*` is an error; reads may still import `@/lib/*/queries/*`
+
 ---
 
 ### Requirement: Vite
@@ -333,7 +345,7 @@ required. Reads SHALL NOT use Server Actions. Server Actions SHALL live in
 
 ### Requirement: Client Reads With SWR
 
-Data a Client Component fetches by itself SHALL be read with SWR through a `GET` route, using the shared options in `src/lib/swr`. A client-side config read such as the Google sign-in config SHALL also use SWR. A list seeded with server-loaded data SHALL NOT request that first page again on mount and SHALL sit in a `SwrScope`.
+Data a Client Component fetches by itself SHALL be read with SWR through a `GET` route, using the shared options in `src/lib/platform/swr`. A client-side config read such as the Google sign-in config SHALL also use SWR. A list seeded with server-loaded data SHALL NOT request that first page again on mount and SHALL sit in a `SwrScope`.
 
 #### Scenario: Stable API write
 

@@ -1,5 +1,5 @@
-import { createLogger } from '@/lib/logger';
-import { deleteExpiredVerifications } from '@/lib/mutations/email-verification/delete-expired-verifications';
+import { deleteExpiredVerifications } from '@/lib/auth/mutations/delete-expired-verifications';
+import { createLogger } from '@/lib/platform/logging/logger';
 
 const logger = createLogger('cron:cleanup-verifications');
 

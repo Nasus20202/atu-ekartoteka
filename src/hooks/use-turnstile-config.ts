@@ -2,9 +2,9 @@
 
 import useSWR from 'swr';
 
-import { fetchJson } from '@/lib/swr/fetch-json';
-import { SWR_OPTIONS } from '@/lib/swr/swr-options';
-import type { TurnstileConfig } from '@/lib/types/turnstile';
+import type { TurnstileConfig } from '@/lib/auth/types/turnstile';
+import { fetchJson } from '@/lib/platform/swr/fetch-json';
+import { SWR_OPTIONS } from '@/lib/platform/swr/swr-options';
 
 const TURNSTILE_CONFIG_URL = '/api/config/turnstile';
 const DISABLED_TURNSTILE: TurnstileConfig = { siteKey: null, enabled: false };

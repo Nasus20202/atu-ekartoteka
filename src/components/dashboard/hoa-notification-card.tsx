@@ -8,9 +8,9 @@ import {
 } from '@/components/dashboard/group-notifications';
 import { HoaNotice } from '@/components/dashboard/hoa-notice';
 import { MarqueeText } from '@/components/ui/marquee-text';
-import { formatCurrency, formatQuantity } from '@/lib/utils';
-import { toDecimal } from '@/lib/utils/decimal';
-import { sumDecimals } from '@/lib/utils/sum';
+import { formatCurrency, formatQuantity } from '@/lib/shared/utils';
+import { toDecimal } from '@/lib/shared/utils/decimal';
+import { sumDecimals } from '@/lib/shared/utils/sum';
 
 const DEFAULT_HOA_NAME = 'Wspólnota';
 

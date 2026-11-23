@@ -13,20 +13,22 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('next/navigation', () => ({ redirect: mocks.redirect }));
-vi.mock('@/lib/auth/get-session', () => ({ getSession: mocks.getSession }));
+vi.mock('@/lib/framework/auth/get-session', () => ({
+  getSession: mocks.getSession,
+}));
 vi.mock('@/lib/auth/account-access', () => ({
   isApprovedAccount: mocks.isApprovedAccount,
 }));
-vi.mock('@/lib/settings/tenant-history', () => ({
+vi.mock('@/lib/framework/tenant-history', () => ({
   getTenantHistoryStartYear: vi.fn().mockResolvedValue(2020),
 }));
-vi.mock('@/lib/utils/request-now', () => ({
+vi.mock('@/lib/framework/request-now', () => ({
   getRequestNow: vi.fn().mockResolvedValue(new Date('2025-03-10T00:00:00Z')),
 }));
-vi.mock('@/lib/queries/users/find-user-with-apartment-payments', () => ({
-  findUserWithApartmentPaymentsCached: mocks.findPayments,
+vi.mock('@/lib/users/queries/find-user-with-apartment-payments', () => ({
+  findUserWithApartmentPayments: mocks.findPayments,
 }));
-vi.mock('@/lib/utils/apartment-label', () => ({
+vi.mock('@/lib/shared/utils/apartment-label', () => ({
   formatApartmentLabel: (apartment: { id: string }) => `label-${apartment.id}`,
 }));
 vi.mock('@/app/dashboard/payments/payment-year-entries', () => ({

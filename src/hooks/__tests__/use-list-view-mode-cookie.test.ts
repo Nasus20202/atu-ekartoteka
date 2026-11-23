@@ -4,7 +4,7 @@ import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { useListViewMode } from '@/hooks/use-list-view-mode';
-import { listViewCookieName, ListViewMode } from '@/lib/list-view-mode';
+import { listViewCookieName, ListViewMode } from '@/lib/shared/list-view-mode';
 
 const KEY = 'atu:list-view:test-cookie';
 

@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { SortableTableHead } from '@/components/ui/sortable-table-head';
 import { Table, TableHeader, TableRow } from '@/components/ui/table';
-import type { SortDirection } from '@/lib/utils/sort';
+import type { SortDirection } from '@/lib/shared/utils/sort';
 
 function renderHead(direction: SortDirection | null) {
   const onSort = vi.fn();

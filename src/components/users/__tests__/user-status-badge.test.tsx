@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { UserStatusBadge } from '@/components/users/user-status-badge';
-import { AccountStatus } from '@/lib/types';
+import { AccountStatus } from '@/lib/auth/types/account';
 
 describe('UserStatusBadge', () => {
   it('renders pending badge', () => {

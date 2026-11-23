@@ -1,6 +1,6 @@
 import type { ImportResult } from '@/components/import/types';
 import type { YearBalanceRow } from '@/lib/import/types';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency } from '@/lib/shared/utils';
 
 export const EMPTY_VALUE = '—';
 export const MISMATCH_MARKER = '≠';

@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { ApartmentAssignedUserDto } from '@/lib/types/dto/apartment-dto';
+import type { ApartmentAssignedUserDto } from '@/lib/apartments/dto/apartment-dto';
 
 export function AssignedUserCard({ user }: { user: ApartmentAssignedUserDto }) {
   return (

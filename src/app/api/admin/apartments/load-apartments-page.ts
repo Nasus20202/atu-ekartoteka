@@ -1,10 +1,10 @@
 import { buildApartmentsWhere } from '@/app/api/admin/apartments/apartments-where';
-import { findApartmentsPaginated } from '@/lib/queries/apartments/find-apartments-paginated';
 import {
   toApartmentSummaryDto,
   toHomeownersAssociationNoticeDto,
-} from '@/lib/types/dto/apartment-dto';
-import type { ApartmentSortKey, SortDirection } from '@/lib/utils/sort';
+} from '@/lib/apartments/dto/apartment-dto';
+import { findApartmentsPaginated } from '@/lib/apartments/queries/find-apartments-paginated';
+import type { ApartmentSortKey, SortDirection } from '@/lib/shared/utils/sort';
 
 export interface ApartmentsPageParams {
   page: number;

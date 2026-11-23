@@ -1,9 +1,9 @@
 import { validateChargesCrossFile } from '@/lib/import/charges-cross-file';
 import type { ParsedHoaFiles } from '@/lib/import/parse-hoa-files';
+import type { NalCzynszEntry } from '@/lib/import/parsers/nal-czynsz-parser';
+import type { PaymentEntry } from '@/lib/import/parsers/wplaty-parser';
 import type { HOAImportResult, ImportOptions } from '@/lib/import/types';
 import { validateNalCzynsz, validateWplaty } from '@/lib/import/validators';
-import type { NalCzynszEntry } from '@/lib/parsers/nal-czynsz-parser';
-import type { PaymentEntry } from '@/lib/parsers/wplaty-parser';
 
 /**
  * Runs the file checks on charge and payment entries, whether parsed from

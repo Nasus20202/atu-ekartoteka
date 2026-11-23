@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import { nestedTitle, PAGE_TITLES } from '@/lib/metadata/document-title';
+import { nestedTitle, PAGE_TITLES } from '@/lib/shared/document-title';
 
 export const metadata: Metadata = {
   title: nestedTitle(PAGE_TITLES.hoaApartmentsFallback),

@@ -1,4 +1,4 @@
-import type { CronRunStore } from '@/lib/mutations/cron/claim-cron-run';
+import type { CronRunStore } from '@/lib/cron/mutations/claim-cron-run';
 
 const MAX_LATENCY_MS = 5;
 

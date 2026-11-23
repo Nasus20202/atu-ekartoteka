@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { NotificationItem } from '@/components/dashboard/group-notifications';
 import { HoaNotificationCard } from '@/components/dashboard/hoa-notification-card';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency } from '@/lib/shared/utils';
 
 const exactText = (value: string) => (_: string, element: Element | null) =>
   element?.textContent === value && element.children.length === 0;

@@ -17,7 +17,7 @@ import {
 import {
   GENERIC_ERROR_MESSAGE,
   getErrorMessage,
-} from '@/lib/utils/error-message';
+} from '@/lib/shared/utils/error-message';
 
 const DASHBOARD_PATH = '/dashboard';
 

@@ -11,7 +11,7 @@ import {
   SKYLINE_WIDTH,
   windowsPath,
 } from '@/components/layout/skyline-layout';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/shared/utils';
 
 const FADE_MASK =
   'linear-gradient(to top, black 0%, black 35%, transparent 100%)';

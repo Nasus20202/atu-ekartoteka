@@ -1,6 +1,6 @@
 import { isAdminRole } from '@/lib/auth/admin-access';
-import { AccountStatus, UserRole } from '@/lib/types';
-import type { SortDirection, UserSortKey } from '@/lib/utils/sort';
+import { AccountStatus, UserRole } from '@/lib/auth/types/account';
+import type { SortDirection, UserSortKey } from '@/lib/shared/utils/sort';
 
 const DEFAULT_PAGE_SIZE = 50;
 const MAX_PAGE_SIZE = 200;

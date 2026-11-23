@@ -16,10 +16,13 @@ import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import {
   type ChargeDisplayDto,
   toChargePdfItemDto,
-} from '@/lib/types/dto/charge-dto';
-import { cn } from '@/lib/utils';
-import { getPeriodYear, groupByYearDesc } from '@/lib/utils/group-by-year';
-import { sumDecimals } from '@/lib/utils/sum';
+} from '@/lib/charges/dto/charge-dto';
+import { cn } from '@/lib/shared/utils';
+import {
+  getPeriodYear,
+  groupByYearDesc,
+} from '@/lib/shared/utils/group-by-year';
+import { sumDecimals } from '@/lib/shared/utils/sum';
 
 interface ChargesDisplayProps {
   periods: string[];

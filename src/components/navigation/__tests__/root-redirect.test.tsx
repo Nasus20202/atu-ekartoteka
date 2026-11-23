@@ -11,8 +11,10 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('next/navigation', () => ({ redirect: mocks.redirect }));
-vi.mock('@/lib/auth/get-session', () => ({ getSession: mocks.getSession }));
-vi.mock('@/lib/queries/users/find-user-by-id', () => ({
+vi.mock('@/lib/framework/auth/get-session', () => ({
+  getSession: mocks.getSession,
+}));
+vi.mock('@/lib/framework/rsc-cache', () => ({
   findUserByIdCached: mocks.findUser,
 }));
 

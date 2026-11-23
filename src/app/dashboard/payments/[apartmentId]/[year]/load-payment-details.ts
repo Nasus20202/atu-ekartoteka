@@ -2,12 +2,12 @@ import { notFound } from 'next/navigation';
 import { cache } from 'react';
 
 import { parsePaymentYear } from '@/app/dashboard/payments/[apartmentId]/[year]/payment-summary';
-import { requireApprovedTenant } from '@/lib/auth/require-approved-tenant';
-import { findApartmentPaymentYearsCached } from '@/lib/queries/apartments/find-apartment-payment-years';
-import { findApartmentWithPaymentsByYearCached } from '@/lib/queries/apartments/find-apartment-with-payments-by-year';
-import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
-import { dateToPeriod } from '@/lib/utils/period';
-import { getRequestNow } from '@/lib/utils/request-now';
+import { findApartmentPaymentYears } from '@/lib/apartments/queries/find-apartment-payment-years';
+import { findApartmentWithPaymentsByYear } from '@/lib/apartments/queries/find-apartment-with-payments-by-year';
+import { requireApprovedTenant } from '@/lib/framework/auth/require-approved-tenant';
+import { getRequestNow } from '@/lib/framework/request-now';
+import { getTenantHistoryStartYear } from '@/lib/framework/tenant-history';
+import { dateToPeriod } from '@/lib/shared/utils/period';
 
 // Memoized per request: every section of the page shares one set of queries
 export const loadPaymentDetails = cache(
@@ -25,14 +25,14 @@ export const loadPaymentDetails = cache(
     ]);
     const cutoffPeriod = dateToPeriod(now);
     const [apartment, paymentYears] = await Promise.all([
-      findApartmentWithPaymentsByYearCached(
+      findApartmentWithPaymentsByYear(
         apartmentId,
         userId,
         yearNumber,
         startYear,
         cutoffPeriod
       ),
-      findApartmentPaymentYearsCached(apartmentId, userId, startYear),
+      findApartmentPaymentYears(apartmentId, userId, startYear),
     ]);
 
     if (!apartment || apartment.payments.length === 0) {

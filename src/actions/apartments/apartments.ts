@@ -1,9 +1,9 @@
 'use server';
 
 import { type ActionResult, failed, invalid } from '@/actions/action-result';
-import { requireAdminAction } from '@/lib/auth/require-action';
-import { createLogger } from '@/lib/logger';
-import { updateApartmentStatus } from '@/lib/mutations/apartments/update-apartment-status';
+import { updateApartmentStatus } from '@/lib/apartments/mutations/update-apartment-status';
+import { requireAdminAction } from '@/lib/framework/auth/require-action';
+import { createLogger } from '@/lib/platform/logging/logger';
 
 const logger = createLogger('action:apartments');
 

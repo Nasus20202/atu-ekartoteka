@@ -8,10 +8,10 @@ import type {
 import { LazyChargeTrendChart } from '@/components/charts/lazy-charge-trend-chart';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { cn, formatCurrency, formatPeriod } from '@/lib/utils';
-import { getChargesHref } from '@/lib/utils/dashboard-links';
-import type { DecimalLike } from '@/lib/utils/decimal';
-import { CHARGE_FORMS, formatCountPl } from '@/lib/utils/pluralize';
+import { cn, formatCurrency, formatPeriod } from '@/lib/shared/utils';
+import { getChargesHref } from '@/lib/shared/utils/dashboard-links';
+import type { DecimalLike } from '@/lib/shared/utils/decimal';
+import { CHARGE_FORMS, formatCountPl } from '@/lib/shared/utils/pluralize';
 
 interface ChargesSummaryCardProps {
   currentPeriod: string;

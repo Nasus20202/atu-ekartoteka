@@ -5,7 +5,7 @@ import type {
   YearStatus,
 } from '@/lib/import/types';
 import type { YearBalanceSummary } from '@/lib/import/year-balance-overview';
-import { periodToYear } from '@/lib/utils/period';
+import { periodToYear } from '@/lib/shared/utils/period';
 
 /** Year a warning belongs to; undefined when it applies to the whole HOA. */
 function warningYear(warning: ImportWarning): number | undefined {

@@ -6,7 +6,7 @@ import {
 } from '@/components/dashboard/group-notifications';
 import type { NoticePdfApartment } from '@/components/pdf/notice-pdf-document';
 import { PdfDownloadButton } from '@/components/pdf/pdf-download-button';
-import { toLocalIsoDate } from '@/lib/utils/local-date';
+import { toLocalIsoDate } from '@/lib/shared/utils/local-date';
 
 interface DownloadNoticePdfButtonProps {
   notifications: NotificationItem[];

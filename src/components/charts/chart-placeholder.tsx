@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/shared/utils';
 
 // chart area (h-56) + viewport nav (h-8) + gap (space-y-3)
 export const NAVIGABLE_CHART_PLACEHOLDER_CLASS = 'h-[16.75rem]';

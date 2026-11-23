@@ -1,5 +1,5 @@
 import type { IssueGroup } from '@/components/import/issue-groups';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/shared/utils';
 
 type Tone = 'warning' | 'error';
 

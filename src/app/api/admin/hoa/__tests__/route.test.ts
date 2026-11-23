@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { UserRole } from '@/lib/types';
+import { UserRole } from '@/lib/auth/types/account';
 
 const mockAuth = vi.fn();
 const mockHoaFindMany = vi.fn();
@@ -11,7 +11,7 @@ vi.mock('@/auth', () => ({
   auth: mockAuth,
 }));
 
-vi.mock('@/lib/database/prisma', () => ({
+vi.mock('@/lib/platform/database/prisma', () => ({
   prisma: {
     homeownersAssociation: {
       findMany: mockHoaFindMany,
@@ -27,7 +27,7 @@ vi.mock('@/lib/auth/admin-access', () => ({
   isAdminRole: (role: string | null | undefined) => role === 'ADMIN',
 }));
 
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => ({
     info: vi.fn(),
     warn: vi.fn(),

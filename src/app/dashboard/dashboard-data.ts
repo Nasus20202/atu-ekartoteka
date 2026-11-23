@@ -4,13 +4,13 @@ import type { ApartmentBalance } from '@/components/dashboard/payments-summary-c
 import type {
   ChargeTotalsByPeriod,
   PeriodChargeTotal,
-} from '@/lib/queries/charges/find-charge-totals-by-period';
-import type { MonthlyChargeSums } from '@/lib/queries/payments/find-monthly-charge-sums';
-import type { findUserWithApartments } from '@/lib/queries/users/find-user-with-apartments';
-import { formatApartmentLabel } from '@/lib/utils/apartment-label';
-import { getPaymentYearHref } from '@/lib/utils/dashboard-links';
-import { toDecimal } from '@/lib/utils/decimal';
-import { dateToPeriod, periodToDate } from '@/lib/utils/period';
+} from '@/lib/charges/queries/find-charge-totals-by-period';
+import type { MonthlyChargeSums } from '@/lib/payments/queries/find-monthly-charge-sums';
+import { formatApartmentLabel } from '@/lib/shared/utils/apartment-label';
+import { getPaymentYearHref } from '@/lib/shared/utils/dashboard-links';
+import { toDecimal } from '@/lib/shared/utils/decimal';
+import { dateToPeriod, periodToDate } from '@/lib/shared/utils/period';
+import type { findUserWithApartments } from '@/lib/users/queries/find-user-with-apartments';
 
 type DashboardUser = NonNullable<
   Awaited<ReturnType<typeof findUserWithApartments>>

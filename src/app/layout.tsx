@@ -7,7 +7,7 @@ import { ConfirmProvider } from '@/components/providers/confirm-dialog';
 import { SessionProvider } from '@/components/providers/session-provider';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { TrackingScript } from '@/components/providers/tracking-script';
-import { APP_NAME, PAGE_TITLE_TEMPLATE } from '@/lib/metadata/document-title';
+import { APP_NAME, PAGE_TITLE_TEMPLATE } from '@/lib/shared/document-title';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',

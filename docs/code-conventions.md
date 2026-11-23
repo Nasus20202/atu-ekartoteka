@@ -20,6 +20,21 @@ in [`AGENTS.md`](../AGENTS.md).
 - Comments say why, not what. Do not add comments or docs that restate the code.
 - No toast library: feedback goes in an `Alert` or inline state.
 
+## Layering
+
+- Domain modules in `src/lib/<domain>/`, `src/lib/shared/` and the import and
+  cron slices import no `next/*`, `next-auth` or `react` **(lint)**. They must
+  run outside a request: take a `Date`, a session id or a setting as an argument
+  instead of reading it.
+- Anything that needs the request, a render or a session goes in
+  `src/lib/framework/`. `src/lib/platform/email/` (React Email) is the other
+  React-first module.
+- `src/lib/` holds only folders: a domain slice, `platform/` (infrastructure),
+  `framework/` (the Next.js and Auth.js edge) or `shared/` (pure cross-domain code).
+- Reads may import `@/lib/*/queries/*`. Writes go through a Server Action in
+  `src/actions/` or the admin import route; importing `@/lib/*/mutations/*` from
+  `src/app/` or `src/components/` is an error **(lint)**.
+
 ## Components
 
 - Feature components go in `src/components/<feature>/`. `src/components/ui/` is
@@ -30,7 +45,7 @@ in [`AGENTS.md`](../AGENTS.md).
   needs state, effects or browser APIs, and pass data down from the server.
 - Props are a local `interface Props` (or `<Name>Props`). No `React.FC`, no
   `defaultProps`.
-- Conditional classes use `cn()` from `@/lib/utils`.
+- Conditional classes use `cn()` from `@/lib/shared/utils`.
 - Animations reuse the utilities in `tailwind.config.ts` and `globals.css`,
   are wrapped in `motion-safe:`, and are turned off with
   `motion-reduce:animate-none`.
@@ -45,14 +60,14 @@ in [`AGENTS.md`](../AGENTS.md).
   repeat fetching logic across components.
 - Return a typed object with named fields rather than a tuple of booleans.
 - Reads that a client component makes itself use SWR with the shared options
-  from `src/lib/swr`.
+  from `src/lib/platform/swr`.
 
 ## Database
 
 - Filter, sort, paginate and aggregate in the Prisma query. Do not load rows and
   then `.filter`, `.sort` or `.slice` them in JavaScript.
 - No `$queryRaw` / `$executeRaw` **(lint)**. Raw SQL is for migration files.
-- Money is `Decimal`. Use the helpers in `src/lib/utils/decimal`, not floats.
+- Money is `Decimal`. Use the helpers in `src/lib/shared/utils/decimal`, not floats.
 - Do not read `legacy*` columns outside the import and payment queries **(lint)**;
   see [Architecture](architecture.md#the-data-model).
 
@@ -99,9 +114,9 @@ These are the rules that protect residents' data. Do not work around them.
   fails the build on a forbidden key, the logger censors `email`, `to`, `name`,
   `password` and `token` as a backstop, and the trace exporter drops query
   strings and client addresses from spans. In tests, `expectNoPersonalData`
-  (`src/lib/logging/testing.ts`) checks that a logger mock never saw a seeded
+  (`src/lib/platform/logging/testing.ts`) checks that a logger mock never saw a seeded
   address.
-- **Security headers** are set in `src/proxy.ts` and `src/lib/security-headers.ts`.
+- **Security headers** are set in `src/proxy.ts` and `src/lib/framework/security-headers.ts`.
   Do not loosen the CSP or add external origins without a security review.
 
 ## Tests

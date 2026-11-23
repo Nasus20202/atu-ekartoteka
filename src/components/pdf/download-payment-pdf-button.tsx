@@ -1,13 +1,13 @@
 'use client';
 
 import { PdfDownloadButton } from '@/components/pdf/pdf-download-button';
-import type { Payment } from '@/lib/types';
 import {
   PAYMENT_AMOUNT_FIELD_KEYS,
   type PaymentPdfDto,
-} from '@/lib/types/dto/payment-dto';
-import { toDecimal } from '@/lib/utils/decimal';
-import { toLocalIsoDate } from '@/lib/utils/local-date';
+} from '@/lib/payments/dto/payment-dto';
+import type { Payment } from '@/lib/payments/types/payment';
+import { toDecimal } from '@/lib/shared/utils/decimal';
+import { toLocalIsoDate } from '@/lib/shared/utils/local-date';
 
 interface DownloadPaymentPdfButtonProps {
   apartmentLabel: string;

@@ -1,14 +1,18 @@
 import { getSeriesColor } from '@/components/charts/chart-colors';
 import { Prisma } from '@/generated/prisma/browser';
-import type { PaymentDtoSource } from '@/lib/types/dto/payment-dto';
-import { formatPeriod, MONTH_NAMES_PL } from '@/lib/utils';
+import type { PaymentDtoSource } from '@/lib/payments/dto/payment-dto';
+import { formatPeriod, MONTH_NAMES_PL } from '@/lib/shared/utils';
 import {
   formatApartmentLabel,
   type LabelledApartment,
-} from '@/lib/utils/apartment-label';
-import { type Decimal, type DecimalLike, toDecimal } from '@/lib/utils/decimal';
-import { getNonEmptyMonths } from '@/lib/utils/payment-months';
-import { getPeriodsBetween } from '@/lib/utils/period';
+} from '@/lib/shared/utils/apartment-label';
+import {
+  type Decimal,
+  type DecimalLike,
+  toDecimal,
+} from '@/lib/shared/utils/decimal';
+import { getNonEmptyMonths } from '@/lib/shared/utils/payment-months';
+import { getPeriodsBetween } from '@/lib/shared/utils/period';
 
 export type PaymentMonthlyChartDatum = {
   monthIndex: number;

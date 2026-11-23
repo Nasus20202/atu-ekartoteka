@@ -7,7 +7,7 @@ const { mockPasswordResetDeleteMany } = vi.hoisted(() => ({
 }));
 
 // Mock dependencies
-vi.mock('@/lib/database/prisma', () => ({
+vi.mock('@/lib/platform/database/prisma', () => ({
   prisma: {
     passwordReset: {
       deleteMany: mockPasswordResetDeleteMany,
@@ -15,14 +15,14 @@ vi.mock('@/lib/database/prisma', () => ({
   },
 }));
 
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: vi.fn(() => ({
     info: vi.fn(),
     error: vi.fn(),
   })),
 }));
 
-const { prisma } = await import('@/lib/database/prisma');
+const { prisma } = await import('@/lib/platform/database/prisma');
 
 describe('cleanupExpiredPasswordResets', () => {
   beforeEach(() => {

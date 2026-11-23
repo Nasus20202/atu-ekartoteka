@@ -13,10 +13,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { formatCurrency } from '@/lib/utils';
-import { getBalanceStatusClass } from '@/lib/utils/balance-class';
-import type { DecimalLike } from '@/lib/utils/decimal';
-import { sumDecimals } from '@/lib/utils/sum';
+import { formatCurrency } from '@/lib/shared/utils';
+import { getBalanceStatusClass } from '@/lib/shared/utils/balance-class';
+import type { DecimalLike } from '@/lib/shared/utils/decimal';
+import { sumDecimals } from '@/lib/shared/utils/sum';
 
 export interface ApartmentBalance {
   apartmentId: string;

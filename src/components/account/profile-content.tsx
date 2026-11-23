@@ -9,9 +9,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { getSession } from '@/lib/auth/get-session';
-import { findUserProfileCached } from '@/lib/queries/users/find-user-profile';
-import { AuthMethod } from '@/lib/types';
+import { AuthMethod } from '@/lib/auth/types/account';
+import { getSession } from '@/lib/framework/auth/get-session';
+import { findUserProfile } from '@/lib/users/queries/find-user-profile';
 
 export async function ProfileContent() {
   const session = await getSession();
@@ -20,7 +20,7 @@ export async function ProfileContent() {
     redirect('/login');
   }
 
-  const user = await findUserProfileCached(session.user.id);
+  const user = await findUserProfile(session.user.id);
 
   if (!user) {
     redirect('/login');

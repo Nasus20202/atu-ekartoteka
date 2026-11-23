@@ -1,5 +1,7 @@
 import { Prisma } from '@/generated/prisma/client';
 import { IMPORT_CREATE_BATCH_SIZE } from '@/lib/import/constants';
+import { ParseResult } from '@/lib/import/parsers/parser-utils';
+import { ChargeNotificationEntry } from '@/lib/import/parsers/pow-czynsz-parser';
 import {
   EntityStats,
   HOAContext,
@@ -7,10 +9,8 @@ import {
   TransactionClient,
 } from '@/lib/import/types';
 import { processInBatches } from '@/lib/import/utils';
-import { ParseResult } from '@/lib/parsers/parser-utils';
-import { ChargeNotificationEntry } from '@/lib/parsers/pow-czynsz-parser';
-import { decimalEqualsStored } from '@/lib/utils/decimal';
-import { getErrorMessage } from '@/lib/utils/error-message';
+import { decimalEqualsStored } from '@/lib/shared/utils/decimal';
+import { getErrorMessage } from '@/lib/shared/utils/error-message';
 
 type NotificationKey = {
   apartmentId: string;

@@ -1,8 +1,8 @@
 /* eslint-disable local/require-api-auth-guard -- Health probes carry no session */
 import { NextResponse } from 'next/server';
 
-import { checkDatabaseConnection } from '@/lib/database/health-check';
-import { createLogger } from '@/lib/logger';
+import { checkDatabaseConnection } from '@/lib/platform/database/health-check';
+import { createLogger } from '@/lib/platform/logging/logger';
 
 const logger = createLogger('api:health:readiness');
 

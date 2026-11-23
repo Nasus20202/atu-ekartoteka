@@ -11,8 +11,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import type { HoaListItemDto } from '@/lib/types/dto/hoa-dto';
-import { APARTMENT_FORMS, pluralizePl } from '@/lib/utils/pluralize';
+import type { HoaListItemDto } from '@/lib/hoa/dto/hoa-dto';
+import { APARTMENT_FORMS, pluralizePl } from '@/lib/shared/utils/pluralize';
 
 interface HoaListCardProps {
   hoa: HoaListItemDto;

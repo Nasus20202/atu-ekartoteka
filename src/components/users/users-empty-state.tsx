@@ -2,7 +2,7 @@ import { AlertCircle } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import type { UserFilter } from '@/components/users/user-filters';
-import { AccountStatus } from '@/lib/types';
+import { AccountStatus } from '@/lib/auth/types/account';
 
 function getEmptyMessage(search: string, filter: UserFilter): string {
   if (search) return 'Nie znaleziono użytkowników pasujących do wyszukiwania';

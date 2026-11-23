@@ -3,10 +3,10 @@ import {
   MONTHLY_CHARGES_IGNORED_NOTE,
   SETTLEMENT_DESCRIPTION_PREFIX,
 } from '@/lib/import/constants';
+import type { NalCzynszEntry } from '@/lib/import/parsers/nal-czynsz-parser';
+import type { PaymentEntry } from '@/lib/import/parsers/wplaty-parser';
 import type { ImportWarning } from '@/lib/import/types';
-import type { NalCzynszEntry } from '@/lib/parsers/nal-czynsz-parser';
-import type { PaymentEntry } from '@/lib/parsers/wplaty-parser';
-import { type Decimal, toDecimal } from '@/lib/utils/decimal';
+import { type Decimal, toDecimal } from '@/lib/shared/utils/decimal';
 
 interface MonthLines {
   total: Decimal;

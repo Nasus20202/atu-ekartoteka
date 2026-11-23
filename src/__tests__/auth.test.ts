@@ -17,7 +17,9 @@ vi.mock('next-auth', () => ({
     return nextAuthResult;
   },
 }));
-vi.mock('@/lib/auth/config', () => ({ authConfig: { providers: [] } }));
+vi.mock('@/lib/framework/auth/config', () => ({
+  authConfig: { providers: [] },
+}));
 
 import * as authModule from '@/auth';
 

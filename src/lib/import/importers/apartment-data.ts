@@ -1,5 +1,5 @@
 import type { Prisma } from '@/generated/prisma/client';
-import { ApartmentEntry } from '@/lib/parsers/apartment-parser';
+import { ApartmentEntry } from '@/lib/import/parsers/apartment-parser';
 
 export const EXISTING_APARTMENT_SELECT = {
   id: true,

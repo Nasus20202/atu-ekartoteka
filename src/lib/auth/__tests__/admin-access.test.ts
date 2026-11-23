@@ -1,17 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { hasAdminAccess, isApprovedAdmin } from '@/lib/auth/admin-access';
-import { AccountStatus, UserRole } from '@/lib/types';
+import { AccountStatus, UserRole } from '@/lib/auth/types/account';
 
 const { mockFindUserSessionFields, mockWarn } = vi.hoisted(() => ({
   mockFindUserSessionFields: vi.fn(),
   mockWarn: vi.fn(),
 }));
 
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => ({ warn: mockWarn }),
 }));
-vi.mock('@/lib/queries/users/find-user-session-fields', () => ({
+vi.mock('@/lib/users/queries/find-user-session-fields', () => ({
   findUserSessionFields: mockFindUserSessionFields,
 }));
 

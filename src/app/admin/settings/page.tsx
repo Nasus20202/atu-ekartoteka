@@ -4,7 +4,7 @@ import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import { SettingsSection } from '@/components/settings/settings-section';
 import { FormCardSkeleton } from '@/components/skeletons/form-card-skeleton';
-import { requireAdminAccess } from '@/lib/auth/require-admin-access';
+import { requireAdminAccess } from '@/lib/framework/auth/require-admin-access';
 
 export default async function SettingsPage() {
   await requireAdminAccess();

@@ -13,7 +13,7 @@ vi.mock('@/components/apartments/hoa-list-section', () => ({
   },
 }));
 
-vi.mock('@/lib/auth/require-admin-access', () => ({
+vi.mock('@/lib/framework/auth/require-admin-access', () => ({
   requireAdminAccess: vi.fn(),
 }));
 

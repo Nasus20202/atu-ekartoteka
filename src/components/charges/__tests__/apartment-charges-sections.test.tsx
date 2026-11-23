@@ -38,7 +38,7 @@ vi.mock('@/components/layout/page-header', () => ({
     </div>
   ),
 }));
-vi.mock('@/lib/utils/apartment-label', () => ({
+vi.mock('@/lib/shared/utils/apartment-label', () => ({
   formatApartmentLabel: () => 'Długa 1/2',
 }));
 

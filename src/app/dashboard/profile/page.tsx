@@ -5,7 +5,7 @@ import { ProfileContent } from '@/components/account/profile-content';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
 import { FormCardSkeleton } from '@/components/skeletons/form-card-skeleton';
-import { PAGE_TITLES } from '@/lib/metadata/document-title';
+import { PAGE_TITLES } from '@/lib/shared/document-title';
 
 export const metadata: Metadata = { title: PAGE_TITLES.profile };
 

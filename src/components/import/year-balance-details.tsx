@@ -3,7 +3,7 @@ import {
   hasNewRecords,
 } from '@/components/import/year-balance-parts';
 import type { YearBalanceRow, YearRecord } from '@/lib/import/types';
-import { cn, formatCurrency } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/shared/utils';
 
 const RECORD_STATUS_ORDER: Record<YearRecord['status'], number> = {
   mismatch: 0,

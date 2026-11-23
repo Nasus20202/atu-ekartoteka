@@ -4,8 +4,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { UsersList } from '@/components/users/users-list';
 import { ListViewMode } from '@/hooks/use-list-view-mode';
-import { AccountStatus, UserRole } from '@/lib/types';
-import type { UserDto } from '@/lib/types/dto/user-dto';
+import { AccountStatus, UserRole } from '@/lib/auth/types/account';
+import type { UserDto } from '@/lib/users/dto/user-dto';
 
 vi.mock('@/components/users/user-card', () => ({
   UserCard: ({

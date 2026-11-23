@@ -1,4 +1,4 @@
-import { APARTMENT_FORMS, formatCountPl } from '@/lib/utils/pluralize';
+import { APARTMENT_FORMS, formatCountPl } from '@/lib/shared/utils/pluralize';
 
 interface ApartmentCountProps {
   count: number;

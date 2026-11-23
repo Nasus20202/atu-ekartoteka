@@ -8,12 +8,12 @@ import {
   type PageFetcher,
   useInfiniteList,
 } from '@/hooks/use-infinite-list';
-import { fetchJson } from '@/lib/swr/fetch-json';
 import type {
   ApartmentSummaryDto,
   HomeownersAssociationNoticeDto,
-} from '@/lib/types/dto/apartment-dto';
-import type { ApartmentSortKey, SortState } from '@/lib/utils/sort';
+} from '@/lib/apartments/dto/apartment-dto';
+import { fetchJson } from '@/lib/platform/swr/fetch-json';
+import type { ApartmentSortKey, SortState } from '@/lib/shared/utils/sort';
 
 const PAGE_SIZE = 20;
 

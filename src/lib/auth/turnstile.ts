@@ -1,0 +1,74 @@
+import { createLogger } from '@/lib/platform/logging/logger';
+
+const logger = createLogger('lib:turnstile');
+
+const DEFAULT_VERIFY_URL =
+  'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+
+export interface TurnstileServerValidationResponse {
+  success: boolean;
+  'error-codes'?: string[];
+  challenge_ts?: string;
+  hostname?: string;
+  action?: string;
+  cdata?: string;
+}
+
+/**
+ * Check if Turnstile is properly configured and enabled.
+ */
+export function isTurnstileEnabled(): boolean {
+  const siteKey = process.env.TURNSTILE_SITE_KEY;
+  const secretKey = process.env.TURNSTILE_SECRET_KEY;
+  return !!(siteKey && secretKey);
+}
+
+/**
+ * Verify a Turnstile token server-side using the Cloudflare Turnstile API.
+ * Returns true when token is valid or when Turnstile is disabled.
+ */
+export async function verifyTurnstileToken(
+  token: string | undefined
+): Promise<boolean> {
+  // If Turnstile is not configured, skip verification
+  if (!isTurnstileEnabled()) {
+    logger.info('Turnstile is not configured; skipping verification');
+    return true;
+  }
+
+  if (!token) {
+    logger.warn('No turnstile token provided');
+    return false;
+  }
+
+  // isTurnstileEnabled() guarantees the secret is set
+  const secret = process.env.TURNSTILE_SECRET_KEY as string;
+
+  try {
+    const body = new URLSearchParams();
+    body.append('secret', secret);
+    body.append('response', token);
+
+    const res = await fetch(
+      process.env.TURNSTILE_VERIFY_URL || DEFAULT_VERIFY_URL,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString(),
+      }
+    );
+
+    const json = (await res.json()) as TurnstileServerValidationResponse;
+    if (!json.success) {
+      logger.warn(
+        { errorCodes: json['error-codes'] },
+        'Turnstile verification failed'
+      );
+    }
+    return Boolean(json.success);
+  } catch (error) {
+    logger.error({ error }, 'Error while verifying turnstile token');
+    // Conservatively fail verification on unknown errors
+    return false;
+  }
+}

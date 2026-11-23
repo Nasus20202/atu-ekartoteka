@@ -1,11 +1,18 @@
 import { toChartNumber } from '@/components/charts/chart-data';
-import { formatPeriod } from '@/lib/utils';
-import { type Decimal, type DecimalLike, toDecimal } from '@/lib/utils/decimal';
+import { formatPeriod } from '@/lib/shared/utils';
+import {
+  type Decimal,
+  type DecimalLike,
+  toDecimal,
+} from '@/lib/shared/utils/decimal';
 import {
   getNonEmptyMonths,
   type PaymentMonthFieldsLike,
-} from '@/lib/utils/payment-months';
-import { getPeriodsBetween, monthIndexToPeriod } from '@/lib/utils/period';
+} from '@/lib/shared/utils/payment-months';
+import {
+  getPeriodsBetween,
+  monthIndexToPeriod,
+} from '@/lib/shared/utils/period';
 
 export type BalanceHistoryDatum = {
   period: string;

@@ -2,7 +2,7 @@ import pino from 'pino';
 
 import { LOG_LEVEL } from './constants';
 
-// The mock image ships only e2e/mocks, so it cannot reuse src/lib/logger.
+// The mock image ships only e2e/mocks, so it cannot reuse src/lib/platform/logging/logger.
 // The output mirrors it: JSON lines with a textual `level` and a `name`.
 const root = pino({
   level: LOG_LEVEL,

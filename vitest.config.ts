@@ -22,14 +22,14 @@ export default defineConfig({
         // Generated Prisma client
         'src/generated/**',
         // Type-only modules without runtime code
-        'src/lib/types/*.ts',
+        'src/lib/shared/types/*.ts',
         '**/types.ts',
         // Test setup and shared fixtures
         'src/__tests__/**',
         // Next.js route shells, covered by E2E tests
         'src/app/**/{page,layout,not-found,error,loading}.tsx',
         // OpenTelemetry SDK bootstrap; its logic lives in tracing-utils.ts
-        'src/lib/opentelemetry/tracing.ts',
+        'src/lib/platform/opentelemetry/tracing.ts',
       ],
       thresholds: {
         lines: 95,
