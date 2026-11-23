@@ -5,6 +5,7 @@ import { assignApartmentsToUser } from '@/lib/apartments/mutations/assign-apartm
 import { findUnassignedApartmentsByIds } from '@/lib/apartments/queries/find-unassigned-apartments-by-ids';
 import { findUnassignedApartmentsForAssign } from '@/lib/apartments/queries/find-unassigned-apartments-for-assign';
 import { BCRYPT_COST } from '@/lib/auth/rules/bcrypt-cost';
+import { normalizeEmail } from '@/lib/auth/rules/email';
 import { getEmailService } from '@/lib/platform/email/email-service';
 import { createLogger } from '@/lib/platform/logging/logger';
 import { failedResult, type UseCaseResult } from '@/lib/shared/use-case-result';
@@ -48,15 +49,12 @@ export async function bulkCreateAccounts(
       { email: string; owner: string | null; aptIds: string[] }
     >();
     for (const apt of apartments) {
-      const group = emailMap.get(apt.email);
+      const email = normalizeEmail(apt.email);
+      const group = emailMap.get(email);
       if (group) {
         group.aptIds.push(apt.id);
       } else {
-        emailMap.set(apt.email, {
-          email: apt.email,
-          owner: apt.owner,
-          aptIds: [apt.id],
-        });
+        emailMap.set(email, { email, owner: apt.owner, aptIds: [apt.id] });
       }
     }
 
@@ -122,7 +120,8 @@ export async function bulkAssignAccounts(
     // Deduplicate by email: one existing user may cover multiple apartments
     const emailMap = new Map<string, string[]>();
     for (const apt of apartments) {
-      emailMap.set(apt.email, [...(emailMap.get(apt.email) ?? []), apt.id]);
+      const email = normalizeEmail(apt.email);
+      emailMap.set(email, [...(emailMap.get(email) ?? []), apt.id]);
     }
 
     let assigned = 0;

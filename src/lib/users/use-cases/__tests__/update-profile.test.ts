@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { BCRYPT_COST } from '@/lib/auth/rules/bcrypt-cost';
 import { PASSWORD_TOO_SHORT_MESSAGE } from '@/lib/auth/rules/password-rules';
-import { AccountStatus, UserRole } from '@/lib/auth/types/account';
+import { AccountStatus, AuthMethod, UserRole } from '@/lib/auth/types/account';
 import { expectNoPersonalData } from '@/lib/platform/logging/testing';
 import {
   type ProfileChanges,
@@ -75,7 +75,39 @@ beforeEach(() => {
 });
 
 describe('updateProfile', () => {
+  it('explains that a Google account has no password to change', async () => {
+    mockFindUserById.mockResolvedValueOnce(
+      member({ password: null, authMethod: AuthMethod.GOOGLE })
+    );
+
+    const result = await updateProfile('user-1', {
+      currentPassword: 'old-password',
+      newPassword: 'new-password-1',
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      code: 'invalid',
+      message:
+        'Konto Google nie może zmienić hasła. Użyj logowania przez Google.',
+    });
+    expect(mockBcryptCompare).not.toHaveBeenCalled();
+    expect(mockUpdateUserProfile).not.toHaveBeenCalled();
+  });
+
   describe('name changes', () => {
+    it('rejects a name that is not a string without touching the profile', async () => {
+      const result = await updateProfile('user-1', { name: 42 });
+
+      expect(result).toEqual({
+        ok: false,
+        code: 'invalid',
+        message: 'Nieprawidłowe imię',
+      });
+      expect(mockFindUserById).not.toHaveBeenCalled();
+      expect(mockUpdateUserProfile).not.toHaveBeenCalled();
+    });
+
     it('updates only the name and leaves the password untouched', async () => {
       mockUpdateUserProfile.mockResolvedValueOnce(
         savedProfile({ name: 'Anna Nowak' })

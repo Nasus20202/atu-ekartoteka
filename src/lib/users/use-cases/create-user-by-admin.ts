@@ -17,6 +17,8 @@ import { findUserByEmail } from '@/lib/users/queries/find-user-by-email';
 
 const logger = createLogger('action:users');
 
+const INVALID_NAME_MESSAGE = 'Nieprawidłowe imię';
+
 export type CreatedUser = Awaited<ReturnType<typeof createAdminUser>>;
 
 /**
@@ -56,6 +58,10 @@ export async function createUserByAdmin({
     return invalidResult('Nieprawidłowy status konta');
   }
 
+  if (name !== undefined && name !== null && typeof name !== 'string') {
+    return invalidResult(INVALID_NAME_MESSAGE);
+  }
+
   try {
     if (await findUserByEmail(email as string)) {
       logger.warn({ adminId }, 'User creation failed: e-mail already in use');
@@ -67,7 +73,7 @@ export async function createUserByAdmin({
     const user = await createAdminUser({
       email: email as string,
       hashedPassword,
-      name: (name as string) || null,
+      name: typeof name === 'string' && name ? name : null,
       role: (role as UserRole) || UserRole.TENANT,
       status: (status as AccountStatus) || AccountStatus.PENDING,
     });

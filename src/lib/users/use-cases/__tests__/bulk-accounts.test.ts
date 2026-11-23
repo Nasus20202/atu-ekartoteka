@@ -134,6 +134,27 @@ describe('bulkCreateAccounts', () => {
     expect(mockSendActivationEmail).toHaveBeenCalledTimes(1);
   });
 
+  it('groups addresses that differ only in case into one account', async () => {
+    mockFindUnassignedByIds.mockResolvedValueOnce([
+      apartment('apt-1', 'Shared@example.com', 'Jan'),
+      apartment('apt-2', 'shared@example.com', 'Jan'),
+    ]);
+
+    const result = await bulkCreateAccounts(['apt-1', 'apt-2']);
+
+    expect(result).toEqual({
+      ok: true,
+      data: { created: 1, skipped: 0, errors: 0 },
+    });
+    expect(mockCreateUserWithApartments).toHaveBeenCalledTimes(1);
+    expect(mockCreateUserWithApartments).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: 'shared@example.com',
+        apartmentIds: ['apt-1', 'apt-2'],
+      })
+    );
+  });
+
   it('creates one account per distinct e-mail and passes no owner name when the apartment has none', async () => {
     mockFindUnassignedByIds.mockResolvedValueOnce([
       apartment('apt-1', 'a@example.com', 'Anna'),
@@ -292,6 +313,27 @@ describe('bulkAssignAccounts', () => {
       'apt-2',
     ]);
     expect(mockCreateUserWithApartments).not.toHaveBeenCalled();
+  });
+
+  it('assigns addresses that differ only in case to one existing account', async () => {
+    mockFindUnassignedForAssign.mockResolvedValueOnce([
+      apartment('apt-1', 'Owner@example.com'),
+      apartment('apt-2', 'owner@example.com'),
+    ]);
+    mockFindUserByEmail.mockResolvedValueOnce({ id: 'user-1' });
+    mockAssignApartmentsToUser.mockResolvedValueOnce(2);
+
+    const result = await bulkAssignAccounts(['apt-1', 'apt-2']);
+
+    expect(result).toEqual({
+      ok: true,
+      data: { assigned: 2, skipped: 0, errors: 0 },
+    });
+    expect(mockFindUserByEmail).toHaveBeenCalledTimes(1);
+    expect(mockAssignApartmentsToUser).toHaveBeenCalledWith('user-1', [
+      'apt-1',
+      'apt-2',
+    ]);
   });
 
   it('counts apartments the assignment did not update as skipped', async () => {
