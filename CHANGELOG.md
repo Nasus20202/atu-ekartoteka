@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.5] - 2026-11-23
+
+- feat(seo): describe the public pages for crawlers and previews
+- test: stop the suite from printing React and jsdom warnings
+- feat: add robots.txt
+- chore(deps): update dependency nodemailer to v10.6.1 (#984)
+- fix(deps): update dependency smtp-server to v3.21.7 (#985)
+
 ## [0.10.4] - 2026-11-23
 
 - test(visual): refresh snapshots for tailwind-merge 3.7.1
