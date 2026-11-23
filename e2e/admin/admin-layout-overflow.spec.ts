@@ -11,6 +11,7 @@ const PHONE_VIEWPORT = { width: 360, height: 700 };
 const TALL_MAIN_PX = '3000px';
 const SCROLLED_PX = 60;
 const NAVBAR_HEIGHT_PX = 65;
+const APARTMENT_PATH = /\/admin\/apartments\/[\w-]+/;
 
 test.describe('Admin layout', () => {
   test('navbar does not overflow at tablet width', async ({ adminPage }) => {
@@ -51,14 +52,20 @@ test.describe('Admin layout', () => {
     );
 
     // A click that lands while the list is still hydrating can be swallowed,
-    // so retry until the new page is actually open
+    // and the apartment page streams in slowly on Firefox, so retry the click
+    // and wait for the content it opens, not just for the URL
     await expect(async () => {
-      await adminPage.locator('a[href^="/admin/apartments/"]').first().click();
-      await expect(adminPage).toHaveURL(/\/admin\/apartments\/[\w-]+/, {
+      if (!APARTMENT_PATH.test(new URL(adminPage.url()).pathname)) {
+        await adminPage
+          .locator('a[href^="/admin/apartments/"]')
+          .first()
+          .click();
+      }
+      await expect(adminPage).toHaveURL(APARTMENT_PATH, { timeout: 5000 });
+      await expect(adminPage.getByText('Tylko aktywne')).toBeVisible({
         timeout: 5000,
       });
-    }).toPass({ timeout: 10_000 });
-    await expect(adminPage.getByText('Tylko aktywne')).toBeVisible();
+    }).toPass({ timeout: 20_000 });
 
     expect(await adminPage.evaluate(() => window.scrollY)).toBe(0);
   });
