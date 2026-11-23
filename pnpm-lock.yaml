@@ -438,8 +438,8 @@ importers:
         specifier: 10.4.0
         version: 10.4.0
       smtp-server:
-        specifier: 3.21.6
-        version: 3.21.6
+        specifier: 3.21.7
+        version: 3.21.7
       tsx:
         specifier: 4.23.15
         version: 4.23.15
@@ -4454,6 +4454,10 @@ packages:
     resolution: {integrity: sha512-jWanL7D9GD3jvUDYKmoC5rWTiG8MnBgnN2yV68bgMKip1zUJhiSTyz7Eg+18y8sk5OvdVDzws5nZK5arSI4f5Q==}
     engines: {node: '>=20.0.0'}
 
+  nodemailer@10.6.1:
+    resolution: {integrity: sha512-d7kfFfS/tR4Aca+SBvRaQ+MXKNv7d2JiRe5TxaRcFT/kYMh4GGPnW9aKksTIEvyEbA7d/7HYWE4YPDEHxzJj/g==}
+    engines: {node: '>=20.0.0'}
+
   normalize-svg-path@1.1.0:
     resolution: {integrity: sha512-r9KHKG2UUeB5LoTouwDzBy2VxXlHsiM6fyLQvnJa0S5hrhzqElH/CH7TUGhT1fVvIYBIKf3OpY4YJ4CK+iaqHg==}
 
@@ -5056,8 +5060,8 @@ packages:
   sisteransi@1.0.5:
     resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
 
-  smtp-server@3.21.6:
-    resolution: {integrity: sha512-QlCb8T8eS6qpiehMRdrDrKUwg4CBCQBSzfNEUQudQUau3xfRUp93X19oOuvjKyryFuEYh1cPEdYhYa09XuePvg==}
+  smtp-server@3.21.7:
+    resolution: {integrity: sha512-HZtF8LivEuPtcVuoCYHa60GTHohwPpwz90GHUwm88Xg2tI4ZJCHWTzuS08uufMkme4qvReqD7vEQSdyRGbRQ2Q==}
     engines: {node: '>=20.0.0'}
 
   socket.io-adapter@2.5.8:
@@ -9558,6 +9562,8 @@ snapshots:
 
   nodemailer@10.6.0: {}
 
+  nodemailer@10.6.1: {}
+
   normalize-svg-path@1.1.0:
     dependencies:
       svg-arc-to-cubic-bezier: 3.2.0
@@ -10271,9 +10277,9 @@ snapshots:
 
   sisteransi@1.0.5: {}
 
-  smtp-server@3.21.6:
+  smtp-server@3.21.7:
     dependencies:
-      nodemailer: 10.6.0
+      nodemailer: 10.6.1
       punycode.js: 2.3.1
 
   socket.io-adapter@2.5.8:
