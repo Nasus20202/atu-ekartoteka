@@ -41,7 +41,13 @@ test.describe('Sticky page header', () => {
     );
     await expect(header).toHaveAttribute('data-stuck', 'true');
 
-    await userPage.evaluate(() => window.scrollTo(0, 0));
-    await expect(header).toHaveAttribute('data-stuck', 'false');
+    // Re-issue the scroll on every attempt: a scroll event can be dropped when
+    // the page flips direction while the previous scroll is still settling
+    await expect(async () => {
+      await userPage.evaluate(() => window.scrollTo(0, 0));
+      await expect(header).toHaveAttribute('data-stuck', 'false', {
+        timeout: 2000,
+      });
+    }).toPass({ timeout: 10_000 });
   });
 });

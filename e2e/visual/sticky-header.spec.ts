@@ -4,7 +4,10 @@
 
 import { type Page } from '@playwright/test';
 
+import { ACTIVE_MONTH_SCROLL_DELAY_MS } from '@/components/charges/use-scroll-to-active-month';
+
 import { expect, test } from '../fixtures';
+import { waitForScrollSettled } from '../utils/scroll';
 import { VISUAL_YEAR } from '../utils/test-credentials';
 
 const CHARGES_MONTH_QUERY = `?month=${VISUAL_YEAR}-12`;
@@ -22,12 +25,19 @@ async function openScrolledChargesDetails(page: Page) {
   await page.goto(`${chargesHref}${CHARGES_MONTH_QUERY}`);
   await expect(page).toHaveURL(/\/dashboard\/charges\/[\w-]+/);
 
+  // The deep link scrolls the expanded month into view shortly after mount;
+  // our own scroll has to wait until that animation has finished
+  await waitForScrollSettled(page, ACTIVE_MONTH_SCROLL_DELAY_MS);
+
   await page.addStyleTag({ content: PINNED_NAVBAR_CSS });
   await page.evaluate((y) => window.scrollTo(0, y), SCROLL_PAST_HEADER_PX);
   await expect(page.locator('[data-stuck]')).toHaveAttribute(
     'data-stuck',
     'true'
   );
+  await expect
+    .poll(() => page.evaluate(() => window.scrollY))
+    .toBe(SCROLL_PAST_HEADER_PX);
 }
 
 test.describe('Visual: sticky page header', () => {

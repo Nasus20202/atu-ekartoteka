@@ -50,7 +50,14 @@ test.describe('Admin layout', () => {
       [TALL_MAIN_PX, SCROLLED_PX]
     );
 
-    await adminPage.locator('a[href^="/admin/apartments/"]').first().click();
+    // A click that lands while the list is still hydrating can be swallowed,
+    // so retry until the new page is actually open
+    await expect(async () => {
+      await adminPage.locator('a[href^="/admin/apartments/"]').first().click();
+      await expect(adminPage).toHaveURL(/\/admin\/apartments\/[\w-]+/, {
+        timeout: 5000,
+      });
+    }).toPass({ timeout: 10_000 });
     await expect(adminPage.getByText('Tylko aktywne')).toBeVisible();
 
     expect(await adminPage.evaluate(() => window.scrollY)).toBe(0);

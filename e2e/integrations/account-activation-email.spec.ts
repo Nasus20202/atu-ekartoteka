@@ -17,6 +17,7 @@ const TEMP_PASSWORD_LINE = /Tymczasowe hasło\s+(\S+)/;
 test('the owner receives the login email and a temporary password', async ({
   page,
   request,
+  browser,
 }) => {
   const apartment = await createUniqueUnassignedApartment();
   await loginWithTurnstile(page, ADMIN_EMAIL, ADMIN_PASSWORD);
@@ -52,7 +53,14 @@ test('the owner receives the login email and a temporary password', async ({
     linkPath: '/login',
   });
 
-  await page.context().clearCookies();
-  await loginWithTurnstile(page, apartment.email, tempPassword);
-  await expect(page).toHaveURL(/change-password|dashboard/);
+  // The invited owner signs in from a fresh browser, like a real user would;
+  // reusing the admin session can bounce the login page back to the admin area
+  const ownerContext = await browser.newContext();
+  const ownerPage = await ownerContext.newPage();
+  try {
+    await loginWithTurnstile(ownerPage, apartment.email, tempPassword);
+    await expect(ownerPage).toHaveURL(/change-password|dashboard/);
+  } finally {
+    await ownerContext.close();
+  }
 });

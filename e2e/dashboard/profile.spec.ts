@@ -48,19 +48,20 @@ test.describe.serial('Profile', () => {
   test('user can change password', async ({ profilePage }) => {
     await profilePage.goto('/dashboard/profile');
 
-    // Change password to the same value (non-destructive)
-    await profilePage.getByLabel('Obecne hasło').fill(PROFILE_PASSWORD);
-    await profilePage
-      .getByLabel('Nowe hasło', { exact: true })
-      .fill(PROFILE_PASSWORD);
-    await profilePage.getByLabel('Potwierdź nowe hasło').fill(PROFILE_PASSWORD);
+    const currentPassword = profilePage.getByLabel('Obecne hasło');
+    const newPassword = profilePage.getByLabel('Nowe hasło', { exact: true });
+    const confirmPassword = profilePage.getByLabel('Potwierdź nowe hasło');
+    const submit = profilePage.getByRole('button', { name: /Zapisz zmiany/i });
+    const success = profilePage.getByText(/zaktualizowany|zapisano|sukces/i);
 
-    // Submit
-    await profilePage.getByRole('button', { name: /Zapisz zmiany/i }).click();
-
-    // Should show success message
-    await expect(
-      profilePage.getByText(/zaktualizowany|zapisano|sukces/i)
-    ).toBeVisible({ timeout: 10000 });
+    // A fill that lands before React hydrates updates the DOM without updating
+    // the form state, and the next render clears it, so retry the whole submit
+    await expect(async () => {
+      await currentPassword.fill(PROFILE_PASSWORD);
+      await newPassword.fill(PROFILE_PASSWORD);
+      await confirmPassword.fill(PROFILE_PASSWORD);
+      await submit.click();
+      await expect(success).toBeVisible({ timeout: 3000 });
+    }).toPass({ timeout: 20_000 });
   });
 });

@@ -272,7 +272,7 @@ The system SHALL keep visual regression tests for the admin and tenant pages in 
 
 - **GIVEN** the visual suite
 - **WHEN** a tenant page is scrolled past its page header
-- **THEN** the header is asserted to be pinned, and the viewport is compared with a snapshot in light and dark mode at desktop and phone viewports, with the navbar sticky as it is in the app
+- **THEN** the scroll animation the deep link starts is allowed to settle, the test asserts the requested scroll position and the pinned state, and the viewport is compared with a snapshot in light and dark mode at desktop and phone viewports, with the navbar sticky as it is in the app
 
 #### Scenario: Snapshot dates are stable
 
@@ -291,6 +291,12 @@ hydration before interacting.
 
 - **WHEN** a test navigates to a page whose sections stream in
 - **THEN** it interacts only after hidden streaming segments are gone
+
+#### Scenario: Login survives a lost form interaction
+
+- **GIVEN** a fill or a Turnstile token that arrived before the login form was ready
+- **WHEN** the login page reports the generic credential error
+- **THEN** the login helper loads the form again and retries, and a session that is already authenticated is sent to its destination instead of filling the form again
 
 ### Requirement: Email Template Tests
 
