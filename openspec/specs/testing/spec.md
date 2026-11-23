@@ -272,7 +272,7 @@ The system SHALL keep visual regression tests for the admin and tenant pages in 
 
 - **GIVEN** the visual suite
 - **WHEN** a tenant page is scrolled past its page header
-- **THEN** the scroll animation the deep link starts is allowed to settle, the test asserts the requested scroll position and the pinned state, and the viewport is compared with a snapshot in light and dark mode at desktop and phone viewports, with the navbar sticky as it is in the app
+- **THEN** the test waits for the scroll the deep link starts, asserts the header is pinned at that position, and compares the viewport with a snapshot in light and dark mode at desktop and phone viewports, with the navbar sticky as it is in the app
 
 #### Scenario: Snapshot dates are stable
 
