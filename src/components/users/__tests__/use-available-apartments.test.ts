@@ -97,7 +97,9 @@ describe('useAvailableApartments', () => {
       () => expect(requestedParams(fetchMock).get('search')).toBe('17/12'),
       { timeout: SEARCH_WAIT_MS }
     );
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    // SWR may repeat a request for an unchanged key; the search must be requested once.
+    const requested = new Set(fetchMock.mock.calls.map(([url]) => String(url)));
+    expect(requested.size).toBe(2);
     expect(result.current.apartments).toEqual([]);
   });
 

@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { expectNoPersonalData } from '@/__tests__/helpers/expect-no-personal-data';
 import { forgotPasswordAction } from '@/actions/auth/forgot-password';
 import { AuthMethod } from '@/lib/auth/types/account';
-import { expectNoPersonalData } from '@/lib/platform/logging/testing';
 
 const mocks = vi.hoisted(() => ({
   findUserByEmail: vi.fn(),

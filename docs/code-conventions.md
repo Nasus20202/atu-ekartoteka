@@ -123,7 +123,7 @@ These are the rules that protect residents' data. Do not work around them.
   fails the build on a forbidden key, the logger censors `email`, `to`, `name`,
   `password` and `token` as a backstop, and the trace exporter drops query
   strings and client addresses from spans. In tests, `expectNoPersonalData`
-  (`src/lib/platform/logging/testing.ts`) checks that a logger mock never saw a seeded
+  (`src/__tests__/helpers/expect-no-personal-data.ts`) checks that a logger mock never saw a seeded
   address.
 - **Security headers** are set in `src/proxy.ts` and `src/lib/framework/security-headers.ts`.
   Do not loosen the CSP or add external origins without a security review.

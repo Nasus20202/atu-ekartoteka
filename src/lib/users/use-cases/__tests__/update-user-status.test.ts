@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { expectNoPersonalData } from '@/__tests__/helpers/expect-no-personal-data';
 import { AccountStatus, UserRole } from '@/lib/auth/types/account';
-import { expectNoPersonalData } from '@/lib/platform/logging/testing';
 import {
   changeUserStatus,
   type UserStatusChange,

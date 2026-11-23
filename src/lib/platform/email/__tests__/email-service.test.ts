@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { expectNoPersonalData } from '@/__tests__/helpers/expect-no-personal-data';
 import {
   EmailService,
   getEmailService,
 } from '@/lib/platform/email/email-service';
 import type { EmailServiceConfig } from '@/lib/platform/email/email-types';
-import { expectNoPersonalData } from '@/lib/platform/logging/testing';
 
 const {
   mockSendMail,

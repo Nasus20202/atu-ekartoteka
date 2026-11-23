@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { expectNoPersonalData } from '@/__tests__/helpers/expect-no-personal-data';
 import {
   requireAdminAction,
   requireUserAction,
 } from '@/lib/framework/auth/require-action';
-import { expectNoPersonalData } from '@/lib/platform/logging/testing';
 
 const mocks = vi.hoisted(() => ({
   auth: vi.fn(),

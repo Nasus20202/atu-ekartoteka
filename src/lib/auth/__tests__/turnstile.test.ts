@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { expectNoPersonalData } from '@/__tests__/helpers/expect-no-personal-data';
 import { verifyTurnstileToken } from '@/lib/auth/gateways/turnstile';
-import { expectNoPersonalData } from '@/lib/platform/logging/testing';
 
 const { mockLog } = vi.hoisted(() => ({
   mockLog: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },

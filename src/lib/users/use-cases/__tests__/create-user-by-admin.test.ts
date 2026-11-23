@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { expectNoPersonalData } from '@/__tests__/helpers/expect-no-personal-data';
 import { BCRYPT_COST } from '@/lib/auth/rules/bcrypt-cost';
 import {
   CREDENTIALS_REQUIRED_MESSAGE,
@@ -8,7 +9,6 @@ import {
 } from '@/lib/auth/rules/credential-validation';
 import { PASSWORD_TOO_SHORT_MESSAGE } from '@/lib/auth/rules/password-rules';
 import { AccountStatus, UserRole } from '@/lib/auth/types/account';
-import { expectNoPersonalData } from '@/lib/platform/logging/testing';
 import {
   type AdminUserCreation,
   createUserByAdmin,
