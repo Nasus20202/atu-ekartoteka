@@ -242,7 +242,13 @@ The system SHALL enforce stricter test behaviour in continuous integration envir
 
 - **GIVEN** a flaky E2E test in CI
 - **WHEN** it fails on the first attempt
-- **THEN** Playwright retries it up to 2 times before marking it as failed; no retries occur locally
+- **THEN** Playwright retries it up to 2 times before marking it as passed; no retries occur locally
+
+#### Scenario: Flaky tests fail the run
+
+- **GIVEN** the Playwright configuration with `failOnFlakyTests: !!process.env.CI`
+- **WHEN** a test fails on one attempt and passes on a retry
+- **THEN** the run is reported as failed even though every test ended green, so the flake is fixed instead of hidden by the retry
 
 ---
 

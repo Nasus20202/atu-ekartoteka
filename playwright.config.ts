@@ -160,6 +160,9 @@ export default defineConfig({
   globalTeardown: './e2e/global-teardown.ts',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
+  // A test that only passes on a retry is a defect in the test or the app:
+  // fail the run so the flake is fixed instead of hidden
+  failOnFlakyTests: !!process.env.CI,
   retries: process.env.CI ? CI_RETRIES : 0,
   workers: process.env.CI ? CI_WORKERS : undefined,
   reporter: process.env.CI ? [['github'], ['list'], ['html']] : [['html']],
