@@ -1,7 +1,11 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PageHeader } from '@/components/layout/page-header';
+
+// The sticky header measures its sentinel; jsdom has no layout, so put it
+// where the browser puts it on an unscrolled page, below the navbar
+const SENTINEL_TOP_AT_REST = 200;
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -10,6 +14,17 @@ vi.mock('next/navigation', () => ({
 }));
 
 describe('PageHeader', () => {
+  beforeEach(() => {
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+      top: SENTINEL_TOP_AT_REST,
+      bottom: SENTINEL_TOP_AT_REST,
+    } as DOMRect);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('renders title', () => {
     render(<PageHeader title="Test Title" />);
 
