@@ -51,7 +51,7 @@ model HomeownersAssociation {
 model User {
   id             String   @id @default(cuid())
   // Stored normalised (trimmed, lowercased) — see src/lib/auth/rules/email.ts.
-  // CHECK (email = lower(btrim(email))) is set in migration, not tracked by Prisma
+  // CHECK (email = lower(btrim(email))): "User_email_normalized_check", set in migration, not tracked by Prisma
   email          String   @unique
   password       String?
   // COLLATE "pl_numeric" (set in migration, not tracked by Prisma)
@@ -268,11 +268,14 @@ model PasswordReset {
   @@index([expiresAt])
 }
 
-// Singleton: exactly one row (id = 1). CHECK constraints for the id and the value
-// ranges and text lengths live in the migration, not tracked by Prisma.
+// Singleton: exactly one row (id = 1).
+// CHECK constraints are set in migrations, not tracked by Prisma.
 model AppSettings {
+  // CHECK (id = 1): "AppSettings_singleton"
   id                     Int      @id @default(1)
+  // CHECK (tenantHistoryYearsBack BETWEEN 0 AND 20): "AppSettings_tenantHistoryYearsBack_range"
   tenantHistoryYearsBack Int      @default(2)
+  // CHECK (char_length(privacyPolicy) <= 50000): "AppSettings_privacyPolicy_length"
   privacyPolicy          String?
   updatedAt              DateTime @updatedAt
 }
