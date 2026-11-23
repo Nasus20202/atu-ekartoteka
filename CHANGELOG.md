@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.4] - 2026-11-23
+
+- test(visual): refresh snapshots for tailwind-merge 3.7.1
+- chore(deps): update dependency tailwind-merge to v3.7.1
+- test: move the personal-data log helper out of production code and stabilise a debounce test
+- fix(auth,users): keep delivered codes on failed resend, clean up unsent registration code, send bulk emails in chunks
+- docs(db): document every CHECK constraint next to its field in the schema
+- feat(email): return a typed send result and send the reset email after the response
+- refactor(users): share the name input check between create and profile update
+- feat(db): enforce normalised user emails with a check constraint
+- fix(auth): make the reset and verification flows consistent and atomic
+- fix(users): check input types and normalise e-mail when grouping apartments
+- refactor(lib): group slice files into layer folders and enforce the shape
+- refactor(import): split import types into per-entity files
+- refactor: move domain logic into vertical slices
+- chore(deps): update dependency lucide-react to v1.77.0 (#982)
+- chore(deps): lock file maintenance (#981)
+- refactor(charges): group charge lines with maps
+- perf(payments): drop in-memory filter before charge sums
+- perf(payments): stop loading unused charges on payment year
+- chore(deps): update dependency @testing-library/jest-dom to v8
+- chore(deps): update postgres docker tag to v19
+
 ## [0.10.3] - 2026-11-22
 
 - fix(users): show a spinner while assignable apartments load
