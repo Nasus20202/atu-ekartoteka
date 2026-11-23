@@ -300,8 +300,8 @@ hydration before interacting.
 
 #### Scenario: Actions wait for streamed content
 
-- **GIVEN** a link click or a scroll that lands while a streamed page still has no data
-- **WHEN** the click is lost or the document is too short to scroll past the header
+- **GIVEN** a link click, a scroll or a reload that races a page that is still streaming or saving
+- **WHEN** the click is lost, the reload is aborted, or the document is too short to scroll past the header
 - **THEN** the test retries the action until the content it needs is on screen, instead of failing on the first attempt
 
 #### Scenario: Tests act on data they own
