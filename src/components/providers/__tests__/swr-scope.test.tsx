@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import useSWR from 'swr';
 import { describe, expect, it } from 'vitest';
 
@@ -27,7 +27,7 @@ describe('SwrScope', () => {
         <Value />
       </SwrScope>
     );
-    first.getByText('set').click();
+    fireEvent.click(first.getByText('set'));
     expect(await screen.findByText('left-by-a-visit')).toBeInTheDocument();
     first.unmount();
 
@@ -48,7 +48,7 @@ describe('SwrScope', () => {
         <Value />
       </SwrScope>
     );
-    screen.getByText('set').click();
+    fireEvent.click(screen.getByText('set'));
 
     expect(await screen.findAllByText('left-by-a-visit')).toHaveLength(2);
   });

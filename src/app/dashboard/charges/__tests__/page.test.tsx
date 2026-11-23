@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { use } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { renderSuspended } from '@/__tests__/render-suspended';
 import ChargesPage from '@/app/dashboard/charges/page';
 
 const pending = vi.hoisted(() => ({ value: false }));
@@ -22,10 +23,10 @@ function Content() {
 }
 
 describe('ChargesPage', () => {
-  it('shows the header and a skeleton while the charges load', () => {
+  it('shows the header and a skeleton while the charges load', async () => {
     pending.value = true;
 
-    render(<ChargesPage searchParams={Promise.resolve({})} />);
+    await renderSuspended(<ChargesPage searchParams={Promise.resolve({})} />);
 
     expect(
       screen.getByRole('heading', { name: 'Naliczenia' })

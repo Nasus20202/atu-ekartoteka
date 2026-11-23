@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { use } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { renderSuspended } from '@/__tests__/render-suspended';
 import HoaApartmentsPage from '@/app/admin/apartments/[hoaId]/page';
 
 const pending = vi.hoisted(() => ({ section: false }));
@@ -19,7 +20,7 @@ vi.mock('@/components/apartments/hoa-apartments-section', () => ({
 }));
 
 async function renderPage() {
-  return render(
+  return renderSuspended(
     await HoaApartmentsPage({
       params: Promise.resolve({ hoaId: 'hoa-1' }),
       searchParams: Promise.resolve({}),

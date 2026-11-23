@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { use } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { renderSuspended } from '@/__tests__/render-suspended';
 import ApartmentChargesPage, {
   metadata,
 } from '@/app/dashboard/charges/[apartmentId]/page';
@@ -22,7 +23,7 @@ vi.mock('@/components/charges/apartment-charges-content', () => ({
 }));
 
 function renderPage() {
-  return render(
+  return renderSuspended(
     <ApartmentChargesPage
       params={Promise.resolve({ apartmentId: 'apt-1' })}
       searchParams={Promise.resolve({})}
@@ -31,21 +32,21 @@ function renderPage() {
 }
 
 describe('ApartmentChargesPage', () => {
-  it('streams the header and the content independently', () => {
+  it('streams the header and the content independently', async () => {
     pending.header = true;
     pending.content = false;
 
-    renderPage();
+    await renderPage();
 
     expect(screen.queryByText('header-loaded')).not.toBeInTheDocument();
     expect(screen.getByText('content-loaded')).toBeInTheDocument();
   });
 
-  it('shows a card skeleton while only the content loads', () => {
+  it('shows a card skeleton while only the content loads', async () => {
     pending.header = false;
     pending.content = true;
 
-    renderPage();
+    await renderPage();
 
     expect(screen.getByText('header-loaded')).toBeInTheDocument();
     expect(screen.getByTestId('card-list-skeleton')).toBeInTheDocument();

@@ -8,6 +8,7 @@ const {
   mockCreateFirstAdmin,
   mockCreateUser,
   mockCreateEmailVerification,
+  mockDeleteVerificationById,
   mockSendVerificationEmail,
   mockNotifyAdminsOfNewUser,
   mockCreateRegistrationAutoLoginToken,
@@ -19,6 +20,7 @@ const {
   mockCreateFirstAdmin: vi.fn(),
   mockCreateUser: vi.fn(),
   mockCreateEmailVerification: vi.fn(),
+  mockDeleteVerificationById: vi.fn(),
   mockSendVerificationEmail: vi.fn(),
   mockNotifyAdminsOfNewUser: vi.fn(),
   mockCreateRegistrationAutoLoginToken: vi.fn(),
@@ -38,6 +40,9 @@ vi.mock('@/lib/users/mutations/create-user', () => ({
 }));
 vi.mock('@/lib/auth/mutations/create-verification', () => ({
   createEmailVerification: mockCreateEmailVerification,
+}));
+vi.mock('@/lib/auth/mutations/delete-verification-codes', () => ({
+  deleteVerificationById: mockDeleteVerificationById,
 }));
 vi.mock('@/lib/platform/email/email-service', () => ({
   getEmailService: () => ({
@@ -100,7 +105,7 @@ function makeUser(overrides: Record<string, unknown> = {}) {
 function mockSuccessfulTenant(user = makeUser()) {
   mockFindUserByEmail.mockResolvedValue(null);
   mockCreateUser.mockResolvedValue(user);
-  mockCreateEmailVerification.mockResolvedValue({});
+  mockCreateEmailVerification.mockResolvedValue({ id: 'verification-id' });
   mockSendVerificationEmail.mockResolvedValue({ ok: true, delivery: 'sent' });
   mockNotifyAdminsOfNewUser.mockResolvedValue(undefined);
 }
@@ -255,6 +260,8 @@ describe('registerAction', () => {
     const result = await registerAction(TENANT_INPUT);
 
     expect(result.ok).toBe(true);
+    // The unsent code is removed so the resend limit does not block a retry
+    expect(mockDeleteVerificationById).toHaveBeenCalledWith('verification-id');
   });
 
   it('still succeeds when the admin notification fails', async () => {

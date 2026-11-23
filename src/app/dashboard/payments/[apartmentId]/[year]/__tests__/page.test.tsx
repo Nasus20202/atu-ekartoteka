@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { use } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { renderSuspended } from '@/__tests__/render-suspended';
 import PaymentDetailsPage, {
   metadata,
 } from '@/app/dashboard/payments/[apartmentId]/[year]/page';
@@ -44,10 +45,10 @@ const SECTIONS = ['header', 'summary', 'chart', 'table', 'apartment'];
 describe('PaymentDetailsPage', () => {
   it.each(SECTIONS)(
     'keeps the other sections visible while %s is still loading',
-    (name) => {
+    async (name) => {
       pending.name = name;
 
-      const { container } = render(
+      const { container } = await renderSuspended(
         <PaymentDetailsPage
           params={Promise.resolve({ apartmentId: 'apt-1', year: '2026' })}
         />

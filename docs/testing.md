@@ -21,6 +21,11 @@ pnpm test:coverage   # once, with thresholds
 Tests run in jsdom and do not need a database. Put a test in the
 `__tests__` folder beside the file it covers.
 
+A run must be silent. Anything a test prints through `stderr` or `stdout` — a
+React `act` or suspension warning, a jsdom "not implemented", a Prisma error —
+is a defect to fix, not noise to scroll past. Run `CI=1 pnpm test` to get the
+whole log in one pass:
+
 ## Browser tests
 
 The suites sign in as seeded users and click through the real app, started with

@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { use } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { renderSuspended } from '@/__tests__/render-suspended';
 import PaymentsPage from '@/app/dashboard/payments/page';
 
 const pending = vi.hoisted(() => ({ value: false }));
@@ -22,10 +23,10 @@ function Content() {
 }
 
 describe('PaymentsPage', () => {
-  it('shows the header and a skeleton while the payments load', () => {
+  it('shows the header and a skeleton while the payments load', async () => {
     pending.value = true;
 
-    render(<PaymentsPage />);
+    await renderSuspended(<PaymentsPage />);
 
     expect(screen.getByRole('heading', { name: 'Wpłaty' })).toBeInTheDocument();
     expect(screen.getByTestId('card-list-skeleton')).toBeInTheDocument();

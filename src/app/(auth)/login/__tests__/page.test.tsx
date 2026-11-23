@@ -105,8 +105,11 @@ describe('LoginPage — form fields and actions', () => {
     mockFetch({ googleEnabled: true });
   });
 
-  it('shows instructional placeholders', () => {
+  it('shows instructional placeholders', async () => {
     render(<LoginPage />);
+    await waitFor(() =>
+      expect(screen.queryByTestId('turnstile-skeleton')).not.toBeInTheDocument()
+    );
 
     expect(screen.getByLabelText('Email')).toHaveAttribute(
       'placeholder',
@@ -147,7 +150,7 @@ describe('LoginPage — form fields and actions', () => {
     expect(isAfter(register, google)).toBe(true);
   });
 
-  it('reserves the OAuth slot until the config resolves', () => {
+  it('reserves the OAuth slot until the config resolves', async () => {
     vi.mocked(fetch).mockImplementation((url) => {
       if (String(url).includes('/api/config/google')) {
         return new Promise(() => {});
@@ -159,6 +162,10 @@ describe('LoginPage — form fields and actions', () => {
     });
 
     render(<LoginPage />);
+    // Let the Turnstile config settle; the Google request stays pending on purpose
+    await waitFor(() =>
+      expect(screen.queryByTestId('turnstile-skeleton')).not.toBeInTheDocument()
+    );
 
     expect(screen.getByTestId('google-slot-skeleton')).toBeInTheDocument();
     expect(

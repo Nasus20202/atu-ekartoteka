@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { use } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { renderSuspended } from '@/__tests__/render-suspended';
 import ProfilePage from '@/app/dashboard/profile/page';
 
 const pending = vi.hoisted(() => ({ value: false }));
@@ -22,10 +23,10 @@ function Content() {
 }
 
 describe('ProfilePage', () => {
-  it('shows the header and a form skeleton while the profile loads', () => {
+  it('shows the header and a form skeleton while the profile loads', async () => {
     pending.value = true;
 
-    const { container } = render(<ProfilePage />);
+    const { container } = await renderSuspended(<ProfilePage />);
 
     expect(screen.getByRole('heading', { name: 'Profil' })).toBeInTheDocument();
     expect(container.querySelector('[aria-hidden="true"]')).not.toBeNull();

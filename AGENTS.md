@@ -46,6 +46,7 @@
 - **Documentation**: Do not add useless docs and comments
 - **File size**: Files should not be bigger than 200 lines
 - **Testing**: Rememeber about unit/integration/E2E testing
+- **Clean test output**: Read the `stderr` and `stdout` blocks of every test run, not just the pass/fail summary, and fix each warning as soon as it appears — React `act` and suspension warnings, jsdom "not implemented", Prisma errors, unhandled rejections. Output that seems unrelated to the failing test is still a real defect or a test that models the browser incorrectly. Run the suite non-interactively (`CI=1 pnpm test`) so the whole log is visible and nothing scrolls away.
 - **Dependencies**: Don't add useless dependencies to the codebase
 - **Delete old code**: If something is unused, just delete it
 - **Don't use magic numbers/strings**: Use types or constants instead
