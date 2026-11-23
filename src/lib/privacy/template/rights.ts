@@ -1,4 +1,4 @@
-import { placeholder as p } from '@/lib/privacy/placeholders';
+import { placeholder as p } from '@/lib/privacy/rules/placeholders';
 
 /** Sections 13–15: rights, how to use them, and the unexpected e-mail. */
 export const RIGHTS = `## Twoje prawa

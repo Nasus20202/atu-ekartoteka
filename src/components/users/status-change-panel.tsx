@@ -2,7 +2,7 @@ import { Check, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { UserStatusBadge } from '@/components/users/user-status-badge';
-import { isApprovedStatus } from '@/lib/auth/account-access';
+import { isApprovedStatus } from '@/lib/auth/rules/account-access';
 import { AccountStatus } from '@/lib/auth/types/account';
 
 interface StatusChangePanelProps {

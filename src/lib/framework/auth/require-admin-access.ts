@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { cache } from 'react';
 
-import { hasAdminAccess } from '@/lib/auth/admin-access';
+import { hasAdminAccess } from '@/lib/auth/queries/has-admin-access';
 import { getSession } from '@/lib/framework/auth/get-session';
 
 /** Session of an approved admin, checked in the database once per request. */

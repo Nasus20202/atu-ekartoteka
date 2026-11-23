@@ -14,11 +14,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PasswordInput } from '@/components/ui/password-input';
-import { AUTH_PLACEHOLDERS } from '@/lib/auth/form-placeholders';
+import { AUTH_PLACEHOLDERS } from '@/lib/auth/rules/form-placeholders';
 import {
   MIN_PASSWORD_LENGTH,
   PASSWORD_TOO_SHORT_MESSAGE,
-} from '@/lib/auth/password-rules';
+} from '@/lib/auth/rules/password-rules';
 
 export default function RegisterPage() {
   const { isFirstAdmin, checkingSetup } = useSetupStatus();

@@ -9,7 +9,7 @@ import {
   createUserRequest,
   updateUserRequest,
 } from '@/components/users/user-requests';
-import { CREDENTIALS_REQUIRED_MESSAGE } from '@/lib/auth/credential-validation';
+import { CREDENTIALS_REQUIRED_MESSAGE } from '@/lib/auth/rules/credential-validation';
 import { AccountStatus } from '@/lib/auth/types/account';
 import type { UserDto } from '@/lib/users/dto/user-dto';
 

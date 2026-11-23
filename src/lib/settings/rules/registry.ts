@@ -1,7 +1,7 @@
-import { DEFAULT_TENANT_HISTORY_YEARS_BACK } from '@/lib/settings/constants';
-import { parsePrivacyPolicy } from '@/lib/settings/parse-privacy-policy';
-import type { ParseResult } from '@/lib/settings/parse-result';
-import { parseYearsBack } from '@/lib/settings/parse-years-back';
+import { DEFAULT_TENANT_HISTORY_YEARS_BACK } from '@/lib/settings/rules/constants';
+import { parsePrivacyPolicy } from '@/lib/settings/rules/parse-privacy-policy';
+import type { ParseResult } from '@/lib/settings/rules/parse-result';
+import { parseYearsBack } from '@/lib/settings/rules/parse-years-back';
 
 interface SettingDefinition<T> {
   defaultValue: T;

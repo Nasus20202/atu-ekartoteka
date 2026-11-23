@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { hashToken } from '@/lib/auth/rules/verification-tokens';
 import { resendVerificationEmail } from '@/lib/auth/use-cases/resend-verification-email';
-import { hashToken } from '@/lib/auth/verification-tokens';
 
 const NOW = new Date('2026-11-23T12:00:00Z');
 const EXPIRES_AT = new Date('2026-11-24T12:00:00Z');
@@ -46,8 +46,10 @@ vi.mock('@/lib/platform/email/email-service', () => ({
     sendVerificationEmail: mockSendVerificationEmail,
   }),
 }));
-vi.mock('@/lib/auth/verification-tokens', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/auth/verification-tokens')>()),
+vi.mock('@/lib/auth/rules/verification-tokens', async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import('@/lib/auth/rules/verification-tokens')
+  >()),
   generateSecureToken: () => 'secure-token',
   getVerificationExpiration: mockGetVerificationExpiration,
 }));

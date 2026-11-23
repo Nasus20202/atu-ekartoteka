@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { BCRYPT_COST } from '@/lib/auth/bcrypt-cost';
+import { BCRYPT_COST } from '@/lib/auth/rules/bcrypt-cost';
 import {
   bulkAssignAccounts,
   bulkCreateAccounts,

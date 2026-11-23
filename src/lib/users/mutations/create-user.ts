@@ -1,5 +1,5 @@
 import { Prisma } from '@/generated/prisma/client';
-import { normalizeEmail } from '@/lib/auth/email';
+import { normalizeEmail } from '@/lib/auth/rules/email';
 import { AccountStatus, UserRole } from '@/lib/auth/types/account';
 import { prisma } from '@/lib/platform/database/prisma';
 

@@ -14,7 +14,7 @@ vi.mock('@/lib/platform/database/prisma', () => ({
   },
 }));
 
-vi.mock('@/lib/auth/new-user-registration', () => ({
+vi.mock('@/lib/auth/use-cases/new-user-registration', () => ({
   notifyAdminsOfNewUser: vi.fn(),
 }));
 
@@ -242,7 +242,7 @@ describe('callbacks.signIn', () => {
 
   it('still signs in a new Google user when notifying admins fails', async () => {
     const { notifyAdminsOfNewUser } =
-      await import('@/lib/auth/new-user-registration');
+      await import('@/lib/auth/use-cases/new-user-registration');
     vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
     vi.mocked(prisma.user.create).mockResolvedValue({
       ...createMockUser({ id: 'new-user-id' }),

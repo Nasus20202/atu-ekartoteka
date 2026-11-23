@@ -44,20 +44,20 @@ vi.mock('@/lib/platform/email/email-service', () => ({
     sendVerificationEmail: mockSendVerificationEmail,
   }),
 }));
-vi.mock('@/lib/auth/new-user-registration', () => ({
+vi.mock('@/lib/auth/use-cases/new-user-registration', () => ({
   notifyAdminsOfNewUser: mockNotifyAdminsOfNewUser,
 }));
-vi.mock('@/lib/auth/registration-auto-login-token', () => ({
+vi.mock('@/lib/auth/rules/registration-auto-login-token', () => ({
   createRegistrationAutoLoginToken: mockCreateRegistrationAutoLoginToken,
 }));
 vi.mock('@/lib/platform/opentelemetry/auth-metrics', () => ({
   authMetrics: { recordRegistration: mockRecordRegistration },
 }));
-vi.mock('@/lib/auth/turnstile', () => ({
+vi.mock('@/lib/auth/gateways/turnstile', () => ({
   isTurnstileEnabled: mockIsTurnstileEnabled,
   verifyTurnstileToken: mockVerifyTurnstileToken,
 }));
-vi.mock('@/lib/auth/verification-tokens', () => ({
+vi.mock('@/lib/auth/rules/verification-tokens', () => ({
   generateSecureToken: () => 'secure-token',
   getVerificationExpiration: () => new Date(Date.now() + 86400_000),
   hashToken: (t: string) => `hashed-${t}`,

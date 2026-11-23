@@ -11,7 +11,7 @@ const { mockInitTracing, mockInitializeCronJobs, mockInfo, mockPatchConsole } =
 vi.mock('@/lib/platform/opentelemetry/tracing', () => ({
   initTracing: mockInitTracing,
 }));
-vi.mock('@/lib/cron/init', () => ({
+vi.mock('@/lib/cron/use-cases/initialize-cron-jobs', () => ({
   initializeCronJobs: mockInitializeCronJobs,
 }));
 vi.mock('@/lib/platform/logging/patch-console', () => ({

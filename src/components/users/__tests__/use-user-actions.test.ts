@@ -2,7 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useUserActions } from '@/components/users/use-user-actions';
-import { CREDENTIALS_REQUIRED_MESSAGE } from '@/lib/auth/credential-validation';
+import { CREDENTIALS_REQUIRED_MESSAGE } from '@/lib/auth/rules/credential-validation';
 import { AccountStatus, UserRole } from '@/lib/auth/types/account';
 import type { UserDto } from '@/lib/users/dto/user-dto';
 

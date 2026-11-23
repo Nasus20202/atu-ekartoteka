@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildSkippedRecordWarnings } from '@/lib/import/skipped-records';
+import { buildSkippedRecordWarnings } from '@/lib/import/validation/skipped-records';
 
 const LEASE = { ownerId: 'N00001', apartmentId: 'HOA-STELES' };
 const FORMER_OWNER = { ownerId: 'W00097', apartmentId: 'HOA-00009M' };

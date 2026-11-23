@@ -1,10 +1,10 @@
 import bcrypt from 'bcrypt';
 
-import { BCRYPT_COST } from '@/lib/auth/bcrypt-cost';
+import { BCRYPT_COST } from '@/lib/auth/rules/bcrypt-cost';
 import {
   MIN_PASSWORD_LENGTH,
   PASSWORD_TOO_SHORT_MESSAGE,
-} from '@/lib/auth/password-rules';
+} from '@/lib/auth/rules/password-rules';
 import { createLogger } from '@/lib/platform/logging/logger';
 import {
   failedResult,

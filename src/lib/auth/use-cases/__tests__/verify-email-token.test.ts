@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { hashToken } from '@/lib/auth/rules/verification-tokens';
 import { verifyEmailToken } from '@/lib/auth/use-cases/verify-email-token';
-import { hashToken } from '@/lib/auth/verification-tokens';
 
 const HOUR_MS = 60 * 60 * 1000;
 

@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ImportError } from '@/lib/import/types/import-error';
 import {
   createEmptyStats,
   groupFilesByHOA,
   isKnownFile,
   mapWithConcurrency,
   parseWmbDate,
-} from '@/lib/import/utils';
+} from '@/lib/import/rules/utils';
+import type { ImportError } from '@/lib/import/types/import-error';
 
 describe('isKnownFile', () => {
   it('returns true for lok.txt', () => {

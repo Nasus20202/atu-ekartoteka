@@ -8,14 +8,16 @@ vi.mock('@/auth', () => ({
   auth: vi.fn(),
 }));
 
-vi.mock('@/lib/import/import-handler', () => ({
+vi.mock('@/lib/import/use-cases/process-batch-import', () => ({
   processBatchImport: vi.fn(),
 }));
 
-vi.mock('@/lib/auth/admin-access', () => ({
+vi.mock('@/lib/auth/queries/has-admin-access', () => ({
   hasAdminAccess: vi.fn((userId: string) =>
     Promise.resolve(userId.startsWith('admin'))
   ),
+}));
+vi.mock('@/lib/auth/rules/admin-access', () => ({
   isAdminRole: (role: string | null | undefined) => role === 'ADMIN',
 }));
 
@@ -28,7 +30,8 @@ vi.mock('@/lib/platform/logging/logger', () => ({
 }));
 
 const { auth } = await import('@/auth');
-const { processBatchImport } = await import('@/lib/import/import-handler');
+const { processBatchImport } =
+  await import('@/lib/import/use-cases/process-batch-import');
 
 function createMockFormData(files: File[]): FormData {
   const formData = new FormData();

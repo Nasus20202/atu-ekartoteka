@@ -5,8 +5,8 @@ import {
   type HeadingLevel,
   type InlineNode,
   parseMarkdown,
-} from '@/lib/privacy/markdown';
-import { PLACEHOLDER_PATTERN } from '@/lib/privacy/placeholders';
+} from '@/lib/privacy/rules/markdown';
+import { PLACEHOLDER_PATTERN } from '@/lib/privacy/rules/placeholders';
 import { cn } from '@/lib/shared/utils';
 
 interface PolicyTextProps {

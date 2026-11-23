@@ -28,8 +28,8 @@ vi.mock('@/lib/platform/database/prisma', () => ({
   },
 }));
 
-import { IMPORT_HOA_CONCURRENCY } from '@/lib/import/constants';
-import { validateDatabase } from '@/lib/import/validate-database';
+import { IMPORT_HOA_CONCURRENCY } from '@/lib/import/rules/constants';
+import { validateDatabase } from '@/lib/import/use-cases/validate-database';
 
 const MONTHS = [
   'january',

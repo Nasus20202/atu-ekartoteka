@@ -4,16 +4,19 @@ const { mockScheduler } = vi.hoisted(() => ({
   mockScheduler: { scheduleTask: vi.fn(), stopAll: vi.fn() },
 }));
 
-vi.mock('@/lib/cron/scheduler', () => ({
+vi.mock('@/lib/cron/runtime/scheduler', () => ({
   getCronScheduler: () => mockScheduler,
 }));
 vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => ({ info: vi.fn() }),
 }));
 
-import { initializeCronJobs, stopCronJobs } from '@/lib/cron/init';
 import { cleanupExpiredPasswordResets } from '@/lib/cron/jobs/cleanup-password-resets';
 import { cleanupExpiredVerifications } from '@/lib/cron/jobs/cleanup-verifications';
+import {
+  initializeCronJobs,
+  stopCronJobs,
+} from '@/lib/cron/use-cases/initialize-cron-jobs';
 
 const EVERY_HOUR = '0 * * * *';
 

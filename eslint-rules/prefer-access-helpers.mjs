@@ -8,12 +8,13 @@ const ACCESS_CHECKS = {
     enumName: 'AccountStatus',
     enumValue: 'APPROVED',
     helper:
-      'isApprovedStatus() / isApprovedAccount() from @/lib/auth/account-access',
+      'isApprovedStatus() / isApprovedAccount() from @/lib/auth/rules/account-access',
   },
   role: {
     enumName: 'UserRole',
     enumValue: 'ADMIN',
-    helper: 'isAdminRole() / isApprovedAdmin() from @/lib/auth/admin-access',
+    helper:
+      'isAdminRole() / isApprovedAdmin() from @/lib/auth/rules/admin-access',
   },
 };
 

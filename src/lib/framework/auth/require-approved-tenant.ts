@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { cache } from 'react';
 
-import { isApprovedAccount } from '@/lib/auth/account-access';
+import { isApprovedAccount } from '@/lib/auth/rules/account-access';
 import { getSession } from '@/lib/framework/auth/get-session';
 import { findUserByIdCached } from '@/lib/framework/rsc-cache';
 

@@ -1,6 +1,6 @@
-import { PLACEHOLDER_PATTERN } from '@/lib/privacy/placeholders';
-import { PRIVACY_POLICY_MAX_LENGTH } from '@/lib/settings/constants';
-import type { ParseResult } from '@/lib/settings/parse-result';
+import { PLACEHOLDER_PATTERN } from '@/lib/privacy/rules/placeholders';
+import { PRIVACY_POLICY_MAX_LENGTH } from '@/lib/settings/rules/constants';
+import type { ParseResult } from '@/lib/settings/rules/parse-result';
 
 export const UNRESOLVED_PLACEHOLDERS_MESSAGE =
   'Uzupełnij lub usuń pola oznaczone podwójnymi nawiasami kwadratowymi [[…]]';

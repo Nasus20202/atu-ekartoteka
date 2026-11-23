@@ -1,10 +1,10 @@
 import { prisma } from '@/lib/platform/database/prisma';
-import { APP_SETTINGS_ROW_ID } from '@/lib/settings/constants';
+import { APP_SETTINGS_ROW_ID } from '@/lib/settings/rules/constants';
 import {
   APP_SETTINGS,
   type AppSettingKey,
   type AppSettingsValues,
-} from '@/lib/settings/registry';
+} from '@/lib/settings/rules/registry';
 
 type SettingsSelect = Partial<Record<AppSettingKey, true>>;
 

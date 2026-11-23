@@ -1,6 +1,6 @@
 import type { NextAuthConfig } from 'next-auth';
 
-import { notifyAdminsOfNewUser } from '@/lib/auth/new-user-registration';
+import { notifyAdminsOfNewUser } from '@/lib/auth/use-cases/new-user-registration';
 import { createLogger } from '@/lib/platform/logging/logger';
 import { authMetrics } from '@/lib/platform/opentelemetry/auth-metrics';
 import { createGoogleUser } from '@/lib/users/mutations/create-google-user';

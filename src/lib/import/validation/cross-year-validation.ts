@@ -1,7 +1,7 @@
 import {
   CLOSING_BALANCE_IGNORED_NOTE,
   WPLATY_BALANCE_TOLERANCE,
-} from '@/lib/import/constants';
+} from '@/lib/import/rules/constants';
 import type { TransactionClient } from '@/lib/import/types/import-context';
 import type { ImportWarning } from '@/lib/import/types/import-warning';
 import { type DecimalLike, toDecimal } from '@/lib/shared/utils/decimal';

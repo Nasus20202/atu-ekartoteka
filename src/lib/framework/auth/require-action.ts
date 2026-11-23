@@ -1,7 +1,7 @@
 import type { Session } from 'next-auth';
 
 import { auth } from '@/auth';
-import { hasAdminAccess } from '@/lib/auth/admin-access';
+import { hasAdminAccess } from '@/lib/auth/queries/has-admin-access';
 import { UNAUTHORIZED_MESSAGE } from '@/lib/framework/auth/require-admin';
 import { AUTH_REQUIRED_MESSAGE } from '@/lib/framework/auth/require-user';
 import { createLogger } from '@/lib/platform/logging/logger';

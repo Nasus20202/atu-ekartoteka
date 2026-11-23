@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('@/auth', () => ({ auth: mocks.auth }));
-vi.mock('@/lib/auth/admin-access', () => ({
+vi.mock('@/lib/auth/queries/has-admin-access', () => ({
   hasAdminAccess: mocks.hasAdminAccess,
 }));
 vi.mock('@/lib/platform/logging/logger', () => ({

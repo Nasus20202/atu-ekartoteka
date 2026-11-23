@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isApprovedAccount } from '@/lib/auth/account-access';
+import { isApprovedAccount } from '@/lib/auth/rules/account-access';
 import { AccountStatus } from '@/lib/auth/types/account';
 
 describe('isApprovedAccount', () => {

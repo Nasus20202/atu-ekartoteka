@@ -1,4 +1,4 @@
-import { normalizeEmail } from '@/lib/auth/email';
+import { normalizeEmail } from '@/lib/auth/rules/email';
 import { prisma } from '@/lib/platform/database/prisma';
 
 /**

@@ -4,9 +4,9 @@ import type { ImportWarning } from '@/lib/import/types/import-warning';
 import {
   type BalancePaymentSource,
   buildYearBalanceRows,
-} from '@/lib/import/year-balance-overview';
-import { withYearStatus } from '@/lib/import/year-status';
-import type { MonthlyChargeSums } from '@/lib/payments/queries/find-monthly-charge-sums';
+} from '@/lib/import/validation/year-balance-overview';
+import { withYearStatus } from '@/lib/import/validation/year-status';
+import type { MonthlyChargeSums } from '@/lib/payments/types/monthly-charge-sums';
 import { toDecimal } from '@/lib/shared/utils/decimal';
 import { PAYMENT_MONTH_FIELD_KEYS } from '@/lib/shared/utils/payment-months';
 

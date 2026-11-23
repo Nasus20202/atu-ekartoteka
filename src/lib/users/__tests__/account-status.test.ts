@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { notifyAccountApproved } from '@/lib/users/account-status';
+import { notifyAccountApproved } from '@/lib/users/use-cases/account-status';
 
 // Mock dependencies
 vi.mock('@/lib/platform/email/email-service', () => ({

@@ -1,13 +1,16 @@
 import bcrypt from 'bcrypt';
 
-import { BCRYPT_COST } from '@/lib/auth/bcrypt-cost';
+import {
+  isTurnstileEnabled,
+  verifyTurnstileToken,
+} from '@/lib/auth/gateways/turnstile';
+import { BCRYPT_COST } from '@/lib/auth/rules/bcrypt-cost';
 import {
   EMAIL_TAKEN_MESSAGE,
   validateCredentials,
-} from '@/lib/auth/credential-validation';
-import { normalizeEmail } from '@/lib/auth/email';
-import { createRegistrationAutoLoginToken } from '@/lib/auth/registration-auto-login-token';
-import { isTurnstileEnabled, verifyTurnstileToken } from '@/lib/auth/turnstile';
+} from '@/lib/auth/rules/credential-validation';
+import { normalizeEmail } from '@/lib/auth/rules/email';
+import { createRegistrationAutoLoginToken } from '@/lib/auth/rules/registration-auto-login-token';
 import { AccountStatus, UserRole } from '@/lib/auth/types/account';
 import {
   notifyAdminsAboutRegistration,

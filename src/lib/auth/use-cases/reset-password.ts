@@ -1,15 +1,15 @@
 import bcrypt from 'bcrypt';
 
-import { BCRYPT_COST } from '@/lib/auth/bcrypt-cost';
+import { verifyTurnstileToken } from '@/lib/auth/gateways/turnstile';
 import { resetPasswordTransaction } from '@/lib/auth/mutations/reset-password-transaction';
+import { findPasswordResetByToken } from '@/lib/auth/queries/find-password-reset-by-token';
+import { BCRYPT_COST } from '@/lib/auth/rules/bcrypt-cost';
 import {
   MIN_PASSWORD_LENGTH,
   PASSWORD_TOO_SHORT_MESSAGE,
-} from '@/lib/auth/password-rules';
-import { findPasswordResetByToken } from '@/lib/auth/queries/find-password-reset-by-token';
-import { verifyTurnstileToken } from '@/lib/auth/turnstile';
+} from '@/lib/auth/rules/password-rules';
+import { hashToken } from '@/lib/auth/rules/verification-tokens';
 import { AuthMethod } from '@/lib/auth/types/account';
-import { hashToken } from '@/lib/auth/verification-tokens';
 import { createLogger } from '@/lib/platform/logging/logger';
 import { authMetrics } from '@/lib/platform/opentelemetry/auth-metrics';
 import {

@@ -1,9 +1,12 @@
-import { normalizeEmail } from '@/lib/auth/email';
+import { verifyTurnstileToken } from '@/lib/auth/gateways/turnstile';
 import { createPasswordReset } from '@/lib/auth/mutations/create-password-reset';
 import { deletePasswordResetsForUser } from '@/lib/auth/mutations/delete-password-resets-for-user';
-import { verifyTurnstileToken } from '@/lib/auth/turnstile';
+import { normalizeEmail } from '@/lib/auth/rules/email';
+import {
+  generateSecureToken,
+  hashToken,
+} from '@/lib/auth/rules/verification-tokens';
 import { AuthMethod } from '@/lib/auth/types/account';
-import { generateSecureToken, hashToken } from '@/lib/auth/verification-tokens';
 import { getEmailService } from '@/lib/platform/email/email-service';
 import { createLogger } from '@/lib/platform/logging/logger';
 import {

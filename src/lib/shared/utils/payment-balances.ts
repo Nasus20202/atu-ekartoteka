@@ -1,4 +1,4 @@
-import type { ChargeSumsByPeriod } from '@/lib/payments/queries/find-monthly-charge-sums';
+import type { ChargeSumsByPeriod } from '@/lib/payments/types/monthly-charge-sums';
 import {
   type Decimal,
   type DecimalLike,

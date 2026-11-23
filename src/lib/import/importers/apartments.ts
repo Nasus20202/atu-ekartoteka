@@ -1,4 +1,3 @@
-import { IMPORT_CREATE_BATCH_SIZE } from '@/lib/import/constants';
 import {
   APARTMENT_MAP_SELECT,
   type ApartmentMapRow,
@@ -9,6 +8,8 @@ import {
   isOwnershipEnded,
 } from '@/lib/import/importers/apartment-data';
 import { ApartmentEntry } from '@/lib/import/parsers/apartment-parser';
+import { IMPORT_CREATE_BATCH_SIZE } from '@/lib/import/rules/constants';
+import { processInBatches } from '@/lib/import/rules/utils';
 import {
   ApartmentMap,
   HOAContext,
@@ -16,7 +17,6 @@ import {
 } from '@/lib/import/types/import-context';
 import { ImportErrorItem } from '@/lib/import/types/import-error';
 import { EntityStats } from '@/lib/import/types/import-result';
-import { processInBatches } from '@/lib/import/utils';
 import { getErrorMessage } from '@/lib/shared/utils/error-message';
 
 export async function importApartments(

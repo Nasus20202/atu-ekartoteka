@@ -7,7 +7,7 @@ import { updateAppSettings } from '@/lib/settings/mutations/update-app-settings'
 import {
   type AppSettingsValues,
   parseAppSettingsUpdate,
-} from '@/lib/settings/registry';
+} from '@/lib/settings/rules/registry';
 
 const logger = createLogger('action:settings');
 

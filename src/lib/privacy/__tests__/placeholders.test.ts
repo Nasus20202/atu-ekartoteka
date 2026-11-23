@@ -4,7 +4,7 @@ import {
   countPlaceholders,
   placeholder,
   PLACEHOLDER_PATTERN,
-} from '@/lib/privacy/placeholders';
+} from '@/lib/privacy/rules/placeholders';
 
 describe('placeholders', () => {
   it('wraps a label in double square brackets', () => {

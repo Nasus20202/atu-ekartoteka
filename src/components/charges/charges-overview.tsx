@@ -9,7 +9,7 @@ import {
 import { MultiChargesDisplay } from '@/components/charges/multi-charges-display';
 import { REVEAL_CLASS } from '@/components/layout/reveal';
 import { Card, CardContent } from '@/components/ui/card';
-import { isApprovedAccount } from '@/lib/auth/account-access';
+import { isApprovedAccount } from '@/lib/auth/rules/account-access';
 import { getSession } from '@/lib/framework/auth/get-session';
 import { getRequestNow } from '@/lib/framework/request-now';
 import { getTenantHistoryStartYear } from '@/lib/framework/tenant-history';

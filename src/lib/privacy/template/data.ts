@@ -1,4 +1,4 @@
-import { placeholder as p } from '@/lib/privacy/placeholders';
+import { placeholder as p } from '@/lib/privacy/rules/placeholders';
 
 /** Sections 5–8: the data, its source, the purposes and whether it is required. */
 export const DATA = `## Jakie dane przetwarzamy

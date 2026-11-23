@@ -88,26 +88,26 @@ Consequences:
 
 ## Where things are
 
-| What                           | Where                                                                |
-| ------------------------------ | -------------------------------------------------------------------- |
-| Pages and API routes           | `src/app/`                                                           |
-| Server Actions                 | `src/actions/<feature>/`                                             |
-| Feature components             | `src/components/<feature>/`                                          |
-| shadcn/ui primitives           | `src/components/ui/`                                                 |
-| Domain slice                   | `src/lib/<domain>/` (`auth`, `users`, `apartments`, `payments`, ...) |
-| Database queries and mutations | `src/lib/<domain>/queries`, `src/lib/<domain>/mutations`             |
-| Domain types and DTOs          | `src/lib/<domain>/types/`, `src/lib/<domain>/dto/`                   |
-| Use cases                      | `src/lib/<domain>/use-cases/`                                        |
-| Auth config and guards         | `src/auth.ts`, `src/lib/framework/auth/`                             |
-| Request, cookie and cache glue | `src/lib/framework/`                                                 |
-| Logging, database, telemetry   | `src/lib/platform/`                                                  |
-| Import pipeline and parsers    | `src/lib/import/`, `src/lib/import/parsers/`                         |
-| Scheduled jobs                 | `src/lib/cron/`                                                      |
-| Email components and sending   | `src/components/email/`, `src/lib/platform/email/`                   |
-| PDF documents                  | `src/components/pdf/`, `src/lib/platform/pdf/`                       |
-| Custom lint rules              | `eslint-rules/`                                                      |
-| Schema and migrations          | `prisma/`                                                            |
-| Behaviour specifications       | `openspec/specs/`                                                    |
+| What                           | Where                                                                        |
+| ------------------------------ | ---------------------------------------------------------------------------- |
+| Pages and API routes           | `src/app/`                                                                   |
+| Server Actions                 | `src/actions/<feature>/`                                                     |
+| Feature components             | `src/components/<feature>/`                                                  |
+| shadcn/ui primitives           | `src/components/ui/`                                                         |
+| Domain slice                   | `src/lib/<domain>/` (`auth`, `users`, `apartments`, `payments`, ...)         |
+| Database queries and mutations | `src/lib/<domain>/queries`, `src/lib/<domain>/mutations`                     |
+| Domain models and DTOs         | `src/lib/<domain>/types/<entity>.ts`, `src/lib/<domain>/dto/<entity>-dto.ts` |
+| Use cases                      | `src/lib/<domain>/use-cases/`                                                |
+| Auth config and guards         | `src/auth.ts`, `src/lib/framework/auth/`                                     |
+| Request, cookie and cache glue | `src/lib/framework/`                                                         |
+| Logging, database, telemetry   | `src/lib/platform/`                                                          |
+| Import pipeline and parsers    | `src/lib/import/`, `src/lib/import/parsers/`, `src/lib/import/types/`        |
+| Scheduled jobs                 | `src/lib/cron/`                                                              |
+| Email components and sending   | `src/components/email/`, `src/lib/platform/email/`                           |
+| PDF documents                  | `src/components/pdf/`, `src/lib/platform/pdf/`                               |
+| Custom lint rules              | `eslint-rules/`                                                              |
+| Schema and migrations          | `prisma/`                                                                    |
+| Behaviour specifications       | `openspec/specs/`                                                            |
 
 The domain slices (`src/lib/<domain>/`, `src/lib/import`, `src/lib/cron`) and
 the shared code in `src/lib/shared/` import no Next.js, React or Auth.js API. Anything that needs
@@ -116,6 +116,37 @@ request date, faked in E2E), `rsc-cache` (request-scoped reads for server
 components), `tenant-history`, `list-view-mode-server` (the list view cookie) and
 `auth/` (Auth.js config, session and guards). ESLint keeps domain modules out of
 the framework, so they stay callable from a script, a job or another runtime.
+
+## Domain slices
+
+A domain slice `src/lib/<domain>/` holds only folders. Each folder is one layer,
+and a folder imports only the layers listed for it. The matrix is in
+`eslint-rules/slice-layers.mjs`; lint enforces it with `local/slice-structure`
+(the folder shape) and `local/slice-imports` (the imports).
+
+| Folder        | Holds                                                   | May import                                                                                    |
+| ------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `types/`      | models, one file per entity                             | `types/`                                                                                      |
+| `dto/`        | browser DTOs and their mappers                          | `types/`, `dto/`, `rules/`                                                                    |
+| `rules/`      | pure logic and constants, no I/O                        | `types/`, `dto/`, `rules/`, `parsers/`                                                        |
+| `parsers/`    | pure parsing of input files                             | `types/`, `dto/`, `rules/`, `parsers/`                                                        |
+| `validation/` | pure checks that return warnings or errors              | `types/`, `dto/`, `rules/`, `parsers/`, `validation/`                                         |
+| `template/`   | static content, such as the privacy policy              | `template/`, `rules/`                                                                         |
+| `gateways/`   | calls to external services                              | `types/`, `rules/`, `gateways/`, logging                                                      |
+| `queries/`    | reads through Prisma                                    | `types/`, `dto/`, `rules/`, `queries/`                                                        |
+| `mutations/`  | writes through Prisma                                   | `types/`, `dto/`, `rules/`, `queries/`, `mutations/`                                          |
+| `importers/`  | import steps that write one kind of record              | `types/`, `dto/`, `rules/`, `parsers/`, `validation/`, `importers/`, `queries/`, `mutations/` |
+| `pipeline/`   | multi-step import work that reads and writes            | as `importers/`, plus `pipeline/`                                                             |
+| `use-cases/`  | entry points called by actions, API routes and jobs     | every folder                                                                                  |
+| `runtime/`    | scheduling, timers and locks that run outside a request | every folder                                                                                  |
+| `jobs/`       | scheduled work                                          | every folder                                                                                  |
+
+Outside the slices, `platform/` holds infrastructure, `framework/` holds the
+Next.js and Auth.js edge, and `shared/` holds pure code used across domains.
+Pure folders (`types/`, `dto/`, `rules/`, `parsers/`, `validation/`, `template/`)
+do not import `platform/`, except logging. Domain code does not import
+`framework/`. Components do not import `use-cases/`, `pipeline/`, `importers/`,
+`runtime/`, `jobs/` or `gateways/`. Shared code imports only domain types.
 
 ## PDFs
 

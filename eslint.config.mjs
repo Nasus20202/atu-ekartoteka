@@ -14,6 +14,7 @@ import {
   RELATIVE_IMPORTS,
 } from './eslint-rules/boundaries.mjs';
 import localRules from './eslint-rules/index.mjs';
+import { sliceConfigs } from './eslint-rules/slice-configs.mjs';
 
 const eslintConfig = defineConfig([
   ...fixupConfigRules(nextVitals),
@@ -59,6 +60,7 @@ const eslintConfig = defineConfig([
     },
   },
   ...boundaryConfigs,
+  ...sliceConfigs,
   // Fields prefixed with `legacy` hold values loaded from the input files that
   // are known to be incorrect; only import code and tests may touch them
   {
@@ -145,8 +147,8 @@ const eslintConfig = defineConfig([
       '**/__tests__/**',
       '**/*.test.ts',
       '**/*.test.tsx',
-      'src/lib/auth/account-access.ts',
-      'src/lib/auth/admin-access.ts',
+      'src/lib/auth/rules/account-access.ts',
+      'src/lib/auth/rules/admin-access.ts',
     ],
     plugins: { local: localRules },
     rules: {

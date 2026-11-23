@@ -1,5 +1,5 @@
+import { parseFileToBuffer } from '@/lib/import/rules/utils';
 import type { ImportErrorItem } from '@/lib/import/types/import-error';
-import { parseFileToBuffer } from '@/lib/import/utils';
 
 const MAX_DUPLICATE_EXAMPLES = 5;
 

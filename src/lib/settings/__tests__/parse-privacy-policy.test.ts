@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { PRIVACY_POLICY_MAX_LENGTH } from '@/lib/settings/constants';
+import { PRIVACY_POLICY_MAX_LENGTH } from '@/lib/settings/rules/constants';
 import {
   parsePrivacyPolicy,
   POLICY_TOO_LONG_MESSAGE,
   UNRESOLVED_PLACEHOLDERS_MESSAGE,
-} from '@/lib/settings/parse-privacy-policy';
+} from '@/lib/settings/rules/parse-privacy-policy';
 
 describe('parsePrivacyPolicy', () => {
   it('trims the text', () => {

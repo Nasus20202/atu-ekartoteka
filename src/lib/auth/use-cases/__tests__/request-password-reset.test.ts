@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { hashToken } from '@/lib/auth/rules/verification-tokens';
 import { AuthMethod } from '@/lib/auth/types/account';
 import {
   type PasswordResetRequest,
   requestPasswordReset,
 } from '@/lib/auth/use-cases/request-password-reset';
-import { hashToken } from '@/lib/auth/verification-tokens';
 
 const NOW = new Date('2026-11-23T12:00:00Z');
 const ONE_HOUR_MS = 60 * 60 * 1000;
@@ -38,7 +38,7 @@ vi.mock('@/lib/auth/mutations/create-password-reset', () => ({
 vi.mock('@/lib/auth/mutations/delete-password-resets-for-user', () => ({
   deletePasswordResetsForUser: mockDeletePasswordResetsForUser,
 }));
-vi.mock('@/lib/auth/turnstile', () => ({
+vi.mock('@/lib/auth/gateways/turnstile', () => ({
   verifyTurnstileToken: mockVerifyTurnstileToken,
 }));
 vi.mock('@/lib/platform/email/email-service', () => ({
@@ -46,8 +46,10 @@ vi.mock('@/lib/platform/email/email-service', () => ({
     sendPasswordResetEmail: mockSendPasswordResetEmail,
   }),
 }));
-vi.mock('@/lib/auth/verification-tokens', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/auth/verification-tokens')>()),
+vi.mock('@/lib/auth/rules/verification-tokens', async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import('@/lib/auth/rules/verification-tokens')
+  >()),
   generateSecureToken: () => 'secure-token',
 }));
 

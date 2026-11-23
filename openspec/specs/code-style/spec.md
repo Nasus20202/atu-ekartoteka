@@ -184,22 +184,49 @@ Data passed from server-side database or query composition into client component
 
 ```
 src/lib/
-  admin/           queries/ (dashboard counts across domains)
-  apartments/      types/apartment, dto/apartment-dto, queries/, mutations/
-  auth/            pure rules, types/account (roles, statuses), types/turnstile, turnstile,
-                   verification-tokens, new-user-registration, queries/ mutations/ use-cases/
-  charges/         types/charge, dto/charge-dto, queries/
-  cron/            scheduler, run-coordinator, jobs/, mutations/
-  framework/       auth/, request-now, rsc-cache, tenant-history, security-headers, list-view-mode-server
-  hoa/             types/hoa, dto/hoa-dto, queries/ mutations/
-  import/          importers/, parsers/, validation and import pipeline
-  payments/        types/payment, dto/payment-dto, queries/
-  platform/        logging/ database/ opentelemetry/ swr/ pdf/ email/
-  privacy/         policy template and markdown
-  settings/        registry, queries/ mutations/
-  shared/          iso-string.ts, use-case-result.ts, list-view-mode.ts, document-title.ts, utils/
-  users/           types/user, dto/user-dto, account-status, queries/ mutations/ use-cases/
+  admin/        queries/ (dashboard counts across domains)
+  apartments/   types/apartment, dto/apartment-dto, queries/ mutations/
+  auth/         types/account, types/turnstile, rules/, gateways/turnstile,
+                queries/ mutations/ use-cases/
+  charges/      types/charge, dto/charge-dto, queries/
+  cron/         rules/constants, runtime/ (scheduler, run-coordinator), jobs/,
+                mutations/, use-cases/initialize-cron-jobs
+  framework/    auth/, request-now, rsc-cache, tenant-history, security-headers, list-view-mode-server
+  hoa/          types/hoa, dto/hoa-dto, queries/ mutations/
+  import/       rules/, parsers/, validation/, pipeline/, importers/, types/, use-cases/
+  payments/     types/payment, types/monthly-charge-sums, dto/payment-dto, queries/
+  platform/     logging/ database/ opentelemetry/ swr/ pdf/ email/
+  privacy/      rules/ (markdown, placeholders), template/
+  settings/     rules/, queries/ mutations/
+  shared/       iso-string.ts, use-case-result.ts, list-view-mode.ts, document-title.ts, utils/
+  users/        types/user, dto/user-dto, queries/ mutations/ use-cases/
 ```
+
+### Requirement: Slice layers
+
+A domain slice SHALL hold only folders, each one of `types/`, `dto/`, `rules/`, `parsers/`, `validation/`, `template/`, `gateways/`, `queries/`, `mutations/`, `importers/`, `pipeline/`, `runtime/`, `jobs/` or `use-cases/`. A folder SHALL import only the folders its layer allows, as listed in `eslint-rules/slice-layers.mjs`. Pure folders (`types/`, `dto/`, `rules/`, `parsers/`, `validation/`, `template/`) SHALL NOT import `src/lib/platform/` except logging. Domain code SHALL NOT import `src/lib/framework/`. Components SHALL NOT import `use-cases/`, `pipeline/`, `importers/`, `runtime/`, `jobs/` or `gateways/`. Shared code in `src/lib/shared/` SHALL import only domain types. ESLint SHALL enforce these rules (`local/slice-structure`, `local/slice-imports`).
+
+#### Scenario: Model importing a use case
+
+- **GIVEN** a file in `types/` or `dto/`
+- **WHEN** it imports from a `use-cases/` folder
+- **THEN** lint fails; the behaviour moves to `rules/` and the use case imports the model
+
+#### Scenario: Loose file at a slice root
+
+- **GIVEN** a new file placed directly in `src/lib/<domain>/`
+- **WHEN** lint runs
+- **THEN** it fails, and the file moves into the folder of its layer
+
+### Requirement: One type file per entity
+
+Domain models SHALL live in `src/lib/<domain>/types/<entity>.ts` and DTOs in `src/lib/<domain>/dto/<entity>-dto.ts`, each file grouping the related types of one entity. A slice SHALL NOT have a `types.ts` at its root, and no `index.ts` barrel SHALL re-export types. A single type SHALL NOT get a file of its own. Importers SHALL name the file that owns each symbol. A file SHALL be split only when it exceeds 200 lines or its types have different owners. The import pipeline's types SHALL follow the same rule in `src/lib/import/types/`.
+
+#### Scenario: New domain type
+
+- **GIVEN** a slice needs a new model or DTO
+- **WHEN** a developer adds the type
+- **THEN** it is added to the existing `types/<entity>.ts` or `dto/<entity>-dto.ts` of that entity, or a new file named after the entity is created when none exists, and importers import it from that file
 
 ### Requirement: Data access via queries and mutations
 

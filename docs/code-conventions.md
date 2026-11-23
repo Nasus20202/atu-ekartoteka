@@ -31,6 +31,15 @@ in [`AGENTS.md`](../AGENTS.md).
   React-first module.
 - `src/lib/` holds only folders: a domain slice, `platform/` (infrastructure),
   `framework/` (the Next.js and Auth.js edge) or `shared/` (pure cross-domain code).
+- Domain models go in `src/lib/<domain>/types/<entity>.ts` and DTOs in
+  `src/lib/<domain>/dto/<entity>-dto.ts`: one file per entity. Do not add a
+  slice-level `types.ts` or an `index.ts` barrel. A barrel re-exports across
+  slices and hides which file owns a type, so import each symbol from its file.
+  The import pipeline's types follow the same rule in `src/lib/import/types/`.
+- A slice holds only folders, and each folder is one layer (`rules/`, `queries/`,
+  `use-cases/` and so on). The layer matrix and the lint rules that enforce it are in
+  `docs/architecture.md` (Domain slices). When a rule blocks an import, move the code
+  to the layer it belongs to.
 - Reads may import `@/lib/*/queries/*`. Writes go through a Server Action in
   `src/actions/` or the admin import route; importing `@/lib/*/mutations/*` from
   `src/app/` or `src/components/` is an error **(lint)**.

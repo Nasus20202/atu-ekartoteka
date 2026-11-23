@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { notifyAdminsOfNewUser } from '@/lib/auth/new-user-registration';
+import { notifyAdminsOfNewUser } from '@/lib/auth/use-cases/new-user-registration';
 
 const { mockUserFindMany } = vi.hoisted(() => ({
   mockUserFindMany: vi.fn(),

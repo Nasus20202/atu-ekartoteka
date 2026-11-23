@@ -1,4 +1,3 @@
-import { IMPORT_CREATE_BATCH_SIZE } from '@/lib/import/constants';
 import {
   buildPaymentData,
   type ExistingPayment,
@@ -6,10 +5,11 @@ import {
   makePaymentKey,
 } from '@/lib/import/importers/payment-data';
 import { PaymentEntry } from '@/lib/import/parsers/wplaty-parser';
+import { IMPORT_CREATE_BATCH_SIZE } from '@/lib/import/rules/constants';
+import { processInBatches } from '@/lib/import/rules/utils';
 import { TransactionClient } from '@/lib/import/types/import-context';
 import { ImportErrorItem } from '@/lib/import/types/import-error';
 import { EntityStats } from '@/lib/import/types/import-result';
-import { processInBatches } from '@/lib/import/utils';
 import { getErrorMessage } from '@/lib/shared/utils/error-message';
 
 export async function importPayments(

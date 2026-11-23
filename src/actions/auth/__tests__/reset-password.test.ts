@@ -20,13 +20,13 @@ vi.mock('@/lib/auth/queries/find-password-reset-by-token', () => ({
 vi.mock('@/lib/auth/mutations/reset-password-transaction', () => ({
   resetPasswordTransaction: mocks.resetPasswordTransaction,
 }));
-vi.mock('@/lib/auth/verification-tokens', () => ({
+vi.mock('@/lib/auth/rules/verification-tokens', () => ({
   hashToken: (token: string) => `hashed-${token}`,
 }));
 vi.mock('@/lib/platform/opentelemetry/auth-metrics', () => ({
   authMetrics: { recordPasswordReset: mocks.recordPasswordReset },
 }));
-vi.mock('@/lib/auth/turnstile', () => ({
+vi.mock('@/lib/auth/gateways/turnstile', () => ({
   verifyTurnstileToken: mocks.verifyTurnstileToken,
 }));
 vi.mock('@/lib/platform/logging/logger', () => ({

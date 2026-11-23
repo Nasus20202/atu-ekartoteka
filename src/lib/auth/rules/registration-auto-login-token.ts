@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
-import { normalizeEmail } from '@/lib/auth/email';
+import { normalizeEmail } from '@/lib/auth/rules/email';
 
 const TOKEN_TTL_SECONDS = 15;
 const TOKEN_TTL_MS = TOKEN_TTL_SECONDS * 1000;

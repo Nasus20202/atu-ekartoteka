@@ -8,8 +8,9 @@ vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() }),
 }));
 
-const { CronScheduler } = await import('@/lib/cron/scheduler');
-const { createRunCoordinator } = await import('@/lib/cron/run-coordinator');
+const { CronScheduler } = await import('@/lib/cron/runtime/scheduler');
+const { createRunCoordinator } =
+  await import('@/lib/cron/runtime/run-coordinator');
 
 // Real node-cron firing every second, so many scheduled runs happen quickly.
 const EVERY_SECOND = '* * * * * *';

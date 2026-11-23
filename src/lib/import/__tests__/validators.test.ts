@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import { NalCzynszEntry } from '@/lib/import/parsers/nal-czynsz-parser';
 import { PaymentEntry } from '@/lib/import/parsers/wplaty-parser';
-import { validateNalCzynsz, validateWplaty } from '@/lib/import/validators';
+import {
+  validateNalCzynsz,
+  validateWplaty,
+} from '@/lib/import/validation/validators';
 import type { DecimalLike } from '@/lib/shared/utils/decimal';
 
 type NalCzynszEntryOverrides = Partial<

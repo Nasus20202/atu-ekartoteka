@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseInline, parseMarkdown } from '@/lib/privacy/markdown';
+import { parseInline, parseMarkdown } from '@/lib/privacy/rules/markdown';
 
 describe('parseMarkdown', () => {
   it('parses headings of level 1 to 3', () => {

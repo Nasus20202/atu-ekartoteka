@@ -23,7 +23,7 @@ vi.mock('@/lib/users/queries/find-user-by-email', () => ({
   findUserByEmail: mockFindUserByEmail,
 }));
 
-vi.mock('@/lib/auth/registration-auto-login-token', () => ({
+vi.mock('@/lib/auth/rules/registration-auto-login-token', () => ({
   verifyRegistrationAutoLoginToken: mockVerifyToken,
 }));
 
@@ -34,7 +34,7 @@ vi.mock('bcrypt', () => ({
   },
 }));
 
-vi.mock('@/lib/auth/turnstile', () => ({
+vi.mock('@/lib/auth/gateways/turnstile', () => ({
   isTurnstileEnabled: vi.fn(() => false),
   verifyTurnstileToken: vi.fn(),
 }));
@@ -52,7 +52,7 @@ vi.mock('@/lib/platform/logging/logger', () => ({
 
 async function mockTurnstile(enabled: boolean, valid = true) {
   const { isTurnstileEnabled, verifyTurnstileToken } =
-    await import('@/lib/auth/turnstile');
+    await import('@/lib/auth/gateways/turnstile');
   vi.mocked(isTurnstileEnabled).mockReturnValue(enabled);
   vi.mocked(verifyTurnstileToken).mockResolvedValue(valid as never);
 }
@@ -98,7 +98,8 @@ describe('credentialsAuthorize', () => {
 
   describe('turnstile bypass for registration auto-login', () => {
     it('allows login with a valid auto-login grant without Turnstile', async () => {
-      const { verifyTurnstileToken } = await import('@/lib/auth/turnstile');
+      const { verifyTurnstileToken } =
+        await import('@/lib/auth/gateways/turnstile');
       await mockTurnstile(true);
       mockVerifyToken.mockReturnValue(true);
       mockFindUserByEmail.mockResolvedValue(mockUsers.tenant);
@@ -134,7 +135,8 @@ describe('credentialsAuthorize', () => {
     });
 
     it('uses Turnstile validation when the grant is invalid', async () => {
-      const { verifyTurnstileToken } = await import('@/lib/auth/turnstile');
+      const { verifyTurnstileToken } =
+        await import('@/lib/auth/gateways/turnstile');
       await mockTurnstile(true, true);
       mockFindUserByEmail.mockResolvedValue(mockUsers.tenant);
       vi.mocked(bcrypt.compare).mockResolvedValue(true as never);

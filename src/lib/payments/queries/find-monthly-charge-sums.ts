@@ -1,8 +1,6 @@
+import type { MonthlyChargeSums } from '@/lib/payments/types/monthly-charge-sums';
 import { prisma } from '@/lib/platform/database/prisma';
-import { type Decimal, toDecimal } from '@/lib/shared/utils/decimal';
-
-export type ChargeSumsByPeriod = Map<string, Decimal>;
-export type MonthlyChargeSums = Map<string, ChargeSumsByPeriod>;
+import { toDecimal } from '@/lib/shared/utils/decimal';
 
 type PeriodRange = { fromPeriod?: string; toPeriod?: string };
 type ChargeClient = Pick<typeof prisma, 'charge'>;

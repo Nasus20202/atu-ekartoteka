@@ -12,10 +12,12 @@ const mockNotifyAccountApproved = vi.fn();
 
 vi.mock('@/auth', () => ({ auth: mockAuth }));
 
-vi.mock('@/lib/auth/admin-access', () => ({
+vi.mock('@/lib/auth/queries/has-admin-access', () => ({
   hasAdminAccess: vi.fn((userId: string) =>
     Promise.resolve(userId.startsWith('admin'))
   ),
+}));
+vi.mock('@/lib/auth/rules/admin-access', () => ({
   isAdminRole: (role: string | null | undefined) => role === 'ADMIN',
 }));
 
@@ -43,7 +45,7 @@ vi.mock('@/lib/users/mutations/update-user-status', () => ({
   updateUserStatus: mockUpdateUserStatus,
 }));
 
-vi.mock('@/lib/users/account-status', () => ({
+vi.mock('@/lib/users/use-cases/account-status', () => ({
   notifyAccountApproved: mockNotifyAccountApproved,
 }));
 

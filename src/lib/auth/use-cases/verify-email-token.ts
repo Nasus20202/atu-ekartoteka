@@ -3,7 +3,7 @@ import { findVerificationByCode } from '@/lib/auth/queries/find-verification-by-
 import {
   hashToken,
   isVerificationExpired,
-} from '@/lib/auth/verification-tokens';
+} from '@/lib/auth/rules/verification-tokens';
 import { createLogger } from '@/lib/platform/logging/logger';
 import { authMetrics } from '@/lib/platform/opentelemetry/auth-metrics';
 import {

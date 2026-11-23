@@ -1,4 +1,4 @@
-import { isAdminRole } from '@/lib/auth/admin-access';
+import { isAdminRole } from '@/lib/auth/rules/admin-access';
 import { AccountStatus, UserRole } from '@/lib/auth/types/account';
 import type { SortDirection, UserSortKey } from '@/lib/shared/utils/sort';
 

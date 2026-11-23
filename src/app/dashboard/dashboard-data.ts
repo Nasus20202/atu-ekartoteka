@@ -5,7 +5,7 @@ import type {
   ChargeTotalsByPeriod,
   PeriodChargeTotal,
 } from '@/lib/charges/queries/find-charge-totals-by-period';
-import type { MonthlyChargeSums } from '@/lib/payments/queries/find-monthly-charge-sums';
+import type { MonthlyChargeSums } from '@/lib/payments/types/monthly-charge-sums';
 import { formatApartmentLabel } from '@/lib/shared/utils/apartment-label';
 import { getPaymentYearHref } from '@/lib/shared/utils/dashboard-links';
 import { toDecimal } from '@/lib/shared/utils/decimal';

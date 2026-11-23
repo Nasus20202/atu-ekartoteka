@@ -8,7 +8,7 @@ import {
 import { getChargeTrendByApartment } from '@/components/charts/chart-data';
 import { ChargesSummaryCard } from '@/components/dashboard/charges-summary-card';
 import { REVEAL_CLASS } from '@/components/layout/reveal';
-import { isApprovedAccount } from '@/lib/auth/account-access';
+import { isApprovedAccount } from '@/lib/auth/rules/account-access';
 
 export async function ChargesSection() {
   const [account, apartments, periodTotals, { currentPeriod, previousPeriod }] =

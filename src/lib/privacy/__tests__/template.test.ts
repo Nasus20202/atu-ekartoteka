@@ -3,10 +3,10 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { type Block, parseMarkdown } from '@/lib/privacy/markdown';
-import { countPlaceholders } from '@/lib/privacy/placeholders';
+import { type Block, parseMarkdown } from '@/lib/privacy/rules/markdown';
+import { countPlaceholders } from '@/lib/privacy/rules/placeholders';
 import { PRIVACY_POLICY_TEMPLATE } from '@/lib/privacy/template';
-import { parsePrivacyPolicy } from '@/lib/settings/parse-privacy-policy';
+import { parsePrivacyPolicy } from '@/lib/settings/rules/parse-privacy-policy';
 
 const SECTION_HEADINGS = [
   'W skrócie',

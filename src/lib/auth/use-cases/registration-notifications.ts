@@ -1,10 +1,10 @@
 import { createEmailVerification } from '@/lib/auth/mutations/create-verification';
-import { notifyAdminsOfNewUser } from '@/lib/auth/new-user-registration';
 import {
   generateSecureToken,
   getVerificationExpiration,
   hashToken,
-} from '@/lib/auth/verification-tokens';
+} from '@/lib/auth/rules/verification-tokens';
+import { notifyAdminsOfNewUser } from '@/lib/auth/use-cases/new-user-registration';
 import { getEmailService } from '@/lib/platform/email/email-service';
 import { createLogger } from '@/lib/platform/logging/logger';
 

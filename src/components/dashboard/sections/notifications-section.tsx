@@ -5,7 +5,7 @@ import {
 } from '@/app/dashboard/dashboard-loaders';
 import { NotificationsSidebar } from '@/components/dashboard/notifications-sidebar';
 import { REVEAL_CLASS } from '@/components/layout/reveal';
-import { isApprovedAccount } from '@/lib/auth/account-access';
+import { isApprovedAccount } from '@/lib/auth/rules/account-access';
 
 export async function NotificationsSection() {
   const [account, user] = await Promise.all([
