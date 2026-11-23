@@ -116,6 +116,12 @@ login.
 - **WHEN** they request a new verification email
 - **THEN** a new token is generated and a fresh verification email is sent
 
+#### Scenario: Verification email fails to send
+
+- **GIVEN** a verification email that cannot be delivered
+- **WHEN** the user requests a new one
+- **THEN** the request reports a failure and the unsent code is removed, so the user is not rate-limited on a code they never received
+
 #### Scenario: Unverified user signs in
 
 - **GIVEN** an account with an unverified email
@@ -145,6 +151,30 @@ The system SHALL allow users to reset a forgotten password via email. A reset to
 - **GIVEN** a reset token that another request already consumed
 - **WHEN** the user submits a new password with it
 - **THEN** the password is not changed and the request is rejected
+
+#### Scenario: Token expires or is consumed while the request runs
+
+- **GIVEN** a reset token that is valid at lookup but expires or is consumed before the update
+- **WHEN** the user submits a new password with it
+- **THEN** the request is rejected with the same message as an invalid or expired token
+
+#### Scenario: Forgot password answers the same for every address
+
+- **GIVEN** one address with an account and one address without an account
+- **WHEN** a forgot-password request is submitted for either
+- **THEN** the same success response is returned, the reset email is sent without the response waiting for the mail server, and a failed send is logged rather than reported
+
+#### Scenario: Forgot password replaces earlier tokens
+
+- **GIVEN** a user with reset tokens from earlier requests
+- **WHEN** a new forgot-password request is submitted
+- **THEN** the earlier tokens are removed and the new one is stored in the same transaction, before the email is sent
+
+#### Scenario: Google account asked to change its password
+
+- **GIVEN** an account that signs in only with Google
+- **WHEN** it tries to set a password from the profile or through a reset link
+- **THEN** the request is refused with a message that points to Google sign-in
 
 #### Scenario: Invalid or expired reset token
 

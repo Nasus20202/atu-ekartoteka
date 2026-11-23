@@ -1,6 +1,5 @@
 import { verifyTurnstileToken } from '@/lib/auth/gateways/turnstile';
-import { createPasswordReset } from '@/lib/auth/mutations/create-password-reset';
-import { deletePasswordResetsForUser } from '@/lib/auth/mutations/delete-password-resets-for-user';
+import { replacePasswordReset } from '@/lib/auth/mutations/replace-password-reset';
 import { normalizeEmail } from '@/lib/auth/rules/email';
 import {
   generateSecureToken,
@@ -62,20 +61,20 @@ export async function requestPasswordReset({
       return { ok: true, data: undefined };
     }
 
-    await deletePasswordResetsForUser(user.id);
-
     const token = generateSecureToken();
-    await createPasswordReset({
+    await replacePasswordReset({
       userId: user.id,
       hashedToken: hashToken(token),
       expiresAt: new Date(Date.now() + RESET_TOKEN_TTL_MS),
     });
 
-    await getEmailService().sendPasswordResetEmail(
-      user.email,
-      token,
-      user.name || undefined
-    );
+    // Not awaited: an SMTP round trip only for registered accounts would let
+    // the response time reveal which addresses exist
+    getEmailService()
+      .sendPasswordResetEmail(user.email, token, user.name || undefined)
+      .catch((error: unknown) =>
+        logger.error({ error, userId: user.id }, 'Password reset email failed')
+      );
 
     logger.info({ userId: user.id }, 'Password reset email sent');
 

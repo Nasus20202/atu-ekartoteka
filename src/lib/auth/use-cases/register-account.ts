@@ -71,7 +71,9 @@ async function createAccount(
 export async function registerAccount(
   input: RegisterAccountInput
 ): Promise<UseCaseResult<RegisterData>> {
-  const email = normalizeEmail(input.email);
+  // A missing address is reported by validateCredentials, not thrown here
+  const email =
+    typeof input.email === 'string' ? normalizeEmail(input.email) : '';
   const { password, name, isFirstAdmin } = input;
 
   logger.info({ isFirstAdmin }, 'Registration attempt');

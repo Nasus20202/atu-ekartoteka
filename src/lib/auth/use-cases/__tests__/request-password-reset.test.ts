@@ -13,15 +13,13 @@ const ONE_HOUR_MS = 60 * 60 * 1000;
 const {
   mockLogger,
   mockFindUserByEmail,
-  mockCreatePasswordReset,
-  mockDeletePasswordResetsForUser,
+  mockReplacePasswordReset,
   mockVerifyTurnstileToken,
   mockSendPasswordResetEmail,
 } = vi.hoisted(() => ({
   mockLogger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
   mockFindUserByEmail: vi.fn(),
-  mockCreatePasswordReset: vi.fn(),
-  mockDeletePasswordResetsForUser: vi.fn(),
+  mockReplacePasswordReset: vi.fn(),
   mockVerifyTurnstileToken: vi.fn(),
   mockSendPasswordResetEmail: vi.fn(),
 }));
@@ -32,11 +30,8 @@ vi.mock('@/lib/platform/logging/logger', () => ({
 vi.mock('@/lib/users/queries/find-user-by-email', () => ({
   findUserByEmail: mockFindUserByEmail,
 }));
-vi.mock('@/lib/auth/mutations/create-password-reset', () => ({
-  createPasswordReset: mockCreatePasswordReset,
-}));
-vi.mock('@/lib/auth/mutations/delete-password-resets-for-user', () => ({
-  deletePasswordResetsForUser: mockDeletePasswordResetsForUser,
+vi.mock('@/lib/auth/mutations/replace-password-reset', () => ({
+  replacePasswordReset: mockReplacePasswordReset,
 }));
 vi.mock('@/lib/auth/gateways/turnstile', () => ({
   verifyTurnstileToken: mockVerifyTurnstileToken,
@@ -77,8 +72,7 @@ describe('requestPasswordReset', () => {
     vi.resetAllMocks();
     mockVerifyTurnstileToken.mockResolvedValue(true);
     mockFindUserByEmail.mockResolvedValue(makeUser());
-    mockDeletePasswordResetsForUser.mockResolvedValue(undefined);
-    mockCreatePasswordReset.mockResolvedValue(undefined);
+    mockReplacePasswordReset.mockResolvedValue(undefined);
     mockSendPasswordResetEmail.mockResolvedValue(undefined);
   });
 
@@ -135,8 +129,7 @@ describe('requestPasswordReset', () => {
       const result = await requestPasswordReset(REQUEST);
 
       expect(result).toEqual(SUCCESS);
-      expect(mockDeletePasswordResetsForUser).not.toHaveBeenCalled();
-      expect(mockCreatePasswordReset).not.toHaveBeenCalled();
+      expect(mockReplacePasswordReset).not.toHaveBeenCalled();
       expect(mockSendPasswordResetEmail).not.toHaveBeenCalled();
     });
 
@@ -152,7 +145,7 @@ describe('requestPasswordReset', () => {
         { userId: 'user-id' },
         'Password reset requested for OAuth user'
       );
-      expect(mockCreatePasswordReset).not.toHaveBeenCalled();
+      expect(mockReplacePasswordReset).not.toHaveBeenCalled();
       expect(mockSendPasswordResetEmail).not.toHaveBeenCalled();
     });
   });
@@ -167,7 +160,7 @@ describe('requestPasswordReset', () => {
     it('stores only the hash of a token that expires in one hour', async () => {
       await requestPasswordReset(REQUEST);
 
-      expect(mockCreatePasswordReset).toHaveBeenCalledWith({
+      expect(mockReplacePasswordReset).toHaveBeenCalledWith({
         userId: 'user-id',
         hashedToken: hashToken('secure-token'),
         expiresAt: new Date(NOW.getTime() + ONE_HOUR_MS),
@@ -185,16 +178,12 @@ describe('requestPasswordReset', () => {
       expect(result).toEqual(SUCCESS);
     });
 
-    it('revokes older reset tokens before issuing a new one and emailing it', async () => {
+    it('stores the new token before emailing it', async () => {
       await requestPasswordReset(REQUEST);
 
-      expect(mockDeletePasswordResetsForUser).toHaveBeenCalledWith('user-id');
-      const deleteOrder =
-        mockDeletePasswordResetsForUser.mock.invocationCallOrder[0];
-      const createOrder = mockCreatePasswordReset.mock.invocationCallOrder[0];
+      const storeOrder = mockReplacePasswordReset.mock.invocationCallOrder[0];
       const sendOrder = mockSendPasswordResetEmail.mock.invocationCallOrder[0];
-      expect(deleteOrder).toBeLessThan(createOrder);
-      expect(createOrder).toBeLessThan(sendOrder);
+      expect(storeOrder).toBeLessThan(sendOrder);
     });
 
     it('sends the email without a name when the account has none', async () => {
@@ -228,20 +217,8 @@ describe('requestPasswordReset', () => {
         () => mockFindUserByEmail.mockRejectedValue(new Error('DB down')),
       ],
       [
-        'clearing old tokens',
-        () =>
-          mockDeletePasswordResetsForUser.mockRejectedValue(
-            new Error('DB down')
-          ),
-      ],
-      [
         'storing the new token',
-        () => mockCreatePasswordReset.mockRejectedValue(new Error('DB down')),
-      ],
-      [
-        'sending the email',
-        () =>
-          mockSendPasswordResetEmail.mockRejectedValue(new Error('SMTP down')),
+        () => mockReplacePasswordReset.mockRejectedValue(new Error('DB down')),
       ],
     ])(
       'returns a generic failure and logs the error when %s throws',
@@ -261,5 +238,28 @@ describe('requestPasswordReset', () => {
         );
       }
     );
+  });
+  describe('email delivery', () => {
+    it('does not wait for the email to be sent', async () => {
+      mockSendPasswordResetEmail.mockReturnValue(new Promise(() => {}));
+
+      const result = await requestPasswordReset(REQUEST);
+
+      expect(result).toEqual(SUCCESS);
+    });
+
+    it('logs a failed send and still answers with success', async () => {
+      mockSendPasswordResetEmail.mockRejectedValue(new Error('SMTP down'));
+
+      const result = await requestPasswordReset(REQUEST);
+
+      expect(result).toEqual(SUCCESS);
+      await vi.waitFor(() =>
+        expect(mockLogger.error).toHaveBeenCalledWith(
+          { error: expect.any(Error), userId: 'user-id' },
+          'Password reset email failed'
+        )
+      );
+    });
   });
 });

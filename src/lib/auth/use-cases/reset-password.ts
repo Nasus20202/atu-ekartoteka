@@ -82,12 +82,13 @@ export async function resetPasswordWithToken(
       resetToken.id
     );
 
+    // Used or expired between the lookup and the update: the same answer as an unknown token
     if (!consumed) {
       logger.warn(
         { userId: resetToken.userId },
-        'Password reset token was consumed by a concurrent request'
+        'Password reset token was consumed or expired by a concurrent request'
       );
-      return invalidResult(TOKEN_USED_MESSAGE);
+      return invalidResult(INVALID_TOKEN_MESSAGE);
     }
 
     logger.info({ userId: resetToken.userId }, 'Password reset successfully');

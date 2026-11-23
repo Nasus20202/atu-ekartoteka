@@ -160,7 +160,7 @@ describe('resetPasswordAction', () => {
 
     expect(await resetPasswordAction(INPUT)).toMatchObject({
       ok: false,
-      error: 'Token został już użyty',
+      error: 'Nieprawidłowy lub wygasły token',
     });
     expect(mocks.recordPasswordReset).not.toHaveBeenCalled();
   });
