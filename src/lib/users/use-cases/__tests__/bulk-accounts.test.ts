@@ -259,6 +259,48 @@ describe('bulkCreateAccounts', () => {
     );
   });
 
+  it('sends activation emails in chunks of five, after all accounts exist', async () => {
+    const apartments = Array.from({ length: 12 }, (_, i) =>
+      apartment(`apt-${i}`, `u${i}@example.com`, `Owner ${i}`)
+    );
+    mockFindUnassignedByIds.mockResolvedValueOnce(apartments);
+    let inFlight = 0;
+    let maxInFlight = 0;
+    mockSendActivationEmail.mockImplementation(async () => {
+      inFlight++;
+      maxInFlight = Math.max(maxInFlight, inFlight);
+      await new Promise((resolve) => setTimeout(resolve, 1));
+      inFlight--;
+      return { ok: true, delivery: 'sent' };
+    });
+
+    const result = await bulkCreateAccounts(apartments.map((a) => a.id));
+
+    expect(result).toEqual({
+      ok: true,
+      data: { created: 12, skipped: 0, errors: 0, emailFailed: 0 },
+    });
+    expect(mockSendActivationEmail).toHaveBeenCalledTimes(12);
+    expect(maxInFlight).toBe(5);
+  });
+
+  it('counts a rejected send as failed without losing the other emails', async () => {
+    mockFindUnassignedByIds.mockResolvedValueOnce([
+      apartment('apt-1', 'a@example.com', 'Jan'),
+      apartment('apt-2', 'b@example.com', 'Ewa'),
+    ]);
+    mockSendActivationEmail
+      .mockRejectedValueOnce(new Error('boom'))
+      .mockResolvedValueOnce({ ok: true, delivery: 'sent' });
+
+    const result = await bulkCreateAccounts(['apt-1', 'apt-2']);
+
+    expect(result).toEqual({
+      ok: true,
+      data: { created: 2, skipped: 0, errors: 0, emailFailed: 1 },
+    });
+  });
+
   it('reports zero counts and writes nothing when none of the apartments is unassigned', async () => {
     mockFindUnassignedByIds.mockResolvedValueOnce([]);
 

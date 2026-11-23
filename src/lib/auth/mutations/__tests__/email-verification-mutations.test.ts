@@ -3,12 +3,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const {
   mockCreate,
   mockDeleteMany,
+  mockDelete,
   mockUpdate,
   mockUserUpdate,
   mockTransaction,
 } = vi.hoisted(() => ({
   mockCreate: vi.fn(),
   mockDeleteMany: vi.fn(),
+  mockDelete: vi.fn(),
   mockUpdate: vi.fn(),
   mockUserUpdate: vi.fn(),
   mockTransaction: vi.fn(),
@@ -21,6 +23,7 @@ vi.mock('@/lib/platform/database/prisma', () => ({
     emailVerification: {
       create: mockCreate,
       deleteMany: mockDeleteMany,
+      delete: mockDelete,
       updateMany: mockUpdate,
     },
   },
@@ -28,7 +31,10 @@ vi.mock('@/lib/platform/database/prisma', () => ({
 
 import { createEmailVerification } from '@/lib/auth/mutations/create-verification';
 import { deleteExpiredVerifications } from '@/lib/auth/mutations/delete-expired-verifications';
-import { deleteVerificationsForUser } from '@/lib/auth/mutations/delete-verifications-for-user';
+import {
+  deleteOtherVerificationsForUser,
+  deleteVerificationById,
+} from '@/lib/auth/mutations/delete-verification-codes';
 import { verifyEmailTransaction } from '@/lib/auth/mutations/verify-email-transaction';
 
 const NOW = new Date('2025-01-01T12:00:00.000Z');
@@ -66,11 +72,17 @@ describe('email verification mutations', () => {
     });
   });
 
-  it('deletes every verification of a user', async () => {
-    await deleteVerificationsForUser('user-1');
+  it('deletes one verification by id', async () => {
+    await deleteVerificationById('code-1');
+
+    expect(mockDelete).toHaveBeenCalledWith({ where: { id: 'code-1' } });
+  });
+
+  it("deletes a user's other verifications and keeps the given one", async () => {
+    await deleteOtherVerificationsForUser('user-1', 'code-1');
 
     expect(mockDeleteMany).toHaveBeenCalledWith({
-      where: { userId: 'user-1' },
+      where: { userId: 'user-1', id: { not: 'code-1' } },
     });
   });
 

@@ -4,6 +4,7 @@ import {
   getVerificationExpiration,
   hashToken,
 } from '@/lib/auth/rules/verification-tokens';
+import { discardUnsentVerification } from '@/lib/auth/use-cases/discard-unsent-verification';
 import { notifyAdminsOfNewUser } from '@/lib/auth/use-cases/new-user-registration';
 import { getEmailService } from '@/lib/platform/email/email-service';
 import { createLogger } from '@/lib/platform/logging/logger';
@@ -27,7 +28,7 @@ export async function sendRegistrationVerification(
   try {
     const verificationToken = generateSecureToken();
 
-    await createEmailVerification({
+    const verification = await createEmailVerification({
       userId: user.id,
       hashedCode: hashToken(verificationToken),
       expiresAt: getVerificationExpiration(VERIFICATION_EXPIRY_HOURS),
@@ -46,6 +47,7 @@ export async function sendRegistrationVerification(
         { userId: user.id, reason: result.reason },
         'Failed to send verification email'
       );
+      await discardUnsentVerification(verification.id, user.id);
     }
   } catch (error) {
     // Registration still succeeds; the user can request a new email later.

@@ -12,12 +12,14 @@ const EXPIRES_AT = new Date('2026-11-24T12:00:00Z');
 const {
   mockLogger,
   mockCreateEmailVerification,
+  mockDeleteVerificationById,
   mockSendVerificationEmail,
   mockNotifyAdminsOfNewUser,
   mockGetVerificationExpiration,
 } = vi.hoisted(() => ({
   mockLogger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
   mockCreateEmailVerification: vi.fn(),
+  mockDeleteVerificationById: vi.fn(),
   mockSendVerificationEmail: vi.fn(),
   mockNotifyAdminsOfNewUser: vi.fn(),
   mockGetVerificationExpiration: vi.fn(),
@@ -28,6 +30,9 @@ vi.mock('@/lib/platform/logging/logger', () => ({
 }));
 vi.mock('@/lib/auth/mutations/create-verification', () => ({
   createEmailVerification: mockCreateEmailVerification,
+}));
+vi.mock('@/lib/auth/mutations/delete-verification-codes', () => ({
+  deleteVerificationById: mockDeleteVerificationById,
 }));
 vi.mock('@/lib/platform/email/email-service', () => ({
   getEmailService: () => ({
@@ -55,7 +60,8 @@ const USER: RegisteredUser = {
 describe('sendRegistrationVerification', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mockCreateEmailVerification.mockResolvedValue(undefined);
+    mockCreateEmailVerification.mockResolvedValue({ id: 'code-id' });
+    mockDeleteVerificationById.mockResolvedValue(undefined);
     mockSendVerificationEmail.mockResolvedValue({ ok: true, delivery: 'sent' });
     mockGetVerificationExpiration.mockReturnValue(EXPIRES_AT);
   });
@@ -125,6 +131,13 @@ describe('sendRegistrationVerification', () => {
       { userId: 'user-id' },
       'Verification email sent'
     );
+    expect(mockDeleteVerificationById).toHaveBeenCalledWith('code-id');
+  });
+
+  it('keeps the stored code when the email is sent', async () => {
+    await sendRegistrationVerification(USER);
+
+    expect(mockDeleteVerificationById).not.toHaveBeenCalled();
   });
 });
 

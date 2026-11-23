@@ -15,6 +15,15 @@ import { findUserByEmail } from '@/lib/users/queries/find-user-by-email';
 const logger = createLogger('action:bulk-users');
 
 const TEMP_PASSWORD_LENGTH = 12;
+/** Activation emails sent at once, so a large batch does not wait N SMTP round trips. */
+const EMAIL_CONCURRENCY = 5;
+
+interface PendingActivation {
+  email: string;
+  tempPassword: string;
+  owner: string | null;
+  apartmentIds: string[];
+}
 
 export interface BulkCreateSummary {
   created: number;
@@ -59,6 +68,30 @@ async function sendActivationEmail(
   return result.ok;
 }
 
+/** Sends the activation emails in chunks and returns how many were not delivered. */
+async function sendActivationEmails(
+  pending: PendingActivation[]
+): Promise<number> {
+  let failed = 0;
+  for (let i = 0; i < pending.length; i += EMAIL_CONCURRENCY) {
+    const chunk = pending.slice(i, i + EMAIL_CONCURRENCY);
+    const outcomes = await Promise.allSettled(
+      chunk.map((item) =>
+        sendActivationEmail(
+          item.email,
+          item.tempPassword,
+          item.owner,
+          item.apartmentIds
+        )
+      )
+    );
+    failed += outcomes.filter(
+      (outcome) => outcome.status === 'rejected' || !outcome.value
+    ).length;
+  }
+  return failed;
+}
+
 /** One account per e-mail address, owning every listed apartment that is unassigned. */
 export async function bulkCreateAccounts(
   apartmentIds: string[]
@@ -84,7 +117,7 @@ export async function bulkCreateAccounts(
     let created = 0;
     let skipped = 0;
     let errors = 0;
-    let emailFailed = 0;
+    const pending: PendingActivation[] = [];
 
     for (const { email, owner, aptIds } of emailMap.values()) {
       try {
@@ -104,10 +137,7 @@ export async function bulkCreateAccounts(
           apartmentIds: aptIds,
         });
 
-        if (!(await sendActivationEmail(email, tempPassword, owner, aptIds))) {
-          emailFailed++;
-        }
-
+        pending.push({ email, tempPassword, owner, apartmentIds: aptIds });
         created++;
         logger.info({ apartmentIds: aptIds }, 'Created user account');
       } catch (err) {
@@ -118,6 +148,8 @@ export async function bulkCreateAccounts(
         );
       }
     }
+
+    const emailFailed = await sendActivationEmails(pending);
 
     return { ok: true, data: { created, skipped, errors, emailFailed } };
   } catch (error) {
