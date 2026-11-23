@@ -2,7 +2,10 @@ import {
   groupByKind,
   type IssueGroupInfo,
 } from '@/components/import/issue-groups';
-import type { ImportWarning, ImportWarningKind } from '@/lib/import/types';
+import type {
+  ImportWarning,
+  ImportWarningKind,
+} from '@/lib/import/types/import-warning';
 
 type WarningSummary = (warnings: ImportWarning[]) => string[];
 

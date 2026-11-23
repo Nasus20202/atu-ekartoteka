@@ -1,9 +1,9 @@
 import type {
   ImportError,
   ImportErrorItem,
-  ImportWarning,
-  YearBalanceRow,
-} from '@/lib/import/types';
+} from '@/lib/import/types/import-error';
+import type { ImportWarning } from '@/lib/import/types/import-warning';
+import type { YearBalanceRow } from '@/lib/import/types/year-balance';
 
 export interface DatabaseStats {
   hoa: number;

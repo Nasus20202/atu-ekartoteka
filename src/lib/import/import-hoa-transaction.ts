@@ -8,11 +8,9 @@ import {
 } from '@/lib/import/importers';
 import type { ParsedHoaFiles } from '@/lib/import/parse-hoa-files';
 import { buildSkippedRecordWarnings } from '@/lib/import/skipped-records';
-import type {
-  HOAImportResult,
-  ImportOptions,
-  TransactionClient,
-} from '@/lib/import/types';
+import type { TransactionClient } from '@/lib/import/types/import-context';
+import type { ImportOptions } from '@/lib/import/types/import-options';
+import type { HOAImportResult } from '@/lib/import/types/import-result';
 import { createLogger } from '@/lib/platform/logging/logger';
 
 const logger = createLogger('import:handler');

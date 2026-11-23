@@ -7,7 +7,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import type { YearBalanceRow } from '@/lib/import/types';
+import type { YearBalanceRow } from '@/lib/import/types/year-balance';
 
 const VALUE_BUTTON_CLASS =
   'h-auto w-full flex-col items-end gap-0 whitespace-normal px-2 py-1 font-[inherit] tabular-nums hover:text-current';

@@ -1,4 +1,4 @@
-import type { ImportErrorItem } from '@/lib/import/types';
+import type { ImportErrorItem } from '@/lib/import/types/import-error';
 import {
   formatCountPl,
   type PolishPluralForms,

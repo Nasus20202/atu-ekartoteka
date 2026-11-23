@@ -12,7 +12,8 @@ import {
   STARTED_ON,
 } from '@/lib/import/importers/__tests__/apartment-validity-mocks';
 import { importApartments } from '@/lib/import/importers/apartments';
-import { EntityStats, ImportErrorItem } from '@/lib/import/types';
+import { ImportErrorItem } from '@/lib/import/types/import-error';
+import { EntityStats } from '@/lib/import/types/import-result';
 
 describe('importApartments former owner deactivation', () => {
   let mockTx: ReturnType<typeof createMockTx>;

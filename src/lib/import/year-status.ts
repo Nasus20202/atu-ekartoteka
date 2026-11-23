@@ -1,9 +1,9 @@
+import type { ImportErrorItem } from '@/lib/import/types/import-error';
+import type { ImportWarning } from '@/lib/import/types/import-warning';
 import type {
-  ImportErrorItem,
-  ImportWarning,
   YearBalanceRow,
   YearStatus,
-} from '@/lib/import/types';
+} from '@/lib/import/types/year-balance';
 import type { YearBalanceSummary } from '@/lib/import/year-balance-overview';
 import { periodToYear } from '@/lib/shared/utils/period';
 

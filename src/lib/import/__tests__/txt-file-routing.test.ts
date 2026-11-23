@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ImportError } from '@/lib/import/types';
+import type { ImportError } from '@/lib/import/types/import-error';
 import { getTxtFileField, groupFilesByHOA } from '@/lib/import/utils';
 
 function makeFile(name: string): File {

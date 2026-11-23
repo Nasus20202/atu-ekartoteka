@@ -2,7 +2,8 @@ import { validateChargesCrossFile } from '@/lib/import/charges-cross-file';
 import type { ParsedHoaFiles } from '@/lib/import/parse-hoa-files';
 import type { NalCzynszEntry } from '@/lib/import/parsers/nal-czynsz-parser';
 import type { PaymentEntry } from '@/lib/import/parsers/wplaty-parser';
-import type { HOAImportResult, ImportOptions } from '@/lib/import/types';
+import type { ImportOptions } from '@/lib/import/types/import-options';
+import type { HOAImportResult } from '@/lib/import/types/import-result';
 import { validateNalCzynsz, validateWplaty } from '@/lib/import/validators';
 
 /**

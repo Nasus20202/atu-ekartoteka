@@ -1,5 +1,5 @@
 import type { ImportResult } from '@/components/import/types';
-import type { YearBalanceRow } from '@/lib/import/types';
+import type { YearBalanceRow } from '@/lib/import/types/year-balance';
 import { formatCurrency } from '@/lib/shared/utils';
 
 export const EMPTY_VALUE = '—';
