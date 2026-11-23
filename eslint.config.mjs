@@ -127,7 +127,7 @@ const eslintConfig = defineConfig([
           ],
         },
       ],
-      'playwright/no-conditional-in-test': 'warn',
+      'playwright/no-conditional-in-test': 'error',
       'playwright/no-focused-test': 'error',
       'playwright/no-skipped-test': 'warn',
       'playwright/valid-expect': 'error',

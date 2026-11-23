@@ -15,26 +15,27 @@ const TALL_MAIN_PX = '3000px';
 const SCROLLED_PX = 60;
 const NAVBAR_HEIGHT_PX = 65;
 const HOA_PAGE_PATH = /\/admin\/apartments\/[a-f0-9-]+\/?$/;
+const APARTMENTS_TOGGLE = 'Tylko aktywne';
 
 /**
  * Opens the seeded HOA instead of the first card: the list also shows the
  * temporary HOAs that other specs create and delete while this one runs, so
  * the first link can point at a HOA that is already gone when it is clicked.
- * The click can also land before the list hydrates, so retry until the HOA
- * page renders its content.
+ * The click can also land before the list hydrates; it is then dropped, the
+ * card stays on the page and the retry clicks it again.
  */
 async function openSeededHoa(page: Page) {
   await expect(async () => {
-    if (!HOA_PAGE_PATH.test(new URL(page.url()).pathname)) {
-      await cardWithText(page, TEST_HOA)
-        .getByRole('button', { name: /Zobacz mieszkania/i })
-        .click();
-    }
+    await cardWithText(page, TEST_HOA)
+      .getByRole('button', { name: /Zobacz mieszkania/i })
+      .click();
     await expect(page).toHaveURL(HOA_PAGE_PATH, { timeout: 5000 });
-    await expect(page.getByText('Tylko aktywne')).toBeVisible({
-      timeout: 5000,
-    });
   }).toPass({ timeout: 20_000 });
+
+  // The apartments page streams in, so its content is waited for separately
+  await expect(page.getByText(APARTMENTS_TOGGLE)).toBeVisible({
+    timeout: 15_000,
+  });
 }
 
 test.describe('Admin layout', () => {
