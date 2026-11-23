@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 
 import { AppFooter } from '@/components/layout/app-footer';
-import { PAGE_TITLES } from '@/lib/shared/document-title';
+import { PUBLIC_PAGES, publicPageMetadata } from '@/lib/framework/seo';
 
-export const metadata: Metadata = { title: PAGE_TITLES.privacy };
+export const metadata: Metadata = publicPageMetadata(PUBLIC_PAGES.privacy);
 
 export default function PrivacyLayout({
   children,

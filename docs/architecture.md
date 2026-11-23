@@ -118,7 +118,8 @@ The domain slices (`src/lib/<domain>/`, `src/lib/import`, `src/lib/cron`) and
 the shared code in `src/lib/shared/` import no Next.js, React or Auth.js API. Anything that needs
 a request, a render or a session lives in `src/lib/framework/`: `request-now` (the
 request date, faked in E2E), `rsc-cache` (request-scoped reads for server
-components), `tenant-history`, `list-view-mode-server` (the list view cookie) and
+components), `tenant-history`, `list-view-mode-server` (the list view cookie),
+`seo` (metadata of the public pages) and
 `auth/` (Auth.js config, session and guards). ESLint keeps domain modules out of
 the framework, so they stay callable from a script, a job or another runtime.
 

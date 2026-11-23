@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
-import { PAGE_TITLES } from '@/lib/shared/document-title';
+import { PUBLIC_PAGES, publicPageMetadata } from '@/lib/framework/seo';
 
-export const metadata: Metadata = { title: PAGE_TITLES.register };
+export const metadata: Metadata = publicPageMetadata(PUBLIC_PAGES.register);
 
 export default function RegisterLayout({
   children,
