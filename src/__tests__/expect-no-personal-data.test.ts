@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { expectNoPersonalData } from '@/lib/platform/logging/testing';
+import { expectNoPersonalData } from '@/__tests__/helpers/expect-no-personal-data';
 
 describe('expectNoPersonalData', () => {
   it('passes when no call carries a canary', () => {

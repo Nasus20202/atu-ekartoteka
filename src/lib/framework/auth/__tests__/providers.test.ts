@@ -2,11 +2,11 @@ import bcrypt from 'bcrypt';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createMockUser, mockUsers } from '@/__tests__/fixtures';
+import { expectNoPersonalData } from '@/__tests__/helpers/expect-no-personal-data';
 import {
   buildProviders,
   credentialsAuthorize,
 } from '@/lib/framework/auth/providers';
-import { expectNoPersonalData } from '@/lib/platform/logging/testing';
 
 const { mockFindUserByEmail, mockVerifyToken, mockLog } = vi.hoisted(() => ({
   mockFindUserByEmail: vi.fn(),
