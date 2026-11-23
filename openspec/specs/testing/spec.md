@@ -298,6 +298,12 @@ hydration before interacting.
 - **WHEN** the login page reports the generic credential error
 - **THEN** the login helper loads the form again and retries, and a session that is already authenticated is sent to its destination instead of filling the form again
 
+#### Scenario: Actions wait for streamed content
+
+- **GIVEN** a link click or a scroll that lands while a streamed page still has no data
+- **WHEN** the click is lost or the document is too short to scroll past the header
+- **THEN** the test retries the action until the content it needs is on screen, instead of failing on the first attempt
+
 ### Requirement: Email Template Tests
 
 Email templates SHALL be covered by unit tests and visual screenshot tests.

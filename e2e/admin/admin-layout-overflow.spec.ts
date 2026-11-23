@@ -3,6 +3,8 @@
  * tablets, the pinned header wraps its controls and each page opens at the top.
  */
 
+import type { Page } from '@playwright/test';
+
 import { expect, test } from '../fixtures';
 import { expectNoHorizontalOverflow } from '../utils/expect-no-horizontal-overflow';
 
@@ -12,6 +14,23 @@ const TALL_MAIN_PX = '3000px';
 const SCROLLED_PX = 60;
 const NAVBAR_HEIGHT_PX = 65;
 const APARTMENT_PATH = /\/admin\/apartments\/[\w-]+/;
+
+/**
+ * Opens the first apartment from the list. The click can land before the list
+ * hydrates, and the page streams in slowly on Firefox and WebKit, so retry
+ * until its content is on screen.
+ */
+async function openFirstApartment(page: Page) {
+  await expect(async () => {
+    if (!APARTMENT_PATH.test(new URL(page.url()).pathname)) {
+      await page.locator('a[href^="/admin/apartments/"]').first().click();
+    }
+    await expect(page).toHaveURL(APARTMENT_PATH, { timeout: 5000 });
+    await expect(page.getByText('Tylko aktywne')).toBeVisible({
+      timeout: 5000,
+    });
+  }).toPass({ timeout: 20_000 });
+}
 
 test.describe('Admin layout', () => {
   test('navbar does not overflow at tablet width', async ({ adminPage }) => {
@@ -33,9 +52,8 @@ test.describe('Admin layout', () => {
   test('header controls wrap on a phone', async ({ adminPage }) => {
     await adminPage.setViewportSize(PHONE_VIEWPORT);
     await adminPage.goto('/admin/apartments');
-    await adminPage.locator('a[href^="/admin/apartments/"]').first().click();
+    await openFirstApartment(adminPage);
 
-    await expect(adminPage.getByText('Tylko aktywne')).toBeVisible();
     await expectNoHorizontalOverflow(adminPage);
   });
 
@@ -51,21 +69,9 @@ test.describe('Admin layout', () => {
       [TALL_MAIN_PX, SCROLLED_PX]
     );
 
-    // A click that lands while the list is still hydrating can be swallowed,
-    // and the apartment page streams in slowly on Firefox, so retry the click
-    // and wait for the content it opens, not just for the URL
-    await expect(async () => {
-      if (!APARTMENT_PATH.test(new URL(adminPage.url()).pathname)) {
-        await adminPage
-          .locator('a[href^="/admin/apartments/"]')
-          .first()
-          .click();
-      }
-      await expect(adminPage).toHaveURL(APARTMENT_PATH, { timeout: 5000 });
-      await expect(adminPage.getByText('Tylko aktywne')).toBeVisible({
-        timeout: 5000,
-      });
-    }).toPass({ timeout: 20_000 });
+    // The click happens while the page is scrolled, so the helper also proves
+    // the navigation was not lost before the scroll position is checked
+    await openFirstApartment(adminPage);
 
     expect(await adminPage.evaluate(() => window.scrollY)).toBe(0);
   });
