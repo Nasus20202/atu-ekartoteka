@@ -13,7 +13,9 @@ vi.mock('@react-pdf/renderer', () => ({
   pdf: vi.fn(() => ({ toBlob: vi.fn().mockResolvedValue(new Blob()) })),
 }));
 
-vi.mock('@/lib/pdf/register-fonts', () => ({ registerPdfFonts: vi.fn() }));
+vi.mock('@/lib/platform/pdf/register-fonts', () => ({
+  registerPdfFonts: vi.fn(),
+}));
 
 const SAMPLE_PROPS: ChargePdfDocumentProps = {
   apartmentLabel: 'ul. Testowa 1/2',

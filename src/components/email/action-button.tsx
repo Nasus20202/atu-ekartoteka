@@ -1,6 +1,6 @@
 import { Button, Link, Section, Text } from 'react-email';
 
-import { emailStyles } from '@/lib/email/email-theme';
+import { emailStyles } from '@/lib/platform/email/email-theme';
 
 interface Props {
   href: string;

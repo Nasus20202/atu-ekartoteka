@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ChargesDisplay } from '@/components/charges/charges-display';
 import { ACTIVE_MONTH_SCROLL_DELAY_MS } from '@/components/charges/use-scroll-to-active-month';
-import type { ChargeDisplayDto } from '@/lib/types/dto/charge-dto';
+import type { ChargeDisplayDto } from '@/lib/charges/dto/charge-dto';
 
 vi.mock('@/components/pdf/download-charges-pdf-button', () => ({
   DownloadChargesPdfButton: () => <button>Pobierz PDF</button>,

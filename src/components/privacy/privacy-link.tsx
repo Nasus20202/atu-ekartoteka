@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/shared/utils';
 
 export const PRIVACY_PATH = '/privacy';
 export const PRIVACY_LINK_TEXT = 'Polityka prywatności';

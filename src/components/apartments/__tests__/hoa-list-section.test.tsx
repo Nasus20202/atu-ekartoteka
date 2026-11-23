@@ -9,10 +9,10 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('@/actions/apartments/hoa', () => ({ renameHoaAction: vi.fn() }));
-vi.mock('@/lib/auth/require-admin-access', () => ({
+vi.mock('@/lib/framework/auth/require-admin-access', () => ({
   requireAdminAccess: mocks.requireAdminAccess,
 }));
-vi.mock('@/lib/queries/hoa/find-hoas', () => ({ findHoas: mocks.findHoas }));
+vi.mock('@/lib/hoa/queries/find-hoas', () => ({ findHoas: mocks.findHoas }));
 
 describe('HoaListSection', () => {
   beforeEach(() => {

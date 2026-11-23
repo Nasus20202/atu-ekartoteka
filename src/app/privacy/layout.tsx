@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 import { AppFooter } from '@/components/layout/app-footer';
-import { PAGE_TITLES } from '@/lib/metadata/document-title';
+import { PAGE_TITLES } from '@/lib/shared/document-title';
 
 export const metadata: Metadata = { title: PAGE_TITLES.privacy };
 

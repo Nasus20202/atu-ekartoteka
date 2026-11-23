@@ -1,9 +1,9 @@
-import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
+import { type DecimalLike, toDecimal } from '@/lib/shared/utils/decimal';
 import {
   CALCULATED_CHARGE_FIELD_KEYS,
   PAYMENT_MONTH_FIELD_KEYS,
-} from '@/lib/utils/payment-months';
-import { sumDecimals } from '@/lib/utils/sum';
+} from '@/lib/shared/utils/payment-months';
+import { sumDecimals } from '@/lib/shared/utils/sum';
 
 const MIN_PAYMENT_YEAR = 1900;
 const MAX_PAYMENT_YEAR = 2100;

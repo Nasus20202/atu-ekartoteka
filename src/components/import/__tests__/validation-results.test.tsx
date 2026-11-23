@@ -9,7 +9,7 @@ const { mockDownloadTextFile } = vi.hoisted(() => ({
   mockDownloadTextFile: vi.fn(),
 }));
 
-vi.mock('@/lib/utils/download-file', () => ({
+vi.mock('@/lib/shared/utils/download-file', () => ({
   downloadTextFile: mockDownloadTextFile,
 }));
 

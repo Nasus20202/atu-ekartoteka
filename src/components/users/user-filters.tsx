@@ -4,7 +4,7 @@ import { Check, Clock, ShieldCheck, Users, X } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { AccountStatus } from '@/lib/types';
+import { AccountStatus } from '@/lib/auth/types/account';
 
 export type UserFilter = 'ALL' | 'ADMINS' | AccountStatus;
 

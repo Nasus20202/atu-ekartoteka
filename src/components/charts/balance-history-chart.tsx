@@ -35,8 +35,8 @@ import {
   useChartViewport,
 } from '@/components/charts/chart-viewport';
 import { MeasuredChart } from '@/components/charts/measured-chart';
-import { getPaymentYearHref } from '@/lib/utils/dashboard-links';
-import { getPeriodYear } from '@/lib/utils/group-by-year';
+import { getPaymentYearHref } from '@/lib/shared/utils/dashboard-links';
+import { getPeriodYear } from '@/lib/shared/utils/group-by-year';
 
 const BAR_RADIUS = 4;
 const MAX_BAR_SIZE = 24;

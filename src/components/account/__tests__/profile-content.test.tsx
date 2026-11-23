@@ -2,11 +2,11 @@ import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ProfileContent } from '@/components/account/profile-content';
-import { AuthMethod } from '@/lib/types';
+import { AuthMethod } from '@/lib/auth/types/account';
 
 const mocks = vi.hoisted(() => ({
   getSession: vi.fn(),
-  findUserProfileCached: vi.fn(),
+  findUserProfile: vi.fn(),
   redirect: vi.fn((path: string) => {
     throw new Error(`NEXT_REDIRECT:${path}`);
   }),
@@ -14,9 +14,11 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('next/navigation', () => ({ redirect: mocks.redirect }));
-vi.mock('@/lib/auth/get-session', () => ({ getSession: mocks.getSession }));
-vi.mock('@/lib/queries/users/find-user-profile', () => ({
-  findUserProfileCached: mocks.findUserProfileCached,
+vi.mock('@/lib/framework/auth/get-session', () => ({
+  getSession: mocks.getSession,
+}));
+vi.mock('@/lib/users/queries/find-user-profile', () => ({
+  findUserProfile: mocks.findUserProfile,
 }));
 vi.mock('@/components/account/profile-form', () => ({
   ProfileForm: (props: unknown) => {
@@ -32,7 +34,7 @@ describe('ProfileContent', () => {
   });
 
   it('renders the profile form for the signed-in user', async () => {
-    mocks.findUserProfileCached.mockResolvedValue({
+    mocks.findUserProfile.mockResolvedValue({
       name: 'Jan',
       authMethod: AuthMethod.CREDENTIALS,
     });
@@ -40,7 +42,7 @@ describe('ProfileContent', () => {
     render(await ProfileContent());
 
     expect(screen.getByText('Edytuj profil')).toBeInTheDocument();
-    expect(mocks.findUserProfileCached).toHaveBeenCalledWith('user-1');
+    expect(mocks.findUserProfile).toHaveBeenCalledWith('user-1');
     expect(mocks.form).toHaveBeenCalledWith({
       initialName: 'Jan',
       authMethod: AuthMethod.CREDENTIALS,
@@ -48,7 +50,7 @@ describe('ProfileContent', () => {
   });
 
   it('falls back to credentials when the auth method is missing', async () => {
-    mocks.findUserProfileCached.mockResolvedValue({
+    mocks.findUserProfile.mockResolvedValue({
       name: null,
       authMethod: null,
     });
@@ -65,11 +67,11 @@ describe('ProfileContent', () => {
     mocks.getSession.mockResolvedValue(null);
 
     await expect(ProfileContent()).rejects.toThrow('NEXT_REDIRECT:/login');
-    expect(mocks.findUserProfileCached).not.toHaveBeenCalled();
+    expect(mocks.findUserProfile).not.toHaveBeenCalled();
   });
 
   it('redirects to the login page when the user no longer exists', async () => {
-    mocks.findUserProfileCached.mockResolvedValue(null);
+    mocks.findUserProfile.mockResolvedValue(null);
 
     await expect(ProfileContent()).rejects.toThrow('NEXT_REDIRECT:/login');
   });

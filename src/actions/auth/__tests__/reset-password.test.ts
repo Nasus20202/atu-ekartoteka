@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { resetPasswordAction } from '@/actions/auth/reset-password';
-import { AuthMethod } from '@/lib/types';
+import { AuthMethod } from '@/lib/auth/types/account';
 
 const mocks = vi.hoisted(() => ({
   findPasswordResetByToken: vi.fn(),
@@ -14,22 +14,22 @@ const mocks = vi.hoisted(() => ({
 vi.mock('bcrypt', () => ({
   default: { hash: vi.fn(() => Promise.resolve('hashed-password')) },
 }));
-vi.mock('@/lib/queries/password-reset/find-password-reset-by-token', () => ({
+vi.mock('@/lib/auth/queries/find-password-reset-by-token', () => ({
   findPasswordResetByToken: mocks.findPasswordResetByToken,
 }));
-vi.mock('@/lib/mutations/password-reset/reset-password-transaction', () => ({
+vi.mock('@/lib/auth/mutations/reset-password-transaction', () => ({
   resetPasswordTransaction: mocks.resetPasswordTransaction,
 }));
-vi.mock('@/lib/email/verification-utils', () => ({
+vi.mock('@/lib/auth/verification-tokens', () => ({
   hashToken: (token: string) => `hashed-${token}`,
 }));
-vi.mock('@/lib/opentelemetry/auth-metrics', () => ({
+vi.mock('@/lib/platform/opentelemetry/auth-metrics', () => ({
   authMetrics: { recordPasswordReset: mocks.recordPasswordReset },
 }));
-vi.mock('@/lib/turnstile', () => ({
+vi.mock('@/lib/auth/turnstile', () => ({
   verifyTurnstileToken: mocks.verifyTurnstileToken,
 }));
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() }),
 }));
 

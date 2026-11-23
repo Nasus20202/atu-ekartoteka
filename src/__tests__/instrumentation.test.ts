@@ -8,16 +8,16 @@ const { mockInitTracing, mockInitializeCronJobs, mockInfo, mockPatchConsole } =
     mockPatchConsole: vi.fn(),
   }));
 
-vi.mock('@/lib/opentelemetry/tracing', () => ({
+vi.mock('@/lib/platform/opentelemetry/tracing', () => ({
   initTracing: mockInitTracing,
 }));
 vi.mock('@/lib/cron/init', () => ({
   initializeCronJobs: mockInitializeCronJobs,
 }));
-vi.mock('@/lib/logging/patch-console', () => ({
+vi.mock('@/lib/platform/logging/patch-console', () => ({
   patchConsole: mockPatchConsole,
 }));
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => ({ info: mockInfo }),
 }));
 

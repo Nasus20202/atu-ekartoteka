@@ -3,9 +3,9 @@ import { Suspense } from 'react';
 import { HoaApartmentsSkeleton } from '@/components/apartments/apartment-list-skeleton';
 import { HoaApartmentsSection } from '@/components/apartments/hoa-apartments-section';
 import { Page } from '@/components/layout/page';
-import { requireAdminAccess } from '@/lib/auth/require-admin-access';
-import { LIST_VIEW_STORAGE_KEYS } from '@/lib/list-view-mode';
-import { getListViewMode } from '@/lib/list-view-mode-server';
+import { requireAdminAccess } from '@/lib/framework/auth/require-admin-access';
+import { getListViewMode } from '@/lib/framework/list-view-mode-server';
+import { LIST_VIEW_STORAGE_KEYS } from '@/lib/shared/list-view-mode';
 
 interface HoaApartmentsPageProps {
   params: Promise<{ hoaId: string }>;

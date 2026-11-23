@@ -1,4 +1,4 @@
-import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
+import type { ApartmentSummaryDto } from '@/lib/apartments/dto/apartment-dto';
 
 type AddressFields = Pick<
   ApartmentSummaryDto,

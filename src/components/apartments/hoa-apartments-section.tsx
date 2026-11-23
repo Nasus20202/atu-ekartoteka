@@ -4,9 +4,9 @@ import { loadApartmentsPage } from '@/app/api/admin/apartments/load-apartments-p
 import { HoaApartmentsContent } from '@/components/apartments/hoa-apartments-content';
 import { REVEAL_CLASS } from '@/components/layout/reveal';
 import { SwrScope } from '@/components/providers/swr-scope';
-import { requireAdminAccess } from '@/lib/auth/require-admin-access';
-import { LIST_VIEW_STORAGE_KEYS } from '@/lib/list-view-mode';
-import { getListViewMode } from '@/lib/list-view-mode-server';
+import { requireAdminAccess } from '@/lib/framework/auth/require-admin-access';
+import { getListViewMode } from '@/lib/framework/list-view-mode-server';
+import { LIST_VIEW_STORAGE_KEYS } from '@/lib/shared/list-view-mode';
 
 const PAGE_SIZE = 20;
 

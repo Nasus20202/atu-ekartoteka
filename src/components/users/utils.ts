@@ -1,7 +1,7 @@
 import type { UserFilter } from '@/components/users/user-filters';
-import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
-import type { UserDto } from '@/lib/types/dto/user-dto';
-import type { SortState, UserSortKey } from '@/lib/utils/sort';
+import type { ApartmentSummaryDto } from '@/lib/apartments/dto/apartment-dto';
+import type { SortState, UserSortKey } from '@/lib/shared/utils/sort';
+import type { UserDto } from '@/lib/users/dto/user-dto';
 
 export function buildUsersQuery(
   filter: UserFilter,

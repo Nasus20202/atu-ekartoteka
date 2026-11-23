@@ -11,9 +11,9 @@ import {
   type UserActionsProps,
 } from '@/components/users/user-actions';
 import { UserStatusBadge } from '@/components/users/user-status-badge';
-import { formatSharePercent } from '@/lib/utils';
-import { formatApartmentLabel } from '@/lib/utils/apartment-label';
-import { APP_LOCALE } from '@/lib/utils/locale';
+import { formatSharePercent } from '@/lib/shared/utils';
+import { formatApartmentLabel } from '@/lib/shared/utils/apartment-label';
+import { APP_LOCALE } from '@/lib/shared/utils/locale';
 
 export function UserCard(actionProps: UserActionsProps) {
   const { user } = actionProps;

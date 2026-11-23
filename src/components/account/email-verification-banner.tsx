@@ -7,7 +7,7 @@ import { resendVerificationAction } from '@/actions/account/verification';
 import {
   GENERIC_ERROR_MESSAGE,
   getErrorMessage,
-} from '@/lib/utils/error-message';
+} from '@/lib/shared/utils/error-message';
 
 interface Props {
   emailVerified: boolean;

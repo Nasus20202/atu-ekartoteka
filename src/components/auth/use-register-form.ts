@@ -14,7 +14,7 @@ import {
 import {
   GENERIC_ERROR_MESSAGE,
   getErrorMessage,
-} from '@/lib/utils/error-message';
+} from '@/lib/shared/utils/error-message';
 
 const PASSWORDS_MISMATCH_MESSAGE = 'Hasła nie są identyczne';
 const AUTO_LOGIN_FAILED_MESSAGE =

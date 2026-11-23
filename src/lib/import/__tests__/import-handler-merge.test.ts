@@ -10,11 +10,11 @@ const { mockTransaction, mockParseWplatyFile, mockValidateWplaty } = vi.hoisted(
   })
 );
 
-vi.mock('@/lib/database/prisma', () => ({
+vi.mock('@/lib/platform/database/prisma', () => ({
   prisma: { $transaction: mockTransaction },
 }));
 
-vi.mock('@/lib/parsers/wplaty-parser', () => ({
+vi.mock('@/lib/import/parsers/wplaty-parser', () => ({
   parseWplatyFile: mockParseWplatyFile,
 }));
 

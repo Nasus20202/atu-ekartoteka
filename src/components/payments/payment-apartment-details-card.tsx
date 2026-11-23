@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatSharePercent } from '@/lib/utils';
-import { formatApartmentLabel } from '@/lib/utils/apartment-label';
+import { formatSharePercent } from '@/lib/shared/utils';
+import { formatApartmentLabel } from '@/lib/shared/utils/apartment-label';
 
 interface PaymentApartmentDetailsCardProps {
   address: string;

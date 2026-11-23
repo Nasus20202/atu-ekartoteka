@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { requireAdmin } from '@/lib/auth/require-admin';
-import { createLogger } from '@/lib/logger';
-import { findHoas } from '@/lib/queries/hoa/find-hoas';
-import { toHoaListItemDto } from '@/lib/types/dto/hoa-dto';
-import { getErrorMessage } from '@/lib/utils/error-message';
+import { requireAdmin } from '@/lib/framework/auth/require-admin';
+import { toHoaListItemDto } from '@/lib/hoa/dto/hoa-dto';
+import { findHoas } from '@/lib/hoa/queries/find-hoas';
+import { createLogger } from '@/lib/platform/logging/logger';
+import { getErrorMessage } from '@/lib/shared/utils/error-message';
 
 const logger = createLogger('api:admin:hoa');
 

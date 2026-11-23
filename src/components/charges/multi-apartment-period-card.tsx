@@ -17,9 +17,9 @@ import { MarqueeText } from '@/components/ui/marquee-text';
 import {
   type ChargeDisplayDto,
   toChargePdfItemDto,
-} from '@/lib/types/dto/charge-dto';
-import { cn, formatCurrency } from '@/lib/utils';
-import { sumDecimals } from '@/lib/utils/sum';
+} from '@/lib/charges/dto/charge-dto';
+import { cn, formatCurrency } from '@/lib/shared/utils';
+import { sumDecimals } from '@/lib/shared/utils/sum';
 
 type ApartmentChargesData = {
   apartmentId: string;

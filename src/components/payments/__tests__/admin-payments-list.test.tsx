@@ -4,8 +4,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { createMockPayment } from '@/__tests__/fixtures';
 import { AdminPaymentsList } from '@/components/payments/admin-payments-list';
 import { Prisma } from '@/generated/prisma/browser';
-import type { Payment } from '@/lib/types';
-import { formatCurrency } from '@/lib/utils';
+import type { Payment } from '@/lib/payments/types/payment';
+import { formatCurrency } from '@/lib/shared/utils';
 
 const withExactText =
   (value: string) => (_: string, element: Element | null) => {

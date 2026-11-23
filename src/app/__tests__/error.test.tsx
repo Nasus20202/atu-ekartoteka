@@ -10,7 +10,7 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/lib/platform/logging/logger', () => ({
   logger: { error: vi.fn() },
 }));
 

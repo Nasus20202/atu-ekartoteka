@@ -1,7 +1,7 @@
 import { cleanupExpiredPasswordResets } from '@/lib/cron/jobs/cleanup-password-resets';
 import { cleanupExpiredVerifications } from '@/lib/cron/jobs/cleanup-verifications';
 import { getCronScheduler } from '@/lib/cron/scheduler';
-import { createLogger } from '@/lib/logger';
+import { createLogger } from '@/lib/platform/logging/logger';
 
 const logger = createLogger('cron:init');
 

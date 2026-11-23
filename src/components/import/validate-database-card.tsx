@@ -17,8 +17,8 @@ import {
 } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { jsonPoster } from '@/lib/swr/json-mutation';
-import { getErrorMessage } from '@/lib/utils/error-message';
+import { jsonPoster } from '@/lib/platform/swr/json-mutation';
+import { getErrorMessage } from '@/lib/shared/utils/error-message';
 
 const VALIDATE_URL = '/api/admin/import/validate';
 const VALIDATION_FAILED_MESSAGE = 'Walidacja danych nie powiodła się';

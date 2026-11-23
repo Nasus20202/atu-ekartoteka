@@ -15,9 +15,13 @@ import {
   type UserActionsProps,
 } from '@/components/users/user-actions';
 import { UserStatusBadge } from '@/components/users/user-status-badge';
-import type { UserDto } from '@/lib/types/dto/user-dto';
-import { APARTMENT_FORMS, pluralizePl } from '@/lib/utils/pluralize';
-import { type SortState, toggleSort, type UserSortKey } from '@/lib/utils/sort';
+import { APARTMENT_FORMS, pluralizePl } from '@/lib/shared/utils/pluralize';
+import {
+  type SortState,
+  toggleSort,
+  type UserSortKey,
+} from '@/lib/shared/utils/sort';
+import type { UserDto } from '@/lib/users/dto/user-dto';
 
 interface UsersTableProps {
   users: UserDto[];

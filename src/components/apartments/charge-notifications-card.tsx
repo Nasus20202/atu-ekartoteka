@@ -5,9 +5,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import type { ChargeNotificationDto } from '@/lib/types/dto/apartment-dto';
-import { formatCurrency, formatQuantity } from '@/lib/utils';
-import { sumDecimals } from '@/lib/utils/sum';
+import type { ChargeNotificationDto } from '@/lib/apartments/dto/apartment-dto';
+import { formatCurrency, formatQuantity } from '@/lib/shared/utils';
+import { sumDecimals } from '@/lib/shared/utils/sum';
 
 export function ChargeNotificationsCard({
   notifications,

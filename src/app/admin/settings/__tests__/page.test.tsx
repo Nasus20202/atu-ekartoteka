@@ -3,7 +3,7 @@ import { use } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import SettingsPage from '@/app/admin/settings/page';
-import { requireAdminAccess } from '@/lib/auth/require-admin-access';
+import { requireAdminAccess } from '@/lib/framework/auth/require-admin-access';
 
 const pending = vi.hoisted(() => ({ section: false }));
 
@@ -14,7 +14,7 @@ vi.mock('@/components/settings/settings-section', () => ({
   },
 }));
 
-vi.mock('@/lib/auth/require-admin-access', () => ({
+vi.mock('@/lib/framework/auth/require-admin-access', () => ({
   requireAdminAccess: vi.fn(),
 }));
 

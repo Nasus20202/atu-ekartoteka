@@ -1,7 +1,7 @@
 import * as cron from 'node-cron';
 
 import { createRunCoordinator } from '@/lib/cron/run-coordinator';
-import { createLogger } from '@/lib/logger';
+import { createLogger } from '@/lib/platform/logging/logger';
 
 const logger = createLogger('cron:scheduler');
 

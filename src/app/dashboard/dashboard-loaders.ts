@@ -5,14 +5,14 @@ import {
   getDashboardPeriods,
   withMonthlyCharges,
 } from '@/app/dashboard/dashboard-data';
-import { getSession } from '@/lib/auth/get-session';
-import { findChargeTotalsByPeriod } from '@/lib/queries/charges/find-charge-totals-by-period';
-import { findMonthlyChargeSums } from '@/lib/queries/payments/find-monthly-charge-sums';
-import { findUserByIdCached } from '@/lib/queries/users/find-user-by-id';
-import { findUserWithApartmentsCached } from '@/lib/queries/users/find-user-with-apartments';
-import { getTenantHistoryStartYear } from '@/lib/settings/tenant-history';
-import { dateToPeriod, yearStartPeriod } from '@/lib/utils/period';
-import { getRequestNow } from '@/lib/utils/request-now';
+import { findChargeTotalsByPeriod } from '@/lib/charges/queries/find-charge-totals-by-period';
+import { getSession } from '@/lib/framework/auth/get-session';
+import { getRequestNow } from '@/lib/framework/request-now';
+import { findUserByIdCached } from '@/lib/framework/rsc-cache';
+import { getTenantHistoryStartYear } from '@/lib/framework/tenant-history';
+import { findMonthlyChargeSums } from '@/lib/payments/queries/find-monthly-charge-sums';
+import { dateToPeriod, yearStartPeriod } from '@/lib/shared/utils/period';
+import { findUserWithApartments } from '@/lib/users/queries/find-user-with-apartments';
 
 // Every section awaits only what it renders. Loaders are memoized per request,
 // so sections that share data share one query and independent ones run in parallel.
@@ -46,7 +46,7 @@ export const loadAccountUser = cache(async () => {
 export const loadDashboardUser = cache(async () => {
   const { userId, startYear, now } = await loadDashboardContext();
 
-  return findUserWithApartmentsCached(userId, startYear, dateToPeriod(now));
+  return findUserWithApartments(userId, startYear, dateToPeriod(now));
 });
 
 export const loadPeriodTotals = cache(async () => {

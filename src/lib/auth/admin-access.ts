@@ -1,7 +1,7 @@
 import { isApprovedAccount } from '@/lib/auth/account-access';
-import { createLogger } from '@/lib/logger';
-import { findUserSessionFields } from '@/lib/queries/users/find-user-session-fields';
-import { AccountStatus, UserRole } from '@/lib/types';
+import { AccountStatus, UserRole } from '@/lib/auth/types/account';
+import { createLogger } from '@/lib/platform/logging/logger';
+import { findUserSessionFields } from '@/lib/users/queries/find-user-session-fields';
 
 const logger = createLogger('auth:admin-access');
 

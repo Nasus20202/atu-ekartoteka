@@ -19,7 +19,7 @@ import { LogoutButton } from '@/components/account/logout-button';
 import { NAVBAR_BREAKPOINT_CLASSES } from '@/components/navigation/navbar-breakpoints';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/shared/utils';
 
 const MOBILE_MENU_ID = 'mobile-navigation';
 const MOBILE_MENU_LABEL = 'Menu';

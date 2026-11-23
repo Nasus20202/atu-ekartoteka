@@ -9,10 +9,10 @@ const mocks = vi.hoisted(() => ({
   content: vi.fn(),
 }));
 
-vi.mock('@/lib/list-view-mode-server', () => ({
+vi.mock('@/lib/framework/list-view-mode-server', () => ({
   getListViewMode: () => Promise.resolve('table'),
 }));
-vi.mock('@/lib/auth/require-admin-access', () => ({
+vi.mock('@/lib/framework/auth/require-admin-access', () => ({
   requireAdminAccess: mocks.requireAdminAccess,
 }));
 vi.mock('@/app/api/admin/users/load-users-page', () => ({

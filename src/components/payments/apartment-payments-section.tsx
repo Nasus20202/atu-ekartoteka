@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import type { PaymentDtoSource } from '@/lib/types/dto/payment-dto';
+import type { PaymentDtoSource } from '@/lib/payments/dto/payment-dto';
 
 interface ApartmentPaymentsSectionProps {
   payments: PaymentDtoSource[];

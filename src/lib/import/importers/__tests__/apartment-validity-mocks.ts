@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 
+import { ApartmentEntry } from '@/lib/import/parsers/apartment-parser';
 import { EntityStats, HOAContext, TransactionClient } from '@/lib/import/types';
-import { ApartmentEntry } from '@/lib/parsers/apartment-parser';
 
 export const IMPORT_DAY = new Date('2025-02-10T09:00:00Z');
 export const ENDED_ON = new Date('2025-02-09T00:00:00Z');

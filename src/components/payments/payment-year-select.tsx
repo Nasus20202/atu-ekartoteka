@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 
 import { Select } from '@/components/ui/select';
-import { getPaymentYearHref } from '@/lib/utils/dashboard-links';
+import { getPaymentYearHref } from '@/lib/shared/utils/dashboard-links';
 
 interface PaymentYearSelectProps {
   apartmentId: string;

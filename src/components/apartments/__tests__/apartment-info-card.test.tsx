@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ApartmentInfoCard } from '@/components/apartments/apartment-info-card';
-import type { ApartmentDetailDto } from '@/lib/types/dto/apartment-dto';
+import type { ApartmentDetailDto } from '@/lib/apartments/dto/apartment-dto';
 
 function createApartment(
   overrides: Partial<ApartmentDetailDto> = {}

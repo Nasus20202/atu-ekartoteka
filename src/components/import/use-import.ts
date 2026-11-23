@@ -19,8 +19,8 @@ import {
   type ConfirmOptions,
   useConfirm,
 } from '@/components/providers/confirm-dialog';
-import { jsonPoster } from '@/lib/swr/json-mutation';
-import { getErrorMessage } from '@/lib/utils/error-message';
+import { jsonPoster } from '@/lib/platform/swr/json-mutation';
+import { getErrorMessage } from '@/lib/shared/utils/error-message';
 
 const IMPORT_URL = '/api/admin/import';
 const IMPORT_FAILED_MESSAGE = 'Import nie powiódł się';

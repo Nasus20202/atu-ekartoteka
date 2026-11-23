@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { importApartments } from '@/lib/import/importers/apartments';
+import { ApartmentEntry } from '@/lib/import/parsers/apartment-parser';
 import {
   EntityStats,
   HOAContext,
   ImportErrorItem,
   TransactionClient,
 } from '@/lib/import/types';
-import { ApartmentEntry } from '@/lib/parsers/apartment-parser';
 
 function createMockTx() {
   return {

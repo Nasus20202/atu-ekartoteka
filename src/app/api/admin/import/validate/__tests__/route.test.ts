@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { UserRole } from '@/lib/types';
+import { UserRole } from '@/lib/auth/types/account';
 
 vi.mock('@/auth', () => ({
   auth: vi.fn(),
@@ -18,7 +18,7 @@ vi.mock('@/lib/auth/admin-access', () => ({
   isAdminRole: (role: string | null | undefined) => role === 'ADMIN',
 }));
 
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => ({
     info: vi.fn(),
     warn: vi.fn(),

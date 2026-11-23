@@ -11,7 +11,7 @@ import {
   type AvailableApartments,
   useAvailableApartments,
 } from '@/components/users/use-available-apartments';
-import type { UserDto } from '@/lib/types/dto/user-dto';
+import type { UserDto } from '@/lib/users/dto/user-dto';
 
 const selectedUser = { id: 'u1', apartments: [] } as unknown as UserDto;
 const apartment = { id: 'apt-1', userId: null, isActive: true };

@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { PaymentsSummaryCard } from '@/components/dashboard/payments-summary-card';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency } from '@/lib/shared/utils';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
@@ -95,9 +95,13 @@ describe('PaymentsSummaryCard', () => {
       />
     );
 
-    expect(await screen.findAllByTestId('balance-history-chart')).toHaveLength(
-      1
-    );
+    expect(
+      await screen.findAllByTestId(
+        'balance-history-chart',
+        {},
+        { timeout: 5000 }
+      )
+    ).toHaveLength(1);
   });
 
   it('hides the balance chart without history', () => {

@@ -17,14 +17,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
-import { cn, formatSharePercent } from '@/lib/utils';
-import { formatApartmentLabel } from '@/lib/utils/apartment-label';
+import type { ApartmentSummaryDto } from '@/lib/apartments/dto/apartment-dto';
+import { cn, formatSharePercent } from '@/lib/shared/utils';
+import { formatApartmentLabel } from '@/lib/shared/utils/apartment-label';
 import {
   type ApartmentSortKey,
   type SortState,
   toggleSort,
-} from '@/lib/utils/sort';
+} from '@/lib/shared/utils/sort';
 
 function ApartmentTableRow({
   apartment,

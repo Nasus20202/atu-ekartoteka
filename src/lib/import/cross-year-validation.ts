@@ -3,7 +3,7 @@ import {
   WPLATY_BALANCE_TOLERANCE,
 } from '@/lib/import/constants';
 import type { ImportWarning, TransactionClient } from '@/lib/import/types';
-import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
+import { type DecimalLike, toDecimal } from '@/lib/shared/utils/decimal';
 
 const DECEMBER_MONTH_INDEX = 11;
 const LAST_DAY_OF_DECEMBER = 31;

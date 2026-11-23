@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { BalanceHistoryChart } from '@/components/charts/balance-history-chart';
-import { getPaymentYearHref } from '@/lib/utils/dashboard-links';
+import { getPaymentYearHref } from '@/lib/shared/utils/dashboard-links';
 
 const push = vi.fn();
 

@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { loadUsersPage } from '@/app/api/admin/users/load-users-page';
 import { parseUsersQuery } from '@/app/api/admin/users/users-query';
-import { requireAdmin } from '@/lib/auth/require-admin';
-import { createLogger } from '@/lib/logger';
-import { getErrorMessage } from '@/lib/utils/error-message';
+import { requireAdmin } from '@/lib/framework/auth/require-admin';
+import { createLogger } from '@/lib/platform/logging/logger';
+import { getErrorMessage } from '@/lib/shared/utils/error-message';
 
 const logger = createLogger('api:admin:users');
 

@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ChargesDisplay } from '@/components/charges/charges-display';
-import type { ChargeDisplayDto } from '@/lib/types/dto/charge-dto';
+import type { ChargeDisplayDto } from '@/lib/charges/dto/charge-dto';
 
 vi.mock('@/components/pdf/download-charges-pdf-button', () => ({
   DownloadChargesPdfButton: () => <button>Download</button>,

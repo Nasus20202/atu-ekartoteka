@@ -8,7 +8,7 @@ import {
   useState,
 } from 'react';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/shared/utils';
 
 const FADE_PX = 16;
 const SCROLL_SPEED_PX_PER_S = 40;

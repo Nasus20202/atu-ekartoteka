@@ -1,15 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { importNotifications } from '@/lib/import/importers/notifications';
+import { ParseResult } from '@/lib/import/parsers/parser-utils';
+import { ChargeNotificationEntry } from '@/lib/import/parsers/pow-czynsz-parser';
 import {
   EntityStats,
   HOAContext,
   ImportErrorItem,
   TransactionClient,
 } from '@/lib/import/types';
-import { ParseResult } from '@/lib/parsers/parser-utils';
-import { ChargeNotificationEntry } from '@/lib/parsers/pow-czynsz-parser';
-import { toDecimal } from '@/lib/utils/decimal';
+import { toDecimal } from '@/lib/shared/utils/decimal';
 
 function createMockTx() {
   return {

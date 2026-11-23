@@ -6,7 +6,7 @@ import {
   formatTooltipAmount,
   formatTooltipLabel,
 } from '@/components/charts/chart-formatters';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency } from '@/lib/shared/utils';
 
 describe('chart formatters', () => {
   it('formats axis amounts compactly', () => {

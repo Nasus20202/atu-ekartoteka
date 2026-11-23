@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { forgotPasswordAction } from '@/actions/auth/forgot-password';
-import { expectNoPersonalData } from '@/lib/logging/testing';
-import { AuthMethod } from '@/lib/types';
+import { AuthMethod } from '@/lib/auth/types/account';
+import { expectNoPersonalData } from '@/lib/platform/logging/testing';
 
 const mocks = vi.hoisted(() => ({
   findUserByEmail: vi.fn(),
@@ -13,31 +13,28 @@ const mocks = vi.hoisted(() => ({
   log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
-vi.mock('@/lib/queries/users/find-user-by-email', () => ({
+vi.mock('@/lib/users/queries/find-user-by-email', () => ({
   findUserByEmail: mocks.findUserByEmail,
 }));
-vi.mock(
-  '@/lib/mutations/password-reset/delete-password-resets-for-user',
-  () => ({
-    deletePasswordResetsForUser: mocks.deletePasswordResetsForUser,
-  })
-);
-vi.mock('@/lib/mutations/password-reset/create-password-reset', () => ({
+vi.mock('@/lib/auth/mutations/delete-password-resets-for-user', () => ({
+  deletePasswordResetsForUser: mocks.deletePasswordResetsForUser,
+}));
+vi.mock('@/lib/auth/mutations/create-password-reset', () => ({
   createPasswordReset: mocks.createPasswordReset,
 }));
-vi.mock('@/lib/email/email-service', () => ({
+vi.mock('@/lib/platform/email/email-service', () => ({
   getEmailService: () => ({
     sendPasswordResetEmail: mocks.sendPasswordResetEmail,
   }),
 }));
-vi.mock('@/lib/email/verification-utils', () => ({
+vi.mock('@/lib/auth/verification-tokens', () => ({
   generateSecureToken: () => 'test-token-123',
   hashToken: (token: string) => `hashed-${token}`,
 }));
-vi.mock('@/lib/turnstile', () => ({
+vi.mock('@/lib/auth/turnstile', () => ({
   verifyTurnstileToken: mocks.verifyTurnstileToken,
 }));
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => mocks.log,
 }));
 

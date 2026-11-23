@@ -7,7 +7,7 @@ import {
   parseMarkdown,
 } from '@/lib/privacy/markdown';
 import { PLACEHOLDER_PATTERN } from '@/lib/privacy/placeholders';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/shared/utils';
 
 interface PolicyTextProps {
   text: string;

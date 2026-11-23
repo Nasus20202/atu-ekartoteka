@@ -1,10 +1,10 @@
-import type { findUserWithApartmentCharges } from '@/lib/queries/users/find-user-with-apartment-charges';
 import {
   type ChargeDisplayDto,
   type ChargeDtoSource,
   toChargeDisplayDto,
-} from '@/lib/types/dto/charge-dto';
-import { formatApartmentLabel } from '@/lib/utils/apartment-label';
+} from '@/lib/charges/dto/charge-dto';
+import { formatApartmentLabel } from '@/lib/shared/utils/apartment-label';
+import type { findUserWithApartmentCharges } from '@/lib/users/queries/find-user-with-apartment-charges';
 
 type ChargesUser = NonNullable<
   Awaited<ReturnType<typeof findUserWithApartmentCharges>>

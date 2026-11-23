@@ -6,9 +6,9 @@ import {
   buildYearBalanceRows,
 } from '@/lib/import/year-balance-overview';
 import { withYearStatus } from '@/lib/import/year-status';
-import type { MonthlyChargeSums } from '@/lib/queries/payments/find-monthly-charge-sums';
-import { toDecimal } from '@/lib/utils/decimal';
-import { PAYMENT_MONTH_FIELD_KEYS } from '@/lib/utils/payment-months';
+import type { MonthlyChargeSums } from '@/lib/payments/queries/find-monthly-charge-sums';
+import { toDecimal } from '@/lib/shared/utils/decimal';
+import { PAYMENT_MONTH_FIELD_KEYS } from '@/lib/shared/utils/payment-months';
 
 const [JANUARY_PAYMENTS] = PAYMENT_MONTH_FIELD_KEYS;
 

@@ -3,8 +3,8 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import { AdminChargesList } from '@/components/charges/admin-charges-list';
-import type { ChargePeriodItemDto } from '@/lib/types/dto/charge-dto';
-import { formatCurrency } from '@/lib/utils';
+import type { ChargePeriodItemDto } from '@/lib/charges/dto/charge-dto';
+import { formatCurrency } from '@/lib/shared/utils';
 
 vi.mock('@/components/pdf/download-charges-pdf-button', () => ({
   DownloadChargesPdfButton: ({ period }: { period: string }) => (

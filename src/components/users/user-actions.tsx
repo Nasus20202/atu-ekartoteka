@@ -13,8 +13,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { AccountStatus } from '@/lib/types';
-import type { UserDto } from '@/lib/types/dto/user-dto';
+import { AccountStatus } from '@/lib/auth/types/account';
+import type { UserDto } from '@/lib/users/dto/user-dto';
 
 export interface UserActionsProps {
   actionLoading: boolean;

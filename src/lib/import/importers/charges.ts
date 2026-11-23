@@ -1,14 +1,14 @@
 import { Prisma } from '@/generated/prisma/client';
 import { IMPORT_CREATE_BATCH_SIZE } from '@/lib/import/constants';
+import { NalCzynszEntry } from '@/lib/import/parsers/nal-czynsz-parser';
 import {
   EntityStats,
   ImportErrorItem,
   TransactionClient,
 } from '@/lib/import/types';
 import { processInBatches } from '@/lib/import/utils';
-import { NalCzynszEntry } from '@/lib/parsers/nal-czynsz-parser';
-import { decimalEqualsStored } from '@/lib/utils/decimal';
-import { getErrorMessage } from '@/lib/utils/error-message';
+import { decimalEqualsStored } from '@/lib/shared/utils/decimal';
+import { getErrorMessage } from '@/lib/shared/utils/error-message';
 
 type ChargeKey = {
   apartmentId: string;

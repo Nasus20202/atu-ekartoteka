@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { expectNoPersonalData } from '@/lib/logging/testing';
-import { AccountStatus, AuthMethod, UserRole } from '@/lib/types';
+import { AccountStatus, AuthMethod, UserRole } from '@/lib/auth/types/account';
+import { expectNoPersonalData } from '@/lib/platform/logging/testing';
 
 const { mockLog } = vi.hoisted(() => ({
   mockLog: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
@@ -17,7 +17,7 @@ const mockSendAccountActivationEmail = vi.fn().mockResolvedValue(true);
 
 vi.mock('@/auth', () => ({ auth: mockAuth }));
 
-vi.mock('@/lib/database/prisma', () => ({
+vi.mock('@/lib/platform/database/prisma', () => ({
   prisma: {
     apartment: { findMany: mockApartmentFindMany },
     user: {
@@ -28,7 +28,7 @@ vi.mock('@/lib/database/prisma', () => ({
   },
 }));
 
-vi.mock('@/lib/email/email-service', () => ({
+vi.mock('@/lib/platform/email/email-service', () => ({
   getEmailService: () => ({
     sendAccountActivationEmail: mockSendAccountActivationEmail,
   }),
@@ -49,7 +49,7 @@ vi.mock('@/lib/auth/admin-access', () => ({
   isAdminRole: (role: string | null | undefined) => role === 'ADMIN',
 }));
 
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => mockLog,
 }));
 

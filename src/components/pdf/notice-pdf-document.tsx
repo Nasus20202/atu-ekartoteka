@@ -7,8 +7,8 @@ import {
   PdfHeader,
   PdfNoteText,
 } from '@/components/pdf/primitives';
-import { registerPdfFonts } from '@/lib/pdf/register-fonts';
-import { sumDecimals } from '@/lib/utils/sum';
+import { registerPdfFonts } from '@/lib/platform/pdf/register-fonts';
+import { sumDecimals } from '@/lib/shared/utils/sum';
 
 registerPdfFonts();
 

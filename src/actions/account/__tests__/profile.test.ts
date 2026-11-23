@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { AccountStatus, AuthMethod, UserRole } from '@/lib/types';
+import { AccountStatus, AuthMethod, UserRole } from '@/lib/auth/types/account';
 
 // Create mock functions
 const mockAuth = vi.fn();
@@ -13,7 +13,7 @@ vi.mock('@/auth', () => ({
   auth: mockAuth,
 }));
 
-vi.mock('@/lib/database/prisma', () => ({
+vi.mock('@/lib/platform/database/prisma', () => ({
   prisma: {
     user: {
       findUnique: mockUserFindUnique,
@@ -22,7 +22,7 @@ vi.mock('@/lib/database/prisma', () => ({
   },
 }));
 
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => ({
     info: vi.fn(),
     warn: vi.fn(),

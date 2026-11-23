@@ -13,7 +13,7 @@ import {
   MIN_TENANT_HISTORY_YEARS_BACK,
 } from '@/lib/settings/constants';
 import { parseYearsBack } from '@/lib/settings/parse-years-back';
-import { getHistoryStartYear } from '@/lib/utils/history-window';
+import { getHistoryStartYear } from '@/lib/shared/utils/history-window';
 
 const INPUT_ID = 'tenant-history-years-back';
 const INVALID_MESSAGE = `Podaj liczbę całkowitą od ${MIN_TENANT_HISTORY_YEARS_BACK} do ${MAX_TENANT_HISTORY_YEARS_BACK}`;

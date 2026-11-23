@@ -14,8 +14,8 @@ const API_DIRECTORY_MARKER = '/src/app/api/';
 const API_DIRECTORY_PREFIX = 'src/app/api/';
 
 const GUARD_MODULES = new Set([
-  '@/lib/auth/require-user',
-  '@/lib/auth/require-admin',
+  '@/lib/framework/auth/require-user',
+  '@/lib/framework/auth/require-admin',
 ]);
 
 function toApiPath(filename) {

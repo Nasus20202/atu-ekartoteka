@@ -6,11 +6,8 @@ import { useEffect } from 'react';
 import { BackButton } from '@/components/navigation/back-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { logger } from '@/lib/logger';
-import {
-  formatDocumentTitle,
-  PAGE_TITLES,
-} from '@/lib/metadata/document-title';
+import { logger } from '@/lib/platform/logging/logger';
+import { formatDocumentTitle, PAGE_TITLES } from '@/lib/shared/document-title';
 
 const PAGE_TITLE = PAGE_TITLES.chargesError;
 

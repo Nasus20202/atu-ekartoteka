@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { requireAdmin } from '@/lib/auth/require-admin';
+import { requireAdmin } from '@/lib/framework/auth/require-admin';
 import { validateDatabase } from '@/lib/import/validate-database';
-import { createLogger } from '@/lib/logger';
-import { getErrorMessage } from '@/lib/utils/error-message';
+import { createLogger } from '@/lib/platform/logging/logger';
+import { getErrorMessage } from '@/lib/shared/utils/error-message';
 
 const logger = createLogger('api:admin:import:validate');
 

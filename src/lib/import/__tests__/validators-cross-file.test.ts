@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { validateChargesCrossFile } from '@/lib/import/charges-cross-file';
 import { MONTHLY_CHARGES_IGNORED_NOTE } from '@/lib/import/constants';
-import { NalCzynszEntry } from '@/lib/parsers/nal-czynsz-parser';
-import { PaymentEntry } from '@/lib/parsers/wplaty-parser';
+import { NalCzynszEntry } from '@/lib/import/parsers/nal-czynsz-parser';
+import { PaymentEntry } from '@/lib/import/parsers/wplaty-parser';
 
 const OWNER = 'W001';
 

@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 
-import { requireAdmin } from '@/lib/auth/require-admin';
-import { createLogger } from '@/lib/logger';
-import { findHoaNotices } from '@/lib/queries/hoa/find-hoa-notices';
-import { getErrorMessage } from '@/lib/utils/error-message';
+import { requireAdmin } from '@/lib/framework/auth/require-admin';
+import { findHoaNotices } from '@/lib/hoa/queries/find-hoa-notices';
+import { createLogger } from '@/lib/platform/logging/logger';
+import { getErrorMessage } from '@/lib/shared/utils/error-message';
 
 const logger = createLogger('api:admin:hoa:notices');
 

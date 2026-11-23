@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { createMockApartment } from '@/__tests__/fixtures';
 import { buildAddressKey } from '@/components/apartments/apartment-list-utils';
 import { ApartmentTable } from '@/components/apartments/apartment-table';
-import type { ApartmentSortKey, SortState } from '@/lib/utils/sort';
+import type { ApartmentSortKey, SortState } from '@/lib/shared/utils/sort';
 
 const apartment = createMockApartment({
   shareRatio: 0.025,

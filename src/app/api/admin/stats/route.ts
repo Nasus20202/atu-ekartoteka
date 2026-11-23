@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 
-import { requireAdmin } from '@/lib/auth/require-admin';
-import { createLogger } from '@/lib/logger';
-import { getDashboardStats } from '@/lib/queries/admin/get-dashboard-stats';
+import { getDashboardStats } from '@/lib/admin/queries/get-dashboard-stats';
+import { requireAdmin } from '@/lib/framework/auth/require-admin';
+import { createLogger } from '@/lib/platform/logging/logger';
 
 const logger = createLogger('api:admin:stats');
 

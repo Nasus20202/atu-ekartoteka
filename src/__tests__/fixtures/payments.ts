@@ -1,10 +1,10 @@
 import { Prisma } from '@/generated/prisma/browser';
-import type { Payment } from '@/lib/types';
-import type { PaymentDtoSource } from '@/lib/types/dto/payment-dto';
+import type { PaymentDtoSource } from '@/lib/payments/dto/payment-dto';
+import type { Payment } from '@/lib/payments/types/payment';
 import {
   CALCULATED_CHARGE_FIELD_KEYS,
   PAYMENT_MONTH_FIELD_KEYS,
-} from '@/lib/utils/payment-months';
+} from '@/lib/shared/utils/payment-months';
 
 const zero = () => new Prisma.Decimal(0);
 

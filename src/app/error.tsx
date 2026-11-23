@@ -6,11 +6,8 @@ import { startTransition, useEffect } from 'react';
 
 import { StatusCard } from '@/components/errors/status-card';
 import { Button } from '@/components/ui/button';
-import { logger } from '@/lib/logger';
-import {
-  formatDocumentTitle,
-  PAGE_TITLES,
-} from '@/lib/metadata/document-title';
+import { logger } from '@/lib/platform/logging/logger';
+import { formatDocumentTitle, PAGE_TITLES } from '@/lib/shared/document-title';
 
 const PAGE_TITLE = PAGE_TITLES.appError;
 

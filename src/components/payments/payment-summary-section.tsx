@@ -10,13 +10,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { toPaymentPdfDto } from '@/lib/types/dto/payment-dto';
-import { formatCurrency, formatDate } from '@/lib/utils';
-import { formatApartmentLabel } from '@/lib/utils/apartment-label';
+import { toPaymentPdfDto } from '@/lib/payments/dto/payment-dto';
+import { formatCurrency, formatDate } from '@/lib/shared/utils';
+import { formatApartmentLabel } from '@/lib/shared/utils/apartment-label';
 import {
   getBalanceStatusClass,
   getSignedBalanceClass,
-} from '@/lib/utils/balance-class';
+} from '@/lib/shared/utils/balance-class';
 
 export async function PaymentSummarySection({ params }: PaymentDetailsParams) {
   const { apartmentId, year } = await params;

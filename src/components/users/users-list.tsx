@@ -6,8 +6,8 @@ import { UsersEmptyState } from '@/components/users/users-empty-state';
 import { UsersListSkeleton } from '@/components/users/users-page-skeleton';
 import { UsersTable } from '@/components/users/users-table';
 import { ListViewMode } from '@/hooks/use-list-view-mode';
-import type { UserDto } from '@/lib/types/dto/user-dto';
-import type { SortState, UserSortKey } from '@/lib/utils/sort';
+import type { SortState, UserSortKey } from '@/lib/shared/utils/sort';
+import type { UserDto } from '@/lib/users/dto/user-dto';
 
 interface UsersListProps {
   users: UserDto[];

@@ -2,10 +2,10 @@ import { Power, PowerOff } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { ApartmentDetailDto } from '@/lib/types/dto/apartment-dto';
-import { formatSharePercent } from '@/lib/utils';
-import { formatApartmentLabel } from '@/lib/utils/apartment-label';
-import { formatOwnerPeriod } from '@/lib/utils/owner-period';
+import type { ApartmentDetailDto } from '@/lib/apartments/dto/apartment-dto';
+import { formatSharePercent } from '@/lib/shared/utils';
+import { formatApartmentLabel } from '@/lib/shared/utils/apartment-label';
+import { formatOwnerPeriod } from '@/lib/shared/utils/owner-period';
 
 interface ApartmentInfoCardProps {
   apartment: ApartmentDetailDto;

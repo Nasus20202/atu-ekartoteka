@@ -223,7 +223,7 @@ Every HTML email SHALL share one layout that matches the application's visual de
 
 ## Templates
 
-Each email type is a React component in `src/components/email/emails/` built from the shared components in `src/components/email/` and the theme in `src/lib/email/email-theme.ts`. The plain-text part is generated from the rendered HTML.
+Each email type is a React component in `src/components/email/emails/` built from the shared components in `src/components/email/` and the theme in `src/lib/platform/email/email-theme.ts`. The plain-text part is generated from the rendered HTML.
 
 | Email type                    | Component file                    |
 | ----------------------------- | --------------------------------- |

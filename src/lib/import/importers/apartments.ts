@@ -8,6 +8,7 @@ import {
   hasApartmentChanged,
   isOwnershipEnded,
 } from '@/lib/import/importers/apartment-data';
+import { ApartmentEntry } from '@/lib/import/parsers/apartment-parser';
 import {
   ApartmentMap,
   EntityStats,
@@ -16,8 +17,7 @@ import {
   TransactionClient,
 } from '@/lib/import/types';
 import { processInBatches } from '@/lib/import/utils';
-import { ApartmentEntry } from '@/lib/parsers/apartment-parser';
-import { getErrorMessage } from '@/lib/utils/error-message';
+import { getErrorMessage } from '@/lib/shared/utils/error-message';
 
 export async function importApartments(
   tx: TransactionClient,

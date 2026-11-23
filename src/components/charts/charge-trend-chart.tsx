@@ -38,7 +38,7 @@ import {
   useChartViewport,
 } from '@/components/charts/chart-viewport';
 import { MeasuredChart } from '@/components/charts/measured-chart';
-import { getChargesHref } from '@/lib/utils/dashboard-links';
+import { getChargesHref } from '@/lib/shared/utils/dashboard-links';
 
 interface ChargeTrendChartProps {
   data: ChargeTrendDatum[];

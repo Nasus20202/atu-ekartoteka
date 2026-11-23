@@ -5,8 +5,8 @@ import { PaymentYearRow } from '@/components/payments/payment-year-row';
 import {
   PAYMENT_AMOUNT_FIELD_KEYS,
   type PaymentListItemDto,
-} from '@/lib/types/dto/payment-dto';
-import { formatCurrency } from '@/lib/utils';
+} from '@/lib/payments/dto/payment-dto';
+import { formatCurrency } from '@/lib/shared/utils';
 
 const exactText = (value: string) => (_: string, element: Element | null) =>
   element?.textContent === value && element.children.length === 0;

@@ -4,8 +4,8 @@ import { EmailVerificationBanner } from '@/components/account/email-verification
 import { OrphanedSessionSignOut } from '@/components/account/orphaned-session-sign-out';
 import { DashboardNavbar } from '@/components/navigation/dashboard-navbar';
 import { isApprovedAdmin } from '@/lib/auth/admin-access';
-import { getSession } from '@/lib/auth/get-session';
-import { findUserByIdCached } from '@/lib/queries/users/find-user-by-id';
+import { getSession } from '@/lib/framework/auth/get-session';
+import { findUserByIdCached } from '@/lib/framework/rsc-cache';
 
 export async function DashboardChrome() {
   const session = await getSession();

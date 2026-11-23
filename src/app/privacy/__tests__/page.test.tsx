@@ -7,15 +7,15 @@ import { PrivacyPolicySection } from '@/components/privacy/privacy-policy-sectio
 
 const mocks = vi.hoisted(() => ({
   connection: vi.fn(),
-  getPrivacyPolicy: vi.fn(),
+  readPrivacyPolicy: vi.fn(),
 }));
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ back: vi.fn(), push: vi.fn() }),
 }));
 vi.mock('next/server', () => ({ connection: mocks.connection }));
-vi.mock('@/lib/queries/settings/app-settings', () => ({
-  getPrivacyPolicy: mocks.getPrivacyPolicy,
+vi.mock('@/lib/settings/queries/app-settings', () => ({
+  readPrivacyPolicy: mocks.readPrivacyPolicy,
 }));
 
 describe('PrivacyPolicySection', () => {
@@ -25,7 +25,7 @@ describe('PrivacyPolicySection', () => {
   });
 
   it('renders the saved policy without any session check', async () => {
-    mocks.getPrivacyPolicy.mockResolvedValue('# Polityka\n\nTekst **ważny**.');
+    mocks.readPrivacyPolicy.mockResolvedValue('# Polityka\n\nTekst **ważny**.');
 
     render(await PrivacyPolicySection());
 
@@ -36,18 +36,18 @@ describe('PrivacyPolicySection', () => {
   });
 
   it('reads the database at request time, not at build time', async () => {
-    mocks.getPrivacyPolicy.mockResolvedValue('Tekst');
+    mocks.readPrivacyPolicy.mockResolvedValue('Tekst');
 
     await PrivacyPolicySection();
 
     expect(mocks.connection).toHaveBeenCalled();
     expect(mocks.connection.mock.invocationCallOrder[0]).toBeLessThan(
-      mocks.getPrivacyPolicy.mock.invocationCallOrder[0]
+      mocks.readPrivacyPolicy.mock.invocationCallOrder[0]
     );
   });
 
   it('says the policy is not published when none is saved', async () => {
-    mocks.getPrivacyPolicy.mockResolvedValue(null);
+    mocks.readPrivacyPolicy.mockResolvedValue(null);
 
     render(await PrivacyPolicySection());
 

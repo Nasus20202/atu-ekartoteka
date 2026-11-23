@@ -7,9 +7,9 @@ import {
   isApartmentMatchingUser,
   pinSelectedAndMatching,
 } from '@/components/users/utils';
-import { AccountStatus, UserRole } from '@/lib/types';
-import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
-import type { UserDto } from '@/lib/types/dto/user-dto';
+import type { ApartmentSummaryDto } from '@/lib/apartments/dto/apartment-dto';
+import { AccountStatus, UserRole } from '@/lib/auth/types/account';
+import type { UserDto } from '@/lib/users/dto/user-dto';
 
 const apartmentA: ApartmentSummaryDto = {
   id: 'apt-a',

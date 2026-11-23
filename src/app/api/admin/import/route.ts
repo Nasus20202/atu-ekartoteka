@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { gunzipSync } from 'zlib';
 
-import { requireAdmin } from '@/lib/auth/require-admin';
+import { requireAdmin } from '@/lib/framework/auth/require-admin';
+import { getRequestNow } from '@/lib/framework/request-now';
 import { processBatchImport } from '@/lib/import/import-handler';
-import { createLogger } from '@/lib/logger';
-import { getErrorMessage } from '@/lib/utils/error-message';
-import { getRequestNow } from '@/lib/utils/request-now';
+import { createLogger } from '@/lib/platform/logging/logger';
+import { getErrorMessage } from '@/lib/shared/utils/error-message';
 
 const logger = createLogger('api:admin:import');
 

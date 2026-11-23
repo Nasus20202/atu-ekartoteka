@@ -2,7 +2,8 @@ import { AlertCircle, Building2 } from 'lucide-react';
 
 import { ApartmentCard } from '@/components/dashboard/apartment-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { Apartment, Payment } from '@/lib/types';
+import type { Apartment } from '@/lib/apartments/types/apartment';
+import type { Payment } from '@/lib/payments/types/payment';
 
 type ApartmentCardData = Pick<
   Apartment,

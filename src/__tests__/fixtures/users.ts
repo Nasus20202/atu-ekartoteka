@@ -1,4 +1,4 @@
-import { AccountStatus, AuthMethod, UserRole } from '@/lib/types';
+import { AccountStatus, AuthMethod, UserRole } from '@/lib/auth/types/account';
 
 export const createMockUser = (
   overrides: {

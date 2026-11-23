@@ -9,13 +9,15 @@ const mockRedirect = vi.fn((path: string) => {
   throw new Error(`NEXT_REDIRECT:${path}`);
 });
 
-vi.mock('@/lib/auth/get-session', () => ({ getSession: () => mockAuth() }));
+vi.mock('@/lib/framework/auth/get-session', () => ({
+  getSession: () => mockAuth(),
+}));
 
 vi.mock('next/navigation', () => ({
   redirect: (path: string) => mockRedirect(path),
 }));
 
-vi.mock('@/lib/queries/users/find-user-by-id', () => ({
+vi.mock('@/lib/framework/rsc-cache', () => ({
   findUserByIdCached: (id: string) => mockFindUser(id),
 }));
 

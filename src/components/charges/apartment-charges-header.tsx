@@ -1,7 +1,7 @@
 import { loadApartmentCharges } from '@/app/dashboard/charges/[apartmentId]/load-apartment-charges';
 import { PageHeader } from '@/components/layout/page-header';
 import { REVEAL_CLASS } from '@/components/layout/reveal';
-import { formatApartmentLabel } from '@/lib/utils/apartment-label';
+import { formatApartmentLabel } from '@/lib/shared/utils/apartment-label';
 
 interface ApartmentChargesHeaderProps {
   params: Promise<{ apartmentId: string }>;

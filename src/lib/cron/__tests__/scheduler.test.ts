@@ -20,7 +20,7 @@ vi.mock('@/lib/cron/run-coordinator', () => ({
   createRunCoordinator: vi.fn(() => ({ shouldRun: vi.fn() })),
 }));
 
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: vi.fn(() => mockLogger),
 }));
 

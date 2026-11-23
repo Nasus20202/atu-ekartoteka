@@ -9,8 +9,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { formatCurrency } from '@/lib/utils';
-import { sumDecimals } from '@/lib/utils/sum';
+import { formatCurrency } from '@/lib/shared/utils';
+import { sumDecimals } from '@/lib/shared/utils/sum';
 
 interface HoaNotificationGroup {
   hoaId: string | null;

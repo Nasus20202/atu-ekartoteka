@@ -1,6 +1,6 @@
 import { Check, Clock, X } from 'lucide-react';
 
-import { AccountStatus } from '@/lib/types';
+import { AccountStatus } from '@/lib/auth/types/account';
 
 interface UserStatusBadgeProps {
   status: AccountStatus;

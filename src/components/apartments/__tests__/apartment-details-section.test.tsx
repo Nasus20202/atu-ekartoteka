@@ -14,10 +14,10 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('next/navigation', () => ({ notFound: mocks.notFound }));
 
-vi.mock('@/lib/auth/require-admin-access', () => ({
+vi.mock('@/lib/framework/auth/require-admin-access', () => ({
   requireAdminAccess: mocks.requireAdminAccess,
 }));
-vi.mock('@/lib/queries/apartments/load-apartment-detail', () => ({
+vi.mock('@/lib/apartments/queries/load-apartment-detail', () => ({
   loadApartmentDetail: mocks.loadApartmentDetail,
 }));
 vi.mock('@/components/apartments/apartment-details-content', () => ({

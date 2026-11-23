@@ -1,7 +1,7 @@
 import { REVEAL_CLASS } from '@/components/layout/reveal';
 import { SettingsContent } from '@/components/settings/settings-content';
-import { requireAdminAccess } from '@/lib/auth/require-admin-access';
-import { readAllSettings } from '@/lib/queries/settings/app-settings';
+import { requireAdminAccess } from '@/lib/framework/auth/require-admin-access';
+import { readAllSettings } from '@/lib/settings/queries/app-settings';
 
 /** Stored (not cached) values, so the form always starts from the database. */
 export async function SettingsSection() {

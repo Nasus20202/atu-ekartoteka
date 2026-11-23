@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
 import { UserStatusSection } from '@/components/account/user-status-section';
-import { AccountStatus } from '@/lib/types';
+import { AccountStatus } from '@/lib/auth/types/account';
 
 describe('UserStatusSection', () => {
   it('renders user status section with name and email', () => {

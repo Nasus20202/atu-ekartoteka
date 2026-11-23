@@ -8,7 +8,7 @@ import {
   newUserAdminMessage,
   passwordResetMessage,
   verificationMessage,
-} from '../../src/lib/email/email-messages';
+} from '../../src/lib/platform/email/email-messages';
 import { expect, test } from '../fixtures';
 
 const EMAIL_APP_URL = 'https://ekartoteka.example.com';

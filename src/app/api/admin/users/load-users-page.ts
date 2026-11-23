@@ -1,6 +1,6 @@
 import type { UsersQuery } from '@/app/api/admin/users/users-query';
-import { findTenantUsers } from '@/lib/queries/users/find-tenant-users';
-import { toUserDto } from '@/lib/types/dto/user-dto';
+import { toUserDto } from '@/lib/users/dto/user-dto';
+import { findTenantUsers } from '@/lib/users/queries/find-tenant-users';
 
 /** One page of users as DTOs, shared by the API route and server pages. */
 export async function loadUsersPage(query: UsersQuery) {

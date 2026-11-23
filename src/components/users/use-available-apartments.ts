@@ -3,10 +3,10 @@
 import { startTransition, useEffect, useState } from 'react';
 import useSWR from 'swr';
 
-import { fetchJson } from '@/lib/swr/fetch-json';
-import { SWR_OPTIONS } from '@/lib/swr/swr-options';
-import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
-import type { UserDto } from '@/lib/types/dto/user-dto';
+import type { ApartmentSummaryDto } from '@/lib/apartments/dto/apartment-dto';
+import { fetchJson } from '@/lib/platform/swr/fetch-json';
+import { SWR_OPTIONS } from '@/lib/platform/swr/swr-options';
+import type { UserDto } from '@/lib/users/dto/user-dto';
 
 const APARTMENT_FETCH_LIMIT = 100000;
 const SEARCH_DEBOUNCE_MS = 300;

@@ -55,14 +55,14 @@ Migrations are applied in production with `pnpm db:deploy` or by the
   pages live under `src/app/admin/`, whose layout checks the role in the
   database.
 - **Mutation from the browser** - a Server Action in `src/actions/<feature>/`,
-  and the database work in `src/lib/mutations/`. Start with
+  and the database work in `src/lib/<domain>/mutations/`. Start with
   `requireUserAction()` or `requireAdminAction()`. The lint rule fails the
   build otherwise.
 - **API route** - only when a Server Action does not fit, e.g. a read used by
   SWR, or the import. Start with `requireUser()` or `requireAdmin()` and return
   its `response`.
 - **Read from a client component** - use SWR with the shared options and
-  `fetchJson` from `src/lib/swr`. Do not write `useEffect` fetches.
+  `fetchJson` from `src/lib/platform/swr`. Do not write `useEffect` fetches.
 
 Whatever you add, derive the user from the session and scope queries to the
 caller's own apartments. [Code conventions](code-conventions.md) has the full

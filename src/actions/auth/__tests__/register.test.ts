@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { registerAction, type RegisterInput } from '@/actions/auth/register';
-import { AccountStatus, UserRole } from '@/lib/types';
+import { AccountStatus, UserRole } from '@/lib/auth/types/account';
 
 const {
   mockFindUserByEmail,
@@ -27,42 +27,42 @@ const {
   mockVerifyTurnstileToken: vi.fn(),
 }));
 
-vi.mock('@/lib/queries/users/find-user-by-email', () => ({
+vi.mock('@/lib/users/queries/find-user-by-email', () => ({
   findUserByEmail: mockFindUserByEmail,
 }));
-vi.mock('@/lib/mutations/users/create-first-admin', () => ({
+vi.mock('@/lib/users/mutations/create-first-admin', () => ({
   createFirstAdmin: mockCreateFirstAdmin,
 }));
-vi.mock('@/lib/mutations/users/create-user', () => ({
+vi.mock('@/lib/users/mutations/create-user', () => ({
   createUser: mockCreateUser,
 }));
-vi.mock('@/lib/mutations/email-verification/create-verification', () => ({
+vi.mock('@/lib/auth/mutations/create-verification', () => ({
   createEmailVerification: mockCreateEmailVerification,
 }));
-vi.mock('@/lib/email/email-service', () => ({
+vi.mock('@/lib/platform/email/email-service', () => ({
   getEmailService: () => ({
     sendVerificationEmail: mockSendVerificationEmail,
   }),
 }));
-vi.mock('@/lib/notifications/new-user-registration', () => ({
+vi.mock('@/lib/auth/new-user-registration', () => ({
   notifyAdminsOfNewUser: mockNotifyAdminsOfNewUser,
 }));
 vi.mock('@/lib/auth/registration-auto-login-token', () => ({
   createRegistrationAutoLoginToken: mockCreateRegistrationAutoLoginToken,
 }));
-vi.mock('@/lib/opentelemetry/auth-metrics', () => ({
+vi.mock('@/lib/platform/opentelemetry/auth-metrics', () => ({
   authMetrics: { recordRegistration: mockRecordRegistration },
 }));
-vi.mock('@/lib/turnstile', () => ({
+vi.mock('@/lib/auth/turnstile', () => ({
   isTurnstileEnabled: mockIsTurnstileEnabled,
   verifyTurnstileToken: mockVerifyTurnstileToken,
 }));
-vi.mock('@/lib/email/verification-utils', () => ({
+vi.mock('@/lib/auth/verification-tokens', () => ({
   generateSecureToken: () => 'secure-token',
   getVerificationExpiration: () => new Date(Date.now() + 86400_000),
   hashToken: (t: string) => `hashed-${t}`,
 }));
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => ({
     info: vi.fn(),
     warn: vi.fn(),
@@ -233,14 +233,8 @@ describe('registerAction', () => {
   });
 
   it('returns a validation failure instead of a crash when the email is taken concurrently', async () => {
-    const { Prisma } = await import('@/generated/prisma/client');
     mockFindUserByEmail.mockResolvedValue(null);
-    mockCreateUser.mockRejectedValue(
-      new Prisma.PrismaClientKnownRequestError('unique violation', {
-        code: 'P2002',
-        clientVersion: 'test',
-      })
-    );
+    mockCreateUser.mockResolvedValue(null);
 
     const result = await registerAction(TENANT_INPUT);
 

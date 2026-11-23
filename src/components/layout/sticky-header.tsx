@@ -3,7 +3,7 @@
 import { ReactNode } from 'react';
 
 import { useHeaderStuck } from '@/components/layout/use-header-stuck';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/shared/utils';
 
 interface StickyHeaderProps {
   children: ReactNode;

@@ -16,20 +16,22 @@ vi.mock('react', async (importOriginal) => ({
   cache: <T>(fn: T) => fn,
 }));
 vi.mock('next/navigation', () => ({ redirect: mocks.redirect }));
-vi.mock('@/lib/auth/get-session', () => ({ getSession: mocks.getSession }));
-vi.mock('@/lib/queries/users/find-user-by-id', () => ({
+vi.mock('@/lib/framework/auth/get-session', () => ({
+  getSession: mocks.getSession,
+}));
+vi.mock('@/lib/framework/rsc-cache', () => ({
   findUserByIdCached: mocks.findUser,
 }));
-vi.mock('@/lib/queries/users/find-user-with-apartments', () => ({
-  findUserWithApartmentsCached: mocks.findUserWithApartments,
+vi.mock('@/lib/users/queries/find-user-with-apartments', () => ({
+  findUserWithApartments: mocks.findUserWithApartments,
 }));
-vi.mock('@/lib/queries/charges/find-charge-totals-by-period', () => ({
+vi.mock('@/lib/charges/queries/find-charge-totals-by-period', () => ({
   findChargeTotalsByPeriod: mocks.findChargeTotals,
 }));
-vi.mock('@/lib/queries/payments/find-monthly-charge-sums', () => ({
+vi.mock('@/lib/payments/queries/find-monthly-charge-sums', () => ({
   findMonthlyChargeSums: mocks.findMonthlySums,
 }));
-vi.mock('@/lib/settings/tenant-history', () => ({
+vi.mock('@/lib/framework/tenant-history', () => ({
   getTenantHistoryStartYear: vi.fn().mockResolvedValue(2024),
 }));
 

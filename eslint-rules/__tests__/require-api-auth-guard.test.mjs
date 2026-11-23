@@ -11,7 +11,7 @@ const rule = localRules.rules['require-api-auth-guard'];
 ruleTester.run('require-api-auth-guard', rule, {
   valid: [
     {
-      code: `import { requireUser } from '@/lib/auth/require-user';
+      code: `import { requireUser } from '@/lib/framework/auth/require-user';
 export async function GET() {
   const { response } = await requireUser();
   return response ?? Response.json({});
@@ -19,7 +19,7 @@ export async function GET() {
       filename: 'src/app/api/user/preferences/route.ts',
     },
     {
-      code: `import { requireAdmin } from '@/lib/auth/require-admin';
+      code: `import { requireAdmin } from '@/lib/framework/auth/require-admin';
 export async function GET() {
   const { response } = await requireAdmin();
   return response ?? Response.json({});
@@ -27,7 +27,7 @@ export async function GET() {
       filename: 'src/app/api/admin/users/route.ts',
     },
     {
-      code: `import { requireUser as guard } from '@/lib/auth/require-user';
+      code: `import { requireUser as guard } from '@/lib/framework/auth/require-user';
 export async function GET() {
   return guard();
 }`,
@@ -36,7 +36,7 @@ export async function GET() {
     {
       // Not an API route module.
       code: 'export const value = 1;',
-      filename: 'src/lib/auth/providers.ts',
+      filename: 'src/lib/framework/auth/providers.ts',
     },
   ],
 
@@ -53,7 +53,7 @@ export async function GET() {
     },
     {
       // Imported but never called.
-      code: `import { requireUser } from '@/lib/auth/require-user';
+      code: `import { requireUser } from '@/lib/framework/auth/require-user';
 export async function GET() { return Response.json({}); }`,
       filename: 'src/app/api/reports/route.ts',
       errors: [{ messageId: 'missingGuard' }],

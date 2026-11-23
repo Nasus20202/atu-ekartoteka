@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import GlobalError from '@/app/global-error';
 
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/lib/platform/logging/logger', () => ({
   logger: { error: vi.fn() },
 }));
 

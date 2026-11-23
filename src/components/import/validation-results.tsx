@@ -12,8 +12,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { downloadTextFile } from '@/lib/utils/download-file';
-import { serialiseErrorsToTxt } from '@/lib/utils/export-errors';
+import { downloadTextFile } from '@/lib/shared/utils/download-file';
+import { serialiseErrorsToTxt } from '@/lib/shared/utils/export-errors';
 
 const VALIDATION_EXPORT_FILE = 'walidacja-bazy.txt';
 const YEAR_TO_YEAR_MARKER = 'saldo otwarcia';

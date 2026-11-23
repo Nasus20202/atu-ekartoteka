@@ -3,9 +3,9 @@
 import { useCallback } from 'react';
 import useSWR from 'swr';
 
-import { fetchJson } from '@/lib/swr/fetch-json';
-import { SWR_OPTIONS } from '@/lib/swr/swr-options';
-import { AccountStatus } from '@/lib/types';
+import { AccountStatus } from '@/lib/auth/types/account';
+import { fetchJson } from '@/lib/platform/swr/fetch-json';
+import { SWR_OPTIONS } from '@/lib/platform/swr/swr-options';
 
 const PENDING_COUNT_URL = `/api/admin/users?${new URLSearchParams({
   status: AccountStatus.PENDING,

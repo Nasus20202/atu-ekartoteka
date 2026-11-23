@@ -9,6 +9,10 @@ import prettierPlugin from 'eslint-plugin-prettier';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import unusedImports from 'eslint-plugin-unused-imports';
 
+import {
+  boundaryConfigs,
+  RELATIVE_IMPORTS,
+} from './eslint-rules/boundaries.mjs';
 import localRules from './eslint-rules/index.mjs';
 
 const eslintConfig = defineConfig([
@@ -51,20 +55,10 @@ const eslintConfig = defineConfig([
       ],
 
       // Forbid relative imports - enforce @ alias
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              group: ['../*', './*'],
-              message:
-                'Relative imports are not allowed. Use @ alias instead (e.g., @/components/...).',
-            },
-          ],
-        },
-      ],
+      'no-restricted-imports': ['error', { patterns: [RELATIVE_IMPORTS] }],
     },
   },
+  ...boundaryConfigs,
   // Fields prefixed with `legacy` hold values loaded from the input files that
   // are known to be incorrect; only import code and tests may touch them
   {
@@ -83,7 +77,7 @@ const eslintConfig = defineConfig([
   {
     files: [
       'src/lib/import/**',
-      'src/lib/queries/payments/**',
+      'src/lib/payments/queries/**',
       '**/__tests__/**',
       '**/*.test.ts',
       '**/*.test.tsx',

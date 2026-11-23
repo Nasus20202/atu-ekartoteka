@@ -11,7 +11,7 @@ context: |
   - Framework: Next.js 16, App Router, React 19
   - Database: PostgreSQL via Prisma ORM
   - Auth: NextAuth v5 (JWT strategy) — the JWT carries only `sub` and `mustChangePassword`; role and account status are read from the database on every check
-  - Email: nodemailer (SMTP); HTML bodies are React Email components (src/components/email, src/components/email/emails, theme in src/lib/email/email-theme.ts) and the plain-text part is generated from the rendered HTML
+  - Email: nodemailer (SMTP); HTML bodies are React Email components (src/components/email, src/components/email/emails, theme in src/lib/platform/email/email-theme.ts) and the plain-text part is generated from the rendered HTML
   - Styling: Tailwind CSS v4, shadcn/ui component library
   - Package manager: pnpm
   - Build: Next.js (standalone output), Vite via Vitest for unit tests
@@ -28,7 +28,7 @@ context: |
   - No magic numbers or strings — use constants or enums
   - No unused code — delete it
   - No toast library — use Alert component or inline state for user feedback
-  - Client reads (search, paging, pickers, config) use SWR with the shared options in src/lib/swr; mutations are Server Actions in src/actions/<feature>/, public ones with a reasoned eslint-disable comment; only the admin import and validate API routes use useSWRMutation with jsonPoster from src/lib/swr; no hand-written fetch/useEffect data hooks
+  - Client reads (search, paging, pickers, config) use SWR with the shared options in src/lib/platform/swr; mutations are Server Actions in src/actions/<feature>/, public ones with a reasoned eslint-disable comment; only the admin import and validate API routes use useSWRMutation with jsonPoster from src/lib/platform/swr; no hand-written fetch/useEffect data hooks
   - Pre-commit hook runs lint-staged then vitest --run; commits are blocked on test or lint failures
 
   ## Domain

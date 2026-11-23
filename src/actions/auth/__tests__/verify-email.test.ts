@@ -9,20 +9,20 @@ const mocks = vi.hoisted(() => ({
   recordEmailVerification: vi.fn(),
 }));
 
-vi.mock('@/lib/queries/email-verification/find-verification-by-code', () => ({
+vi.mock('@/lib/auth/queries/find-verification-by-code', () => ({
   findVerificationByCode: mocks.findVerificationByCode,
 }));
-vi.mock('@/lib/mutations/email-verification/verify-email-transaction', () => ({
+vi.mock('@/lib/auth/mutations/verify-email-transaction', () => ({
   verifyEmailTransaction: mocks.verifyEmailTransaction,
 }));
-vi.mock('@/lib/email/verification-utils', () => ({
+vi.mock('@/lib/auth/verification-tokens', () => ({
   hashToken: (token: string) => `hashed-${token}`,
   isVerificationExpired: mocks.isVerificationExpired,
 }));
-vi.mock('@/lib/opentelemetry/auth-metrics', () => ({
+vi.mock('@/lib/platform/opentelemetry/auth-metrics', () => ({
   authMetrics: { recordEmailVerification: mocks.recordEmailVerification },
 }));
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() }),
 }));
 

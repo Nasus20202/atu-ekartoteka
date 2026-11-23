@@ -9,16 +9,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import type { PaymentDtoSource } from '@/lib/types/dto/payment-dto';
-import { cn, formatCurrency, MONTH_NAMES_PL } from '@/lib/utils';
-import { getSignedBalanceClass } from '@/lib/utils/balance-class';
-import { getChargesHref } from '@/lib/utils/dashboard-links';
-import { toDecimal } from '@/lib/utils/decimal';
+import type { PaymentDtoSource } from '@/lib/payments/dto/payment-dto';
+import { cn, formatCurrency, MONTH_NAMES_PL } from '@/lib/shared/utils';
+import { getSignedBalanceClass } from '@/lib/shared/utils/balance-class';
+import { getChargesHref } from '@/lib/shared/utils/dashboard-links';
+import { toDecimal } from '@/lib/shared/utils/decimal';
 import {
   getNonEmptyMonths,
   getPaymentTotals,
-} from '@/lib/utils/payment-months';
-import { monthIndexToPeriod } from '@/lib/utils/period';
+} from '@/lib/shared/utils/payment-months';
+import { monthIndexToPeriod } from '@/lib/shared/utils/period';
 
 interface PaymentTableProps {
   payment: PaymentDtoSource;

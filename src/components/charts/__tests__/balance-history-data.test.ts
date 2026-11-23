@@ -7,7 +7,7 @@ import {
 import {
   CALCULATED_CHARGE_FIELD_KEYS,
   PAYMENT_MONTH_FIELD_KEYS,
-} from '@/lib/utils/payment-months';
+} from '@/lib/shared/utils/payment-months';
 
 type MonthAmounts = Partial<Record<number, [number, number]>>;
 type PaymentSource = Parameters<typeof getBalanceHistory>[0][number];

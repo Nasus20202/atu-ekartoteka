@@ -7,7 +7,7 @@ import AdminUsersPage from '@/app/admin/users/page';
 const pending = vi.hoisted(() => ({ section: false }));
 const modeMock = vi.hoisted(() => ({ value: 'cards' }));
 
-vi.mock('@/lib/list-view-mode-server', () => ({
+vi.mock('@/lib/framework/list-view-mode-server', () => ({
   getListViewMode: () => Promise.resolve(modeMock.value),
 }));
 
@@ -18,7 +18,7 @@ vi.mock('@/components/users/admin-users-section', () => ({
   },
 }));
 
-vi.mock('@/lib/auth/require-admin-access', () => ({
+vi.mock('@/lib/framework/auth/require-admin-access', () => ({
   requireAdminAccess: vi.fn(),
 }));
 

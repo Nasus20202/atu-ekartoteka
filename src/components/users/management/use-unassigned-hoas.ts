@@ -5,7 +5,7 @@ import { useCallback } from 'react';
 import type { BulkMode } from '@/components/users/management/bulk-requests';
 import type { HoaGroup } from '@/components/users/management/hoa-card';
 import { type PageFetcher, useInfiniteList } from '@/hooks/use-infinite-list';
-import { fetchJson } from '@/lib/swr/fetch-json';
+import { fetchJson } from '@/lib/platform/swr/fetch-json';
 
 const getHoaId = (hoa: HoaGroup) => hoa.hoaId;
 

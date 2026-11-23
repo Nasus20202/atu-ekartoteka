@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatCurrency, formatDate, formatPeriod } from '@/lib/utils';
+import { formatCurrency, formatDate, formatPeriod } from '@/lib/shared/utils';
 
 describe('Charge Utils', () => {
   describe('formatPeriod', () => {

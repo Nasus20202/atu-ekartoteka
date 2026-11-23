@@ -7,13 +7,13 @@ const mocks = vi.hoisted(() => ({
   updateAppSettings: vi.fn(),
 }));
 
-vi.mock('@/lib/auth/require-action', () => ({
+vi.mock('@/lib/framework/auth/require-action', () => ({
   requireAdminAction: mocks.requireAdminAction,
 }));
-vi.mock('@/lib/mutations/settings/update-app-settings', () => ({
+vi.mock('@/lib/settings/mutations/update-app-settings', () => ({
   updateAppSettings: mocks.updateAppSettings,
 }));
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() }),
 }));
 

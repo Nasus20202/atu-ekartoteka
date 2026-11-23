@@ -1,7 +1,7 @@
 import { ArrowDown, ArrowUp, ChevronsUpDown } from 'lucide-react';
 
 import { TableHead } from '@/components/ui/table';
-import type { SortDirection } from '@/lib/utils/sort';
+import type { SortDirection } from '@/lib/shared/utils/sort';
 
 interface SortableTableHeadProps {
   label: string;

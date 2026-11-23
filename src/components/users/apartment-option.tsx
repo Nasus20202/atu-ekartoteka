@@ -1,9 +1,9 @@
 import { Check } from 'lucide-react';
 
 import { Checkbox } from '@/components/ui/checkbox';
-import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
-import { formatSharePercent } from '@/lib/utils';
-import { formatApartmentLabel } from '@/lib/utils/apartment-label';
+import type { ApartmentSummaryDto } from '@/lib/apartments/dto/apartment-dto';
+import { formatSharePercent } from '@/lib/shared/utils';
+import { formatApartmentLabel } from '@/lib/shared/utils/apartment-label';
 
 interface ApartmentOptionProps {
   apartment: ApartmentSummaryDto;

@@ -1,4 +1,4 @@
-import { AccountStatus } from '@/lib/types';
+import { AccountStatus } from '@/lib/auth/types/account';
 
 interface AccountCandidate {
   status: AccountStatus;

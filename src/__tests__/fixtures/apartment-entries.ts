@@ -1,4 +1,4 @@
-import type { ApartmentEntry } from '@/lib/parsers/apartment-parser';
+import type { ApartmentEntry } from '@/lib/import/parsers/apartment-parser';
 
 export const createMockApartmentEntry = (
   overrides: Partial<ApartmentEntry> = {}

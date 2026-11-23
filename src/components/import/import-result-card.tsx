@@ -6,9 +6,9 @@ import { ImportWarnings } from '@/components/import/import-warnings';
 import type { EntityStats, ImportResult } from '@/components/import/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatUtcDate } from '@/lib/utils';
-import { downloadTextFile } from '@/lib/utils/download-file';
-import { serialiseErrorsToTxt } from '@/lib/utils/export-errors';
+import { formatUtcDate } from '@/lib/shared/utils';
+import { downloadTextFile } from '@/lib/shared/utils/download-file';
+import { serialiseErrorsToTxt } from '@/lib/shared/utils/export-errors';
 
 interface ImportResultCardProps {
   result: ImportResult;

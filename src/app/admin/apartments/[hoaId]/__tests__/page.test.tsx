@@ -7,7 +7,7 @@ import HoaApartmentsPage from '@/app/admin/apartments/[hoaId]/page';
 const pending = vi.hoisted(() => ({ section: false }));
 const modeMock = vi.hoisted(() => ({ value: 'cards' }));
 
-vi.mock('@/lib/list-view-mode-server', () => ({
+vi.mock('@/lib/framework/list-view-mode-server', () => ({
   getListViewMode: () => Promise.resolve(modeMock.value),
 }));
 
@@ -27,7 +27,7 @@ async function renderPage() {
   );
 }
 
-vi.mock('@/lib/auth/require-admin-access', () => ({
+vi.mock('@/lib/framework/auth/require-admin-access', () => ({
   requireAdminAccess: vi.fn(),
 }));
 

@@ -12,7 +12,7 @@ import type { PdfDownloadButtonProps } from '@/components/pdf/pdf-download-butto
 import {
   PAYMENT_AMOUNT_FIELD_KEYS,
   type PaymentPdfDto,
-} from '@/lib/types/dto/payment-dto';
+} from '@/lib/payments/dto/payment-dto';
 
 const PDF_BLOB = new Blob(['pdf']);
 

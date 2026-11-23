@@ -1,5 +1,5 @@
 import { Prisma } from '@/generated/prisma/browser';
-import type { Charge, ChargeNotification } from '@/lib/types';
+import type { Charge, ChargeNotification } from '@/lib/charges/types/charge';
 
 export const createMockCharge = (overrides: Partial<Charge> = {}): Charge => ({
   id: 'charge-1',

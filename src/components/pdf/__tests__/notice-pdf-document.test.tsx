@@ -17,7 +17,9 @@ vi.mock('@react-pdf/renderer', () => ({
   Font: { register: vi.fn() },
 }));
 
-vi.mock('@/lib/pdf/register-fonts', () => ({ registerPdfFonts: vi.fn() }));
+vi.mock('@/lib/platform/pdf/register-fonts', () => ({
+  registerPdfFonts: vi.fn(),
+}));
 
 const { NoticePdfDocument } =
   await import('@/components/pdf/notice-pdf-document');

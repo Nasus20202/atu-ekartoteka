@@ -3,8 +3,8 @@ import type {
   ValueType,
 } from 'recharts/types/component/DefaultTooltipContent';
 
-import { formatCurrency } from '@/lib/utils';
-import { APP_LOCALE } from '@/lib/utils/locale';
+import { formatCurrency } from '@/lib/shared/utils';
+import { APP_LOCALE } from '@/lib/shared/utils/locale';
 
 const compactAmountFormatter = new Intl.NumberFormat(APP_LOCALE, {
   style: 'currency',

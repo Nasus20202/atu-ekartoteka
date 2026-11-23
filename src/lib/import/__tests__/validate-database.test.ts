@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
   chargeDeleteMany: vi.fn(),
 }));
 
-vi.mock('@/lib/database/prisma', () => ({
+vi.mock('@/lib/platform/database/prisma', () => ({
   prisma: {
     homeownersAssociation: { findMany: mocks.hoaFindMany },
     charge: {

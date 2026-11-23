@@ -1,0 +1,22 @@
+import { getEmailService } from '@/lib/platform/email/email-service';
+import { createLogger } from '@/lib/platform/logging/logger';
+
+const logger = createLogger('notifications:account-status');
+
+/**
+ * Send notification when account status changes to APPROVED
+ */
+export async function notifyAccountApproved(
+  email: string,
+  name?: string | null
+): Promise<void> {
+  try {
+    const emailService = getEmailService();
+    await emailService.sendAccountApprovedEmail(email, name || undefined);
+
+    logger.info('Account approved notification sent');
+  } catch (error) {
+    logger.error({ error }, 'Failed to send account approved notification');
+    // Don't throw - notification failure shouldn't break the approval process
+  }
+}

@@ -7,8 +7,8 @@ import type { ImportResponse } from '@/components/import/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { SuccessMessage } from '@/components/ui/success-message';
-import { downloadTextFile } from '@/lib/utils/download-file';
-import { serialiseErrorsToTxt } from '@/lib/utils/export-errors';
+import { downloadTextFile } from '@/lib/shared/utils/download-file';
+import { serialiseErrorsToTxt } from '@/lib/shared/utils/export-errors';
 
 interface ImportResultsProps {
   response: ImportResponse | null;

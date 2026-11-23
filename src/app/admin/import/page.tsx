@@ -1,5 +1,5 @@
 import { AdminImportContent } from '@/components/import/admin-import-content';
-import { requireAdminAccess } from '@/lib/auth/require-admin-access';
+import { requireAdminAccess } from '@/lib/framework/auth/require-admin-access';
 
 export default async function AdminImportPage() {
   await requireAdminAccess();

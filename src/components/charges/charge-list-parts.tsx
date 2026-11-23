@@ -3,15 +3,15 @@
 import { ChevronDown } from 'lucide-react';
 
 import { CollapsibleTrigger } from '@/components/ui/collapsible';
-import type { ChargeDisplayDto } from '@/lib/types/dto/charge-dto';
+import type { ChargeDisplayDto } from '@/lib/charges/dto/charge-dto';
 import {
   cn,
   formatCurrency,
   formatDate,
   formatPeriod,
   formatQuantity,
-} from '@/lib/utils';
-import { type DecimalLike } from '@/lib/utils/decimal';
+} from '@/lib/shared/utils';
+import { type DecimalLike } from '@/lib/shared/utils/decimal';
 
 export function YearTrigger({ year, open }: { year: string; open: boolean }) {
   return (

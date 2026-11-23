@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { loadApartmentsPage } from '@/app/api/admin/apartments/load-apartments-page';
-import { requireAdmin } from '@/lib/auth/require-admin';
-import { createLogger } from '@/lib/logger';
-import { getErrorMessage } from '@/lib/utils/error-message';
-import type { ApartmentSortKey, SortDirection } from '@/lib/utils/sort';
+import { requireAdmin } from '@/lib/framework/auth/require-admin';
+import { createLogger } from '@/lib/platform/logging/logger';
+import { getErrorMessage } from '@/lib/shared/utils/error-message';
+import type { ApartmentSortKey, SortDirection } from '@/lib/shared/utils/sort';
 
 const logger = createLogger('api:admin:apartments');
 

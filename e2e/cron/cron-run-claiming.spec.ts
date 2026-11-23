@@ -8,9 +8,9 @@ import { randomUUID } from 'crypto';
 
 import { PrismaClient } from '@/generated/prisma/client';
 import { CRON_RUN_RETENTION_MS } from '@/lib/cron/constants';
+import { claimCronRun } from '@/lib/cron/mutations/claim-cron-run';
 import { createRunCoordinator } from '@/lib/cron/run-coordinator';
 import { CronScheduler } from '@/lib/cron/scheduler';
-import { claimCronRun } from '@/lib/mutations/cron/claim-cron-run';
 
 import { expect, test } from '../fixtures';
 

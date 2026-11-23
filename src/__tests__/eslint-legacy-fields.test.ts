@@ -29,7 +29,7 @@ describe('legacy field restriction', () => {
 
   it.each([
     'src/lib/import/importers/legacy-use.ts',
-    'src/lib/queries/payments/legacy-use.ts',
+    'src/lib/payments/queries/legacy-use.ts',
     'src/app/dashboard/__tests__/legacy-use.ts',
   ])('allows legacy identifiers in %s', async (filePath) => {
     const ruleIds = await lintRuleIds(filePath);

@@ -68,9 +68,9 @@ All imports SHALL use the `@/` path alias. Relative imports are forbidden outsid
 
 #### Scenario: Importing a shared utility
 
-- **GIVEN** a file at `src/app/admin/users/page.tsx` that needs a utility from `src/lib/utils.ts`
+- **GIVEN** a file at `src/app/admin/users/page.tsx` that needs a utility from `src/lib/shared/utils`
 - **WHEN** the developer writes the import
-- **THEN** they write `import { ... } from '@/lib/utils'`; writing `import { ... } from '../../../lib/utils'` is a lint error
+- **THEN** they write `import { ... } from '@/lib/shared/utils'`; writing `import { ... } from '../../../lib/utils'` is a lint error
 
 #### Scenario: Import order
 
@@ -176,52 +176,107 @@ Data passed from server-side database or query composition into client component
 
 ---
 
-### Requirement: Data access via queries and mutations
+### Requirement: Vertical slices by domain
 
-All Prisma database operations SHALL be encapsulated in dedicated files under `src/lib/queries/` (reads) and `src/lib/mutations/` (writes), organized by domain. No file outside these directories is permitted to import `prisma` directly, with the sole exception of `src/lib/import/import-handler.ts`, which orchestrates a complex multi-step transaction and receives a transaction client (`tx`) passed down from callers.
+`src/lib/` SHALL contain only folders. Each domain SHALL own a slice `src/lib/<domain>/` holding its pure rules, its domain models in `types/<entity>.ts`, its DTO types and mappers in `dto/<entity>-dto.ts`, and where it has such code its `queries/` (reads), `mutations/` (writes) and `use-cases/` (orchestration). Shared infrastructure SHALL live in `src/lib/platform/`, the Next.js and Auth.js edge in `src/lib/framework/`, and pure code shared across domains in `src/lib/shared/`. A slice MAY import another slice's queries, mutations, types or use cases; the framework and database boundaries below still apply.
 
 #### Directory structure
 
 ```
-src/lib/queries/
-  admin/
-  apartments/
-  email-verification/
-  hoa/
-  password-reset/
-  users/
-
-src/lib/mutations/
-  apartments/
-  email-verification/
-  hoa/
-  password-reset/
-  users/
+src/lib/
+  admin/           queries/ (dashboard counts across domains)
+  apartments/      types/apartment, dto/apartment-dto, queries/, mutations/
+  auth/            pure rules, types/account (roles, statuses), types/turnstile, turnstile,
+                   verification-tokens, new-user-registration, queries/ mutations/ use-cases/
+  charges/         types/charge, dto/charge-dto, queries/
+  cron/            scheduler, run-coordinator, jobs/, mutations/
+  framework/       auth/, request-now, rsc-cache, tenant-history, security-headers, list-view-mode-server
+  hoa/             types/hoa, dto/hoa-dto, queries/ mutations/
+  import/          importers/, parsers/, validation and import pipeline
+  payments/        types/payment, dto/payment-dto, queries/
+  platform/        logging/ database/ opentelemetry/ swr/ pdf/ email/
+  privacy/         policy template and markdown
+  settings/        registry, queries/ mutations/
+  shared/          iso-string.ts, use-case-result.ts, list-view-mode.ts, document-title.ts, utils/
+  users/           types/user, dto/user-dto, account-status, queries/ mutations/ use-cases/
 ```
+
+### Requirement: Data access via queries and mutations
+
+All Prisma database operations SHALL be encapsulated in dedicated files under `src/lib/<domain>/queries/` (reads) and `src/lib/<domain>/mutations/` (writes). The database client (`prisma` from `src/lib/platform/database/prisma`) SHALL be imported only by those folders and by the infrastructure that owns it: `src/lib/platform/database/`, `src/lib/import/` (multi-step transactions, which receive a transaction client `tx` from their callers), `src/lib/cron/`, `src/lib/platform/opentelemetry/` and the health route `src/app/api/health/`. Pages, components, API routes and Server Actions SHALL NOT import it; ESLint enforces this. Type-only and value imports of Prisma types or `Prisma.Decimal` are not database access and are not restricted.
 
 #### Scenario: New read operation
 
 - **GIVEN** a feature needs to read data from the database
 - **WHEN** a developer writes the query
-- **THEN** it is placed in `src/lib/queries/<domain>/<verb>-<subject>.ts`; the function is exported as a plain function; if the caller is a server component, a `Cached` variant is also exported using React `cache()` (e.g., `export const findUserByIdCached = cache(findUserById)`)
+- **THEN** it is placed in `src/lib/<domain>/queries/<verb>-<subject>.ts` and exported as a plain function that imports no React API; request-scoped memoisation is added in `src/lib/framework/rsc-cache.ts` (see the next scenario)
+
+#### Scenario: Request-scoped memoisation for a server component
+
+- **GIVEN** a query that more than one entry point (a guard, a loader or a component) reads in the same request
+- **WHEN** the memoised variant is needed
+- **THEN** `src/lib/framework/rsc-cache.ts` exports it once (e.g., `export const findUserByIdCached = cache(findUserById)`), and every caller imports that same export; React's `cache()` only shares results between callers that call the same memoised function, so wrapping the query again in a component would not dedupe
+- **AND** a read that one entry point reaches, or that sits inside an already memoised loader, is called directly with no wrapper
 
 #### Scenario: New write operation
 
 - **GIVEN** a feature needs to create, update, or delete data
 - **WHEN** a developer writes the mutation
-- **THEN** it is placed in `src/lib/mutations/<domain>/<verb>-<subject>.ts`; the function is exported as a plain function with no caching
+- **THEN** it is placed in `src/lib/<domain>/mutations/<verb>-<subject>.ts`; the function is exported as a plain function with no caching
 
 #### Scenario: Server component vs. API route usage
 
 - **GIVEN** a query function that is called from both a server component and an API route
 - **WHEN** the call sites import the function
-- **THEN** the server component imports the `Cached` variant (e.g., `findUserByIdCached`) and the API route imports the plain variant (e.g., `findUserById`)
+- **THEN** the server component imports the `Cached` variant from `src/lib/framework/rsc-cache.ts` (e.g., `findUserByIdCached`) and the API route imports the plain variant from the query module (e.g., `findUserById`)
 
 #### Scenario: Accidental direct prisma import
 
 - **GIVEN** a developer adds a database call directly in an API route, page, or utility that is not a query/mutation file
 - **WHEN** the code is reviewed
-- **THEN** the call is extracted to the appropriate `queries/` or `mutations/` file and imported from there
+- **THEN** the call is extracted to the appropriate `src/lib/<domain>/queries/` or `src/lib/<domain>/mutations/` file and imported from there
+
+---
+
+### Requirement: Framework boundary
+
+Domain logic SHALL NOT depend on Next.js, React or Auth.js. Those APIs only exist inside a request or a render, so importing them into the domain would tie it to the current runtime. Framework glue SHALL live in `src/lib/framework/` (or `src/app/`), and ESLint SHALL enforce both rules.
+
+#### Scenario: Domain module imports the framework
+
+- **GIVEN** a domain module under `src/lib/` outside `src/lib/framework/` and `src/lib/platform/email/`
+- **WHEN** it imports `next`, `next/*`, `next-auth`, `next-auth/*`, `react` or `react-dom`
+- **THEN** ESLint reports `no-restricted-imports`; the framework call moves to `src/lib/framework/` and the domain function takes the value as an argument or returns a plain result
+
+#### Scenario: Module needs the request or the render scope
+
+- **GIVEN** a module needs the request date, the request-scoped read cache, the list view cookie or the session
+- **WHEN** it is written
+- **THEN** it is placed in `src/lib/framework/` and imported from there by pages, components and actions
+
+#### Scenario: Write reached from a component
+
+- **GIVEN** a file under `src/app/` or `src/components/`
+- **WHEN** it imports from `@/lib/*/mutations/*`
+- **THEN** ESLint reports an error; writes go through a Server Action in `src/actions/` or the documented admin import route, while reads may still use `@/lib/*/queries/*`
+
+---
+
+### Requirement: Use cases live in use-case modules
+
+A Server Action SHALL stay thin: it applies the guard, coerces untrusted input, calls a use case and maps the outcome to the browser shape. The use case SHALL live in its domain's `src/lib/<domain>/use-cases/` folder as a plain function over typed arguments that returns a `UseCaseResult`, so it runs without the Next.js runtime.
+
+#### Scenario: Action with orchestration
+
+- **GIVEN** a Server Action that hashes a password, checks for duplicates, writes, and notifies
+- **WHEN** it is written or changed
+- **THEN** the orchestration is in `src/lib/<domain>/use-cases/<use-case>.ts` (for example `src/lib/auth/use-cases/register-account.ts`), and the action keeps the guard, the input coercion and `fromUseCaseResult`
+
+#### Scenario: Service reports a failure
+
+- **GIVEN** a service whose call can fail
+- **WHEN** it returns the failure
+- **THEN** it uses `invalidResult` or `failedResult` from `src/lib/shared/use-case-result.ts` and does not import from `src/actions/`
 
 ---
 

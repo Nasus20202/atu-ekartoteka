@@ -4,14 +4,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const mockUserFindFirst = vi.fn();
 
 // Mock the prisma client
-vi.mock('@/lib/database/prisma', () => ({
+vi.mock('@/lib/platform/database/prisma', () => ({
   prisma: {
     user: { findFirst: mockUserFindFirst },
   },
 }));
 
 // Mock the logger
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => ({
     error: vi.fn(),
   }),

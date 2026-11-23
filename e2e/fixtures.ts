@@ -5,7 +5,7 @@
 
 import { Page, test as base } from '@playwright/test';
 
-import { FIXED_NOW_HEADER } from '../src/lib/utils/fixed-now';
+import { FIXED_NOW_HEADER } from '../src/lib/shared/utils/fixed-now';
 import { TURNSTILE_VALID_TOKEN } from './mocks/constants';
 import {
   ADMIN_EMAIL,

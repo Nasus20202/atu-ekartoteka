@@ -4,8 +4,8 @@ import { FileDown, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { downloadBlob } from '@/lib/utils/download-file';
+import { cn } from '@/lib/shared/utils';
+import { downloadBlob } from '@/lib/shared/utils/download-file';
 
 const BUTTON_TEXT = 'Pobierz PDF';
 const LOADING_TEXT = 'Generowanie...';

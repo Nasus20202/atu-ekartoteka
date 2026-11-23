@@ -81,10 +81,10 @@ vi.mock('@/components/pdf/download-payment-pdf-button', () => ({
     return <div>pdf</div>;
   },
 }));
-vi.mock('@/lib/types/dto/payment-dto', () => ({
+vi.mock('@/lib/payments/dto/payment-dto', () => ({
   toPaymentPdfDto: (payment: unknown) => ({ pdf: payment }),
 }));
-vi.mock('@/lib/utils/apartment-label', () => ({
+vi.mock('@/lib/shared/utils/apartment-label', () => ({
   formatApartmentLabel: () => 'Długa 1/2',
 }));
 

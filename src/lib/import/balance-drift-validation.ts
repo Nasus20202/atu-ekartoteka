@@ -1,11 +1,11 @@
 import { WPLATY_BALANCE_TOLERANCE } from '@/lib/import/constants';
 import { fullYearEndThreshold } from '@/lib/import/cross-year-validation';
 import type { ImportWarning, TransactionClient } from '@/lib/import/types';
-import { findMonthlyChargeSums } from '@/lib/queries/payments/find-monthly-charge-sums';
-import { type DecimalLike, toDecimal } from '@/lib/utils/decimal';
-import { applyDerivedFigures } from '@/lib/utils/payment-balances';
-import { PAYMENT_MONTH_FIELD_KEYS } from '@/lib/utils/payment-months';
-import { yearEndPeriod, yearStartPeriod } from '@/lib/utils/period';
+import { findMonthlyChargeSums } from '@/lib/payments/queries/find-monthly-charge-sums';
+import { type DecimalLike, toDecimal } from '@/lib/shared/utils/decimal';
+import { applyDerivedFigures } from '@/lib/shared/utils/payment-balances';
+import { PAYMENT_MONTH_FIELD_KEYS } from '@/lib/shared/utils/payment-months';
+import { yearEndPeriod, yearStartPeriod } from '@/lib/shared/utils/period';
 
 const PAYMENT_MONTH_SELECT = Object.fromEntries(
   PAYMENT_MONTH_FIELD_KEYS.map((key) => [key, true])

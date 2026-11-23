@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import { UserFilters } from '@/components/users/user-filters';
-import { AccountStatus } from '@/lib/types';
+import { AccountStatus } from '@/lib/auth/types/account';
 
 describe('UserFilters', () => {
   it('renders selected variant for active filter', () => {

@@ -12,9 +12,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
-import { formatSharePercent } from '@/lib/utils';
-import { formatApartmentLabel } from '@/lib/utils/apartment-label';
+import type { ApartmentSummaryDto } from '@/lib/apartments/dto/apartment-dto';
+import { formatSharePercent } from '@/lib/shared/utils';
+import { formatApartmentLabel } from '@/lib/shared/utils/apartment-label';
 
 export function AdminApartmentCard({
   apartment,

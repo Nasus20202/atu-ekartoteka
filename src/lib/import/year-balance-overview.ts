@@ -1,12 +1,12 @@
 import { WPLATY_BALANCE_TOLERANCE } from '@/lib/import/constants';
 import type { YearBalanceRow, YearRecord } from '@/lib/import/types';
-import type { MonthlyChargeSums } from '@/lib/queries/payments/find-monthly-charge-sums';
-import { type Decimal, toDecimal } from '@/lib/utils/decimal';
+import type { MonthlyChargeSums } from '@/lib/payments/queries/find-monthly-charge-sums';
+import { type Decimal, toDecimal } from '@/lib/shared/utils/decimal';
 import {
   applyDerivedFigures,
   type PaymentFiguresSource,
-} from '@/lib/utils/payment-balances';
-import { yearEndPeriod } from '@/lib/utils/period';
+} from '@/lib/shared/utils/payment-balances';
+import { yearEndPeriod } from '@/lib/shared/utils/period';
 
 export type BalancePaymentSource = PaymentFiguresSource & {
   apartmentId: string;

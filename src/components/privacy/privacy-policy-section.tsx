@@ -2,7 +2,7 @@ import { connection } from 'next/server';
 
 import { PolicyText } from '@/components/privacy/policy-text';
 import { PolicyToolbar } from '@/components/privacy/policy-toolbar';
-import { getPrivacyPolicy } from '@/lib/queries/settings/app-settings';
+import { readPrivacyPolicy } from '@/lib/settings/queries/app-settings';
 
 export const NOT_PUBLISHED_MESSAGE =
   'Polityka prywatności nie została jeszcze opublikowana.';
@@ -10,7 +10,7 @@ export const NOT_PUBLISHED_MESSAGE =
 /** Public: shows the saved policy, or a notice, never the built-in template. */
 export async function PrivacyPolicySection() {
   await connection();
-  const policy = await getPrivacyPolicy();
+  const policy = await readPrivacyPolicy();
 
   return (
     <>

@@ -27,7 +27,7 @@ import {
 } from '@/components/charts/chart-styles';
 import { createYAxisTick } from '@/components/charts/chart-ticks';
 import { MeasuredChart } from '@/components/charts/measured-chart';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency } from '@/lib/shared/utils';
 
 const Y_AXIS_FONT_SIZE = 12;
 

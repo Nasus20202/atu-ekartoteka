@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/shared/utils';
 
 export interface SegmentedControlOption<T extends string> {
   value: T;

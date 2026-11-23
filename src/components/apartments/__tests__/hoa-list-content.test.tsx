@@ -4,7 +4,7 @@ import { StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { HoaListContent } from '@/components/apartments/hoa-list-content';
-import type { HoaListItemDto } from '@/lib/types/dto/hoa-dto';
+import type { HoaListItemDto } from '@/lib/hoa/dto/hoa-dto';
 
 const actionMock = vi.hoisted(() => ({ renameHoaAction: vi.fn() }));
 

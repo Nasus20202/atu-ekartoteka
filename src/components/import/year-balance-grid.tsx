@@ -11,7 +11,7 @@ import {
   MismatchNote,
   ValidationBadge,
 } from '@/components/import/year-balance-parts';
-import { cn, formatCurrency } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/shared/utils';
 
 const RED_CELL_CLASS = 'font-semibold text-destructive';
 const STICKY_COLUMN_CLASS =

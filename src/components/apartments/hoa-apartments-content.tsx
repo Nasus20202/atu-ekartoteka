@@ -32,7 +32,7 @@ import {
   ListViewMode,
   useListViewMode,
 } from '@/hooks/use-list-view-mode';
-import { APARTMENT_FORMS, pluralizePl } from '@/lib/utils/pluralize';
+import { APARTMENT_FORMS, pluralizePl } from '@/lib/shared/utils/pluralize';
 
 interface HoaApartmentsContentProps {
   initialViewMode?: ListViewMode;

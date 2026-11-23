@@ -7,7 +7,9 @@ const { mockScheduler } = vi.hoisted(() => ({
 vi.mock('@/lib/cron/scheduler', () => ({
   getCronScheduler: () => mockScheduler,
 }));
-vi.mock('@/lib/logger', () => ({ createLogger: () => ({ info: vi.fn() }) }));
+vi.mock('@/lib/platform/logging/logger', () => ({
+  createLogger: () => ({ info: vi.fn() }),
+}));
 
 import { initializeCronJobs, stopCronJobs } from '@/lib/cron/init';
 import { cleanupExpiredPasswordResets } from '@/lib/cron/jobs/cleanup-password-resets';

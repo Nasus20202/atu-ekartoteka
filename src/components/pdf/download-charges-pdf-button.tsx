@@ -2,10 +2,10 @@
 
 import type { ChargePeriodGroup } from '@/components/pdf/charge-pdf-document';
 import { PdfDownloadButton } from '@/components/pdf/pdf-download-button';
-import type { ChargePdfItemDto } from '@/lib/types/dto/charge-dto';
-import { formatPeriod } from '@/lib/utils';
-import { toLocalIsoDate } from '@/lib/utils/local-date';
-import { sumDecimals } from '@/lib/utils/sum';
+import type { ChargePdfItemDto } from '@/lib/charges/dto/charge-dto';
+import { formatPeriod } from '@/lib/shared/utils';
+import { toLocalIsoDate } from '@/lib/shared/utils/local-date';
+import { sumDecimals } from '@/lib/shared/utils/sum';
 
 interface DownloadChargesPdfButtonProps {
   apartmentLabel: string;

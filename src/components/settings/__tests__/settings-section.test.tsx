@@ -11,10 +11,10 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/actions/settings/settings', () => ({
   updateSettingsAction: vi.fn(),
 }));
-vi.mock('@/lib/auth/require-admin-access', () => ({
+vi.mock('@/lib/framework/auth/require-admin-access', () => ({
   requireAdminAccess: mocks.requireAdminAccess,
 }));
-vi.mock('@/lib/queries/settings/app-settings', () => ({
+vi.mock('@/lib/settings/queries/app-settings', () => ({
   readAllSettings: mocks.readAllSettings,
 }));
 vi.mock('@/components/providers/confirm-dialog', () => ({

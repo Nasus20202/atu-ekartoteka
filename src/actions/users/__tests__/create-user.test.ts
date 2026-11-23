@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { AccountStatus, UserRole } from '@/lib/types';
+import { AccountStatus, UserRole } from '@/lib/auth/types/account';
 
 const mockAuth = vi.fn();
 const mockUserFindUnique = vi.fn();
@@ -11,7 +11,7 @@ vi.mock('@/auth', () => ({
   auth: mockAuth,
 }));
 
-vi.mock('@/lib/database/prisma', () => ({
+vi.mock('@/lib/platform/database/prisma', () => ({
   prisma: {
     user: {
       findUnique: mockUserFindUnique,
@@ -27,7 +27,7 @@ vi.mock('@/lib/auth/admin-access', () => ({
   isAdminRole: (role: string | null | undefined) => role === 'ADMIN',
 }));
 
-vi.mock('@/lib/logger', () => ({
+vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => ({
     info: vi.fn(),
     warn: vi.fn(),

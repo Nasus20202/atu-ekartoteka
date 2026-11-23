@@ -22,8 +22,8 @@ import { ApartmentOptionsLoading } from '@/components/users/apartment-options-lo
 import { StatusChangePanel } from '@/components/users/status-change-panel';
 import type { EditMode } from '@/components/users/types';
 import { useRetainedValue } from '@/hooks/use-retained-value';
-import type { ApartmentSummaryDto } from '@/lib/types/dto/apartment-dto';
-import type { UserDto } from '@/lib/types/dto/user-dto';
+import type { ApartmentSummaryDto } from '@/lib/apartments/dto/apartment-dto';
+import type { UserDto } from '@/lib/users/dto/user-dto';
 
 interface ApartmentSelectionDialogProps {
   actionLoading: boolean;

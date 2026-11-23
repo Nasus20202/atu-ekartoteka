@@ -3,14 +3,14 @@ import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { MarqueeText } from '@/components/ui/marquee-text';
-import { formatCurrency, formatSharePercent } from '@/lib/utils';
-import { formatApartmentLabel } from '@/lib/utils/apartment-label';
-import { getBalanceStatusClass } from '@/lib/utils/balance-class';
+import { formatCurrency, formatSharePercent } from '@/lib/shared/utils';
+import { formatApartmentLabel } from '@/lib/shared/utils/apartment-label';
+import { getBalanceStatusClass } from '@/lib/shared/utils/balance-class';
 import {
   getChargesHref,
   getPaymentYearHref,
-} from '@/lib/utils/dashboard-links';
-import type { DecimalLike } from '@/lib/utils/decimal';
+} from '@/lib/shared/utils/dashboard-links';
+import type { DecimalLike } from '@/lib/shared/utils/decimal';
 
 interface ApartmentCardProps {
   apartment: {

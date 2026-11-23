@@ -1,5 +1,4 @@
 import { PrismaClient } from '@/generated/prisma/client';
-import { prisma } from '@/lib/database/prisma';
 import { IMPORT_HOA_CONCURRENCY } from '@/lib/import/constants';
 import { importHoaInTransaction } from '@/lib/import/import-hoa-transaction';
 import { parseHoaFiles } from '@/lib/import/parse-hoa-files';
@@ -17,8 +16,9 @@ import {
   mapWithConcurrency,
 } from '@/lib/import/utils';
 import { validateHoaFiles } from '@/lib/import/validate-hoa-files';
-import { createLogger } from '@/lib/logger';
-import { getErrorMessage } from '@/lib/utils/error-message';
+import { prisma } from '@/lib/platform/database/prisma';
+import { createLogger } from '@/lib/platform/logging/logger';
+import { getErrorMessage } from '@/lib/shared/utils/error-message';
 
 const IMPORT_TRANSACTION_TIMEOUT_MS = 60000;
 

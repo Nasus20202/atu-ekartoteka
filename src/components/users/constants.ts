@@ -1,5 +1,5 @@
 import type { NewUserFormData } from '@/components/users/types';
-import { AccountStatus, UserRole } from '@/lib/types';
+import { AccountStatus, UserRole } from '@/lib/auth/types/account';
 
 export const ROLE_OPTIONS = [
   { value: UserRole.TENANT, label: 'Użytkownik' },

@@ -2,7 +2,7 @@ import { PageHeaderSkeleton } from '@/components/skeletons/page-header-skeleton'
 import { SkeletonCard } from '@/components/skeletons/skeleton-card';
 import { TableSkeleton } from '@/components/skeletons/table-skeleton';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ListViewMode } from '@/lib/list-view-mode';
+import { ListViewMode } from '@/lib/shared/list-view-mode';
 
 const APARTMENT_CARDS = 6;
 

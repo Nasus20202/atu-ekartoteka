@@ -20,8 +20,9 @@ export async function onRequestError(
     return;
   }
 
-  const { getActiveTraceId } = await import('@/lib/opentelemetry/active-trace');
-  const { createLogger } = await import('@/lib/logger');
+  const { getActiveTraceId } =
+    await import('@/lib/platform/opentelemetry/active-trace');
+  const { createLogger } = await import('@/lib/platform/logging/logger');
   const logger = createLogger('request-error');
   const traceId = getActiveTraceId();
 
@@ -40,15 +41,17 @@ export async function register() {
   // Double-check we're on Node.js server (not Edge runtime or client)
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     // Initialize OpenTelemetry tracing FIRST (before any logger imports)
-    const { initTracing } = await import('@/lib/opentelemetry/tracing');
+    const { initTracing } =
+      await import('@/lib/platform/opentelemetry/tracing');
     await initTracing();
 
     // Import logger AFTER OTel SDK starts so PinoInstrumentation can hook in
-    const { createLogger } = await import('@/lib/logger');
+    const { createLogger } = await import('@/lib/platform/logging/logger');
     const logger = createLogger('instrumentation');
 
     if (process.env.NODE_ENV === 'production') {
-      const { patchConsole } = await import('@/lib/logging/patch-console');
+      const { patchConsole } =
+        await import('@/lib/platform/logging/patch-console');
       patchConsole(createLogger('console'));
     }
 
