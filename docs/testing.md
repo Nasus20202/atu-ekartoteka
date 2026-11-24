@@ -102,6 +102,13 @@ needs a HOA therefore opens the seeded one (`TEST_HOA` in
 another spec owns can disappear between the render and the click, and the page
 then shows "not found".
 
+`e2e/fixtures.ts` wraps `page.goto`, so a navigation the browser aborts does not
+fail the test: the wrapper waits for the navigation that won, then for streamed
+content to settle and the page to hydrate. A server redirect and a soft
+navigation the app is still running both abort the request; Chromium resolves
+the redirected page, Firefox rejects it with `NS_ERROR_FAILURE`,
+`NS_BINDING_ABORTED` or, when it has no message for the code, `<unknown error>`.
+
 `e2e/mocks` is a small server Playwright starts for the integrations project: it
 captures email (SMTP on port 1025), fakes Google's OpenID endpoints and
 Turnstile verification, and receives OpenTelemetry exports as OTLP/HTTP JSON at

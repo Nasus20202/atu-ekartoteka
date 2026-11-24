@@ -292,6 +292,12 @@ hydration before interacting.
 - **WHEN** a test navigates to a page whose sections stream in
 - **THEN** it interacts only after hidden streaming segments are gone
 
+#### Scenario: Aborted navigation is recovered
+
+- **GIVEN** a navigation the browser aborts because a server redirect or a soft navigation the app started replaces it
+- **WHEN** `page.goto` rejects, including Firefox reporting the abort as `NS_ERROR_FAILURE`, `NS_BINDING_ABORTED` or only `<unknown error>`
+- **THEN** the shared page fixture waits for the navigation that won to finish loading and for the streamed content and hydration, instead of failing the test
+
 #### Scenario: Login survives a lost form interaction
 
 - **GIVEN** a fill or a Turnstile token that arrived before the login form was ready

@@ -37,11 +37,15 @@ const LOGIN_TIMEOUT = 20_000;
 
 // A server redirect replaces the navigation that goto() started. Chromium
 // resolves goto() with the redirected page, but Firefox rejects it, with
-// NS_ERROR_FAILURE when the redirect also changes the session cookie.
+// NS_ERROR_FAILURE when the redirect also changes the session cookie. When
+// Firefox has no message for the code it reports only "<unknown error>", which
+// is what a soft navigation the app is still running (the login page pushes and
+// refreshes at once) leaves behind.
 const REDIRECT_INTERRUPTION_MESSAGES = [
   'interrupted by another navigation',
   'NS_BINDING_ABORTED',
   'NS_ERROR_FAILURE',
+  '<unknown error>',
 ];
 
 const wrappedPages = new WeakSet<Page>();
