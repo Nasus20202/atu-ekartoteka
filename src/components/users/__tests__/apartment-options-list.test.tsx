@@ -65,6 +65,23 @@ describe('ApartmentOptionsList', () => {
     vi.unstubAllGlobals();
   });
 
+  it('fades the list in once the apartments arrive', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(json(true, { apartments: [apartment] }))
+    );
+
+    await act(async () => {
+      renderList();
+    });
+
+    const option = await screen.findByLabelText(/lipowa 10\/2/i);
+    expect(
+      option.closest('[class*="motion-safe:animate-fade-in"]')
+    ).not.toBeNull();
+    vi.unstubAllGlobals();
+  });
+
   it('tells the admin when the apartments cannot be loaded', async () => {
     vi.stubGlobal(
       'fetch',

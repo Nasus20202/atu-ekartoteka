@@ -38,7 +38,7 @@ export default function RegisterPage() {
   }
 
   if (checkingSetup) {
-    return <AuthLoading />;
+    return <AuthLoading key="loading" />;
   }
 
   return (

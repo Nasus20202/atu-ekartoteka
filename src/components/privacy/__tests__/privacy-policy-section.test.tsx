@@ -36,6 +36,14 @@ describe('PrivacyPolicySection', () => {
     expect(screen.getByText('ważny')).toBeInTheDocument();
   });
 
+  it('fades the policy in once it replaces the fallback', async () => {
+    mocks.readPrivacyPolicy.mockResolvedValue('Tekst');
+
+    const { container } = render(await PrivacyPolicySection());
+
+    expect(container.firstChild).toHaveClass('motion-safe:animate-fade-in');
+  });
+
   it('reads the database at request time, not at build time', async () => {
     mocks.readPrivacyPolicy.mockResolvedValue('Tekst');
 

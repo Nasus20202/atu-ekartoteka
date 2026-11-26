@@ -65,6 +65,21 @@ describe('ChargesOverview', () => {
     });
   });
 
+  it('fades the charges in again when another month is chosen', async () => {
+    mocks.getSortedPeriods.mockReturnValue(['2025-03', '2025-02']);
+
+    const { container, rerender } = render(
+      await ChargesOverview({ searchParams: searchParams('2025-03') })
+    );
+    const march = container.firstChild;
+    expect(march).toHaveClass('motion-safe:animate-fade-in');
+
+    rerender(await ChargesOverview({ searchParams: searchParams('2025-02') }));
+
+    expect(container.firstChild).not.toBe(march);
+    expect(container.firstChild).toHaveClass('motion-safe:animate-fade-in');
+  });
+
   it('shows an empty state when there are no charges', async () => {
     mocks.getSortedPeriods.mockReturnValue([]);
 

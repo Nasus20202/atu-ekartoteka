@@ -1,5 +1,6 @@
 'use client';
 
+import { REVEAL_CLASS } from '@/components/layout/reveal';
 import { ApartmentOption } from '@/components/users/apartment-option';
 import { useAvailableApartments } from '@/components/users/use-available-apartments';
 import {
@@ -7,6 +8,7 @@ import {
   pinSelectedAndMatching,
 } from '@/components/users/utils';
 import type { ApartmentSummaryDto } from '@/lib/apartments/dto/apartment-dto';
+import { cn } from '@/lib/shared/utils';
 import type { UserDto } from '@/lib/users/dto/user-dto';
 
 interface ApartmentOptionsListProps {
@@ -43,7 +45,7 @@ export function ApartmentOptionsList({
   );
 
   return (
-    <>
+    <div className={cn('space-y-2', REVEAL_CLASS)}>
       {filteredApartments.map((apartment) => (
         <ApartmentOption
           key={apartment.id}
@@ -61,6 +63,6 @@ export function ApartmentOptionsList({
           Nie znaleziono mieszkań
         </p>
       )}
-    </>
+    </div>
   );
 }
