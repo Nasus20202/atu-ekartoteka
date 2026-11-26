@@ -29,7 +29,7 @@ export async function ApartmentChargesContent({
   const periods = getSortedPeriods(chargesByPeriod);
 
   return (
-    <div className={REVEAL_CLASS}>
+    <div key={month} className={REVEAL_CLASS}>
       {periods.length === 0 ? (
         <Card>
           <CardContent className="flex min-h-50 items-center justify-center">

@@ -62,6 +62,7 @@
 - **Size**: Split components that grow past ~200 lines into smaller parts or move logic into a hook/helper; use `@/` imports (relative imports are lint errors).
 - **Classes**: Use `cn()` from `@/lib/shared/utils` for conditional classes; don't build class strings by hand.
 - **Animation**: Reuse the shared utilities from `tailwind.config.ts` / `globals.css` (`animate-fade-in`, `animate-slide-in-top`, `animate-slide-in-bottom`, `animate-slide-out-top`, `animate-scale-in`, `animate-view-switch`). Gate animations with `motion-safe:` and disable them with `motion-reduce:animate-none`. `Alert` animates in via `data-state="open"`; when a message must also animate out, use `AnimatedAlert` and let it unmount itself instead of conditionally unmounting the alert.
+- **View changes**: Every change of what a screen shows must be animated, never swapped abruptly: a list/table/card switch, a mode that replaces content (such as the HOA reorder table), tabs, results that appear after an action, and streamed content that replaces a skeleton (`REVEAL_CLASS` from `src/components/layout/reveal.ts`; give the element a `key` when the same screen shows different content for another URL parameter). Wrap the swapped content in `ViewTransition` (`src/components/ui/view-transition.tsx`, keyed by the view) or use a primitive that already animates (`TabsContent`, `CollapsibleContent`, `Page`). A new view switch gets a test that the animated wrapper is present.
 - **Copy**: UI text in Polish, code, comments and tests in English.
 
 ## Hooks

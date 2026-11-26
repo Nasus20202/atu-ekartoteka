@@ -564,6 +564,34 @@ Changing the selected view SHALL animate the new content in, and the animation S
 - **WHEN** they switch views
 - **THEN** the new view appears immediately without animation
 
+### Requirement: Every View Change Is Animated
+
+Every change of what a screen shows SHALL be animated and SHALL NOT swap abruptly: a mode that replaces content (the HOA cards and the reorder table), tab panels, results that appear after an action (import summary, validation results), the apartment picker list, content streamed in over a skeleton, and content that changes with another URL parameter (the charges month). The animation SHALL be skipped when the user prefers reduced motion.
+
+#### Scenario: Cards and reorder table
+
+- **GIVEN** an admin on the HOA list
+- **WHEN** they press `Zmień kolejność` or `Gotowe`
+- **THEN** the table or the cards animate in instead of replacing each other abruptly
+
+#### Scenario: Tabs
+
+- **GIVEN** a page with tabs
+- **WHEN** the user selects another tab
+- **THEN** the new panel animates in
+
+#### Scenario: Results appear
+
+- **GIVEN** an admin who ran an import or a validation
+- **WHEN** the response arrives
+- **THEN** the summary fades in
+
+#### Scenario: Another month
+
+- **GIVEN** a tenant on the charges page
+- **WHEN** they choose another month
+- **THEN** the charges fade in again
+
 ### Requirement: List View — Accessible View Switch
 
 The view switch SHALL be a group of buttons labelled `Kafelki` and `Tabela`, each with an icon, operable by keyboard, with the active option exposed as pressed to assistive technologies. The switch SHALL be rendered by a reusable segmented control that accepts any number of options.

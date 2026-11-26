@@ -1,5 +1,6 @@
 import { connection } from 'next/server';
 
+import { REVEAL_CLASS } from '@/components/layout/reveal';
 import { PolicyText } from '@/components/privacy/policy-text';
 import { PolicyToolbar } from '@/components/privacy/policy-toolbar';
 import { readPrivacyPolicy } from '@/lib/settings/queries/app-settings';
@@ -13,13 +14,13 @@ export async function PrivacyPolicySection() {
   const policy = await readPrivacyPolicy();
 
   return (
-    <>
+    <div className={REVEAL_CLASS}>
       <PolicyToolbar canPrint={Boolean(policy)} />
       {policy ? (
         <PolicyText text={policy} />
       ) : (
         <p className="text-muted-foreground">{NOT_PUBLISHED_MESSAGE}</p>
       )}
-    </>
+    </div>
   );
 }
