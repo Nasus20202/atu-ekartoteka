@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom';
 
 import { render, screen } from '@testing-library/react';
+import { createRef } from 'react';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -322,5 +323,18 @@ describe('TableCaption', () => {
     );
     const caption = container.querySelector('caption');
     expect(caption).toHaveClass('custom');
+  });
+
+  it('passes a ref to the row element', () => {
+    const ref = createRef<HTMLTableRowElement>();
+    render(
+      <Table>
+        <TableBody>
+          <TableRow ref={ref} />
+        </TableBody>
+      </Table>
+    );
+
+    expect(ref.current).toBeInstanceOf(HTMLTableRowElement);
   });
 });

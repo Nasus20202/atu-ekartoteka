@@ -1,12 +1,15 @@
 'use client';
 
-import { Building2, Search } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowUpDown, Building2, Search } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import useSWR from 'swr';
 
 import { renameHoaAction } from '@/actions/apartments/hoa';
-import { HoaListCard } from '@/components/apartments/hoa-list-card';
+import { HoaCardGrid } from '@/components/apartments/hoa-card-grid';
 import { HoaGridSkeleton } from '@/components/apartments/hoa-list-skeleton';
+import { HoaReorderBar } from '@/components/apartments/hoa-reorder-bar';
+import { HoaReorderTable } from '@/components/apartments/hoa-reorder-table';
+import { useHoaOrder } from '@/components/apartments/use-hoa-order';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -16,7 +19,9 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { ViewTransition } from '@/components/ui/view-transition';
 import type { HoaListItemDto } from '@/lib/hoa/dto/hoa-dto';
+import { sortByHoaOrder } from '@/lib/hoa/rules/hoa-order';
 import { fetchJson } from '@/lib/platform/swr/fetch-json';
 import { SWR_OPTIONS } from '@/lib/platform/swr/swr-options';
 import {
@@ -44,6 +49,8 @@ export function HoaListContent({ initialHoas }: HoaListContentProps) {
   const [search, setSearch] = useState(NO_SEARCH);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
+  const [reordering, setReordering] = useState(false);
+  const { order, setOrder, resetOrder } = useHoaOrder();
 
   const startsFromServer = search === NO_SEARCH;
   const { data, isValidating, mutate } = useSWR(
@@ -55,7 +62,10 @@ export function HoaListContent({ initialHoas }: HoaListContentProps) {
       revalidateOnMount: false,
     }
   );
-  const hoas = data ?? [];
+  const hoas = useMemo(() => sortByHoaOrder(data ?? [], order), [data, order]);
+  // Reordering applies to the whole list, so it is offered only without a search
+  const canReorder = startsFromServer && hoas.length > 1;
+  const showReorderTable = reordering && canReorder;
   const loading = isValidating && data === undefined;
 
   const handleSearch = (e: React.FormEvent) => {
@@ -113,25 +123,51 @@ export function HoaListContent({ initialHoas }: HoaListContentProps) {
         <HoaGridSkeleton />
       ) : (
         <>
-          <div className="mb-4 text-sm text-muted-foreground">
-            Znaleziono {hoas.length}{' '}
-            {pluralizePl(hoas.length, HOA_ACCUSATIVE_FORMS)}
+          <div className="mb-4 flex min-h-9 flex-wrap items-center justify-between gap-2">
+            <p className="text-sm text-muted-foreground">
+              Znaleziono {hoas.length}{' '}
+              {pluralizePl(hoas.length, HOA_ACCUSATIVE_FORMS)}
+            </p>
+            {canReorder && !reordering && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setReordering(true)}
+              >
+                <ArrowUpDown className="mr-2 h-4 w-4" />
+                Zmień kolejność
+              </Button>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {hoas.map((hoa) => (
-              <HoaListCard
-                key={hoa.id}
-                hoa={hoa}
-                editing={editingId === hoa.id}
-                editingName={editingName}
-                onEditingNameChange={setEditingName}
-                onStartEdit={() => startEditing(hoa)}
-                onSave={() => saveEdit(hoa.id)}
-                onCancel={cancelEditing}
+          <ViewTransition view={showReorderTable ? 'reorder' : 'cards'}>
+            {showReorderTable ? (
+              <>
+                <HoaReorderBar
+                  customized={order.length > 0}
+                  onReset={resetOrder}
+                  onDone={() => setReordering(false)}
+                />
+                <HoaReorderTable hoas={hoas} onReorder={setOrder} />
+              </>
+            ) : (
+              <HoaCardGrid
+                hoas={hoas}
+                sortable={canReorder}
+                onReorder={setOrder}
+                cardProps={(hoa) => ({
+                  hoa,
+                  editing: editingId === hoa.id,
+                  editingName,
+                  onEditingNameChange: setEditingName,
+                  onStartEdit: () => startEditing(hoa),
+                  onSave: () => saveEdit(hoa.id),
+                  onCancel: cancelEditing,
+                })}
               />
-            ))}
-          </div>
+            )}
+          </ViewTransition>
 
           {hoas.length === 0 && (
             <div className="text-center py-12">

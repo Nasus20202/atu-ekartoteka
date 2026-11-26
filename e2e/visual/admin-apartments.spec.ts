@@ -24,6 +24,25 @@ test.describe('Visual: admin apartments', () => {
     });
   });
 
+  test('HOA reorder table', async ({ visualAdminPage }) => {
+    await visualAdminPage.goto('/admin/apartments');
+    await expect(
+      visualAdminPage.getByText(VISUAL_SECOND_HOA_NAME)
+    ).toBeVisible();
+    await visualAdminPage
+      .getByRole('button', { name: 'Zmień kolejność' })
+      .click();
+    await expect(
+      visualAdminPage.getByRole('table', { name: 'Kolejność wspólnot' })
+    ).toBeVisible();
+    await expect(visualAdminPage.getByText('Ładowanie')).toHaveCount(0);
+    await expectNoHorizontalOverflow(visualAdminPage);
+
+    await expect(visualAdminPage).toHaveScreenshot('hoa-reorder-table.png', {
+      fullPage: true,
+    });
+  });
+
   test('HOA notices dialog', async ({ visualAdminPage }) => {
     await visualAdminPage.goto('/admin/apartments');
     await visualAdminPage

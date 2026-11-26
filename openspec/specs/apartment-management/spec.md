@@ -326,3 +326,63 @@ The admin apartment detail page SHALL show the owner period of the apartment in 
 - **GIVEN** a tenant opens the dashboard for their assigned apartment
 - **WHEN** the page loads
 - **THEN** the owner period is not shown
+
+### Requirement: Admin HOA List Order
+
+The admin HOA list (`/admin/apartments`) SHALL let an admin reorder the HOAs. The order SHALL be stored only in the admin's browser (local storage under `atu:hoa-order`), SHALL NOT be sent to the server and SHALL apply to the HOA list only. Without a stored order the list SHALL keep the order returned by the server. A HOA missing from the stored order SHALL be shown after the ordered ones, in server order, and stored ids that match no HOA SHALL be ignored.
+
+The page SHALL offer a `Zmień kolejność` button when the list is not filtered by a search and has more than one HOA. The button SHALL replace the HOA cards with a table of the HOAs (the swap in either direction SHALL use the shared view-switch animation, which reduced motion disables), one row per HOA, with a grip handle, position, name and external id, number of apartments, apartments import date (`—` when unknown) and `Przesuń wyżej` / `Przesuń niżej` buttons, below a bar with `Przywróć domyślną` and `Gotowe`. A row SHALL be moved by dragging it with the pointer from anywhere except its own buttons, or by using its grip with the keyboard (Space to pick up, arrow keys to move, Space to drop, Escape to cancel), and the arrow buttons SHALL work without dragging. The HOA cards themselves SHALL also be reorderable while the list is not filtered and has more than one HOA: each card SHALL show a grip next to the HOA name (not while that card is being renamed) that is dragged with the pointer or used with the same keyboard controls, and the move SHALL be saved in the same stored order. Drag and keyboard moves SHALL be announced to screen readers in Polish. Every move SHALL be saved at once; `Gotowe` SHALL return to the cards in the saved order, and `Przywróć domyślną` SHALL delete the stored order and SHALL be disabled while there is none.
+
+#### Scenario: Reorder with the arrow buttons
+
+- **GIVEN** an admin on the HOA list with three HOAs and no stored order
+- **WHEN** the admin presses `Zmień kolejność` and then `Przesuń wyżej` on the second HOA
+- **THEN** the table shows that HOA first, the new order is stored in local storage, and after `Gotowe` the cards are shown in the new order
+
+#### Scenario: Reorder by dragging a row
+
+- **GIVEN** the reorder table is open
+- **WHEN** the admin drags the first row, by its grip or by any other part of the row except its buttons, below the last row
+- **THEN** that HOA becomes the last one and the order is stored
+
+#### Scenario: Reorder cards by dragging the grip
+
+- **GIVEN** the HOA list is shown as cards without a search
+- **WHEN** the admin drags the grip of a card onto another card
+- **THEN** the cards are shown in the new order and the order is stored
+
+#### Scenario: Reorder with the keyboard
+
+- **GIVEN** the grip of a row has focus
+- **WHEN** the admin presses Space, then the down arrow, then Space
+- **THEN** the HOA moves down one place and the move is announced to screen readers in Polish
+
+#### Scenario: Order survives a reload
+
+- **GIVEN** an admin who changed the order
+- **WHEN** the admin reloads the page
+- **THEN** the cards are shown in the stored order
+
+#### Scenario: New HOA after a stored order
+
+- **GIVEN** a stored order that does not contain a HOA imported later
+- **WHEN** the admin opens the list
+- **THEN** that HOA is shown after the HOAs in the stored order
+
+#### Scenario: Reset to the default order
+
+- **GIVEN** a stored order
+- **WHEN** the admin presses `Przywróć domyślną`
+- **THEN** the stored order is deleted and the HOAs are shown in the order returned by the server
+
+#### Scenario: No reordering while searching
+
+- **GIVEN** the admin has searched for a HOA
+- **WHEN** the filtered list is shown
+- **THEN** the `Zmień kolejność` button and the card grips are not shown and the filtered HOAs follow the stored order
+
+#### Scenario: Storage unavailable
+
+- **GIVEN** a browser that refuses site storage
+- **WHEN** the admin reorders the HOAs
+- **THEN** the order still changes until the page is closed
