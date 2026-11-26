@@ -53,4 +53,27 @@ describe('ValidateDatabaseCard', () => {
       await screen.findByText(/Pełna walidacja pominięta — salda lat są zgodne/)
     ).toBeVisible();
   });
+
+  it('shows a spinner while the validation runs', async () => {
+    let finish: (value: unknown) => void = () => {};
+    const fetchMock = vi.fn().mockReturnValue(
+      new Promise((resolve) => {
+        finish = resolve;
+      })
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { container } = render(<ValidateDatabaseCard />);
+    fireEvent.click(screen.getByRole('button', { name: /Waliduj dane/ }));
+
+    expect(
+      await screen.findByRole('button', { name: /Walidowanie/ })
+    ).toBeDisabled();
+    expect(container.querySelector('[class*="animate-spin"]')).not.toBeNull();
+
+    finish({ ok: true, json: async () => VALIDATION_RESPONSE });
+    await waitFor(() =>
+      expect(container.querySelector('[class*="animate-spin"]')).toBeNull()
+    );
+  });
 });

@@ -6,12 +6,14 @@ import { ImportWarnings } from '@/components/import/import-warnings';
 import type { ImportResponse, ImportResult } from '@/components/import/types';
 import { ValidationBanner } from '@/components/import/validation-banner';
 import { YearBalanceGrid } from '@/components/import/year-balance-grid';
+import { REVEAL_CLASS } from '@/components/layout/reveal';
 import { Button } from '@/components/ui/button';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import { cn } from '@/lib/shared/utils';
 import { downloadTextFile } from '@/lib/shared/utils/download-file';
 import { serialiseErrorsToTxt } from '@/lib/shared/utils/export-errors';
 
@@ -86,7 +88,7 @@ export function ValidationResults({ response }: { response: ImportResponse }) {
   );
 
   return (
-    <div className="space-y-6">
+    <div className={cn('space-y-6', REVEAL_CLASS)}>
       <ValidationBanner response={response} />
       <YearBalanceGrid results={response.results} />
 

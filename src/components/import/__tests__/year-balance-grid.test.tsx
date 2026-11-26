@@ -104,14 +104,14 @@ describe('YearBalanceGrid', () => {
     );
   });
 
-  it('shows the newest year first', () => {
+  it('shows the oldest year first', () => {
     render(<YearBalanceGrid results={results} />);
 
     const years = screen
       .getAllByRole('columnheader', { name: /^20\d\d/ })
       .map((header) => header.textContent?.slice(0, 4));
 
-    expect(years).toEqual(['2025', '2024']);
+    expect(years).toEqual(['2024', '2025']);
   });
 
   it('explains the red values in text', () => {
@@ -194,15 +194,15 @@ describe('YearBalanceGrid', () => {
     );
   });
 
-  it('shows the closing balance before the opening balance', () => {
+  it('shows the opening balance before the closing balance', () => {
     render(<YearBalanceGrid results={results} />);
 
     const headers = screen
       .getAllByRole('columnheader')
       .map((header) => header.textContent);
 
-    expect(headers.indexOf('Zamknięcie')).toBeLessThan(
-      headers.indexOf('Otwarcie')
+    expect(headers.indexOf('Otwarcie')).toBeLessThan(
+      headers.indexOf('Zamknięcie')
     );
   });
 
@@ -337,5 +337,21 @@ describe('YearBalanceGrid details', () => {
     expect(screen.getByText(/w tym nowy właściciel/)).toHaveTextContent(
       '1182,77'
     );
+  });
+
+  it('offers buttons to scroll the table one year at a time', () => {
+    render(<YearBalanceGrid results={results} />);
+
+    expect(screen.getByRole('button', { name: 'Poprzedni rok' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Następny rok' })).toBeVisible();
+  });
+
+  it('marks where each year starts so the table can scroll to it', () => {
+    const { container } = render(<YearBalanceGrid results={results} />);
+
+    const starts = [...container.querySelectorAll('[data-year-start]')].map(
+      (cell) => cell.getAttribute('data-year-start')
+    );
+    expect(starts).toEqual(['2024', '2025']);
   });
 });

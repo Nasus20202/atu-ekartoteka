@@ -41,7 +41,7 @@ export function collectYears(results: ImportResult[]): number[] {
       years.add(year);
     }
   }
-  return [...years].sort((a, b) => b - a);
+  return [...years].sort((a, b) => a - b);
 }
 
 export function hasRedValue(row: YearBalanceRow): boolean {
