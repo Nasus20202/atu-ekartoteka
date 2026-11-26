@@ -13,6 +13,7 @@ import {
   boundaryConfigs,
   RELATIVE_IMPORTS,
 } from './eslint-rules/boundaries.mjs';
+import { e2eSqlConfigs } from './eslint-rules/e2e-sql-configs.mjs';
 import localRules from './eslint-rules/index.mjs';
 import { sliceConfigs } from './eslint-rules/slice-configs.mjs';
 
@@ -135,6 +136,7 @@ const eslintConfig = defineConfig([
       'playwright/no-force-option': 'warn',
     },
   },
+  ...e2eSqlConfigs,
   // Performance tests - k6 scripts and their seed run outside the @ alias
   {
     files: ['perf/**/*.ts'],

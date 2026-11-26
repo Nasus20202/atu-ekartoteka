@@ -7,6 +7,8 @@
 
 import * as pg from 'pg';
 
+import { loadSql } from './load-sql';
+
 export async function setHoaImportDates(
   date: Date | string | null
 ): Promise<void> {
@@ -16,14 +18,10 @@ export async function setHoaImportDates(
   const client = new pg.Client({ connectionString: dbUrl });
   try {
     await client.connect();
-    await client.query(
-      `UPDATE "HomeownersAssociation"
-       SET "apartmentsDataDate"    = $1,
-           "chargesDataDate"       = $1,
-           "notificationsDataDate" = $1
-       WHERE "externalId" = 'TEST01'`,
-      [date]
-    );
+    await client.query(loadSql('update-hoa-import-dates.sql'), [
+      date,
+      'TEST01',
+    ]);
   } finally {
     await client.end();
   }

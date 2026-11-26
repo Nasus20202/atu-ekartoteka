@@ -7,6 +7,8 @@
 
 import * as pg from 'pg';
 
+import { loadSql } from './load-sql';
+
 export async function deleteApartment(id: string): Promise<void> {
   const dbUrl = process.env.DATABASE_URL;
   if (!dbUrl) throw new Error('DATABASE_URL is not set');
@@ -14,13 +16,14 @@ export async function deleteApartment(id: string): Promise<void> {
   const client = new pg.Client({ connectionString: dbUrl });
   try {
     await client.connect();
-    await client.query(`DELETE FROM "Charge" WHERE "apartmentId" = $1`, [id]);
+    const ids = [id];
+    await client.query(loadSql('delete-charges-by-apartments.sql'), [ids]);
     await client.query(
-      `DELETE FROM "ChargeNotification" WHERE "apartmentId" = $1`,
-      [id]
+      loadSql('delete-charge-notifications-by-apartments.sql'),
+      [ids]
     );
-    await client.query(`DELETE FROM "Payment" WHERE "apartmentId" = $1`, [id]);
-    await client.query(`DELETE FROM "Apartment" WHERE id = $1`, [id]);
+    await client.query(loadSql('delete-payments-by-apartments.sql'), [ids]);
+    await client.query(loadSql('delete-apartments-by-ids.sql'), [ids]);
   } finally {
     await client.end();
   }

@@ -35,7 +35,9 @@ async function createDatabaseIfMissing(connectionString: string) {
     ]);
     if (existing.rowCount === 0) {
       // The name is validated above, so quoting it is safe
-      await admin.query(`CREATE DATABASE "${name}"`);
+      await admin.query(
+        loadSql('create-database.sql').replace('__DATABASE_NAME__', name)
+      );
       console.log(`  - Created database ${name}`);
     }
   } finally {

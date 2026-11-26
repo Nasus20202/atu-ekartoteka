@@ -12,6 +12,8 @@
 
 import * as pg from 'pg';
 
+import { loadSql } from './load-sql';
+
 interface UniqueApartmentOptions {
   isActive?: boolean;
   number?: string;
@@ -37,7 +39,8 @@ export async function createUniqueUnassignedApartment({
     await client.connect();
 
     const hoaResult = await client.query(
-      `SELECT id FROM "HomeownersAssociation" WHERE "externalId" = 'TEST01'`
+      loadSql('select-hoa-id-by-external-id.sql'),
+      ['TEST01']
     );
     const hoaId = hoaResult.rows[0]?.id;
 
@@ -51,21 +54,16 @@ export async function createUniqueUnassignedApartment({
     const email = `unique-${uniqueSuffix}@e2e-test.com`;
 
     const result = await client.query(
-      `INSERT INTO "Apartment" (
-         id, "externalOwnerId", "externalApartmentId", owner, email,
-         address, building, number, "postalCode", city,
-         "shareNumerator", "shareDenominator", "isActive",
-         "homeownersAssociationId", "userId", "createdAt", "updatedAt"
-       )
-       VALUES (
-         gen_random_uuid(), $1, $2,
-         'E2E Unique Owner', $3,
-         'ul. Testowa', '1', $5, '00-001', 'Warszawa',
-         50.5, 1000, $6,
-         $4, NULL, NOW(), NOW()
-       )
-       RETURNING id`,
-      [externalOwnerId, externalApartmentId, email, hoaId, number, isActive]
+      loadSql('insert-unassigned-apartment.sql'),
+      [
+        externalOwnerId,
+        externalApartmentId,
+        'E2E Unique Owner',
+        email,
+        number,
+        isActive,
+        hoaId,
+      ]
     );
 
     return { id: result.rows[0].id as string, externalOwnerId, email };

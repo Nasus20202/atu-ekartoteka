@@ -92,7 +92,8 @@ Three app instances run from the same build:
 
 Global setup creates both databases if missing, applies migrations, removes
 earlier test data and seeds fresh data, so every run starts from the same
-state. The seed SQL is in `e2e/test-data/seed/*.sql`. Sample import files are
+state. The seed SQL is in `e2e/test-data/seed/*.sql`; load it with `loadSql()`
+instead of writing queries inline (ESLint enforces this). Sample import files are
 in `e2e/test-data/import/`.
 
 Projects run in parallel against one database, and some specs create their own
