@@ -114,7 +114,7 @@
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "react-email": "6.11.16",
-    "recharts": "3.11.0",
+    "recharts": "3.11.1",
     "swr": "2.5.1",
     "tailwind-merge": "3.7.1",
     "tailwindcss": "4.3.5",
