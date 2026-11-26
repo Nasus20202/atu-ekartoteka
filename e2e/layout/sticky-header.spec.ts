@@ -4,7 +4,10 @@
 
 import { expect, test } from '../fixtures';
 
-const SHORT_VIEWPORT = { width: 1280, height: 420 };
+// The payments page is only a little taller than a 420px viewport, and the
+// header sticks only once the page has scrolled past the navbar. A shorter
+// viewport gives the scroll real room, so a single scroll always reaches it.
+const SHORT_VIEWPORT = { width: 1280, height: 360 };
 const NAVBAR_BOTTOM_PX = 65;
 
 test.describe('Sticky page header', () => {
@@ -36,25 +39,12 @@ test.describe('Sticky page header', () => {
     await userPage.goto('/dashboard/payments');
     const header = userPage.locator('[data-stuck]').first();
 
-    // The page can still be growing when the test starts scrolling, and a
-    // scroll to a short document stops short of the header, so retry the
-    // scroll until the page is tall enough and the header is stuck
-    await expect(async () => {
-      await userPage.evaluate(() =>
-        window.scrollTo(0, document.body.scrollHeight)
-      );
-      await expect(header).toHaveAttribute('data-stuck', 'true', {
-        timeout: 2000,
-      });
-    }).toPass({ timeout: 10_000 });
+    await userPage.evaluate(() =>
+      window.scrollTo(0, document.body.scrollHeight)
+    );
+    await expect(header).toHaveAttribute('data-stuck', 'true');
 
-    // Re-issue the scroll on every attempt: a scroll event can be dropped when
-    // the page flips direction while the previous scroll is still settling
-    await expect(async () => {
-      await userPage.evaluate(() => window.scrollTo(0, 0));
-      await expect(header).toHaveAttribute('data-stuck', 'false', {
-        timeout: 2000,
-      });
-    }).toPass({ timeout: 10_000 });
+    await userPage.evaluate(() => window.scrollTo(0, 0));
+    await expect(header).toHaveAttribute('data-stuck', 'false');
   });
 });

@@ -296,6 +296,12 @@ The page header (back button, title, description and action) SHALL stay visible 
 - **WHEN** they navigate to another page in the dashboard or admin area
 - **THEN** the new page is shown scrolled to the top, unless the URL has a hash
 
+#### Scenario: Mount keeps the browser's scroll position
+
+- **GIVEN** the user scrolls a dashboard or admin page before its client code has hydrated, or reloads a scrolled page
+- **WHEN** the layout mounts
+- **THEN** the browser's scroll position is kept and is not reset to the top
+
 #### Scenario: Reduced motion
 
 - **GIVEN** the user prefers reduced motion
