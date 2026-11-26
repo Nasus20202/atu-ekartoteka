@@ -40,7 +40,7 @@ context: |
   - Bulk user creation: admin creates accounts for unassigned apartments; users receive a temp password and must change it on first login (the proxy redirects on the token's mustChangePassword flag; it is a redirect hint, decisions that grant something read the database)
 
   ## Specs index
-  - openspec/specs/apartment-management/spec.md — apartment CRUD, assignment, unassigned listing
+  - openspec/specs/apartment-management/spec.md — apartment CRUD, assignment, unassigned listing, HOA list order
   - openspec/specs/authentication/spec.md — login, OAuth, registration, email verification, password reset, session, forced password change
   - openspec/specs/charges-and-payments/spec.md — charges, charge notifications, payment history
   - openspec/specs/code-style/spec.md — TypeScript conventions, naming, imports, file size, commits, no magic values

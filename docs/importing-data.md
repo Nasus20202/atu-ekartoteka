@@ -134,6 +134,16 @@ the following year's opening balance. With many years the table scrolls
 sideways: it opens on the newest year (scrolled to the right), and **Wcześniejszy rok** and
 **Późniejszy rok** above it move one year at a time.
 
+### 7. Order the association list
+
+On the associations list (`/admin/apartments`), drag a card by the grip next to
+its name to move it. For longer moves, **Zmień kolejność** replaces the cards
+with a table: drag any row, or use the arrow buttons. With the keyboard, focus
+a grip, press Space, move with the arrows and press Space again. **Gotowe**
+returns to the cards. The order is saved in your browser only, so it
+is not shared with other admins or other browsers. **Przywróć domyślną** deletes
+it. The grips and the button are hidden while a search is active.
+
 ## Options
 
 ### Clean import

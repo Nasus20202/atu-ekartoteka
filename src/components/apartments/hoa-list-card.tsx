@@ -1,5 +1,6 @@
 import { Building2, Edit2 } from 'lucide-react';
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 
 import { formatImportDate } from '@/components/apartments/hoa-labels';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,7 @@ import { APARTMENT_FORMS, pluralizePl } from '@/lib/shared/utils/pluralize';
 interface HoaListCardProps {
   hoa: HoaListItemDto;
   editing: boolean;
+  dragHandle?: ReactNode;
   editingName: string;
   onEditingNameChange: (name: string) => void;
   onStartEdit: () => void;
@@ -27,6 +29,7 @@ interface HoaListCardProps {
 export function HoaListCard({
   hoa,
   editing,
+  dragHandle,
   editingName,
   onEditingNameChange,
   onStartEdit,
@@ -56,6 +59,7 @@ export function HoaListCard({
               />
             ) : (
               <CardTitle className="text-lg flex items-center gap-2">
+                {dragHandle}
                 <Building2 className="h-5 w-5 text-muted-foreground shrink-0" />
                 <span className="truncate">{hoa.name}</span>
               </CardTitle>
