@@ -9,6 +9,7 @@
 import bcrypt from 'bcrypt';
 import * as pg from 'pg';
 
+import { loadSql } from './load-sql';
 import { UNVERIFIED_PASSWORD } from './test-credentials';
 
 export async function createUserWithUnassignedApartment(): Promise<{
@@ -24,7 +25,8 @@ export async function createUserWithUnassignedApartment(): Promise<{
     await client.connect();
 
     const hoaResult = await client.query(
-      `SELECT id FROM "HomeownersAssociation" WHERE "externalId" = 'TEST01'`
+      loadSql('select-hoa-id-by-external-id.sql'),
+      ['TEST01']
     );
     const hoaId = hoaResult.rows[0]?.id;
     if (!hoaId)
@@ -35,37 +37,25 @@ export async function createUserWithUnassignedApartment(): Promise<{
     const passwordHash = await bcrypt.hash(UNVERIFIED_PASSWORD, 10);
 
     // Create user (tenant, approved, no mustChangePassword)
-    const userResult = await client.query(
-      `INSERT INTO "User" (
-         id, email, name, password, role, status,
-         "emailVerified", "mustChangePassword", "authMethod",
-         "createdAt", "updatedAt"
-       )
-       VALUES (
-         gen_random_uuid(), $1, 'E2E Assign Tenant', $2,
-         'TENANT', 'APPROVED', true, false, 'CREDENTIALS',
-         NOW(), NOW()
-       )
-       RETURNING id`,
-      [email, passwordHash]
-    );
+    const userResult = await client.query(loadSql('insert-tenant-user.sql'), [
+      email,
+      passwordHash,
+      'E2E Assign Tenant',
+    ]);
     const userId = userResult.rows[0].id as string;
 
     // Create unassigned apartment with matching email
     const aptResult = await client.query(
-      `INSERT INTO "Apartment" (
-         id, "externalOwnerId", "externalApartmentId", owner, email,
-         address, building, number, "postalCode", city,
-         "shareNumerator", "shareDenominator", "isActive",
-         "homeownersAssociationId", "userId", "createdAt", "updatedAt"
-       )
-       VALUES (
-         gen_random_uuid(), $1, $2, 'E2E Assign Owner', $3,
-         'ul. Testowa', '1', '99Z', '00-001', 'Warszawa',
-         50.5, 1000, true, $4, NULL, NOW(), NOW()
-       )
-       RETURNING id`,
-      [`WA-${uniqueSuffix}`, `TEST01-ASSIGN-${uniqueSuffix}`, email, hoaId]
+      loadSql('insert-unassigned-apartment.sql'),
+      [
+        `WA-${uniqueSuffix}`,
+        `TEST01-ASSIGN-${uniqueSuffix}`,
+        'E2E Assign Owner',
+        email,
+        '99Z',
+        true,
+        hoaId,
+      ]
     );
     const apartmentId = aptResult.rows[0].id as string;
 

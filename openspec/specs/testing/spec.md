@@ -147,6 +147,7 @@ The system SHALL provide global setup and teardown that prepares known database 
 - **GIVEN** an E2E helper or spec that reads or writes the database directly
 - **WHEN** it runs a query
 - **THEN** the SQL is loaded from a file in `e2e/test-data/seed/` with `loadSql`, not written inline in TypeScript
+- **AND** ESLint reports a `query()` call with an inline string or template literal in `e2e/` (helpers written before the rule are listed in `eslint-rules/e2e-sql-configs.mjs` until their queries move to files)
 
 #### Scenario: Functional and visual data are separate
 

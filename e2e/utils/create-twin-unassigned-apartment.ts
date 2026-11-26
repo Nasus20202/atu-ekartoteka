@@ -10,6 +10,8 @@
 
 import * as pg from 'pg';
 
+import { loadSql } from './load-sql';
+
 export async function createTwinUnassignedApartment(): Promise<{
   id: string;
   externalOwnerId: string;
@@ -26,7 +28,8 @@ export async function createTwinUnassignedApartment(): Promise<{
     await client.connect();
 
     const hoaResult = await client.query(
-      `SELECT id FROM "HomeownersAssociation" WHERE "externalId" = 'TEST01'`
+      loadSql('select-hoa-id-by-external-id.sql'),
+      ['TEST01']
     );
     const hoaId = hoaResult.rows[0]?.id;
 
@@ -39,24 +42,14 @@ export async function createTwinUnassignedApartment(): Promise<{
     const externalApartmentId = `TEST01-TWIN-${uniqueSuffix}`;
 
     const result = await client.query(
-      `INSERT INTO "Apartment" (
-         id, "externalOwnerId", "externalApartmentId", owner, email,
-         address, building, number, "postalCode", city,
-         "shareNumerator", "shareDenominator", "isActive",
-         "homeownersAssociationId", "userId", "createdAt", "updatedAt"
-       )
-       VALUES (
-         gen_random_uuid(), $1, $2,
-         'E2E Twin Owner', $3,
-         'ul. Testowa', '1', '1A', '00-001', 'Warszawa',
-         50.5, 1000, true,
-         $4, NULL, NOW(), NOW()
-       )
-       RETURNING id`,
+      loadSql('insert-unassigned-apartment.sql'),
       [
         externalOwnerId,
         externalApartmentId,
+        'E2E Twin Owner',
         `twin-${uniqueSuffix}@e2e-test.com`,
+        '1A',
+        true,
         hoaId,
       ]
     );

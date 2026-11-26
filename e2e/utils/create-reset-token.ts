@@ -5,6 +5,7 @@
 import * as crypto from 'crypto';
 import * as pg from 'pg';
 
+import { loadSql } from './load-sql';
 import { RESET_TOKEN, USER_EMAIL } from './test-credentials';
 
 /**
@@ -28,7 +29,7 @@ export async function createResetToken() {
 
     // Get the test user ID
     const userResult = await client.query(
-      `SELECT id FROM "User" WHERE email = $1`,
+      loadSql('select-user-id-by-email.sql'),
       [USER_EMAIL]
     );
 
@@ -43,15 +44,15 @@ export async function createResetToken() {
     const hashedToken = hashToken(RESET_TOKEN);
 
     // Delete existing token and create fresh one
-    await client.query(`DELETE FROM "PasswordReset" WHERE token = $1`, [
+    await client.query(loadSql('delete-password-reset-by-token.sql'), [
       hashedToken,
     ]);
 
-    await client.query(
-      `INSERT INTO "PasswordReset" (id, token, "userId", "expiresAt", used, "createdAt", "updatedAt")
-       VALUES (gen_random_uuid(), $1, $2, $3, false, NOW(), NOW())`,
-      [hashedToken, userId, resetExpiry]
-    );
+    await client.query(loadSql('insert-password-reset.sql'), [
+      hashedToken,
+      userId,
+      resetExpiry,
+    ]);
   } finally {
     await client.end();
   }

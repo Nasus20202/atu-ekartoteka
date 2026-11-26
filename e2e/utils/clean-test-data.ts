@@ -7,16 +7,10 @@
  * 3. Cascading deletes for related records
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
 import * as pg from 'pg';
 import { fileURLToPath } from 'url';
 
-const SQL_DIR = fileURLToPath(new URL('../test-data/seed', import.meta.url));
-
-function loadSql(filename: string): string {
-  return fs.readFileSync(path.join(SQL_DIR, filename), 'utf-8');
-}
+import { loadSql } from './load-sql';
 
 export async function cleanTestData(connectionString?: string) {
   const dbUrl = connectionString || process.env.DATABASE_URL;
@@ -36,21 +30,16 @@ export async function cleanTestData(connectionString?: string) {
 
     if (testUserIds.length > 0) {
       // Delete related records for test users (run each statement separately)
-      await client.query(
-        `DELETE FROM "EmailVerification" WHERE "userId" = ANY($1)`,
-        [testUserIds]
-      );
-      await client.query(
-        `DELETE FROM "PasswordReset" WHERE "userId" = ANY($1)`,
-        [testUserIds]
-      );
-      await client.query(
-        `UPDATE "Apartment" SET "userId" = NULL WHERE "userId" = ANY($1)`,
-        [testUserIds]
-      );
-      await client.query(`DELETE FROM "User" WHERE id = ANY($1)`, [
+      await client.query(loadSql('delete-email-verifications-by-users.sql'), [
         testUserIds,
       ]);
+      await client.query(loadSql('delete-password-resets-by-users.sql'), [
+        testUserIds,
+      ]);
+      await client.query(loadSql('unassign-apartments-from-users.sql'), [
+        testUserIds,
+      ]);
+      await client.query(loadSql('delete-users-by-ids.sql'), [testUserIds]);
       console.log(`  - Deleted ${testUserIds.length} test users`);
     }
 
@@ -68,24 +57,22 @@ export async function cleanTestData(connectionString?: string) {
 
       if (testApartmentIds.length > 0) {
         // Delete charges/payments for test apartments (run each statement separately)
+        await client.query(loadSql('delete-charges-by-apartments.sql'), [
+          testApartmentIds,
+        ]);
         await client.query(
-          `DELETE FROM "Charge" WHERE "apartmentId" = ANY($1)`,
+          loadSql('delete-charge-notifications-by-apartments.sql'),
           [testApartmentIds]
         );
-        await client.query(
-          `DELETE FROM "ChargeNotification" WHERE "apartmentId" = ANY($1)`,
-          [testApartmentIds]
-        );
-        await client.query(
-          `DELETE FROM "Payment" WHERE "apartmentId" = ANY($1)`,
-          [testApartmentIds]
-        );
+        await client.query(loadSql('delete-payments-by-apartments.sql'), [
+          testApartmentIds,
+        ]);
         console.log(
           `  - Deleted charges/payments for ${testApartmentIds.length} test apartments`
         );
 
         // Delete test apartments
-        await client.query(`DELETE FROM "Apartment" WHERE id = ANY($1)`, [
+        await client.query(loadSql('delete-apartments-by-ids.sql'), [
           testApartmentIds,
         ]);
         console.log(`  - Deleted ${testApartmentIds.length} test apartments`);

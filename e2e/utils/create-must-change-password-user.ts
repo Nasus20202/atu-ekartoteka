@@ -8,6 +8,7 @@
 import bcrypt from 'bcrypt';
 import * as pg from 'pg';
 
+import { loadSql } from './load-sql';
 import {
   MUST_CHANGE_PASSWORD_EMAIL,
   MUST_CHANGE_PASSWORD_NAME,
@@ -28,15 +29,11 @@ export async function createMustChangePasswordUser() {
 
     const passwordHash = await bcrypt.hash(MUST_CHANGE_PASSWORD_PASSWORD, 10);
 
-    await client.query(
-      `INSERT INTO "User" (id, email, password, name, role, status, "emailVerified", "mustChangePassword", "authMethod", "createdAt", "updatedAt")
-       VALUES (gen_random_uuid(), $1, $2, $3, 'TENANT', 'APPROVED', true, true, 'CREDENTIALS', NOW(), NOW())
-       ON CONFLICT (email) DO UPDATE
-         SET password = $2,
-             "mustChangePassword" = true,
-             "updatedAt" = NOW()`,
-      [MUST_CHANGE_PASSWORD_EMAIL, passwordHash, MUST_CHANGE_PASSWORD_NAME]
-    );
+    await client.query(loadSql('upsert-must-change-password-user.sql'), [
+      MUST_CHANGE_PASSWORD_EMAIL,
+      passwordHash,
+      MUST_CHANGE_PASSWORD_NAME,
+    ]);
   } finally {
     await client.end();
   }

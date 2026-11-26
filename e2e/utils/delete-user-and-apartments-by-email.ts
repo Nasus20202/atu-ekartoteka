@@ -5,6 +5,8 @@
 
 import * as pg from 'pg';
 
+import { loadSql } from './load-sql';
+
 export async function deleteUserAndApartmentsByEmail(
   email: string
 ): Promise<void> {
@@ -15,36 +17,34 @@ export async function deleteUserAndApartmentsByEmail(
   try {
     await client.connect();
     const userResult = await client.query(
-      `SELECT id FROM "User" WHERE email = $1`,
+      loadSql('select-user-id-by-email.sql'),
       [email]
     );
     const userId = (userResult.rows[0]?.id as string | undefined) ?? null;
 
     const apartmentsResult = await client.query(
-      `SELECT id FROM "Apartment" WHERE email = $1 OR "userId" = $2`,
+      loadSql('select-apartment-ids-by-owner.sql'),
       [email, userId]
     );
     const apartmentIds = apartmentsResult.rows.map((row) => row.id as string);
 
     if (apartmentIds.length > 0) {
+      await client.query(loadSql('delete-charges-by-apartments.sql'), [
+        apartmentIds,
+      ]);
       await client.query(
-        `DELETE FROM "Charge" WHERE "apartmentId" = ANY($1::text[])`,
+        loadSql('delete-charge-notifications-by-apartments.sql'),
         [apartmentIds]
       );
-      await client.query(
-        `DELETE FROM "ChargeNotification" WHERE "apartmentId" = ANY($1::text[])`,
-        [apartmentIds]
-      );
-      await client.query(
-        `DELETE FROM "Payment" WHERE "apartmentId" = ANY($1::text[])`,
-        [apartmentIds]
-      );
-      await client.query(`DELETE FROM "Apartment" WHERE id = ANY($1::text[])`, [
+      await client.query(loadSql('delete-payments-by-apartments.sql'), [
+        apartmentIds,
+      ]);
+      await client.query(loadSql('delete-apartments-by-ids.sql'), [
         apartmentIds,
       ]);
     }
 
-    await client.query(`DELETE FROM "User" WHERE email = $1`, [email]);
+    await client.query(loadSql('delete-user-by-email.sql'), [email]);
   } finally {
     await client.end();
   }

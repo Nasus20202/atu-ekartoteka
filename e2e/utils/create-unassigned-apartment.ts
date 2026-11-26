@@ -8,6 +8,8 @@
 
 import * as pg from 'pg';
 
+import { loadSql } from './load-sql';
+
 const UNASSIGNED_EXTERNAL_OWNER_ID = 'W00002';
 const UNASSIGNED_EXTERNAL_APARTMENT_ID = 'TEST01-TEST01-00000-00002M';
 const UNASSIGNED_EMAIL = 'unassigned@e2e-test.com';
@@ -20,24 +22,20 @@ const UNASSIGNED_EMAIL = 'unassigned@e2e-test.com';
  */
 async function removeInvitedAccount(client: pg.Client) {
   const result = await client.query<{ id: string }>(
-    `SELECT id FROM "User" WHERE email = $1`,
+    loadSql('select-user-id-by-email.sql'),
     [UNASSIGNED_EMAIL]
   );
   const userId = result.rows[0]?.id;
 
   if (!userId) return;
 
-  await client.query(
-    `UPDATE "Apartment" SET "userId" = NULL WHERE "userId" = $1`,
-    [userId]
-  );
-  await client.query(`DELETE FROM "EmailVerification" WHERE "userId" = $1`, [
-    userId,
+  const userIds = [userId];
+  await client.query(loadSql('unassign-apartments-from-users.sql'), [userIds]);
+  await client.query(loadSql('delete-email-verifications-by-users.sql'), [
+    userIds,
   ]);
-  await client.query(`DELETE FROM "PasswordReset" WHERE "userId" = $1`, [
-    userId,
-  ]);
-  await client.query(`DELETE FROM "User" WHERE id = $1`, [userId]);
+  await client.query(loadSql('delete-password-resets-by-users.sql'), [userIds]);
+  await client.query(loadSql('delete-users-by-ids.sql'), [userIds]);
 }
 
 export async function createUnassignedApartment(): Promise<string> {
@@ -54,7 +52,8 @@ export async function createUnassignedApartment(): Promise<string> {
 
     // Resolve the test HOA id
     const hoaResult = await client.query(
-      `SELECT id FROM "HomeownersAssociation" WHERE "externalId" = 'TEST01'`
+      loadSql('select-hoa-id-by-external-id.sql'),
+      ['TEST01']
     );
     const hoaId = hoaResult.rows[0]?.id;
 
@@ -65,26 +64,14 @@ export async function createUnassignedApartment(): Promise<string> {
     await removeInvitedAccount(client);
 
     const result = await client.query(
-      `INSERT INTO "Apartment" (
-         id, "externalOwnerId", "externalApartmentId", owner, email,
-         address, building, number, "postalCode", city,
-         "shareNumerator", "shareDenominator", "isActive",
-         "homeownersAssociationId", "userId", "createdAt", "updatedAt"
-       )
-       VALUES (
-         gen_random_uuid(), $1, $2,
-         'E2E Unassigned Owner', $3,
-         'ul. Testowa', '1', '2B', '00-001', 'Warszawa',
-         50.5, 1000, true,
-         $4, NULL, NOW(), NOW()
-       )
-       ON CONFLICT ("externalOwnerId", "externalApartmentId")
-       DO UPDATE SET "userId" = NULL, "updatedAt" = NOW()
-       RETURNING id`,
+      loadSql('insert-unassigned-apartment.sql'),
       [
         UNASSIGNED_EXTERNAL_OWNER_ID,
         UNASSIGNED_EXTERNAL_APARTMENT_ID,
+        'E2E Unassigned Owner',
         UNASSIGNED_EMAIL,
+        '2B',
+        true,
         hoaId,
       ]
     );
