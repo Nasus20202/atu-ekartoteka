@@ -14,21 +14,30 @@ describe('ScrollToTop', () => {
     window.scrollTo = vi.fn();
   });
 
-  it('scrolls to the top on mount', () => {
+  it('leaves the browser scroll position alone on mount', () => {
     render(<ScrollToTop />);
-    expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
+    expect(window.scrollTo).not.toHaveBeenCalled();
   });
 
-  it('scrolls to the top again when the pathname changes', () => {
+  it('scrolls to the top when the pathname changes', () => {
     const { rerender } = render(<ScrollToTop />);
     mocks.pathname = '/dashboard/payments';
     rerender(<ScrollToTop />);
-    expect(window.scrollTo).toHaveBeenCalledTimes(2);
+    expect(window.scrollTo).toHaveBeenCalledTimes(1);
+    expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
   });
 
-  it('keeps the position when the URL has a hash', () => {
+  it('does not scroll on a re-render with the same pathname', () => {
+    const { rerender } = render(<ScrollToTop />);
+    rerender(<ScrollToTop />);
+    expect(window.scrollTo).not.toHaveBeenCalled();
+  });
+
+  it('keeps the position when the new URL has a hash', () => {
+    const { rerender } = render(<ScrollToTop />);
+    mocks.pathname = '/dashboard/payments';
     window.location.hash = '#section';
-    render(<ScrollToTop />);
+    rerender(<ScrollToTop />);
     expect(window.scrollTo).not.toHaveBeenCalled();
   });
 });
