@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.7] - 2026-11-26
+
+- fix(layout): keep scroll position on mount and stabilise e2e tests
+
 ## [0.10.6] - 2026-11-26
 
 - feat(ui): animate every view change and require it in the guidelines
