@@ -52,11 +52,37 @@ function cardNames(page: Page) {
   return page.getByRole('button', { name: /^Zmień nazwę wspólnoty / });
 }
 
+interface Box {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 async function startReordering(page: Page) {
   await page.getByRole('button', { name: REORDER_BUTTON }).click();
   await expect(
     page.getByRole('table', { name: 'Kolejność wspólnot' })
   ).toBeVisible();
+}
+
+/**
+ * Mouse coordinates are viewport-relative, so centre the whole table first:
+ * scrolling only the target row can leave the source row above the viewport.
+ */
+async function centreReorderTable(page: Page) {
+  await page
+    .getByRole('table', { name: 'Kolejność wspólnot' })
+    .evaluate((table) => table.scrollIntoView({ block: 'center' }));
+}
+
+/** Both ends of a drag must be on screen before the mouse can reach them. */
+async function expectOnScreen(page: Page, ...boxes: Box[]) {
+  const viewport = page.viewportSize()!;
+  for (const box of boxes) {
+    expect(box.y).toBeGreaterThanOrEqual(0);
+    expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
+  }
 }
 
 test.describe('Admin HOA reordering', () => {
@@ -118,10 +144,10 @@ test.describe('Admin HOA reordering', () => {
     const target = tableRows(adminPage)
       .last()
       .getByRole('button', { name: /^Przenieś wspólnotę/ });
-    // Mouse coordinates are viewport-relative, so every row must be on screen
-    await target.scrollIntoViewIfNeeded();
+    await centreReorderTable(adminPage);
     const from = (await grip.boundingBox())!;
     const to = (await target.boundingBox())!;
+    await expectOnScreen(adminPage, from, to);
 
     await adminPage.mouse.move(
       from.x + from.width / 2,
@@ -212,11 +238,13 @@ test.describe('Admin HOA reordering', () => {
     await openFreshList(adminPage);
     await startReordering(adminPage);
 
+    await centreReorderTable(adminPage);
+
     const first = tableRows(adminPage).first();
     const last = tableRows(adminPage).last();
-    await last.scrollIntoViewIfNeeded();
     const from = (await first.getByText(REORDER_HOA_SECOND).boundingBox())!;
     const to = (await last.boundingBox())!;
+    await expectOnScreen(adminPage, from, to);
 
     await adminPage.mouse.move(from.x + 5, from.y + from.height / 2);
     await adminPage.mouse.down();
