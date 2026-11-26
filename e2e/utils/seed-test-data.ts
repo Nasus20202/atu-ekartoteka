@@ -10,6 +10,7 @@ import * as pg from 'pg';
 import { fileURLToPath } from 'url';
 
 import { loadSql } from './load-sql';
+import { seedYearHistory } from './seed-year-history';
 import {
   ADMIN_EMAIL,
   ADMIN_NAME,
@@ -107,6 +108,9 @@ export async function seedTestData(connectionString?: string) {
       new Date(currentYear, 11, 31),
     ]);
     console.log('  - Created payments for year:', currentYear);
+
+    await seedYearHistory(client, currentYear);
+    console.log('  - Created the HOA with five years of payments');
   } finally {
     await client.end();
   }

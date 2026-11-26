@@ -72,6 +72,16 @@ describe('ValidationResults', () => {
     ).toBeTruthy();
   });
 
+  it('fades the results in when they appear', () => {
+    const { container } = render(
+      <ValidationResults
+        response={{ success: true, results: [withWarning], errors: [] }}
+      />
+    );
+
+    expect(container.firstChild).toHaveClass('motion-safe:animate-fade-in');
+  });
+
   it('shows the grid and the pass banner without findings', () => {
     const response: ImportResponse = {
       success: true,

@@ -125,8 +125,14 @@ again.
 
 **Waliduj dane w bazie** runs the same balance checks on the data already in
 the database and changes nothing. Use it after manual edits, or to look at
-year balances without re-uploading files. **Pomiń pełną walidację** limits it
-to the year-balance overview.
+year balances without re-uploading files. The button shows a spinner while the
+check runs. **Pomiń pełną walidację** limits it to the year-balance overview.
+
+The overview lists years from the oldest to the newest, and each year shows its
+opening balance before its closing balance, so a closing balance sits next to
+the following year's opening balance. With many years the table scrolls
+sideways: it opens on the newest year (scrolled to the right), and **Wcześniejszy rok** and
+**Późniejszy rok** above it move one year at a time.
 
 ## Options
 

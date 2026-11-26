@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 
 import type { ImportResult } from '@/components/import/types';
+import { YEAR_START_ATTRIBUTE } from '@/components/import/use-year-balance-scroll';
 import { YearBalanceCell } from '@/components/import/year-balance-cell';
 import {
   collectYears,
@@ -11,11 +12,14 @@ import {
   MismatchNote,
   ValidationBadge,
 } from '@/components/import/year-balance-parts';
+import { YearBalanceScroll } from '@/components/import/year-balance-scroll';
 import { cn, formatCurrency } from '@/lib/shared/utils';
 
 const RED_CELL_CLASS = 'font-semibold text-destructive';
+// While the table is scrolled, the years slide under a soft fade at the edge of
+// the sticky column instead of being cut off
 const STICKY_COLUMN_CLASS =
-  'sticky left-0 text-left shadow-[1px_0_0_0_hsl(var(--border))]';
+  'sticky left-0 text-left shadow-[1px_0_0_0_hsl(var(--border))] after:pointer-events-none after:absolute after:left-full after:top-0 after:h-full after:w-8 after:bg-linear-to-r after:to-transparent after:opacity-0 motion-safe:after:transition-opacity group-data-[scrolled=true]/scroll:after:opacity-100';
 
 export function YearBalanceGrid({ results }: { results: ImportResult[] }) {
   const years = collectYears(results);
@@ -34,8 +38,8 @@ export function YearBalanceGrid({ results }: { results: ImportResult[] }) {
           Salda lat według wspólnot
         </h3>
         <p className="text-sm text-muted-foreground">
-          Zamknięcie roku wyliczone z naliczeń, a obok otwarcie z importu roku
-          następnego.{' '}
+          Otwarcie roku z importu, a obok zamknięcie wyliczone z naliczeń;
+          zamknięcie porównujemy z otwarciem roku następnego.{' '}
           <span className="font-medium text-destructive">Czerwone</span>{' '}
           wartości to błąd albo rozbieżność (
           <span className="text-destructive">{MISMATCH_MARKER}</span>) z rokiem
@@ -44,14 +48,17 @@ export function YearBalanceGrid({ results }: { results: ImportResult[] }) {
           roku.
         </p>
       </div>
-      <div className="overflow-x-auto rounded-lg border">
+      <YearBalanceScroll>
         <table className="w-full whitespace-nowrap text-sm">
           <thead>
             <tr className="bg-muted">
               <th
                 scope="col"
                 rowSpan={2}
-                className={cn(STICKY_COLUMN_CLASS, 'z-20 bg-muted px-3 py-2')}
+                className={cn(
+                  STICKY_COLUMN_CLASS,
+                  'z-20 bg-muted px-3 py-2 after:from-muted'
+                )}
               >
                 Wspólnota
               </th>
@@ -60,6 +67,7 @@ export function YearBalanceGrid({ results }: { results: ImportResult[] }) {
                   key={year}
                   scope="colgroup"
                   colSpan={2}
+                  {...{ [YEAR_START_ATTRIBUTE]: year }}
                   className="border-l px-3 py-2 text-center"
                 >
                   <span className="inline-flex items-center gap-2">
@@ -73,13 +81,13 @@ export function YearBalanceGrid({ results }: { results: ImportResult[] }) {
               {years.map((year) => (
                 <Fragment key={year}>
                   <th scope="col" className="border-l px-3 py-1 text-right">
-                    Zamknięcie
+                    Otwarcie
                   </th>
                   <th
                     scope="col"
                     className="border-l border-border/50 px-3 py-1 text-right"
                   >
-                    Otwarcie
+                    Zamknięcie
                   </th>
                 </Fragment>
               ))}
@@ -104,7 +112,7 @@ export function YearBalanceGrid({ results }: { results: ImportResult[] }) {
                     scope="row"
                     className={cn(
                       STICKY_COLUMN_CLASS,
-                      'z-10 bg-background px-3 py-2'
+                      'z-10 bg-background px-3 py-2 after:from-background'
                     )}
                   >
                     <span className="flex items-center justify-between gap-2 font-medium">
@@ -137,19 +145,6 @@ export function YearBalanceGrid({ results }: { results: ImportResult[] }) {
                           row={row}
                           className={cn(
                             'border-l p-1 text-right tabular-nums',
-                            (isError || row.closingMismatch) && RED_CELL_CLASS
-                          )}
-                        >
-                          {formatCurrency(row.calculatedClosing)}
-                          {row.closingMismatch && next && (
-                            <MismatchNote next={next} />
-                          )}
-                        </YearBalanceCell>
-                        <YearBalanceCell
-                          hoaName={hoaName}
-                          row={row}
-                          className={cn(
-                            'border-l border-border/50 p-1 text-right tabular-nums',
                             isError && RED_CELL_CLASS
                           )}
                         >
@@ -161,6 +156,19 @@ export function YearBalanceGrid({ results }: { results: ImportResult[] }) {
                             </span>
                           )}
                         </YearBalanceCell>
+                        <YearBalanceCell
+                          hoaName={hoaName}
+                          row={row}
+                          className={cn(
+                            'border-l border-border/50 p-1 text-right tabular-nums',
+                            (isError || row.closingMismatch) && RED_CELL_CLASS
+                          )}
+                        >
+                          {formatCurrency(row.calculatedClosing)}
+                          {row.closingMismatch && next && (
+                            <MismatchNote next={next} />
+                          )}
+                        </YearBalanceCell>
                       </Fragment>
                     );
                   })}
@@ -169,7 +177,7 @@ export function YearBalanceGrid({ results }: { results: ImportResult[] }) {
             })}
           </tbody>
         </table>
-      </div>
+      </YearBalanceScroll>
     </section>
   );
 }

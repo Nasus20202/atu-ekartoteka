@@ -152,6 +152,14 @@ describe('ImportResults', () => {
     expect(screen.getByText(/ostrzeżenia \(1\)/i)).toBeInTheDocument();
   });
 
+  it('fades the summary in when it appears', () => {
+    render(<ImportResults response={response} />);
+
+    expect(screen.getByRole('region', { name: 'Wynik importu' })).toHaveClass(
+      'motion-safe:animate-fade-in'
+    );
+  });
+
   it('shows combined download button when errors or warnings exist', () => {
     render(<ImportResults response={response} />);
 

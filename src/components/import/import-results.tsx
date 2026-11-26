@@ -4,9 +4,11 @@ import { groupErrors } from '@/components/import/error-groups';
 import { GroupedIssues } from '@/components/import/grouped-issues';
 import { ImportResultCard } from '@/components/import/import-result-card';
 import type { ImportResponse } from '@/components/import/types';
+import { REVEAL_CLASS } from '@/components/layout/reveal';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { SuccessMessage } from '@/components/ui/success-message';
+import { cn } from '@/lib/shared/utils';
 import { downloadTextFile } from '@/lib/shared/utils/download-file';
 import { serialiseErrorsToTxt } from '@/lib/shared/utils/export-errors';
 
@@ -27,7 +29,11 @@ export function ImportResults({ response }: ImportResultsProps) {
   );
 
   return (
-    <div className="space-y-4">
+    <div
+      role="region"
+      aria-label="Wynik importu"
+      className={cn('space-y-4', REVEAL_CLASS)}
+    >
       {failedHoas.length > 0 && (
         <Alert variant="destructive">
           <XCircle className="h-4 w-4" />

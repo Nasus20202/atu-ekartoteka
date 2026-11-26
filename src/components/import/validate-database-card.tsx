@@ -1,6 +1,6 @@
 'use client';
 
-import { ShieldCheck } from 'lucide-react';
+import { Loader2, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 import useSWRMutation from 'swr/mutation';
 
@@ -89,9 +89,14 @@ export function ValidateDatabaseCard() {
           variant="outline"
           className="w-full"
         >
-          <ShieldCheck
-            className={`mr-2 h-4 w-4 ${loading ? 'animate-pulse' : ''}`}
-          />
+          {loading ? (
+            <Loader2
+              className="mr-2 h-4 w-4 motion-safe:animate-spin"
+              aria-hidden="true"
+            />
+          ) : (
+            <ShieldCheck className="mr-2 h-4 w-4" aria-hidden="true" />
+          )}
           {loading ? 'Walidowanie...' : 'Waliduj dane'}
         </Button>
 

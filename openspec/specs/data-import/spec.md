@@ -723,7 +723,7 @@ The system SHALL, for each HOA and each year stored for it, return the opening b
 
 - **GIVEN** stored payments for 2024 and 2025 for an HOA
 - **WHEN** validation runs
-- **THEN** each year shows its closing column followed by its opening column, and the 2025 closing sits next to the 2026 opening when the years are shown newest first
+- **THEN** each year shows its opening column followed by its closing column, and the 2024 closing sits next to the 2025 opening when the years are shown oldest first
 
 #### Scenario: Cells of a year with an error
 
@@ -731,17 +731,35 @@ The system SHALL, for each HOA and each year stored for it, return the opening b
 - **WHEN** validation runs
 - **THEN** that year's opening and closing cells are shown in red
 
-#### Scenario: Newest year first
+#### Scenario: Oldest year first
 
 - **GIVEN** stored payments for 2024 and 2025 for an HOA
 - **WHEN** validation runs
-- **THEN** the 2025 columns come before the 2024 columns
+- **THEN** the 2024 columns come before the 2025 columns
+
+#### Scenario: Validation in progress
+
+- **GIVEN** the admin starts a validation of the database
+- **WHEN** the request is running
+- **THEN** the validate button is disabled and shows a spinning indicator with the label `Walidowanie...` until the result or an error arrives
 
 #### Scenario: Many years scroll sideways
 
 - **GIVEN** stored payments for many years of an HOA, so the grid is wider than the screen
 - **WHEN** the admin scrolls the grid sideways
 - **THEN** the HOA name column stays visible on the left, and its right edge stays visible while the year columns scroll under it
+
+#### Scenario: Opens on the newest year
+
+- **GIVEN** stored payments for so many years that the grid is wider than the screen
+- **WHEN** validation shows the grid
+- **THEN** the grid is scrolled to its right edge, so the newest year is visible and the `Późniejszy rok` button is disabled
+
+#### Scenario: Buttons scroll one year at a time
+
+- **GIVEN** stored payments for so many years that the grid is wider than the screen
+- **WHEN** the admin presses `Późniejszy rok` or `Wcześniejszy rok` above the grid
+- **THEN** the grid scrolls so that the next or previous year starts right after the HOA name column, the button for a direction is disabled when the grid cannot scroll further that way
 
 #### Scenario: Years without payments
 
