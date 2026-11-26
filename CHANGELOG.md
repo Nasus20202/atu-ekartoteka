@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.6] - 2026-11-26
+
+- feat(ui): animate every view change and require it in the guidelines
+- feat(apartments): let admins reorder HOAs
+- chore(e2e): lint inline SQL in e2e code
+- feat(import): improve the database validation page
+- chore(deps): update dependency lucide-react to v1.78.0 (#1000)
+- chore(deps): update semgrep/semgrep docker tag to v1.187.0 (#998)
+- chore(deps): update pnpm to v12.23.0 (#997)
+- chore(deps): update github/codeql-action digest to 915412f (#996)
+- chore(deps): update dependency lint-staged to v17.6.2 (#995)
+- fix: recover the navigation Firefox aborts after login
+- chore: update openspec
+- chore(deps): update dependency @napi-rs/canvas to v1.2.0 (#991)
+- fix(deps): update dependency mailparser to v3.15.0 (#992)
+- test(e2e): stabilise the flaky suite and fail the run on flakes (#990)
+- chore(deps): update pnpm to v12.22.0 (#989)
+- chore(deps): update postgres:19.0-alpine docker digest to cac45fb (#988)
+
 ## [0.10.5] - 2026-11-23
 
 - feat(seo): describe the public pages for crawlers and previews
