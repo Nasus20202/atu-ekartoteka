@@ -171,12 +171,12 @@ The system SHALL notify all admins by email when a new user self-registers or si
 
 ### Requirement: Vote Confirmation Email
 
-The system SHALL email a voter a six-digit confirmation code before a ballot is counted. The message SHALL state that the code expires and that it must be ignored if the voter did not request it, and SHALL be recorded with email type `vote_confirmation`.
+The system SHALL email a voter a confirmation link before a ballot is counted. The message SHALL state that the link expires and works once, and that it must be ignored if the voter did not request it, and SHALL be recorded with email type `vote_confirmation`.
 
-#### Scenario: Code requested
+#### Scenario: Link requested
 
 - **WHEN** a tenant submits a ballot
-- **THEN** one email with the code is sent to the account's address
+- **THEN** one email with the confirmation link is sent to the account's address
 - **AND** the metric is recorded as `vote_confirmation`
 
 ### Requirement: Voting Notification Email
@@ -264,7 +264,7 @@ Every HTML email SHALL share one layout that matches the application's visual de
 | `account_approved`    | Twoje konto zostało zatwierdzone                    | Admin approves a tenant                       |
 | `account_activation`  | Twoje konto zostało utworzone – ustaw nowe hasło    | Admin bulk-creates an account                 |
 | `admin_notification`  | Nowa rejestracja użytkownika - wymaga zatwierdzenia | New self-registration or first Google sign-in |
-| `vote_confirmation`   | Kod potwierdzający głosowanie                       | Tenant submits a ballot                       |
+| `vote_confirmation`   | Potwierdź swój głos                                 | Tenant submits a ballot                       |
 | `voting_notification` | Nowe głosowanie w Twojej wspólnocie                 | Admin notifies selected users about a voting  |
 
 ## Templates

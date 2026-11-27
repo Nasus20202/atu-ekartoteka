@@ -7,7 +7,7 @@ has no way to run one: admins collect votes outside the system, and tenants
 have no place to see what is being decided or what came out. A built-in
 "Głosowania" section lets an admin put a set of questions to one HOA, lets each
 apartment owner answer from the dashboard, and proves the voter's identity with
-a one-time code sent by email.
+a one-time link sent by email.
 
 ## What Changes
 
@@ -25,12 +25,12 @@ a one-time code sent by email.
   the admin publishes them.
 - Add a one-vote-per-apartment rule: a voter casts the answers for every
   eligible apartment they own in the voting's HOA in one confirmed ballot.
-- Confirm a ballot with a single-use, short-lived, attempt-limited six-digit
-  code emailed to the voter; only a confirmed ballot is counted.
+- Confirm a ballot with a single-use, short-lived link carrying a 256-bit
+  random token, emailed to the voter; only a confirmed ballot is counted.
 - Add a "Głosowania" navbar link with a bell badge counting the active
   votings the user has not finished voting in, and a dashboard card listing
   them.
-- Add two emails: the confirmation code and the voting notification.
+- Add two emails: the confirmation link and the voting notification.
 
 ## Out of Scope
 

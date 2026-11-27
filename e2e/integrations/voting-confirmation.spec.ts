@@ -1,6 +1,6 @@
 /**
- * The emailed code is rate limited like the email verification link and
- * locks after too many wrong attempts.
+ * The emailed confirmation link is rate limited like the email verification
+ * link, belongs to one owner, is single use and expires.
  */
 
 import type { Page } from '@playwright/test';
@@ -8,26 +8,29 @@ import type { Page } from '@playwright/test';
 import { expect, test } from '../fixtures';
 import { createVotingTenant } from '../utils/create-voting-tenant';
 import {
+  extractLink,
   loginWithTurnstile,
   MOCK_URL,
   type MockMail,
   waitForMail,
 } from '../utils/mock-server';
-import { isServerActionResponse } from '../utils/server-actions';
 import { ADMIN_EMAIL, ADMIN_PASSWORD } from '../utils/test-credentials';
 import {
   answerQuestion,
   countBallots,
   createDraftVoting,
+  expireVoteConfirmations,
+  expireVotingDeadline,
   publishVoting,
 } from '../utils/voting';
 
-const CODE_SUBJECT = 'Kod potwierdzający głosowanie';
-const CODE_LINE = /Kod potwierdzający\s+(\d{6})/;
-const MAX_ATTEMPTS = 5;
-const RATE_LIMIT_MESSAGE = /Poczekaj [1-5] min przed ponownym wysłaniem kodu/;
+const CONFIRMATION_SUBJECT = 'Potwierdź swój głos';
+const CONFIRM_PATH = '/dashboard/votings/confirm/';
+const RATE_LIMIT_MESSAGE = /Poczekaj [1-5] min przed ponownym wysłaniem linku/;
+const UNUSABLE_LINK = /Ten link jest nieprawidłowy/;
+const UNKNOWN_TOKEN = 'A'.repeat(43);
 
-/** An owner with a published voting, signed in and waiting at the code step. */
+/** An owner with a published voting, signed in and waiting at the email step. */
 async function startBallot(
   admin: Page,
   owner: Page,
@@ -36,7 +39,7 @@ async function startBallot(
   const tenant = await createVotingTenant();
   await loginWithTurnstile(admin, ADMIN_EMAIL, ADMIN_PASSWORD);
   const votingId = await createDraftVoting(admin, {
-    title: `Kod E2E ${Date.now()}`,
+    title: `Link E2E ${Date.now()}`,
     questions: ['Czy się zgadzasz?'],
   });
   await publishVoting(admin);
@@ -45,26 +48,20 @@ async function startBallot(
   await owner.goto(`/dashboard/votings/${votingId}`);
   await answerQuestion(owner, 1, 'Za');
   await owner.getByRole('button', { name: /Dalej/ }).click();
-  await expect(owner.getByLabel('Kod z wiadomości')).toBeVisible();
+  await expect(owner.getByText('Sprawdź swoją skrzynkę email')).toBeVisible();
 
   const mail = await waitForMail(request, tenant.email, {
-    subject: CODE_SUBJECT,
+    subject: CONFIRMATION_SUBJECT,
   });
-  const code = mail.text.match(CODE_LINE)?.[1] ?? '';
-  expect(code).toMatch(/^\d{6}$/);
+  const link = extractLink(mail, CONFIRM_PATH);
+  expect(new URL(link).pathname.slice(CONFIRM_PATH.length)).toMatch(
+    /^[A-Za-z0-9_-]{43}$/
+  );
 
-  return { tenant, votingId, code };
+  return { tenant, votingId, link };
 }
 
-async function submitCode(owner: Page, code: string) {
-  await owner.getByLabel('Kod z wiadomości').fill(code);
-  await Promise.all([
-    owner.waitForResponse(isServerActionResponse),
-    owner.getByRole('button', { name: /Potwierdź i zagłosuj/ }).click(),
-  ]);
-}
-
-test('a second code is refused for five minutes and no second email is sent', async ({
+test('a second link is refused for five minutes and no second email is sent', async ({
   page,
   browser,
   request,
@@ -75,7 +72,7 @@ test('a second code is refused for five minutes and no second email is sent', as
   try {
     const { tenant } = await startBallot(page, owner, request);
 
-    await owner.getByRole('button', { name: 'Wyślij kod ponownie' }).click();
+    await owner.getByRole('button', { name: 'Wyślij link ponownie' }).click();
     await expect(owner.getByText(RATE_LIMIT_MESSAGE)).toBeVisible();
 
     // Sending the answers again after going back is limited the same way
@@ -86,15 +83,71 @@ test('a second code is refused for five minutes and no second email is sent', as
     const mails = (await (
       await request.get(`${MOCK_URL}/mail`, { params: { to: tenant.email } })
     ).json()) as MockMail[];
-    expect(mails.filter((mail) => mail.subject === CODE_SUBJECT)).toHaveLength(
-      1
-    );
+    expect(
+      mails.filter((mail) => mail.subject === CONFIRMATION_SUBJECT)
+    ).toHaveLength(1);
   } finally {
     await ownerContext.close();
   }
 });
 
-test('the code locks after five wrong attempts, even for the right code', async ({
+test('a link only works for the owner it was sent to', async ({
+  page,
+  browser,
+  request,
+}) => {
+  test.slow();
+  const ownerContext = await browser.newContext();
+  const owner = await ownerContext.newPage();
+  const strangerContext = await browser.newContext();
+  const stranger = await strangerContext.newPage();
+  try {
+    const { votingId, link } = await startBallot(page, owner, request);
+    const other = await createVotingTenant();
+
+    // Signed out, the link leads to the login and shows nothing
+    await stranger.goto(link);
+    await expect(stranger).toHaveURL(/\/login/);
+
+    // Another owner sees the same message as for an unknown link
+    await loginWithTurnstile(stranger, other.email, other.password);
+    await stranger.goto(link);
+    await expect(stranger.getByText(UNUSABLE_LINK)).toBeVisible();
+    await expect(
+      stranger.getByRole('button', { name: 'Potwierdź i zagłosuj' })
+    ).toBeHidden();
+    await stranger.goto(`${CONFIRM_PATH}${UNKNOWN_TOKEN}`);
+    await expect(stranger.getByText(UNUSABLE_LINK)).toBeVisible();
+    expect(await countBallots(votingId)).toBe(0);
+
+    // The rightful owner can still use it
+    await owner.goto(link);
+    await owner.getByRole('button', { name: 'Potwierdź i zagłosuj' }).click();
+    await expect(owner.getByText('Dziękujemy, głos oddany')).toBeVisible();
+    expect(await countBallots(votingId)).toBe(1);
+  } finally {
+    await ownerContext.close();
+    await strangerContext.close();
+  }
+});
+
+test('an expired link is refused', async ({ page, browser, request }) => {
+  test.slow();
+  const ownerContext = await browser.newContext();
+  const owner = await ownerContext.newPage();
+  try {
+    const { votingId, link } = await startBallot(page, owner, request);
+
+    await expireVoteConfirmations(votingId);
+    await owner.goto(link);
+    await expect(owner.getByText(UNUSABLE_LINK)).toBeVisible();
+    expect(await countBallots(votingId)).toBe(0);
+  } finally {
+    await ownerContext.close();
+  }
+});
+
+test('a link is refused once the voting deadline has passed', async ({
   page,
   browser,
   request,
@@ -103,26 +156,12 @@ test('the code locks after five wrong attempts, even for the right code', async 
   const ownerContext = await browser.newContext();
   const owner = await ownerContext.newPage();
   try {
-    const { votingId, code } = await startBallot(page, owner, request);
-    // Two different wrong codes, so one of them is never the real one
-    const [wrongCode] = ['111111', '222222'].filter((wrong) => wrong !== code);
+    const { votingId, link } = await startBallot(page, owner, request);
 
-    for (let attempt = 1; attempt < MAX_ATTEMPTS; attempt++) {
-      await submitCode(owner, wrongCode);
-      await expect(owner.getByText('Nieprawidłowy kod')).toBeVisible();
-    }
-
-    await submitCode(owner, wrongCode);
-    await expect(owner.getByText(/Przekroczono liczbę prób/)).toBeVisible();
-
-    await submitCode(owner, code);
-    await expect(owner.getByText(/Przekroczono liczbę prób/)).toBeVisible();
-    await expect(owner.getByText('Dziękujemy, głos oddany')).toBeHidden();
+    await expireVotingDeadline(votingId);
+    await owner.goto(link);
+    await expect(owner.getByText(UNUSABLE_LINK)).toBeVisible();
     expect(await countBallots(votingId)).toBe(0);
-
-    // A new code is refused until the rate limit window is over
-    await owner.getByRole('button', { name: 'Wyślij kod ponownie' }).click();
-    await expect(owner.getByText(RATE_LIMIT_MESSAGE)).toBeVisible();
   } finally {
     await ownerContext.close();
   }

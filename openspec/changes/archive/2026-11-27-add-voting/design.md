@@ -39,13 +39,17 @@ apartment in; drafts and archived votings are 404 for them.
 
 1. The tenant answers every question and submits. The use case validates the
    answers and the eligibility, stores a `VotingConfirmation` (the answers as
-   JSON, the SHA-256 of `confirmationId:code`, `expiresAt`, `attempts`) and
-   emails a six-digit code from `crypto.randomInt`. A previous pending
-   confirmation of the same user and voting is replaced; a new code cannot be
-   requested within five minutes (the same limit as the email verification resend).
-2. The tenant enters the code. The use case checks expiry, the attempt limit
-   (the confirmation is deleted when it is reached), and compares hashes in
-   constant time. A failed attempt is counted atomically in the database.
+   JSON, the SHA-256 of a 256-bit random token from `crypto.randomBytes`,
+   `expiresAt`) and emails a link to `/dashboard/votings/confirm/<token>`. A
+   previous pending confirmation of the same user and voting is replaced; a new
+   link cannot be requested within five minutes (the same limit as the email
+   verification resend).
+2. The owner opens the link, signed in. The page shows the stored answers and a
+   button; only the button's Server Action casts the ballot, so a mail scanner
+   that prefetches the link changes nothing. The use case finds the
+   confirmation by the hash of the token, requires that it belongs to the
+   caller (anyone else gets the same answer as for an unknown link) and checks
+   expiry.
 3. One transaction deletes the confirmation (single use) and creates one
    ballot per eligible apartment with its votes. The unique key rejects a
    concurrent duplicate.
@@ -70,6 +74,9 @@ passed to the navbar as a count.
 
 ## Risks / Trade-offs
 
-- A six-digit code is guessable in principle: mitigated by 15-minute expiry,
-  five attempts, a per-user five minute rate limit and the authenticated session.
+- The link can be forwarded or end up in logs: mitigated by single use, a
+  15-minute expiry, binding to the signed-in owner and storing only its hash.
+  A 256-bit token cannot be guessed, so no attempt counter is needed.
+- Opening the link on another device needs a sign-in there first; the link
+  stays valid for its lifetime.
 - Admins see who voted what by requirement; this is documented in the admin UI.

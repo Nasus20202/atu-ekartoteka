@@ -6,24 +6,23 @@ import {
   type UseCaseResult,
 } from '@/lib/shared/use-case-result';
 import { findUserById } from '@/lib/users/queries/find-user-by-id';
+import { deleteVoteConfirmation } from '@/lib/voting/mutations/delete-vote-confirmation';
 import { saveVoteConfirmation } from '@/lib/voting/mutations/save-vote-confirmation';
-import { deleteVoteConfirmation } from '@/lib/voting/mutations/vote-confirmation-attempts';
 import { findRecentVoteConfirmation } from '@/lib/voting/queries/find-recent-vote-confirmation';
 import { findVotableApartmentIds } from '@/lib/voting/queries/find-voter-apartments';
 import {
   confirmationExpiry,
-  generateConfirmationCode,
-  hashConfirmationCode,
-  minutesUntilNextCode,
-  newConfirmationId,
-} from '@/lib/voting/rules/confirmation-code';
-import { CONFIRMATION_CODE_TTL_MINUTES } from '@/lib/voting/rules/voting-constants';
+  generateConfirmationToken,
+  hashConfirmationToken,
+  minutesUntilNextLink,
+} from '@/lib/voting/rules/confirmation-token';
+import { CONFIRMATION_TTL_MINUTES } from '@/lib/voting/rules/voting-constants';
 import { parseAnswers } from '@/lib/voting/rules/voting-input';
 import { resolveOpenVoting } from '@/lib/voting/use-cases/vote-access';
 
 const logger = createLogger('voting:request-confirmation');
 
-/** Stores the answers and emails the one-time code that confirms them. */
+/** Stores the answers and emails the one-time link that confirms them. */
 export async function requestVoteConfirmation(
   userId: string,
   votingId: unknown,
@@ -52,38 +51,36 @@ export async function requestVoteConfirmation(
   const recent = await findRecentVoteConfirmation(userId, now);
   if (recent) {
     return invalidResult(
-      `Poczekaj ${minutesUntilNextCode(recent.createdAt, now)} min przed ponownym wysłaniem kodu`
+      `Poczekaj ${minutesUntilNextLink(recent.createdAt, now)} min przed ponownym wysłaniem linku`
     );
   }
 
   const user = await findUserById(userId);
-  if (!user) return failedResult('Nie udało się wysłać kodu');
+  if (!user) return failedResult('Nie udało się wysłać linku');
 
-  const code = generateConfirmationCode();
-  const id = newConfirmationId();
+  const token = generateConfirmationToken();
   const expiresAt = confirmationExpiry(now);
 
-  await saveVoteConfirmation({
-    id,
+  const id = await saveVoteConfirmation({
     votingId: voting.id,
     userId,
-    codeHash: hashConfirmationCode(id, code),
+    tokenHash: hashConfirmationToken(token),
     answers: answers.value,
     expiresAt,
   });
 
   const sent = await getEmailService().sendVoteConfirmationEmail(
     user.email,
-    code,
+    token,
     voting.title,
-    CONFIRMATION_CODE_TTL_MINUTES,
+    CONFIRMATION_TTL_MINUTES,
     user.name ?? undefined
   );
 
   if (!sent.ok) {
     await deleteVoteConfirmation(id);
     logger.error({ userId, votingId: voting.id }, 'Confirmation email failed');
-    return failedResult('Nie udało się wysłać kodu. Spróbuj ponownie później');
+    return failedResult('Nie udało się wysłać linku. Spróbuj ponownie później');
   }
 
   logger.info({ userId, votingId: voting.id }, 'Vote confirmation requested');

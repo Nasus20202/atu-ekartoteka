@@ -99,6 +99,13 @@ export function expireVotingDeadline(votingId: string) {
   );
 }
 
+/** Lets the emailed confirmation links of a voting expire without waiting. */
+export function expireVoteConfirmations(votingId: string) {
+  return withClient((client) =>
+    client.query(loadSql('expire-vote-confirmations.sql'), [votingId])
+  );
+}
+
 export function countBallots(votingId: string): Promise<number> {
   return withClient(async (client) => {
     const result = await client.query<{ count: number }>(

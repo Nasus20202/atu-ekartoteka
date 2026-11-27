@@ -41,16 +41,16 @@ describe('tenant voting actions', () => {
     expect(mocks.request).toHaveBeenCalledWith('user-1', 'v1', { q1: 'FOR' });
   });
 
-  it('passes the code to the use case', async () => {
-    mocks.confirm.mockResolvedValue({ ok: true, data: { ballots: 1 } });
+  it('passes the token to the use case with the voter from the session', async () => {
+    mocks.confirm.mockResolvedValue({
+      ok: true,
+      data: { ballots: 1, votingId: 'v1' },
+    });
 
-    expect(await confirmVoteAction({ votingId: 'v1', code: '123456' })).toEqual(
-      {
-        ok: true,
-        data: { ballots: 1 },
-      }
-    );
-    expect(mocks.confirm).toHaveBeenCalledWith('user-1', 'v1', '123456');
+    expect(
+      await confirmVoteAction({ token: 'abc', userId: 'someone-else' })
+    ).toEqual({ ok: true, data: { ballots: 1, votingId: 'v1' } });
+    expect(mocks.confirm).toHaveBeenCalledWith('user-1', 'abc');
   });
 
   it('denies an anonymous caller', async () => {

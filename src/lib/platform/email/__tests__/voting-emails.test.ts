@@ -16,21 +16,21 @@ describe('voting emails', () => {
     vi.unstubAllEnvs();
   });
 
-  it('puts the code, the voting and its lifetime in the confirmation', async () => {
+  it('links the confirmation to the token page and states its lifetime', async () => {
     const { subject, html, text } = await voteConfirmationMessage(
-      '042917',
+      'tok-1',
       'Remont dachu',
       15,
       'Anna'
     );
 
-    expect(subject).toBe('Kod potwierdzający głosowanie');
+    expect(subject).toBe('Potwierdź swój głos');
     for (const body of [html, text]) {
-      expect(body).toContain('042917');
+      expect(body).toContain(`${APP_URL}/dashboard/votings/confirm/tok-1`);
       expect(body).toContain('Remont dachu');
       expect(body).toContain('15 minut');
     }
-    expect(text).toContain('Kod potwierdzający');
+    expect(html).toContain('Potwierdź głos');
   });
 
   it('links the notification to the voting and shows the deadline', async () => {

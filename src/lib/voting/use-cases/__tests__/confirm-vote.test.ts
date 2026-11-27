@@ -1,12 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { hashConfirmationCode } from '@/lib/voting/rules/confirmation-code';
-import { confirmVote } from '@/lib/voting/use-cases/confirm-vote';
+import {
+  generateConfirmationToken,
+  hashConfirmationToken,
+} from '@/lib/voting/rules/confirmation-token';
+import { confirmVote, LINK_INVALID } from '@/lib/voting/use-cases/confirm-vote';
 
 const mocks = vi.hoisted(() => ({
   resolveOpenVoting: vi.fn(),
-  findVoteConfirmation: vi.fn(),
-  registerAttempt: vi.fn(),
+  findByToken: vi.fn(),
   deleteConfirmation: vi.fn(),
   castBallots: vi.fn(),
   log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
@@ -17,10 +19,9 @@ vi.mock('@/lib/voting/use-cases/vote-access', () => ({
   VOTING_ENDED: 'Głosowanie zostało zakończone',
 }));
 vi.mock('@/lib/voting/queries/find-vote-confirmation', () => ({
-  findVoteConfirmation: mocks.findVoteConfirmation,
+  findVoteConfirmationByToken: mocks.findByToken,
 }));
-vi.mock('@/lib/voting/mutations/vote-confirmation-attempts', () => ({
-  registerConfirmationAttempt: mocks.registerAttempt,
+vi.mock('@/lib/voting/mutations/delete-vote-confirmation', () => ({
   deleteVoteConfirmation: mocks.deleteConfirmation,
 }));
 vi.mock('@/lib/voting/mutations/cast-ballots', () => ({
@@ -30,13 +31,14 @@ vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => mocks.log,
 }));
 
-const CODE = '123456';
+const TOKEN = generateConfirmationToken();
 const ANSWERS = { q1: 'FOR' };
 
 function pending(overrides: Record<string, unknown> = {}) {
   return {
     id: 'c1',
-    codeHash: hashConfirmationCode('c1', CODE),
+    votingId: 'v1',
+    userId: 'user-1',
     answers: ANSWERS,
     expiresAt: new Date(Date.now() + 60_000),
     ...overrides,
@@ -49,16 +51,18 @@ describe('confirmVote', () => {
     mocks.resolveOpenVoting.mockResolvedValue({
       voting: { id: 'v1', hoa: { id: 'hoa-1' }, questions: [{ id: 'q1' }] },
     });
-    mocks.findVoteConfirmation.mockResolvedValue(pending());
-    mocks.registerAttempt.mockResolvedValue(1);
+    mocks.findByToken.mockResolvedValue(pending());
     mocks.castBallots.mockResolvedValue({ ok: true, ballots: 2 });
   });
 
-  it('casts the ballots when the code is right', async () => {
-    expect(await confirmVote('user-1', 'v1', CODE)).toEqual({
+  it('casts the ballots for the owner of the link', async () => {
+    expect(await confirmVote('user-1', TOKEN)).toEqual({
       ok: true,
-      data: { ballots: 2 },
+      data: { ballots: 2, votingId: 'v1' },
     });
+    expect(mocks.findByToken).toHaveBeenCalledWith(
+      hashConfirmationToken(TOKEN)
+    );
     expect(mocks.castBallots).toHaveBeenCalledWith(
       expect.objectContaining({
         confirmationId: 'c1',
@@ -70,57 +74,49 @@ describe('confirmVote', () => {
     );
   });
 
-  it('rejects a malformed code without touching the database', async () => {
-    expect(await confirmVote('user-1', 'v1', '12ab')).toMatchObject({
-      message: 'Nieprawidłowy kod',
+  it('rejects a malformed token without touching the database', async () => {
+    expect(await confirmVote('user-1', '123456')).toMatchObject({
+      message: LINK_INVALID,
     });
-    expect(mocks.findVoteConfirmation).not.toHaveBeenCalled();
+    expect(await confirmVote('user-1', undefined)).toMatchObject({
+      message: LINK_INVALID,
+    });
+    expect(mocks.findByToken).not.toHaveBeenCalled();
   });
 
-  it('counts a wrong code and keeps the confirmation until the limit', async () => {
-    expect(await confirmVote('user-1', 'v1', '000000')).toMatchObject({
-      message: 'Nieprawidłowy kod',
-    });
-    expect(mocks.castBallots).not.toHaveBeenCalled();
-    expect(mocks.deleteConfirmation).not.toHaveBeenCalled();
-  });
+  it('answers an unknown token like any other bad link', async () => {
+    mocks.findByToken.mockResolvedValue(null);
 
-  it('locks the code on the fifth wrong attempt but keeps it for the rate limit', async () => {
-    mocks.registerAttempt.mockResolvedValue(5);
-
-    expect(await confirmVote('user-1', 'v1', '000000')).toMatchObject({
-      message: expect.stringContaining('Przekroczono'),
-    });
-    expect(mocks.deleteConfirmation).not.toHaveBeenCalled();
-  });
-
-  it('refuses even the right code after the attempts are used up', async () => {
-    mocks.registerAttempt.mockResolvedValue(6);
-
-    expect(await confirmVote('user-1', 'v1', CODE)).toMatchObject({
+    expect(await confirmVote('user-1', TOKEN)).toMatchObject({
       ok: false,
+      message: LINK_INVALID,
     });
     expect(mocks.castBallots).not.toHaveBeenCalled();
   });
 
-  it('rejects an expired code and removes it', async () => {
-    mocks.findVoteConfirmation.mockResolvedValue(
+  it("refuses another user's link without revealing it and keeps it usable", async () => {
+    mocks.findByToken.mockResolvedValue(pending({ userId: 'user-2' }));
+
+    expect(await confirmVote('user-1', TOKEN)).toMatchObject({
+      ok: false,
+      message: LINK_INVALID,
+    });
+    expect(mocks.castBallots).not.toHaveBeenCalled();
+    expect(mocks.deleteConfirmation).not.toHaveBeenCalled();
+    expect(mocks.log.warn).toHaveBeenCalledWith(
+      { userId: 'user-1', ownerId: 'user-2' },
+      'Foreign vote link'
+    );
+  });
+
+  it('rejects an expired link and removes it', async () => {
+    mocks.findByToken.mockResolvedValue(
       pending({ expiresAt: new Date(Date.now() - 1) })
     );
 
-    expect(await confirmVote('user-1', 'v1', CODE)).toMatchObject({
-      ok: false,
-    });
+    expect(await confirmVote('user-1', TOKEN)).toMatchObject({ ok: false });
     expect(mocks.deleteConfirmation).toHaveBeenCalledWith('c1');
     expect(mocks.castBallots).not.toHaveBeenCalled();
-  });
-
-  it('rejects when nothing is pending, e.g. a used code', async () => {
-    mocks.findVoteConfirmation.mockResolvedValue(null);
-
-    expect(await confirmVote('user-1', 'v1', CODE)).toMatchObject({
-      ok: false,
-    });
   });
 
   it('passes through a closed voting', async () => {
@@ -131,60 +127,50 @@ describe('confirmVote', () => {
     };
     mocks.resolveOpenVoting.mockResolvedValue({ failure });
 
-    expect(await confirmVote('user-1', 'v1', CODE)).toBe(failure);
+    expect(await confirmVote('user-1', TOKEN)).toBe(failure);
+    expect(mocks.resolveOpenVoting).toHaveBeenCalledWith('user-1', 'v1');
   });
 
   it.each([
     ['closed', 'Głosowanie zostało zakończone'],
-    ['consumed', 'Kod wygasł lub został już użyty. Poproś o nowy'],
+    ['consumed', LINK_INVALID],
     ['nothing-to-vote', 'Oddano już głosy za wszystkie Twoje lokale'],
   ])('maps the %s outcome of the transaction', async (reason, message) => {
     mocks.castBallots.mockResolvedValue({ ok: false, reason });
 
-    expect(await confirmVote('user-1', 'v1', CODE)).toMatchObject({
+    expect(await confirmVote('user-1', TOKEN)).toMatchObject({
       ok: false,
       message,
     });
   });
 
   it('drops a stored ballot whose answers no longer fit the questions', async () => {
-    mocks.findVoteConfirmation.mockResolvedValue(
-      pending({ answers: { other: 'FOR' } })
-    );
+    mocks.findByToken.mockResolvedValue(pending({ answers: { other: 'FOR' } }));
 
-    expect(await confirmVote('user-1', 'v1', CODE)).toMatchObject({
-      ok: false,
-    });
+    expect(await confirmVote('user-1', TOKEN)).toMatchObject({ ok: false });
     expect(mocks.deleteConfirmation).toHaveBeenCalledWith('c1');
     expect(mocks.castBallots).not.toHaveBeenCalled();
-  });
-
-  it('treats a confirmation deleted meanwhile as expired', async () => {
-    mocks.registerAttempt.mockResolvedValue(null);
-
-    expect(await confirmVote('user-1', 'v1', CODE)).toMatchObject({
-      message: 'Kod wygasł lub został już użyty. Poproś o nowy',
-    });
   });
 
   it('reports a duplicate as a failure', async () => {
     mocks.castBallots.mockResolvedValue({ ok: false, reason: 'duplicate' });
 
-    expect(await confirmVote('user-1', 'v1', CODE)).toMatchObject({
+    expect(await confirmVote('user-1', TOKEN)).toMatchObject({
       ok: false,
       code: 'failed',
     });
   });
 
-  it('never logs the code or the answers', async () => {
-    await confirmVote('user-1', 'v1', '000000');
-    await confirmVote('user-1', 'v1', CODE);
+  it('never logs the token or the answers', async () => {
+    await confirmVote('user-1', TOKEN);
+    mocks.findByToken.mockResolvedValue(pending({ userId: 'user-2' }));
+    await confirmVote('user-1', TOKEN);
 
     const logged = JSON.stringify([
       ...mocks.log.info.mock.calls,
       ...mocks.log.warn.mock.calls,
     ]);
-    expect(logged).not.toContain(CODE);
+    expect(logged).not.toContain(TOKEN);
     expect(logged).not.toContain('FOR');
   });
 });

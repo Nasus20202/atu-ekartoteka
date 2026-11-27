@@ -27,7 +27,7 @@ const MESSAGES: Record<string, () => Promise<EmailMessage>> = {
   accountActivation: () =>
     accountActivationMessage('anna@example.com', 'Temp-Pass-1', 'Anna'),
   voteConfirmation: () =>
-    voteConfirmationMessage('042917', 'Remont dachu', 15, 'Anna'),
+    voteConfirmationMessage('tok-3', 'Remont dachu', 15, 'Anna'),
   votingNotification: () =>
     votingNotificationMessage(
       'v1',

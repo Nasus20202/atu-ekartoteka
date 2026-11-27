@@ -4,12 +4,9 @@ import { changeVotingStatus } from '@/lib/voting/mutations/change-voting-status'
 import { createVoting } from '@/lib/voting/mutations/create-voting';
 import { deleteDraftVoting } from '@/lib/voting/mutations/delete-draft-voting';
 import { deleteExpiredVoteConfirmations } from '@/lib/voting/mutations/delete-expired-vote-confirmations';
+import { deleteVoteConfirmation } from '@/lib/voting/mutations/delete-vote-confirmation';
 import { saveVoteConfirmation } from '@/lib/voting/mutations/save-vote-confirmation';
 import { updateDraftVoting } from '@/lib/voting/mutations/update-draft-voting';
-import {
-  deleteVoteConfirmation,
-  registerConfirmationAttempt,
-} from '@/lib/voting/mutations/vote-confirmation-attempts';
 
 const db = vi.hoisted(() => {
   const tx = {
@@ -22,7 +19,6 @@ const db = vi.hoisted(() => {
     votingConfirmation: {
       deleteMany: vi.fn(),
       create: vi.fn(),
-      updateManyAndReturn: vi.fn(),
     },
     $transaction: vi.fn(),
   };
@@ -112,35 +108,21 @@ describe('voting mutations', () => {
   });
 
   it('replaces the pending confirmation of the user for the voting', async () => {
-    await saveVoteConfirmation({
-      id: 'c1',
+    db.votingConfirmation.create.mockResolvedValueOnce({ id: 'c1' });
+
+    const id = await saveVoteConfirmation({
       votingId: 'v1',
       userId: 'user-1',
-      codeHash: 'h',
+      tokenHash: 'h',
       answers: { q1: 'FOR' },
       expiresAt: new Date(),
     });
 
+    expect(id).toBe('c1');
     expect(db.votingConfirmation.deleteMany).toHaveBeenCalledWith({
       where: { votingId: 'v1', userId: 'user-1' },
     });
     expect(db.votingConfirmation.create).toHaveBeenCalled();
-  });
-
-  it('counts an attempt atomically and reports the new total', async () => {
-    db.votingConfirmation.updateManyAndReturn.mockResolvedValueOnce([
-      { attempts: 3 },
-    ]);
-    db.votingConfirmation.updateManyAndReturn.mockResolvedValueOnce([]);
-
-    expect(await registerConfirmationAttempt('c1')).toBe(3);
-    expect(await registerConfirmationAttempt('gone')).toBeNull();
-    expect(db.votingConfirmation.updateManyAndReturn).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: 'c1' },
-        data: { attempts: { increment: 1 } },
-      })
-    );
   });
 
   it('deletes a confirmation and the expired ones', async () => {

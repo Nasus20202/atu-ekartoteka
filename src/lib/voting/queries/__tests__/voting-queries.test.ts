@@ -12,7 +12,7 @@ import {
   findTenantVoting,
   findTenantVotings,
 } from '@/lib/voting/queries/find-tenant-votings';
-import { findVoteConfirmation } from '@/lib/voting/queries/find-vote-confirmation';
+import { findVoteConfirmationByToken } from '@/lib/voting/queries/find-vote-confirmation';
 import {
   findOwnBallot,
   findVotableApartmentIds,
@@ -169,17 +169,15 @@ describe('voting queries', () => {
     );
   });
 
-  it('reads the pending confirmation of a user for a voting', async () => {
-    await findVoteConfirmation('v1', 'user-1');
+  it('reads the pending confirmation by the hash of its token', async () => {
+    await findVoteConfirmationByToken('hash');
 
     expect(db.votingConfirmation.findUnique).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { votingId_userId: { votingId: 'v1', userId: 'user-1' } },
-      })
+      expect.objectContaining({ where: { tokenHash: 'hash' } })
     );
   });
 
-  it('looks for a code issued in the last five minutes, for any voting', async () => {
+  it('looks for a link issued in the last five minutes, for any voting', async () => {
     const now = new Date('2026-06-01T12:05:00Z');
 
     await findRecentVoteConfirmation('user-1', now);

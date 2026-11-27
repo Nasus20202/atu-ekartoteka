@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { hashConfirmationToken } from '@/lib/voting/rules/confirmation-token';
 import { requestVoteConfirmation } from '@/lib/voting/use-cases/request-vote-confirmation';
 
 const mocks = vi.hoisted(() => ({
@@ -24,7 +25,7 @@ vi.mock('@/lib/voting/queries/find-recent-vote-confirmation', () => ({
 vi.mock('@/lib/voting/mutations/save-vote-confirmation', () => ({
   saveVoteConfirmation: mocks.saveVoteConfirmation,
 }));
-vi.mock('@/lib/voting/mutations/vote-confirmation-attempts', () => ({
+vi.mock('@/lib/voting/mutations/delete-vote-confirmation', () => ({
   deleteVoteConfirmation: mocks.deleteVoteConfirmation,
 }));
 vi.mock('@/lib/users/queries/find-user-by-id', () => ({
@@ -53,6 +54,7 @@ describe('requestVoteConfirmation', () => {
     mocks.resolveOpenVoting.mockResolvedValue(VOTING);
     mocks.findVotableApartmentIds.mockResolvedValue(['apt-1']);
     mocks.findRecent.mockResolvedValue(null);
+    mocks.saveVoteConfirmation.mockResolvedValue('c1');
     mocks.findUserById.mockResolvedValue({
       email: 'jan@example.com',
       name: 'Jan',
@@ -60,19 +62,20 @@ describe('requestVoteConfirmation', () => {
     mocks.send.mockResolvedValue({ ok: true, delivery: 'sent' });
   });
 
-  it('stores a hashed code with the answers and emails the plain code', async () => {
+  it('stores a hashed token with the answers and emails the plain token', async () => {
     const result = await requestVoteConfirmation('user-1', 'v1', ANSWERS);
 
     expect(result).toMatchObject({ ok: true });
     const saved = mocks.saveVoteConfirmation.mock.calls[0][0];
-    const [, code] = mocks.send.mock.calls[0];
-    expect(code).toMatch(/^\d{6}$/);
+    const [, token] = mocks.send.mock.calls[0];
+    expect(token).toMatch(/^[A-Za-z0-9_-]{43}$/);
     expect(saved).toMatchObject({
       votingId: 'v1',
       userId: 'user-1',
       answers: ANSWERS,
+      tokenHash: hashConfirmationToken(token),
     });
-    expect(saved.codeHash).not.toContain(code);
+    expect(saved.tokenHash).not.toContain(token);
     expect(mocks.send.mock.calls[0][0]).toBe('jan@example.com');
   });
 
@@ -108,7 +111,7 @@ describe('requestVoteConfirmation', () => {
     expect(mocks.send).not.toHaveBeenCalled();
   });
 
-  it('refuses a new code within the rate limit window and says how long to wait', async () => {
+  it('refuses a new link within the rate limit window and says how long to wait', async () => {
     mocks.findRecent.mockResolvedValue({
       createdAt: new Date(Date.now() - 60_000),
     });
@@ -116,7 +119,7 @@ describe('requestVoteConfirmation', () => {
     expect(await requestVoteConfirmation('user-1', 'v1', ANSWERS)).toEqual({
       ok: false,
       code: 'invalid',
-      message: 'Poczekaj 4 min przed ponownym wysłaniem kodu',
+      message: 'Poczekaj 4 min przed ponownym wysłaniem linku',
     });
     expect(mocks.saveVoteConfirmation).not.toHaveBeenCalled();
     expect(mocks.send).not.toHaveBeenCalled();
@@ -131,8 +134,6 @@ describe('requestVoteConfirmation', () => {
       ok: false,
       code: 'failed',
     });
-    expect(mocks.deleteVoteConfirmation).toHaveBeenCalledWith(
-      mocks.saveVoteConfirmation.mock.calls[0][0].id
-    );
+    expect(mocks.deleteVoteConfirmation).toHaveBeenCalledWith('c1');
   });
 });

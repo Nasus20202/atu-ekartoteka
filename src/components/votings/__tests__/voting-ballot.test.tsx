@@ -4,11 +4,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { VotingBallot } from '@/components/votings/voting-ballot';
 
-const mocks = vi.hoisted(() => ({ request: vi.fn(), confirm: vi.fn() }));
+const mocks = vi.hoisted(() => ({ request: vi.fn() }));
 
 vi.mock('@/actions/voting/tenant-votings', () => ({
   requestVoteConfirmationAction: mocks.request,
-  confirmVoteAction: mocks.confirm,
 }));
 
 const QUESTIONS = [
@@ -20,7 +19,6 @@ describe('VotingBallot', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.request.mockResolvedValue({ ok: true, data: { expiresAt: 'x' } });
-    mocks.confirm.mockResolvedValue({ ok: true, data: { ballots: 1 } });
   });
 
   it('blocks the next step until every question is answered', async () => {
@@ -45,7 +43,7 @@ describe('VotingBallot', () => {
     expect(screen.getByText(/Masz 3 lokale/)).toBeInTheDocument();
   });
 
-  it('walks from the answers through the emailed code to the confirmation', async () => {
+  it('walks from the answers to the email step and back', async () => {
     const user = userEvent.setup();
     const { container } = render(
       <VotingBallot votingId="v1" questions={QUESTIONS} apartmentCount={1} />
@@ -54,24 +52,19 @@ describe('VotingBallot', () => {
     await user.click(screen.getAllByLabelText('Przeciw')[1]);
     await user.click(screen.getByRole('button', { name: /Dalej/ }));
 
-    const code = await screen.findByLabelText('Kod z wiadomości');
-    const confirm = screen.getByRole('button', {
-      name: /Potwierdź i zagłosuj/,
-    });
-    expect(confirm).toBeDisabled();
-    await user.type(code, '12ab34-56');
-    expect(code).toHaveValue('123456');
-    await user.click(confirm);
-
-    expect(await screen.findByText('Dziękujemy, głos oddany')).toBeVisible();
+    expect(
+      await screen.findByText('Sprawdź swoją skrzynkę email')
+    ).toBeVisible();
     // The step swap is animated
     expect(
       container.querySelector('[class*="animate-view-switch"]')
     ).not.toBeNull();
+
+    await user.click(screen.getByRole('button', { name: 'Zmień odpowiedzi' }));
+    expect(screen.getAllByLabelText('Za')[0]).toBeChecked();
   });
 
-  it('shows the reason a wrong code was refused', async () => {
-    mocks.confirm.mockResolvedValue({ ok: false, error: 'Nieprawidłowy kod' });
+  it('sends another link on request', async () => {
     const user = userEvent.setup();
     render(
       <VotingBallot
@@ -82,11 +75,31 @@ describe('VotingBallot', () => {
     );
     await user.click(screen.getByLabelText('Za'));
     await user.click(screen.getByRole('button', { name: /Dalej/ }));
-    await user.type(await screen.findByLabelText('Kod z wiadomości'), '000000');
     await user.click(
-      screen.getByRole('button', { name: /Potwierdź i zagłosuj/ })
+      await screen.findByRole('button', { name: 'Wyślij link ponownie' })
     );
 
-    expect(await screen.findByText('Nieprawidłowy kod')).toBeVisible();
+    expect(mocks.request).toHaveBeenCalledTimes(2);
+  });
+
+  it('shows the reason the link was refused', async () => {
+    mocks.request.mockResolvedValue({
+      ok: false,
+      error: 'Poczekaj 4 min przed ponownym wysłaniem linku',
+    });
+    const user = userEvent.setup();
+    render(
+      <VotingBallot
+        votingId="v1"
+        questions={[QUESTIONS[0]]}
+        apartmentCount={1}
+      />
+    );
+    await user.click(screen.getByLabelText('Za'));
+    await user.click(screen.getByRole('button', { name: /Dalej/ }));
+
+    expect(
+      await screen.findByText('Poczekaj 4 min przed ponownym wysłaniem linku')
+    ).toBeVisible();
   });
 });

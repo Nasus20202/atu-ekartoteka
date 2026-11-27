@@ -5,16 +5,12 @@ import {
   type UseCaseResult,
 } from '@/lib/shared/use-case-result';
 import { castBallots } from '@/lib/voting/mutations/cast-ballots';
+import { deleteVoteConfirmation } from '@/lib/voting/mutations/delete-vote-confirmation';
+import { findVoteConfirmationByToken } from '@/lib/voting/queries/find-vote-confirmation';
 import {
-  deleteVoteConfirmation,
-  registerConfirmationAttempt,
-} from '@/lib/voting/mutations/vote-confirmation-attempts';
-import { findVoteConfirmation } from '@/lib/voting/queries/find-vote-confirmation';
-import {
-  confirmationCodeMatches,
-  isConfirmationCodeFormat,
-} from '@/lib/voting/rules/confirmation-code';
-import { MAX_CONFIRMATION_ATTEMPTS } from '@/lib/voting/rules/voting-constants';
+  hashConfirmationToken,
+  isConfirmationTokenFormat,
+} from '@/lib/voting/rules/confirmation-token';
 import { parseAnswers } from '@/lib/voting/rules/voting-input';
 import {
   resolveOpenVoting,
@@ -23,53 +19,45 @@ import {
 
 const logger = createLogger('voting:confirm');
 
-const CODE_EXPIRED = 'Kod wygasł lub został już użyty. Poproś o nowy';
-const TOO_MANY_ATTEMPTS =
-  'Przekroczono liczbę prób. Poproś o nowy kod za kilka minut';
-const WRONG_CODE = 'Nieprawidłowy kod';
+export const LINK_INVALID =
+  'Link jest nieprawidłowy, wygasł lub został już użyty. Poproś o nowy';
+
+const ALL_VOTED = 'Oddano już głosy za wszystkie Twoje lokale';
 
 const CAST_FAILURES = {
   closed: VOTING_ENDED,
-  consumed: CODE_EXPIRED,
-  'nothing-to-vote': 'Oddano już głosy za wszystkie Twoje lokale',
-  duplicate: 'Oddano już głosy za wszystkie Twoje lokale',
+  consumed: LINK_INVALID,
+  'nothing-to-vote': ALL_VOTED,
+  duplicate: ALL_VOTED,
 } as const;
 
-/** Checks the emailed code and, when it is right, stores the ballots. */
+/** Redeems the emailed link of the signed-in user and stores the ballots. */
 export async function confirmVote(
   userId: string,
-  votingId: unknown,
-  code: unknown
-): Promise<UseCaseResult<{ ballots: number }>> {
-  if (!isConfirmationCodeFormat(code)) return invalidResult(WRONG_CODE);
+  token: unknown
+): Promise<UseCaseResult<{ ballots: number; votingId: string }>> {
+  if (!isConfirmationTokenFormat(token)) return invalidResult(LINK_INVALID);
 
-  const access = await resolveOpenVoting(userId, votingId);
-  if ('failure' in access) return access.failure;
-  const { voting } = access;
+  const pending = await findVoteConfirmationByToken(
+    hashConfirmationToken(token)
+  );
 
-  const pending = await findVoteConfirmation(voting.id, userId);
-  if (!pending) return invalidResult(CODE_EXPIRED);
+  // A link opened by anyone but its owner looks the same as an unknown one
+  if (!pending || pending.userId !== userId) {
+    if (pending) {
+      logger.warn({ userId, ownerId: pending.userId }, 'Foreign vote link');
+    }
+    return invalidResult(LINK_INVALID);
+  }
 
   if (pending.expiresAt.getTime() <= Date.now()) {
     await deleteVoteConfirmation(pending.id);
-    return invalidResult(CODE_EXPIRED);
+    return invalidResult(LINK_INVALID);
   }
 
-  const attempts = await registerConfirmationAttempt(pending.id);
-  if (attempts === null) return invalidResult(CODE_EXPIRED);
-
-  // An exhausted code stays until it expires, so the rate limit keeps holding
-  if (attempts > MAX_CONFIRMATION_ATTEMPTS) {
-    return invalidResult(TOO_MANY_ATTEMPTS);
-  }
-
-  if (!confirmationCodeMatches(pending.codeHash, pending.id, code)) {
-    logger.warn({ userId, votingId: voting.id, attempts }, 'Wrong vote code');
-    if (attempts >= MAX_CONFIRMATION_ATTEMPTS) {
-      return invalidResult(TOO_MANY_ATTEMPTS);
-    }
-    return invalidResult(WRONG_CODE);
-  }
+  const access = await resolveOpenVoting(userId, pending.votingId);
+  if ('failure' in access) return access.failure;
+  const { voting } = access;
 
   const answers = parseAnswers(
     pending.answers,
@@ -77,7 +65,7 @@ export async function confirmVote(
   );
   if (!answers.ok) {
     await deleteVoteConfirmation(pending.id);
-    return invalidResult(CODE_EXPIRED);
+    return invalidResult(LINK_INVALID);
   }
 
   const result = await castBallots({
@@ -100,5 +88,5 @@ export async function confirmVote(
     'Vote cast'
   );
 
-  return { ok: true, data: { ballots: result.ballots } };
+  return { ok: true, data: { ballots: result.ballots, votingId: voting.id } };
 }

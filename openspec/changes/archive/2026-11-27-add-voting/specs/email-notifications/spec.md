@@ -4,12 +4,12 @@
 
 ### Requirement: Vote Confirmation Email
 
-The system SHALL email a voter a six-digit confirmation code before a ballot is counted. The message SHALL state that the code expires and that it must be ignored if the voter did not request it, and SHALL be recorded with email type `vote_confirmation`.
+The system SHALL email a voter a confirmation link before a ballot is counted. The message SHALL state that the link expires and works once, and that it must be ignored if the voter did not request it, and SHALL be recorded with email type `vote_confirmation`.
 
-#### Scenario: Code requested
+#### Scenario: Link requested
 
 - **WHEN** a tenant submits a ballot
-- **THEN** one email with the code is sent to the account's address
+- **THEN** one email with the confirmation link is sent to the account's address
 - **AND** the metric is recorded as `vote_confirmation`
 
 ### Requirement: Voting Notification Email

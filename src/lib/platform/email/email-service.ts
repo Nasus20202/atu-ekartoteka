@@ -214,13 +214,13 @@ export class EmailService {
 
   async sendVoteConfirmationEmail(
     to: string,
-    code: string,
+    token: string,
     votingTitle: string,
     validForMinutes: number,
     name?: string
   ): Promise<EmailSendResult> {
     return this.deliver('vote_confirmation', to, () =>
-      voteConfirmationMessage(code, votingTitle, validForMinutes, name)
+      voteConfirmationMessage(token, votingTitle, validForMinutes, name)
     );
   }
 

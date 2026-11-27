@@ -346,16 +346,15 @@ model VotingVote {
   @@index([questionId, choice])
 }
 
-// A submitted ballot waiting for its emailed one-time code; deleted when used.
+// A submitted ballot waiting for its emailed confirmation link; deleted when used.
 model VotingConfirmation {
   id        String   @id @default(cuid())
   votingId  String
   voting    Voting   @relation(fields: [votingId], references: [id], onDelete: Cascade)
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  codeHash  String
+  tokenHash String   @unique // SHA-256 of the random token in the emailed link
   answers   Json // { [questionId]: VoteChoice }
-  attempts  Int      @default(0)
   expiresAt DateTime
   createdAt DateTime @default(now())
 

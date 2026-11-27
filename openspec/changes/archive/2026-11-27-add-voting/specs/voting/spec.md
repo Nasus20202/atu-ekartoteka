@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Lets an admin put a set of questions to the owners of one HOA and lets each apartment owner answer them from the dashboard, confirming the ballot with a one-time code sent by email.
+Lets an admin put a set of questions to the owners of one HOA and lets each apartment owner answer them from the dashboard, confirming the ballot with a one-time link sent by email.
 
 ## ADDED Requirements
 
@@ -79,7 +79,7 @@ An approved tenant SHALL cast one vote per active apartment they own in the voti
 
 ### Requirement: Open Window
 
-A ballot SHALL be accepted only while the voting is `ACTIVE` and its deadline, when set, has not passed. The deadline SHALL be checked when the code is requested and when it is confirmed.
+A ballot SHALL be accepted only while the voting is `ACTIVE` and its deadline, when set, has not passed. The deadline SHALL be checked when the link is requested and when it is confirmed.
 
 #### Scenario: Deadline passed
 
@@ -89,33 +89,38 @@ A ballot SHALL be accepted only while the voting is `ACTIVE` and its deadline, w
 
 ### Requirement: Email Confirmation of a Ballot
 
-A ballot SHALL be counted only after the voter enters a six-digit one-time code emailed to the account address. The code SHALL be random, stored only as a hash, expire after fifteen minutes, be usable once and allow five attempts. A user SHALL receive at most one code per five minutes, across all votings, like the resend of the email verification link; a new code SHALL replace the previous one for the same voting, and a code that could not be emailed SHALL NOT count towards the limit.
+A ballot SHALL be counted only after the voter opens a link emailed to the account address and confirms it while signed in. The link SHALL carry a random token of 256 bits, of which only the SHA-256 hash is stored; it SHALL expire after fifteen minutes and be usable once. Opening the link SHALL only show the stored answers; the ballot SHALL be cast by an explicit confirmation, so a mail scanner that fetches the link cannot vote. The link SHALL work only for the account it was issued to, and any other caller SHALL get the same answer as for an unknown link. A user SHALL receive at most one link per five minutes, across all votings, like the resend of the email verification link; a new link SHALL replace the previous one for the same voting, and a link that could not be emailed SHALL NOT count towards the limit.
 
-#### Scenario: Correct code
+#### Scenario: Link confirmed
 
 - **GIVEN** a pending confirmation
-- **WHEN** the tenant enters the emailed code within fifteen minutes
+- **WHEN** the owner opens the emailed link within fifteen minutes and confirms
 - **THEN** the ballots are stored and the confirmation is deleted
 
-#### Scenario: Wrong code
+#### Scenario: Link only opened
 
-- **WHEN** the tenant enters a wrong code
-- **THEN** no ballot is stored and the attempt is counted
-- **AND** after five wrong attempts even the right code is refused and a new code must be requested once the rate limit allows
+- **WHEN** the owner opens the emailed link without confirming
+- **THEN** the answers are shown and no ballot is stored
 
-#### Scenario: Expired or reused code
+#### Scenario: Someone else's or an unknown link
 
-- **WHEN** the tenant enters a code after fifteen minutes or after it was already used
+- **WHEN** another signed-in user opens the link, or the token is unknown or malformed
+- **THEN** the page and the action answer that the link is invalid, and no ballot is stored
+- **AND** the link stays usable for its owner
+
+#### Scenario: Expired or reused link
+
+- **WHEN** the owner opens the link after fifteen minutes or after it was already used
 - **THEN** it is rejected without storing a ballot
 
 #### Scenario: Resend too early
 
-- **WHEN** the tenant asks for a new code less than five minutes after the previous one
-- **THEN** the request is rejected with "Poczekaj N min przed ponownym wysłaniem kodu" and no email is sent
+- **WHEN** the tenant asks for a new link less than five minutes after the previous one
+- **THEN** the request is rejected with "Poczekaj N min przed ponownym wysłaniem linku" and no email is sent
 
 #### Scenario: Email could not be sent
 
-- **WHEN** the code email fails to send
+- **WHEN** the link email fails to send
 - **THEN** the pending confirmation is removed, so the tenant may try again immediately
 
 ### Requirement: Answers Are Complete
@@ -125,7 +130,7 @@ A submitted ballot SHALL contain exactly one valid choice for every question of 
 #### Scenario: Missing or foreign answer
 
 - **WHEN** a ballot omits a question, answers an unknown question or uses an unknown choice
-- **THEN** it is rejected before any code is sent
+- **THEN** it is rejected before any link is sent
 
 ### Requirement: Results Visibility
 

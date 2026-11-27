@@ -428,10 +428,10 @@ describe('EmailService', () => {
       emailService = new EmailService(mockConfig);
     });
 
-    it('sends the vote confirmation code', async () => {
+    it('sends the vote confirmation link', async () => {
       const result = await emailService.sendVoteConfirmationEmail(
         'user@example.com',
-        '042917',
+        'tok-1',
         'Remont',
         15,
         'Anna'
@@ -441,8 +441,8 @@ describe('EmailService', () => {
       expect(mockSendMail).toHaveBeenCalledWith(
         expect.objectContaining({
           to: 'user@example.com',
-          subject: 'Kod potwierdzający głosowanie',
-          text: expect.stringContaining('042917'),
+          subject: 'Potwierdź swój głos',
+          text: expect.stringContaining('/dashboard/votings/confirm/tok-1'),
         })
       );
     });
@@ -471,7 +471,7 @@ describe('EmailService', () => {
       expect(
         await emailService.sendVoteConfirmationEmail(
           'user@example.com',
-          '042917',
+          'tok-1',
           'Remont',
           15
         )

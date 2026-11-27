@@ -1,13 +1,14 @@
 import { prisma } from '@/lib/platform/database/prisma';
 
-export function findVoteConfirmation(votingId: string, userId: string) {
+/** The pending ballot behind an emailed link, found by the hash of its token. */
+export function findVoteConfirmationByToken(tokenHash: string) {
   return prisma.votingConfirmation.findUnique({
-    where: { votingId_userId: { votingId, userId } },
+    where: { tokenHash },
     select: {
       id: true,
-      codeHash: true,
+      votingId: true,
+      userId: true,
       answers: true,
-      attempts: true,
       expiresAt: true,
     },
   });

@@ -124,17 +124,18 @@ export async function newUserAdminMessage(
 }
 
 export async function voteConfirmationMessage(
-  code: string,
+  token: string,
   votingTitle: string,
   validForMinutes: number,
   name?: string
 ): Promise<EmailMessage> {
+  const url = appUrl(`/dashboard/votings/confirm/${token}`);
   return buildMessage(
     VOTE_CONFIRMATION_SUBJECT,
     <VoteConfirmationEmail
       name={name}
       votingTitle={votingTitle}
-      code={code}
+      url={url}
       validForMinutes={validForMinutes}
     />
   );

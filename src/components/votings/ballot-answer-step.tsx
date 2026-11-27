@@ -47,7 +47,7 @@ export function BallotAnswerStep({
         />
       ))}
       <Button type="submit" disabled={pending || !isComplete}>
-        Dalej – potwierdź kodem
+        Dalej – potwierdź emailem
       </Button>
     </form>
   );

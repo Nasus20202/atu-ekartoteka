@@ -37,7 +37,7 @@ context: |
   - User roles: ADMIN, TENANT
   - Account statuses: PENDING, APPROVED, REJECTED
   - Charges and payments are per-apartment and per-period
-  - Voting (Głosowanie): belongs to one HOA, has ordered questions answered Za/Przeciw/Wstrzymał(a) się; one ballot per apartment, confirmed by an emailed one-time code
+  - Voting (Głosowanie): belongs to one HOA, has ordered questions answered Za/Przeciw/Wstrzymał(a) się; one ballot per apartment, confirmed by an emailed one-time link
   - Bulk user creation: admin creates accounts for unassigned apartments; users receive a temp password and must change it on first login (the proxy redirects on the token's mustChangePassword flag; it is a redirect hint, decisions that grant something read the database)
 
   ## Specs index
@@ -59,7 +59,7 @@ context: |
   - openspec/specs/tooling/spec.md — pnpm, Next.js, Prettier, ESLint, Vite, Vitest, Playwright
   - openspec/specs/user-management/spec.md — user listing, approval, bulk creation, forced password change, notifications
   - openspec/specs/visual-design/spec.md — shadcn/ui system, colour tokens, typography, spacing, accessibility baseline
-  - openspec/specs/voting/spec.md — HOA votings: questions, lifecycle, per-apartment ballots confirmed by an emailed one-time code, results visibility, notifications, navbar badge
+  - openspec/specs/voting/spec.md — HOA votings: questions, lifecycle, per-apartment ballots confirmed by an emailed one-time link, results visibility, notifications, navbar badge
 
 rules:
   proposal:

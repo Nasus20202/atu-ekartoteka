@@ -3,7 +3,7 @@
 ## 1. Data Model
 
 - [x] 1.1 Add the Prisma models, enums and a migration; verify `pnpm exec prisma validate` and applying the migration to a database
-- [x] 1.2 Add `src/lib/voting/types`, `dto` and `rules` (statuses, transitions, answers, code hashing, constants) with unit tests
+- [x] 1.2 Add `src/lib/voting/types`, `dto` and `rules` (statuses, transitions, answers, token hashing, constants) with unit tests
 
 ## 2. Server Logic
 

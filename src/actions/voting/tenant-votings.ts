@@ -24,11 +24,11 @@ export async function requestVoteConfirmationAction(
 
 export async function confirmVoteAction(
   input: unknown
-): Promise<ActionResult<{ ballots: number }>> {
+): Promise<ActionResult<{ ballots: number; votingId: string }>> {
   const { session, denied } = await requireUserAction();
   if (denied) return denied;
 
-  const { votingId, code } = readInput(input);
+  const { token } = readInput(input);
 
-  return fromUseCaseResult(await confirmVote(session.user.id, votingId, code));
+  return fromUseCaseResult(await confirmVote(session.user.id, token));
 }

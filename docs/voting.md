@@ -1,7 +1,7 @@
 # Voting (Głosowania)
 
 Administrators run votes of the owners of one association. Each owner answers
-from the dashboard and confirms the vote with a code sent to their email.
+from the dashboard and confirms the vote with a link sent to their email.
 
 ## How a voting works
 
@@ -42,14 +42,17 @@ bell with a number means that many open votings still wait for their vote. The
 dashboard has a card with the same list.
 
 1. Open the voting and answer every question.
-2. Choose **Dalej** and enter the six-digit code sent to the account's email.
+2. Choose **Dalej** and open the link sent to the account's email. It shows the
+   answers; choose **Potwierdź i zagłosuj** to cast the vote. Open the link
+   while signed in as the same account, in any browser.
 3. The vote is final. An owner of several apartments in the association casts
    one vote per apartment, with the same answers, in one go.
 
-The code expires after 15 minutes, works once, and allows five attempts. A new
-code can be requested once per five minutes, the same limit as the email
-verification link. SMTP must be configured (see
-[Configuration](configuration.md)); without it the code is only written to the
+The link expires after 15 minutes and works once. Opening it does not vote, so
+mail scanners that fetch links are harmless, and only the account it was sent to
+can use it. A new link can be requested once per five minutes, the same limit
+as the email verification link. SMTP must be configured (see
+[Configuration](configuration.md)); without it the link is only written to the
 development log.
 
 ## Developer notes

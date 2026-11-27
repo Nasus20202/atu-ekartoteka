@@ -44,9 +44,8 @@ CREATE TABLE "VotingConfirmation" (
     "id" TEXT NOT NULL,
     "votingId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "codeHash" TEXT NOT NULL,
+    "tokenHash" TEXT NOT NULL,
     "answers" JSONB NOT NULL,
-    "attempts" INTEGER NOT NULL DEFAULT 0,
     "expiresAt" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "VotingConfirmation_pkey" PRIMARY KEY ("id")
@@ -65,6 +64,8 @@ CREATE UNIQUE INDEX "VotingBallot_votingId_apartmentId_key" ON "VotingBallot"("v
 CREATE INDEX "VotingVote_questionId_choice_idx" ON "VotingVote"("questionId", "choice");
 -- CreateIndex
 CREATE UNIQUE INDEX "VotingVote_ballotId_questionId_key" ON "VotingVote"("ballotId", "questionId");
+-- CreateIndex
+CREATE UNIQUE INDEX "VotingConfirmation_tokenHash_key" ON "VotingConfirmation"("tokenHash");
 -- CreateIndex
 CREATE INDEX "VotingConfirmation_expiresAt_idx" ON "VotingConfirmation"("expiresAt");
 -- CreateIndex
@@ -96,6 +97,3 @@ ALTER TABLE "Voting"
 ALTER TABLE "VotingQuestion"
   ADD CONSTRAINT "VotingQuestion_position_check" CHECK ("position" >= 0),
   ADD CONSTRAINT "VotingQuestion_text_length" CHECK (char_length("text") BETWEEN 1 AND 1000);
-
-ALTER TABLE "VotingConfirmation"
-  ADD CONSTRAINT "VotingConfirmation_attempts_check" CHECK ("attempts" >= 0);
