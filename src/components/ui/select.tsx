@@ -67,7 +67,7 @@ function Select<T extends string = string>({
       <DropdownMenuContent
         align="start"
         className={cn(
-          'ui-select-content w-[var(--radix-dropdown-menu-trigger-width)] overflow-hidden p-0',
+          'ui-select-content w-[var(--radix-dropdown-menu-trigger-width)] overflow-hidden p-0 [--tw-enter-scale:1]! [--tw-exit-scale:1]!',
           contentClassName
         )}
       >

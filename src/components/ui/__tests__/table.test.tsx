@@ -140,11 +140,20 @@ describe('TableFooter', () => {
     );
     const tfoot = container.querySelector('tfoot');
     expect(tfoot).toHaveClass(
-      'border-t',
-      'bg-muted/50',
+      'border-t-2',
       'font-medium',
-      '[&>tr]:last:border-b-0'
+      '[&>tr]:last:border-b-0',
+      '[&>tr]:hover:bg-transparent'
     );
+  });
+
+  it('does not tint the totals', () => {
+    const { container } = render(
+      <Table>
+        <TableFooter />
+      </Table>
+    );
+    expect(container.querySelector('tfoot')?.className).not.toMatch(/bg-muted/);
   });
 
   it('applies custom className', () => {
