@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mock mail inbox</title>
+    <link rel="stylesheet" href="/inbox/inbox.css" />
+  </head>
+  <body>
+    <header class="toolbar">
+      <h1>Mock inbox</h1>
+      <input
+        id="filter"
+        type="search"
+        placeholder="Filter by recipient or subject"
+        aria-label="Filter messages"
+      />
+      <button id="clear" type="button" class="danger">Clear all</button>
+      <span id="status" role="status"></span>
+    </header>
+    <main class="layout">
+      <section class="list-pane" aria-label="Messages">
+        <p id="empty" class="empty"></p>
+        <ul id="messages"></ul>
+      </section>
+      <section class="detail-pane" aria-label="Message">
+        <p id="placeholder" class="empty">Select a message to read it.</p>
+        <article id="detail" hidden>
+          <dl class="headers">
+            <dt>From</dt>
+            <dd id="from"></dd>
+            <dt>To</dt>
+            <dd id="to"></dd>
+            <dt>Date</dt>
+            <dd id="date"></dd>
+            <dt>Subject</dt>
+            <dd id="subject"></dd>
+          </dl>
+          <div class="views" role="group" aria-label="Body view">
+            <button id="view-html" type="button" aria-pressed="true">
+              HTML
+            </button>
+            <button id="view-text" type="button" aria-pressed="false">
+              Text
+            </button>
+          </div>
+          <iframe
+            id="html-view"
+            class="html-view"
+            title="HTML body"
+            sandbox="allow-popups allow-popups-to-escape-sandbox"
+          ></iframe>
+          <pre id="text-view" class="text-view" hidden></pre>
+        </article>
+      </section>
+    </main>
+    <script src="/inbox/inbox.js" defer></script>
+  </body>
+</html>

@@ -7,11 +7,16 @@ export const MOCK_PUBLIC_URL =
 
 export const TURNSTILE_VALID_TOKEN = 'mock-valid-token';
 export const TURNSTILE_INVALID_TOKEN = 'mock-invalid-token';
+// Cloudflare's documented dummy token, produced by the widget with its test site keys
+export const TURNSTILE_DUMMY_TOKEN = 'XXXX.DUMMY.TOKEN.XXXX';
 
 export const GOOGLE_CLIENT_ID = 'mock-google-client-id';
+export const GOOGLE_LOGIN_EMAIL_PARAM = 'login_email';
+export const GOOGLE_LOGIN_NAME_PARAM = 'login_name';
 export const GOOGLE_PATH = '/google';
 export const TURNSTILE_PATH = '/turnstile';
 export const MAIL_PATH = '/mail';
+export const INBOX_PATH = '/inbox';
 export const OTLP_PATH = '/otlp';
 export const OTLP_SIGNALS = ['traces', 'metrics', 'logs'] as const;
 export type OtlpSignal = (typeof OTLP_SIGNALS)[number];

@@ -19,6 +19,16 @@ How to get the app running on your machine and sign in as an administrator.
   with `docker compose stop db`. Use your own PostgreSQL instead if you have
   one, and point `DATABASE_URL` at it.
 
+- **Local mocks** - a stand-in for email, Google sign-in and the captcha. The
+  `.env.example` defaults use them:
+
+  ```bash
+  docker compose up -d db mocks
+  ```
+
+  Without Docker, run `pnpm mocks` in a second terminal. See
+  [Testing](testing.md#local-mocks).
+
 ## Set up
 
 ```bash
@@ -31,9 +41,11 @@ Edit `.env`:
 - `DATABASE_URL` - leave it if you use the compose database.
 - `AUTH_SECRET` - any long random string: `openssl rand -base64 32`.
 
-Everything else in `.env.example` is optional for local work. Without SMTP
-settings the app does not send email, without Turnstile keys the captcha is off,
-and without Google credentials the Google button is hidden. See
+Everything else in `.env.example` is optional for local work. With the mocks
+running, email is captured at http://localhost:4010/inbox, Google sign-in asks
+for an email address instead of contacting Google, and the captcha uses
+Cloudflare's test keys. The captcha widget script still loads from Cloudflare,
+so the machine needs internet access for it. To use real services, see
 [Configuration](configuration.md).
 
 Create the tables and start the dev server:

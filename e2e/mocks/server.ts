@@ -18,6 +18,7 @@ import {
   type RouteContext,
   sendJson,
 } from './http';
+import { handleInboxRoute } from './inbox-routes';
 import { createMockLogger } from './logger';
 import { handleMail } from './mail-routes';
 import { handleOtlp } from './otlp-routes';
@@ -71,6 +72,7 @@ async function handle(
 
   if (pathname === HEALTH_PATH) return sendJson(res, HTTP_OK, { ok: true });
   if (pathname === MAIL_PATH) return handleMail(context(MAIL_PATH));
+  if (await handleInboxRoute(req, res, pathname)) return;
 
   for (const [prefix, handler] of PREFIXED_ROUTES) {
     if (pathname.startsWith(`${prefix}/`)) {

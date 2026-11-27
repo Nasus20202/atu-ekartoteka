@@ -31,6 +31,17 @@ services:
       timeout: 5s
       retries: 5
 
+  # Local SMTP, Google sign-in and Turnstile mocks, see docs/testing.md
+  mocks:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mocks
+    container_name: atu-mocks
+    restart: unless-stopped
+    ports:
+      - '4010:4010' # HTTP: Google, Turnstile, inbox
+      - '1025:1025' # SMTP
+
   ekartoteka:
     build:
       context: .

@@ -1,3 +1,5 @@
+import { readFile } from 'fs/promises';
+
 import { GOOGLE_PATH } from './constants';
 import {
   authorize,
@@ -7,6 +9,7 @@ import {
   jwks,
   setNextIdentity,
 } from './google';
+import { LOGIN_FORM_PAGE, loginFormAsset } from './google-login-page';
 import {
   HTTP_BAD_REQUEST,
   HTTP_FOUND,
@@ -17,6 +20,8 @@ import {
   type RouteContext,
   sendJson,
 } from './http';
+
+const HTML_CONTENT_TYPE = 'text/html; charset=utf-8';
 
 export async function handleGoogle({
   req,
@@ -32,6 +37,14 @@ export async function handleGoogle({
   }
   if (route === '/jwks') return sendJson(res, HTTP_OK, jwks());
 
+  const asset = req.method === 'GET' ? loginFormAsset(route) : undefined;
+  if (asset) {
+    res
+      .writeHead(HTTP_OK, { 'Content-Type': asset.contentType })
+      .end(await readFile(asset.file));
+    return;
+  }
+
   if (route === '/identity' && req.method === 'POST') {
     setNextIdentity(JSON.parse(await readBody(req)) as GoogleIdentity);
     res.writeHead(HTTP_NO_CONTENT).end();
@@ -39,12 +52,18 @@ export async function handleGoogle({
   }
 
   if (route === '/authorize') {
-    const target = authorize(query);
-    if (!target) {
-      return sendJson(res, HTTP_BAD_REQUEST, { error: 'no identity' });
+    const outcome = authorize(query);
+    if (outcome.kind === 'redirect') {
+      res.writeHead(HTTP_FOUND, { Location: outcome.location }).end();
+      return;
     }
-    res.writeHead(HTTP_FOUND, { Location: target }).end();
-    return;
+    if (outcome.kind === 'login-form') {
+      res
+        .writeHead(HTTP_OK, { 'Content-Type': HTML_CONTENT_TYPE })
+        .end(await readFile(LOGIN_FORM_PAGE));
+      return;
+    }
+    return sendJson(res, HTTP_BAD_REQUEST, { error: 'redirect_uri required' });
   }
 
   if (route === '/token' && req.method === 'POST') {

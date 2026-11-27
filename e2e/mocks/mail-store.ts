@@ -1,4 +1,5 @@
 export interface CapturedMail {
+  id: number;
   to: string[];
   from: string;
   subject: string;
@@ -7,15 +8,19 @@ export interface CapturedMail {
   date: string;
 }
 
+export type NewMail = Omit<CapturedMail, 'id'>;
+
 const messages: CapturedMail[] = [];
+let lastId = 0;
 
 function matches(mail: CapturedMail, to?: string): boolean {
   const wanted = to?.trim().toLowerCase();
   return !wanted || mail.to.includes(wanted);
 }
 
-export function addMail(mail: CapturedMail): void {
-  messages.push(mail);
+export function addMail(mail: NewMail): void {
+  lastId += 1;
+  messages.push({ id: lastId, ...mail });
 }
 
 /** Newest first. */

@@ -5,20 +5,21 @@ in the codebase day to day.
 
 ## Commands
 
-| Command                     | What it does                                                         |
-| --------------------------- | -------------------------------------------------------------------- |
-| `pnpm dev`                  | Dev server with hot reload. `pnpm dev:pretty` formats the JSON logs. |
-| `pnpm build` / `pnpm start` | Production build, and serve it.                                      |
-| `pnpm lint` / `lint:fix`    | ESLint, including the project's own rules.                           |
-| `pnpm format`               | Prettier over the repository.                                        |
-| `pnpm exec tsc --noEmit`    | Type check.                                                          |
-| `pnpm test`                 | Unit and component tests (Vitest, watch mode).                       |
-| `pnpm test:coverage`        | Same, once, with the coverage thresholds.                            |
-| `pnpm test:e2e*`            | Browser tests. See [Testing](testing.md).                            |
-| `pnpm test:perf`            | k6 load test. Seed first with `perf/seed/seed-perf-data.ts`.         |
-| `pnpm db:migrate`           | Create and apply a migration (development).                          |
-| `pnpm db:deploy`            | Apply pending migrations (production, CI).                           |
-| `pnpm db:generate`          | Regenerate the Prisma client in `src/generated`.                     |
+| Command                     | What it does                                                                         |
+| --------------------------- | ------------------------------------------------------------------------------------ |
+| `pnpm dev`                  | Dev server with hot reload. `pnpm dev:pretty` formats the JSON logs.                 |
+| `pnpm mocks`                | Local mail, Google sign-in and captcha mocks. See [Testing](testing.md#local-mocks). |
+| `pnpm build` / `pnpm start` | Production build, and serve it.                                                      |
+| `pnpm lint` / `lint:fix`    | ESLint, including the project's own rules.                                           |
+| `pnpm format`               | Prettier over the repository.                                                        |
+| `pnpm exec tsc --noEmit`    | Type check.                                                                          |
+| `pnpm test`                 | Unit and component tests (Vitest, watch mode).                                       |
+| `pnpm test:coverage`        | Same, once, with the coverage thresholds.                                            |
+| `pnpm test:e2e*`            | Browser tests. See [Testing](testing.md).                                            |
+| `pnpm test:perf`            | k6 load test. Seed first with `perf/seed/seed-perf-data.ts`.                         |
+| `pnpm db:migrate`           | Create and apply a migration (development).                                          |
+| `pnpm db:deploy`            | Apply pending migrations (production, CI).                                           |
+| `pnpm db:generate`          | Regenerate the Prisma client in `src/generated`.                                     |
 
 ## Before you push
 

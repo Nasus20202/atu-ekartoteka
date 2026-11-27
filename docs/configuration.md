@@ -39,6 +39,10 @@ Email matters for production. Registration, email verification, password
 reset, account approval and the invitation of owners all send mail. Without
 SMTP, a user who forgets a password has no way to reset it.
 
+`.env.example` sets `SMTP_HOST` to the local mock (`localhost`, port `1025`,
+no TLS, no AUTH), so mail is captured instead of sent. Clear `SMTP_HOST` to
+turn sending off, or set your provider's host, port and credentials.
+
 ## Database
 
 | Variable                              | Default | Notes                                                                                       |
@@ -73,14 +77,19 @@ invalid certificates are accepted.
 **Turnstile** - create a widget in the Cloudflare dashboard and set both keys.
 When both are set, a missing or invalid token is refused, and so is a request
 for which Cloudflare cannot be reached. Setting only one key leaves the captcha
-off.
+off. `.env.example` uses Cloudflare's test keys, `1x00000000000000000000AA` and
+`1x0000000000000000000000000000000AA`. The site key `2x00000000000000000000AB`
+makes the widget fail every time, to try the refusal path.
 
 **Google** - in Google Cloud Console, create OAuth credentials, add
 `<AUTH_URL>/api/auth/callback/google` as a redirect URI, and set the client ID
 and secret.
 
-`TURNSTILE_VERIFY_URL` and `GOOGLE_ISSUER_URL` redirect these services to a
-local mock. They exist for the test suites and should not be set in production.
+`.env.example` sets `TURNSTILE_VERIFY_URL` and `GOOGLE_ISSUER_URL` to the local
+mocks, next to Cloudflare's test keys and a dummy Google client, so local work
+needs no accounts. See [Testing](testing.md#local-mocks). To use real services,
+set the real keys and credentials and remove those two variables. Do not set
+them in production: captcha checks and Google sign-in would go to the mock.
 
 ## Analytics
 
