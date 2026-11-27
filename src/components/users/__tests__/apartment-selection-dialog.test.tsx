@@ -16,6 +16,7 @@ vi.mock('@/components/users/use-available-apartments', () => ({
   useAvailableApartments: () => ({
     apartments: availableApartments.current,
     failed: false,
+    loading: false,
   }),
 }));
 

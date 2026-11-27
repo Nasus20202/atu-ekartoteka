@@ -95,7 +95,7 @@ The system SHALL allow admins to assign apartments to admin users (`role = ADMIN
 
 ### Requirement: Apartment Selection Loading State
 
-The apartment selection dialog SHALL load the apartments assignable to the selected user behind a React Suspense boundary. While the first list for a user is loading, the dialog SHALL show a spinner with the text `Ładowanie mieszkań...` in the list area, so the dialog keeps its size and the list does not appear late. A search change SHALL keep the previous list on screen until the new results arrive. A failed request SHALL show `Nie udało się załadować mieszkań` in the list area instead of breaking the dialog.
+While the first list of apartments assignable to the selected user is loading, the apartment selection dialog SHALL show a spinner with the text `Ładowanie mieszkań...` in the list area, so the dialog keeps its size and the list does not appear late. A search change SHALL keep the previous list on screen until the new results arrive. A failed request SHALL show `Nie udało się załadować mieszkań` in the list area instead of breaking the dialog.
 
 #### Scenario: Spinner while the first list loads
 

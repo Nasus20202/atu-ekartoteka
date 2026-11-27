@@ -1,9 +1,7 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
-import { Suspense } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ApartmentOptionsList } from '@/components/users/apartment-options-list';
-import { ApartmentOptionsLoading } from '@/components/users/apartment-options-loading';
 import type { ApartmentSummaryDto } from '@/lib/apartments/dto/apartment-dto';
 import type { UserDto } from '@/lib/users/dto/user-dto';
 
@@ -27,14 +25,12 @@ function json(ok: boolean, body: object) {
 
 function renderList(search = '') {
   return render(
-    <Suspense fallback={<ApartmentOptionsLoading />}>
-      <ApartmentOptionsList
-        apartmentSearch={search}
-        onApartmentCheckedChange={() => {}}
-        selectedApartments={[]}
-        user={user}
-      />
-    </Suspense>
+    <ApartmentOptionsList
+      apartmentSearch={search}
+      onApartmentCheckedChange={() => {}}
+      selectedApartments={[]}
+      user={user}
+    />
   );
 }
 

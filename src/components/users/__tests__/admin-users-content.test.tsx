@@ -26,10 +26,7 @@ vi.mock('@/components/users/use-pending-count', () => ({
   }),
 }));
 
-/**
- * The apartment list has its own tests; returning it synchronously keeps this
- * page test out of SWR Suspense, where a fetch can resolve mid-render.
- */
+/** The apartment list has its own tests; this page test needs no request. */
 const availableApartmentsMock = vi.hoisted(() => ({
   apartments: [] as unknown[],
   calls: vi.fn(),
@@ -38,7 +35,11 @@ const availableApartmentsMock = vi.hoisted(() => ({
 vi.mock('@/components/users/use-available-apartments', () => ({
   useAvailableApartments: (user: unknown) => {
     availableApartmentsMock.calls(user);
-    return { apartments: availableApartmentsMock.apartments, failed: false };
+    return {
+      apartments: availableApartmentsMock.apartments,
+      failed: false,
+      loading: false,
+    };
   },
 }));
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { startTransition, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 
 import type { ApartmentSummaryDto } from '@/lib/apartments/dto/apartment-dto';
@@ -17,18 +17,14 @@ type AvailableApartmentsKey = readonly [string, string, string];
 export interface AvailableApartments {
   apartments: ApartmentSummaryDto[];
   failed: boolean;
+  loading: boolean;
 }
-
-const NO_APARTMENTS_RESULT: AvailableApartments = {
-  apartments: NO_APARTMENTS,
-  failed: false,
-};
 
 async function fetchAvailableApartments([
   ,
   userId,
   search,
-]: AvailableApartmentsKey): Promise<AvailableApartments> {
+]: AvailableApartmentsKey): Promise<ApartmentSummaryDto[]> {
   const params = new URLSearchParams({
     page: '1',
     limit: String(APARTMENT_FETCH_LIMIT),
@@ -39,25 +35,17 @@ async function fetchAvailableApartments([
     params.set('search', search);
   }
 
-  try {
-    const data = await fetchJson<{ apartments: ApartmentSummaryDto[] }>(
-      `/api/admin/apartments?${params}`
-    );
-    return { apartments: data.apartments, failed: false };
-  } catch {
-    // A failure is shown in the list; it is not thrown into the Suspense boundary.
-    return { apartments: NO_APARTMENTS, failed: true };
-  }
+  const data = await fetchJson<{ apartments: ApartmentSummaryDto[] }>(
+    `/api/admin/apartments?${params}`
+  );
+  return data.apartments;
 }
 
 function useDebounced(value: string): string {
   const [debounced, setDebounced] = useState(value);
 
   useEffect(() => {
-    const timer = setTimeout(
-      () => startTransition(() => setDebounced(value)),
-      SEARCH_DEBOUNCE_MS
-    );
+    const timer = setTimeout(() => setDebounced(value), SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
   }, [value]);
 
@@ -66,7 +54,7 @@ function useDebounced(value: string): string {
 
 /**
  * Apartments the selected user can be assigned, filtered by the database.
- * Suspends until the first list for the user arrives; a new search keeps the
+ * `loading` is true only until the first list arrives; a new search keeps the
  * previous list on screen while the next one loads.
  */
 export function useAvailableApartments(
@@ -76,15 +64,19 @@ export function useAvailableApartments(
   const userId = selectedUser?.id;
   const debouncedSearch = useDebounced(search.trim());
 
-  const { data } = useSWR(
+  // Not SWR Suspense: it hands React a new promise on every render
+  const { data, error } = useSWR(
     userId
       ? (['available-apartments', userId, debouncedSearch] as const)
       : null,
     fetchAvailableApartments,
-    // Keep the previous list while a new search loads; without it, every new
-    // key suspends and the dialog falls back to the loading skeleton.
-    { ...SWR_OPTIONS, suspense: true, keepPreviousData: true }
+    { ...SWR_OPTIONS, keepPreviousData: true }
   );
+  const failed = error !== undefined;
 
-  return data ?? NO_APARTMENTS_RESULT;
+  return {
+    apartments: data ?? NO_APARTMENTS,
+    failed,
+    loading: Boolean(userId) && !data && !failed,
+  };
 }
