@@ -1,0 +1,139 @@
+/**
+ * E2E tests for import warnings and Decimal-preserved totals.
+ */
+
+import type { Page } from '@playwright/test';
+import * as fs from 'fs';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+import { expect, test } from '../../fixtures';
+import { FILE_INPUT_SELECTOR } from '../../utils/file-input';
+
+const FUND_LINE =
+  'W10001#TEST02-TEST02-00000-00001M#01/01/2025#31/01/2025#202501#3#Fundusz remontowy#50,4#m2#2,50#126,00';
+
+function buildImportFiles(fundLine: string) {
+  const importDir = fileURLToPath(
+    new URL('../../test-data/import/TEST02', import.meta.url)
+  );
+
+  return fs
+    .readdirSync(importDir)
+    .filter((name) => name.endsWith('.txt'))
+    .map((name) => {
+      const filePath = path.join(importDir, name);
+      let content = fs.readFileSync(filePath);
+
+      if (name === 'nal_czynsz.txt') {
+        const updated = content.toString('latin1').replace(FUND_LINE, fundLine);
+        content = Buffer.from(updated, 'latin1');
+      }
+
+      return {
+        name: `TEST02/${name}`,
+        mimeType: 'text/plain',
+        buffer: content,
+      };
+    });
+}
+
+async function importFiles(
+  adminPage: Page,
+  files: ReturnType<typeof buildImportFiles>
+) {
+  await adminPage.goto('/admin/import');
+
+  await expect(
+    adminPage.getByRole('heading', { name: /Import danych/i })
+  ).toBeVisible();
+
+  await adminPage.locator(FILE_INPUT_SELECTOR).waitFor({ state: 'attached' });
+
+  await adminPage.evaluate((selector) => {
+    const input = document.querySelector(selector);
+    input?.removeAttribute('webkitdirectory');
+    input?.removeAttribute('directory');
+  }, FILE_INPUT_SELECTOR);
+
+  await adminPage.locator(FILE_INPUT_SELECTOR).setInputFiles(files);
+
+  await Promise.all([
+    adminPage.waitForResponse(
+      (resp) =>
+        resp.url().includes('/api/admin/import') && resp.status() === 200,
+      { timeout: 30000 }
+    ),
+    adminPage.getByRole('button', { name: /^Importuj$/i }).click(),
+  ]);
+
+  await expect(adminPage.getByText(/Import zakończony pomyślnie/i)).toBeVisible(
+    { timeout: 15000 }
+  );
+}
+
+function naliczeniaStat(adminPage: Page, label: string) {
+  return adminPage
+    .locator('div.mb-6')
+    .filter({
+      has: adminPage.getByRole('heading', { name: 'Naliczenia', exact: true }),
+    })
+    .locator('div.rounded-lg')
+    .filter({ hasText: label })
+    .locator('div')
+    .first();
+}
+
+test.describe('Admin Import Decimal Precision', () => {
+  test('admin sees warning and preserved file total for sub-grosz import drift', async ({
+    adminPage,
+  }) => {
+    await importFiles(
+      adminPage,
+      buildImportFiles(FUND_LINE.replace('#2,50#', '#2,5005#'))
+    );
+    await expect(adminPage.getByText(/Ostrzeżenia \(1\)/i)).toBeVisible();
+    await expect(
+      adminPage.getByText(/Lokal TEST02-TEST02-00000-00001M, okres 202501/i)
+    ).toBeVisible();
+    await expect(adminPage.getByText(/różnica 0\.0252/i)).toBeVisible();
+
+    await adminPage.goto('/admin/apartments');
+    const hoaCard = adminPage.locator('.text-card-foreground').filter({
+      hasText: 'TEST02',
+    });
+    await expect(hoaCard).toBeVisible();
+    await hoaCard.getByRole('button', { name: /Zobacz mieszkania/i }).click();
+
+    const apartmentCard = adminPage
+      .locator('.text-card-foreground')
+      .filter({ hasText: 'ul. Importowa 2/1A' });
+    await apartmentCard
+      .getByRole('button', { name: /Zobacz szczegóły/i })
+      .click();
+
+    await expect(adminPage.getByText(/Naliczenia/i).first()).toBeVisible();
+    await adminPage
+      .getByText(/Styczeń 2025/i)
+      .first()
+      .click();
+
+    await expect(
+      adminPage.getByText(/Fundusz remontowy/i).first()
+    ).toBeVisible();
+    await expect(adminPage.getByText('2,50 zł').first()).toBeVisible();
+    await expect(adminPage.getByText('126,00 zł').first()).toBeVisible();
+  });
+
+  test('re-import with quantities beyond 4 decimals reports no updates', async ({
+    adminPage,
+  }) => {
+    const files = buildImportFiles(FUND_LINE.replace('#50,4#', '#50,400042#'));
+
+    await importFiles(adminPage, files);
+    await importFiles(adminPage, files);
+
+    await expect(naliczeniaStat(adminPage, 'Zaktualizowanych')).toHaveText('0');
+    await expect(naliczeniaStat(adminPage, 'Utworzonych')).toHaveText('0');
+  });
+});

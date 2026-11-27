@@ -85,7 +85,7 @@ async function seedBallots(
     if (!choices) continue;
 
     const ballotId = `${voting.id}-ballot-${apartment.number}`;
-    await client.query(loadSql('insert-visual-voting-ballot.sql'), [
+    await client.query(loadSql('insert-voting-ballot.sql'), [
       ballotId,
       voting.id,
       apartment.id,
@@ -93,7 +93,7 @@ async function seedBallots(
       BALLOT_TIME,
     ]);
     for (const [index, choice] of choices.entries()) {
-      await client.query(loadSql('insert-visual-voting-vote.sql'), [
+      await client.query(loadSql('insert-voting-vote.sql'), [
         `${ballotId}-${index}`,
         ballotId,
         `${voting.id}-q${index}`,
@@ -106,13 +106,13 @@ async function seedBallots(
 export async function seedVisualVotings(client: pg.Client, hoaId: string) {
   const apartments = (
     await client.query<{ id: string; userId: string; number: string }>(
-      loadSql('select-visual-voter-apartments.sql'),
+      loadSql('select-voter-apartments.sql'),
       [hoaId]
     )
   ).rows;
 
   for (const voting of VOTINGS) {
-    await client.query(loadSql('insert-visual-voting.sql'), [
+    await client.query(loadSql('insert-voting.sql'), [
       voting.id,
       hoaId,
       voting.title,
@@ -122,7 +122,7 @@ export async function seedVisualVotings(client: pg.Client, hoaId: string) {
       voting.createdAt,
     ]);
     for (const [index, text] of voting.questions.entries()) {
-      await client.query(loadSql('insert-visual-voting-question.sql'), [
+      await client.query(loadSql('insert-voting-question.sql'), [
         `${voting.id}-q${index}`,
         voting.id,
         index,

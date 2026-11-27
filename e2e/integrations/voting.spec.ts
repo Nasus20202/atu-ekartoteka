@@ -1,10 +1,15 @@
 /**
- * An admin runs a voting end to end: creates it, publishes it, an owner votes
- * with the emailed one-time link, and only the admin sees the results.
+ * The emails of a voting: the admin's notice, and the one-time link that casts
+ * an owner's vote.
  */
 
+import type { APIRequestContext, Page } from '@playwright/test';
+
 import { expect, test } from '../fixtures';
-import { createVotingTenant } from '../utils/create-voting-tenant';
+import {
+  createVotingTenant,
+  type VotingTenant,
+} from '../utils/create-voting-tenant';
 import { expectDeliveredEmail } from '../utils/email-assertions';
 import {
   extractLink,
@@ -15,52 +20,88 @@ import { ADMIN_EMAIL, ADMIN_PASSWORD } from '../utils/test-credentials';
 import {
   answerQuestion,
   apartmentBallot,
-  CLOSE_VOTING,
-  confirmAdminAction,
   countBallots,
   createDraftVoting,
   publishVoting,
-  reopen,
 } from '../utils/voting';
+import {
+  createVotingHoa,
+  deleteVotingHoa,
+  type VotingHoa,
+} from '../utils/voting-hoa';
 
 const CONFIRMATION_SUBJECT = 'Potwierdź swój głos';
 const NOTIFICATION_SUBJECT = 'Nowe głosowanie w Twojej wspólnocie';
 const CONFIRM_PATH = '/dashboard/votings/confirm/';
+const QUESTION = 'Czy zgadzasz się na remont dachu?';
 
-test('owners vote with an emailed link and only the admin sees results', async ({
-  page,
-  browser,
-  request,
-}) => {
-  test.slow();
-  const tenant = await createVotingTenant(2);
-  const title = `Uchwała E2E ${Date.now()}`;
+test.describe('Voting emails', () => {
+  let hoa: VotingHoa;
 
-  await loginWithTurnstile(page, ADMIN_EMAIL, ADMIN_PASSWORD);
-  const votingId = await createDraftVoting(page, {
-    title,
-    questions: ['Czy zgadzasz się na remont dachu?', 'Czy wybieramy firmę A?'],
+  // The notice goes to every owner of the association, so none is shared
+  test.beforeEach(async () => {
+    hoa = await createVotingHoa();
   });
-  await expect(page.getByText('Wersja robocza')).toBeVisible();
 
-  // A draft stays invisible to owners
-  const ownerContext = await browser.newContext();
-  const owner = await ownerContext.newPage();
-  try {
-    await loginWithTurnstile(owner, tenant.email, tenant.password);
-    await owner.goto('/dashboard/votings');
-    await expect(owner.getByText(title)).toBeHidden();
+  test.afterEach(async () => {
+    await deleteVotingHoa(hoa);
+  });
 
-    // Publishing makes it visible and the admin can notify the owner
-    await publishVoting(page);
+  /** A published voting and its owner of two apartments. */
+  async function publishedVoting(admin: Page) {
+    const tenant = await createVotingTenant(2, {
+      hoaExternalId: hoa.externalId,
+    });
+    const title = `Uchwała E2E ${Date.now()}`;
+    await loginWithTurnstile(admin, ADMIN_EMAIL, ADMIN_PASSWORD);
+    const votingId = await createDraftVoting(admin, {
+      hoaName: hoa.externalId,
+      title,
+      questions: [QUESTION],
+    });
+    await publishVoting(admin);
+    return { tenant, title, votingId };
+  }
+
+  /** Sends the filled in ballot and returns the email with its link. */
+  async function requestLink(
+    owner: Page,
+    request: APIRequestContext,
+    { email }: VotingTenant,
+    contains: string
+  ) {
+    await owner.getByRole('button', { name: /Dalej/ }).click();
+    await expect(owner.getByText('Sprawdź swoją skrzynkę email')).toBeVisible();
+    return waitForMail(request, email, {
+      subject: CONFIRMATION_SUBJECT,
+      contains,
+    });
+  }
+
+  async function confirm(owner: Page, link: string) {
+    await owner.goto(link);
+    await owner.getByRole('button', { name: 'Potwierdź i zagłosuj' }).click();
+    await expect(owner.getByText('Dziękujemy, głos oddany')).toBeVisible();
+  }
+
+  test('an owner follows the notice and votes with the emailed link', async ({
+    page,
+    browser,
+    request,
+  }) => {
+    test.slow();
+    const { tenant, title, votingId } = await publishedVoting(page);
+
     await page.getByRole('button', { name: 'Powiadom użytkowników' }).click();
-    await page.getByRole('checkbox', { name: tenant.name }).check();
-    await page.getByRole('button', { name: /^Wyślij/ }).click();
-    await expect(page.getByText(/Wysłano: \d+/)).toBeVisible();
-    const notification = await waitForMail(request, tenant.email, {
+    await expect(
+      page.getByRole('checkbox', { name: tenant.name })
+    ).toBeChecked();
+    await page.getByRole('button', { name: 'Wyślij (1)' }).click();
+    await expect(page.getByText('Wysłano: 1')).toBeVisible();
+    const notice = await waitForMail(request, tenant.email, {
       subject: NOTIFICATION_SUBJECT,
     });
-    expectDeliveredEmail(notification, {
+    expectDeliveredEmail(notice, {
       to: tenant.email,
       subject: NOTIFICATION_SUBJECT,
       both: [title, 'Prosimy o oddanie głosu'],
@@ -68,116 +109,74 @@ test('owners vote with an emailed link and only the admin sees results', async (
       linkPath: `/dashboard/votings/${votingId}`,
     });
 
-    // The owner sees the navbar badge and the dashboard card
-    await owner.goto('/dashboard');
-    await expect(
-      owner
-        .getByRole('status', { name: /czekające na Twój głos: [1-9]/ })
-        .first()
-    ).toBeVisible();
-    await expect(
-      owner.getByTestId(`dashboard-voting-${votingId}`).getByRole('link', {
-        name: 'Zagłosuj',
-      })
-    ).toBeVisible();
+    const context = await browser.newContext();
+    const owner = await context.newPage();
+    try {
+      await loginWithTurnstile(owner, tenant.email, tenant.password);
+      await owner.goto(extractLink(notice, `/dashboard/votings/${votingId}`));
+      await answerQuestion(apartmentBallot(owner, 'V1'), 1, 'Za');
+      await answerQuestion(apartmentBallot(owner, 'V2'), 1, 'Przeciw');
+      const mail = await requestLink(owner, request, tenant, '/V2');
+      const link = extractLink(mail, CONFIRM_PATH);
+      expectDeliveredEmail(mail, {
+        to: tenant.email,
+        subject: CONFIRMATION_SUBJECT,
+        both: [title, '/V1', '/V2', `1. ${QUESTION} – Przeciw`],
+        html: ['Potwierdź głos'],
+        linkPath: new URL(link).pathname,
+      });
+      // Nothing is stored until the link is opened and confirmed
+      expect(await countBallots(votingId)).toBe(0);
 
-    // Each apartment answers for itself; an unfinished one holds the form back
-    await owner.goto(`/dashboard/votings/${votingId}`);
-    await expect(owner.getByText(/Każdy lokal głosuje osobno/)).toBeVisible();
-    const next = owner.getByRole('button', { name: /Dalej/ });
-    await expect(next).toBeDisabled();
-    const first = apartmentBallot(owner, 'V1');
-    const second = apartmentBallot(owner, 'V2');
-    await answerQuestion(first, 1, 'Za');
-    await answerQuestion(first, 2, 'Przeciw');
-    await expect(next).toBeEnabled();
-    await answerQuestion(second, 1, 'Przeciw');
-    await expect(next).toBeDisabled();
-    await answerQuestion(second, 2, 'Przeciw');
-    await next.click();
+      // Opening the link only shows the answers; the button casts the vote
+      await owner.goto(link);
+      await expect(
+        owner.getByRole('heading', { name: /^Lokal .*\/V[12]$/ })
+      ).toHaveCount(2);
+      expect(await countBallots(votingId)).toBe(0);
+      await confirm(owner, link);
+      expect(await countBallots(votingId)).toBe(2);
 
-    // Nothing is stored until the link is opened and confirmed
-    await expect(owner.getByText('Sprawdź swoją skrzynkę email')).toBeVisible();
-    expect(await countBallots(votingId)).toBe(0);
+      // The link works once
+      await owner.goto(link);
+      await expect(
+        owner.getByText(/Ten link jest nieprawidłowy/)
+      ).toBeVisible();
+    } finally {
+      await context.close();
+    }
+  });
 
-    const mail = await waitForMail(request, tenant.email, {
-      subject: CONFIRMATION_SUBJECT,
-    });
-    const link = extractLink(mail, CONFIRM_PATH);
-    expectDeliveredEmail(mail, {
-      to: tenant.email,
-      subject: CONFIRMATION_SUBJECT,
-      both: [title, '1. Czy zgadzasz się na remont dachu? – Przeciw'],
-      html: ['Potwierdź głos'],
-      linkPath: new URL(link).pathname,
-    });
+  test('an owner votes one apartment now and the other later', async ({
+    page,
+    browser,
+    request,
+  }) => {
+    test.slow();
+    const { tenant, votingId } = await publishedVoting(page);
+    const context = await browser.newContext();
+    const owner = await context.newPage();
+    try {
+      await loginWithTurnstile(owner, tenant.email, tenant.password);
 
-    // Opening the link only shows the answers; the button casts the vote
-    await owner.goto(link);
-    await expect(
-      owner.getByRole('heading', { name: /^Lokal .*\/V[12]$/ })
-    ).toHaveCount(2);
-    expect(await countBallots(votingId)).toBe(0);
-    await owner.getByRole('button', { name: 'Potwierdź i zagłosuj' }).click();
-    await expect(owner.getByText('Dziękujemy, głos oddany')).toBeVisible();
-    expect(await countBallots(votingId)).toBe(2);
-
-    // The link works once
-    await owner.goto(link);
-    await expect(owner.getByText(/Ten link jest nieprawidłowy/)).toBeVisible();
-    await owner.goto(`/dashboard/votings/${votingId}`);
-
-    // The vote is final: no form, own answers, no results while active
-    await reopen(owner);
-    await expect(
-      owner.getByText(/Twój głos został oddany i potwierdzony/)
-    ).toHaveCount(2);
-    await expect(owner.getByRole('button', { name: /Dalej/ })).toBeHidden();
-    await expect(owner.getByRole('progressbar')).toHaveCount(0);
-    await owner.goto('/dashboard');
-    await expect(
-      owner.getByTestId(`dashboard-voting-${votingId}`).getByRole('link', {
-        name: 'Zobacz',
-      })
-    ).toBeVisible();
-    await owner.goto(`/dashboard/votings/${votingId}`);
-
-    // The admin sees who voted what, then closes the voting
-    await reopen(page);
-    await page.getByRole('tab', { name: 'Oddane głosy' }).click();
-    // The voters render as a card list and a table, only one is visible
-    const visible = { visible: true };
-    await expect(page.getByText(tenant.email).filter(visible)).toHaveCount(2);
-    await expect(page.getByText('1. Za').filter(visible)).toHaveCount(1);
-    await expect(page.getByText('1. Przeciw').filter(visible)).toHaveCount(1);
-    await expect(page.getByText('2. Przeciw').filter(visible)).toHaveCount(2);
-    await confirmAdminAction(page, CLOSE_VOTING);
-    await expect(
-      page.getByRole('button', { name: 'Zarchiwizuj' })
-    ).toBeVisible();
-
-    // Results are the admin's: the apartments split on the first question
-    await page.getByRole('tab', { name: 'Wyniki' }).click();
-    await expect(page.getByText('1 (50%)')).toHaveCount(2);
-    await expect(page.getByText('2 (100%)')).toHaveCount(1);
-
-    // The owner sees that it ended, and their own answers only
-    await reopen(owner);
-    await expect(
-      owner.getByText(/Głosowanie zostało zakończone/)
-    ).toBeVisible();
-    await expect(
-      owner.getByText(/Twój głos został oddany i potwierdzony/)
-    ).toHaveCount(2);
-    await expect(owner.getByRole('progressbar')).toHaveCount(0);
-
-    // A closed voting leaves the dashboard
-    await owner.goto('/dashboard');
-    await expect(owner.getByRole('heading', { name: /^Witaj/ })).toBeVisible();
-    await expect(
-      owner.getByTestId(`dashboard-voting-${votingId}`)
-    ).toBeHidden();
-  } finally {
-    await ownerContext.close();
-  }
+      // Each email names only the apartment it will cast a vote for
+      for (const [apartment, other, stored] of [
+        ['/V1', '/V2', 1],
+        ['/V2', '/V1', 2],
+      ] as const) {
+        await owner.goto(`/dashboard/votings/${votingId}`);
+        await answerQuestion(
+          apartmentBallot(owner, apartment.slice(1)),
+          1,
+          'Za'
+        );
+        const mail = await requestLink(owner, request, tenant, apartment);
+        expect(mail.text).not.toContain(other);
+        await confirm(owner, extractLink(mail, CONFIRM_PATH));
+        expect(await countBallots(votingId)).toBe(stored);
+      }
+    } finally {
+      await context.close();
+    }
+  });
 });

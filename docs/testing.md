@@ -32,6 +32,10 @@ The suites sign in as seeded users and click through the real app, started with
 `next start` on a production build. They catch what unit tests cannot: broken
 pages, wrong redirects, access rules, layout changes.
 
+Specs are grouped by who uses the page and then by topic: `e2e/auth/`,
+`e2e/dashboard/`, and `e2e/admin/<topic>/`. `e2e/integrations/` holds only the
+flows that need a mocked service, such as email.
+
 ### Running
 
 You need PostgreSQL, and `DATABASE_URL` in `.env` pointing at a server where
