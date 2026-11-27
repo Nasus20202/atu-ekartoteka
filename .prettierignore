@@ -13,6 +13,7 @@ e2e/fixtures/test-data
 playwright-report
 test-results
 .opencode
+.agents
 perf-results
 # Prisma checksums applied migrations, so their SQL must not change
 prisma/migrations
