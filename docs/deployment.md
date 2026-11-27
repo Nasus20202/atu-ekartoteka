@@ -25,6 +25,10 @@ Edit `.env`. At minimum:
 - `SMTP_*`, `EMAIL_FROM` - so the app can send email. See
   [Configuration](configuration.md).
 
+Captcha (`TURNSTILE_*`) and Google sign-in (`GOOGLE_*`) are off while their
+variables are empty. Set the Turnstile keys on a public installation, so
+registration, login and password reset are protected from bots.
+
 Then:
 
 ```bash
