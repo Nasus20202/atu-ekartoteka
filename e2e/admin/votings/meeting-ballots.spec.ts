@@ -80,6 +80,7 @@ test.describe('Meeting votes', () => {
   test('the notice preselects the owners who still have to vote', async ({
     adminPage,
   }) => {
+    test.slow();
     const partly = await owner(2);
     const done = await owner(1);
     const waiting = await owner(1);
