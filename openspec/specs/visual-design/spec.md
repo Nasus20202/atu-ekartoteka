@@ -147,6 +147,28 @@ All interactive elements SHALL have visible focus, hover, and disabled states.
 
 ---
 
+### Requirement: File Pickers In Polish
+
+File pickers SHALL show their own Polish button and selection text instead of the browser's native control, which is drawn in the browser's language. The native input SHALL stay on top of that text, transparent, so that clicking, dropping files and keyboard focus keep working. The selection text SHALL describe the files the page will send.
+
+#### Scenario: Nothing chosen
+
+- **GIVEN** the admin import page
+- **WHEN** no folder and no PDF file is chosen
+- **THEN** the folder picker shows `Wybierz folder` and `Nie wybrano folderu`, and the PDF picker shows `Wybierz pliki` and `Nie wybrano plików`
+
+#### Scenario: Folder chosen
+
+- **GIVEN** the admin import page
+- **WHEN** the admin chooses the folder `HOA01` with 4 files
+- **THEN** the folder picker shows `HOA01 · plików: 4`
+
+#### Scenario: PDF files chosen
+
+- **GIVEN** the admin import page
+- **WHEN** the admin chooses one PDF file, then several
+- **THEN** the picker shows the file name, then `Wybrano plików:` with their number
+
 ### Requirement: Feedback and alerts
 
 User feedback SHALL use the `Alert` component or inline state — not toast libraries.

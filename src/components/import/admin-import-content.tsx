@@ -20,13 +20,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
+import { FileInput } from '@/components/ui/file-input';
 import { Label } from '@/components/ui/label';
-
-const directoryInputProps = {
-  webkitdirectory: '',
-  directory: '',
-} as React.InputHTMLAttributes<HTMLInputElement>;
 
 export function AdminImportContent() {
   const { dbStats, statsLoading, associations, fetchStats } =
@@ -66,21 +61,16 @@ export function AdminImportContent() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="files">Folder z danymi</Label>
-            <Input
+            <FileInput
               id="files"
-              type="file"
+              files={files}
+              directory
               accept=".txt"
               onChange={handleFileChange}
               disabled={loading}
               multiple
               suppressHydrationWarning
-              {...directoryInputProps}
             />
-            {files && (
-              <p className="text-sm text-muted-foreground">
-                Wybrano plików: {files.length}
-              </p>
-            )}
           </div>
 
           <div className="flex items-center space-x-2">
