@@ -28,7 +28,7 @@ export function VoteConfirmationEmail({
         <StackedDetail label="Kod potwierdzający" value={code} last />
       </DetailsBox>
       <Note>
-        Kod jest ważny przez {validForMinutes} minut i można go użyć tylko raz.
+        {`Kod jest ważny przez ${validForMinutes} minut i można go użyć tylko raz.`}
       </Note>
       <Note>
         Jeśli nie oddawałeś głosu, zignoruj tę wiadomość i nikomu nie podawaj

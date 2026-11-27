@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  toQuestionResults,
-  toTenantVotingDto,
-  toVoterDto,
-} from '@/lib/voting/dto/voting-dto';
+import { toTenantVotingDto } from '@/lib/voting/dto/tenant-voting-dto';
+import { toQuestionResults, toVoterDto } from '@/lib/voting/dto/voting-dto';
 import { VoteChoice, VotingStatus } from '@/lib/voting/types/voting';
 
 const questions = [

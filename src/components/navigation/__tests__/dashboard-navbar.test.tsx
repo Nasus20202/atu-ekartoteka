@@ -33,6 +33,31 @@ import { DashboardNavbar } from '@/components/navigation/dashboard-navbar';
 
 describe('DashboardNavbar', () => {
   describe('Dashboard Mode', () => {
+    it('hides the votings link when no count is given', () => {
+      render(<DashboardNavbar mode="dashboard" />);
+
+      expect(screen.queryByText('Głosowania')).not.toBeInTheDocument();
+    });
+
+    it('links to the votings without a badge when none wait for a vote', () => {
+      render(<DashboardNavbar mode="dashboard" pendingVotings={0} />);
+
+      expect(
+        screen.getAllByRole('link', { name: /Głosowania/ })[0]
+      ).toHaveAttribute('href', '/dashboard/votings');
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    });
+
+    it('shows a bell badge with the number of votings waiting for a vote', () => {
+      render(<DashboardNavbar mode="dashboard" pendingVotings={3} />);
+
+      expect(
+        screen.getAllByRole('status', {
+          name: 'Głosowania czekające na Twój głos: 3',
+        }).length
+      ).toBeGreaterThan(0);
+    });
+
     it('renders navbar with profile button', () => {
       render(<DashboardNavbar mode="dashboard" isAdmin={false} />);
       expect(screen.getByText('ATU Ekartoteka')).toBeInTheDocument();

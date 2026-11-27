@@ -7,6 +7,8 @@ import {
   newUserAdminMessage,
   passwordResetMessage,
   verificationMessage,
+  voteConfirmationMessage,
+  votingNotificationMessage,
 } from '@/lib/platform/email/email-messages';
 
 const APP_URL = 'https://ekartoteka.example.com';
@@ -24,6 +26,16 @@ const MESSAGES: Record<string, () => Promise<EmailMessage>> = {
   accountApproved: () => accountApprovedMessage('Anna'),
   accountActivation: () =>
     accountActivationMessage('anna@example.com', 'Temp-Pass-1', 'Anna'),
+  voteConfirmation: () =>
+    voteConfirmationMessage('042917', 'Remont dachu', 15, 'Anna'),
+  votingNotification: () =>
+    votingNotificationMessage(
+      'v1',
+      'Remont dachu',
+      'Wspólnota Lipowa',
+      '1 grudnia 2026 12:00',
+      'Anna'
+    ),
   newUserAdmin: () =>
     newUserAdminMessage('anna@example.com', 'Anna Nowak', '2026-01-02 10:00'),
 };

@@ -10,12 +10,14 @@ import {
   Upload,
   User,
   Users,
+  Vote,
   X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
 import { LogoutButton } from '@/components/account/logout-button';
+import { NavBadge } from '@/components/navigation/nav-badge';
 import { NAVBAR_BREAKPOINT_CLASSES } from '@/components/navigation/navbar-breakpoints';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { Button } from '@/components/ui/button';
@@ -30,6 +32,7 @@ type NavItem = {
   name: string;
   href: string;
   icon: LucideIcon;
+  badge?: number;
 };
 
 type NavbarMode = 'dashboard' | 'admin';
@@ -37,6 +40,8 @@ type NavbarMode = 'dashboard' | 'admin';
 type DashboardNavbarProps = {
   mode?: NavbarMode;
   isAdmin?: boolean;
+  /** Votings waiting for the user's vote; undefined hides the votings link. */
+  pendingVotings?: number;
 };
 
 const adminNavigation: NavItem[] = [
@@ -44,6 +49,7 @@ const adminNavigation: NavItem[] = [
   { name: 'Mieszkania', href: '/admin/apartments', icon: Building2 },
   { name: 'Import', href: '/admin/import', icon: Upload },
   { name: 'Użytkownicy', href: '/admin/users', icon: Users },
+  { name: 'Głosowania', href: '/admin/votings', icon: Vote },
 ];
 
 const dashboardAdminNavigation: NavItem[] = [
@@ -53,16 +59,26 @@ const dashboardAdminNavigation: NavItem[] = [
 export function DashboardNavbar({
   mode = 'dashboard',
   isAdmin = false,
+  pendingVotings,
 }: DashboardNavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   // Determine navigation items based on mode
+  const votingsItem: NavItem[] =
+    mode === 'dashboard' && pendingVotings !== undefined
+      ? [
+          {
+            name: 'Głosowania',
+            href: '/dashboard/votings',
+            icon: Vote,
+            badge: pendingVotings,
+          },
+        ]
+      : [];
   const navigationItems =
     mode === 'admin'
       ? adminNavigation
-      : isAdmin
-        ? dashboardAdminNavigation
-        : [];
+      : [...votingsItem, ...(isAdmin ? dashboardAdminNavigation : [])];
 
   const showProfileLink = mode === 'dashboard';
   const breakpoint = NAVBAR_BREAKPOINT_CLASSES[mode];
@@ -103,6 +119,7 @@ export function DashboardNavbar({
                     >
                       <Icon className="h-4 w-4" />
                       {item.name}
+                      <NavBadge count={item.badge} />
                     </Link>
                   );
                 })}
@@ -161,6 +178,7 @@ export function DashboardNavbar({
                     <Button variant="ghost" className="w-full justify-start">
                       <Icon className="mr-2 h-4 w-4" />
                       {item.name}
+                      <NavBadge count={item.badge} />
                     </Button>
                   </Link>
                 );
