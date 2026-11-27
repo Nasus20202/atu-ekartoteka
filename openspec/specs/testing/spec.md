@@ -176,13 +176,14 @@ The system SHALL have end-to-end tests covering all primary user flows.
 
 - **GIVEN** the admin E2E suite
 - **WHEN** it runs
-- **THEN** it covers: listing and searching users, approving/rejecting users, listing/searching apartments, assigning apartments to users, and uploading import files
+- **THEN** it covers: listing and searching users, approving/rejecting users, listing/searching apartments, renaming an association, deactivating and activating an apartment, assigning apartments to users, and uploading import files
 
 #### Scenario: Tenant dashboard flows
 
 - **GIVEN** the dashboard E2E suite
 - **WHEN** it runs
 - **THEN** it covers: viewing assigned apartments, browsing charges and payments per apartment, and updating the user profile
+- **AND** an apartment of another resident is refused on its charges and payments pages, offers no PDF, is missing from the lists, and sends a signed-out visitor to the login page
 
 #### Scenario: Settlement import flows
 
@@ -359,7 +360,7 @@ E2E specs in `e2e/integrations/` SHALL exercise SMTP, Google sign-in and Turnsti
 #### Scenario: Emails are delivered
 
 - **GIVEN** the integrations app with SMTP pointing at the mock
-- **WHEN** a user registers, requests a password reset, or an admin approves an account
+- **WHEN** a user registers, asks for the verification email again, requests a password reset, or an admin approves an account
 - **THEN** the spec reads the captured message for that recipient and follows its link to complete the flow
 
 #### Scenario: Voting emails

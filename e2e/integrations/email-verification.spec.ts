@@ -1,12 +1,15 @@
 /**
  * Registration sends real emails to the SMTP mock: the verification link for
- * the user and the approval request for the admins.
+ * the user and the approval request for the admins. The link can be resent.
  */
 
 import { expect, test } from '../fixtures';
+import { createUnverifiedUser } from '../utils/create-unverified-user';
 import { expectDeliveredEmail } from '../utils/email-assertions';
 import {
   extractLink,
+  listMail,
+  loginWithTurnstile,
   stubTurnstileWidget,
   TURNSTILE_VALID_TOKEN,
   waitForMail,
@@ -75,5 +78,45 @@ test.describe('Registration emails', () => {
       html: ['Otwórz panel administracyjny'],
       linkPath: '/admin/users',
     });
+  });
+});
+
+test.describe('Resent verification email', () => {
+  test('is sent once, and its link verifies the address', async ({
+    page,
+    request,
+  }) => {
+    const email = `resend-${Date.now()}@e2e-test.com`;
+    await createUnverifiedUser(email);
+    await loginWithTurnstile(page, email, E2E_PASSWORD);
+    const banner = page.getByText('Twój adres email wymaga weryfikacji');
+    const resend = page.getByRole('button', { name: 'Wyślij ponownie' });
+
+    await resend.click();
+    await expect(
+      page.getByText('Email weryfikacyjny został wysłany')
+    ).toBeVisible();
+    const mail = await waitForMail(request, email, {
+      subject: VERIFICATION_SUBJECT,
+    });
+    expectDeliveredEmail(mail, {
+      to: email,
+      subject: VERIFICATION_SUBJECT,
+      both: ['Dziękujemy za rejestrację'],
+      linkPath: '/verify-email?token=',
+    });
+
+    await resend.click();
+    await expect(
+      page.getByText(/Poczekaj \d+ min przed ponownym wysłaniem/)
+    ).toBeVisible();
+    expect(await listMail(request, email)).toHaveLength(1);
+
+    await page.goto(extractLink(mail, '/verify-email'));
+    await expect(page.getByText('Email zweryfikowany!')).toBeVisible();
+
+    await page.goto('/dashboard');
+    await expect(page.getByRole('heading').first()).toBeVisible();
+    await expect(banner).toHaveCount(0);
   });
 });
