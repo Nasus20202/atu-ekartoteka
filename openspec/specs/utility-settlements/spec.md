@@ -591,10 +591,16 @@ The tenant and admin views SHALL make every stored value of a settlement readabl
 
 ### Requirement: Settlements In Database Statistics
 
-The database statistics on `/admin/import` SHALL show the numbers of utility settlements, meter readings and annual cost settlements, and SHALL be refreshed after a settlement import.
+The database statistics on `/admin/import` SHALL show the numbers of utility settlements, meter readings and annual cost settlements as rows of the summary table, with their date ranges and last changes, and SHALL be refreshed after a settlement import. Meter readings have no change date of their own and SHALL show a dash in the last change column. The per-association totals of the same section SHALL count the utility settlements and annual cost settlements of each association.
 
 #### Scenario: Counts after an import
 
 - **GIVEN** an admin on the import page
 - **WHEN** a settlement import finishes
 - **THEN** the statistics are read again and include the imported records
+
+#### Scenario: Settlement range
+
+- **GIVEN** stored utility settlements whose periods run from 1 May 2024 to 30 September 2025
+- **WHEN** the statistics are shown
+- **THEN** the utility settlements row shows the range `01.05.2024 – 30.09.2025`

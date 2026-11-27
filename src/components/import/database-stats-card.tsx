@@ -1,37 +1,27 @@
 import { Database } from 'lucide-react';
 
-import type { DatabaseStats } from '@/components/import/types';
+import { AssociationStatsSection } from '@/components/import/association-stats-section';
+import { DatabaseStatsList } from '@/components/import/database-stats-list';
+import { DatabaseStatsTable } from '@/components/import/database-stats-table';
+import { ResponsiveStatsView } from '@/components/import/responsive-stats-view';
+import { SUMMARY_TABLE_QUERY } from '@/components/import/stats-breakpoints';
+import type { AssociationStatsState } from '@/components/import/types';
+import { REVEAL_CLASS } from '@/components/layout/reveal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-
-const COLUMNS: Array<{ key: keyof DatabaseStats; label: string }> = [
-  { key: 'hoa', label: 'Wspólnoty' },
-  { key: 'apartments', label: 'Mieszkania' },
-  { key: 'charges', label: 'Naliczenia' },
-  { key: 'notifications', label: 'Powiadomienia' },
-  { key: 'payments', label: 'Wpłaty' },
-  { key: 'users', label: 'Użytkownicy' },
-  { key: 'utilitySettlements', label: 'Rozliczenia mediów' },
-  { key: 'meterReadings', label: 'Odczyty liczników' },
-  { key: 'annualSettlements', label: 'Koszty rzeczywiste' },
-];
+import type { DatabaseStatsDto } from '@/lib/admin/dto/database-stats-dto';
+import { cn } from '@/lib/shared/utils';
 
 interface DatabaseStatsCardProps {
-  dbStats: DatabaseStats | null;
+  dbStats: DatabaseStatsDto | null;
   statsLoading: boolean;
+  associations: AssociationStatsState;
 }
 
 export function DatabaseStatsCard({
   dbStats,
   statsLoading,
+  associations,
 }: DatabaseStatsCardProps) {
   return (
     <Card className="mb-6">
@@ -48,25 +38,13 @@ export function DatabaseStatsCard({
             <Skeleton className="h-6 w-full" />
           </div>
         ) : dbStats ? (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  {COLUMNS.map(({ key, label }) => (
-                    <TableHead key={key}>{label}</TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow>
-                  {COLUMNS.map(({ key }) => (
-                    <TableCell key={key} className="font-medium">
-                      {dbStats[key]}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              </TableBody>
-            </Table>
+          <div className={cn(REVEAL_CLASS, 'space-y-4')}>
+            <ResponsiveStatsView
+              tableQuery={SUMMARY_TABLE_QUERY}
+              table={<DatabaseStatsTable stats={dbStats} />}
+              list={<DatabaseStatsList stats={dbStats} />}
+            />
+            <AssociationStatsSection associations={associations} />
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">

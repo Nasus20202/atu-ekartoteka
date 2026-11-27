@@ -29,7 +29,8 @@ const directoryInputProps = {
 } as React.InputHTMLAttributes<HTMLInputElement>;
 
 export function AdminImportContent() {
-  const { dbStats, statsLoading, fetchStats } = useDatabaseStats();
+  const { dbStats, statsLoading, associations, fetchStats } =
+    useDatabaseStats();
   const {
     files,
     loading,
@@ -47,7 +48,11 @@ export function AdminImportContent() {
     <Page maxWidth="4xl">
       <PageHeader title="Import danych" showBackButton={false} />
 
-      <DatabaseStatsCard dbStats={dbStats} statsLoading={statsLoading} />
+      <DatabaseStatsCard
+        dbStats={dbStats}
+        statsLoading={statsLoading}
+        associations={associations}
+      />
 
       <ValidateDatabaseCard />
 

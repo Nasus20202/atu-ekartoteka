@@ -437,6 +437,137 @@ The system SHALL let an administrator run, from the import page, the import vali
 - **WHEN** a non-admin calls the validation endpoint
 - **THEN** the request is rejected as unauthorized
 
+### Requirement: Database Statistics
+
+The import page SHALL show the database statistics as a summary with one row per data type, in the columns `Dane`, `Liczba`, `Zakres` and `Ostatnia zmiana`. Counts SHALL be formatted with Polish digit grouping. The rows are the HOAs, the apartments (with the number of active apartments under the count), the users, the charges, the notifications, the payments, the utility settlements, the meter readings and the annual cost settlements. The range SHALL run from the oldest to the newest period or date of the records: charge periods are shown as months (`MM.YYYY`), payments, utility settlements, meter readings and annual cost settlements as days (`DD.MM.YYYY`). The last change SHALL be the newest `updatedAt` shown as a date. A data type without such a field SHALL show a dash. The statistics SHALL be computed with database aggregates and counts. The summary SHALL be returned by `GET /api/admin/stats` without any query parameter.
+
+The charge figures SHALL be read with one count and three indexed lookups: the first and the last charge period, each selecting only the period, and the newest `updatedAt`, selecting only that field. The charge table SHALL NOT be aggregated as a whole. The charge figures SHALL be the same as an aggregate would give, with null where there are no charges. At most ten database queries SHALL run at once, the size of the connection pool: the nine other summary queries run together and the four charge queries after them.
+
+Below the summary, a section `Według wspólnot` SHALL show, closed by default, one row per association ordered by name, with its counts of apartments, charges, notifications, payments, utility settlements and annual cost settlements, the first day of its newest charge period, and its apartments, charges and notifications data dates, each labelled and shown as a dash when unknown, or as one line `Dane na dzień` when the three are the same. The column headers SHALL be short, with the full name of an abbreviated column available as its title. The data-as-of dates SHALL be shown as a muted block under the association name.
+
+The per-association totals are not part of the summary request. They SHALL be requested with `GET /api/admin/stats?associations=true` the first time the section is opened. Closing the section and opening it again SHALL NOT send a new request. Only the exact value `true` includes them: any other value, or a missing parameter, returns the summary alone. While they load, the section SHALL show its own skeleton. If the first load fails, the section SHALL show the message `Nie udało się pobrać statystyk wspólnot`. If a later refresh fails, the rows already shown SHALL stay. In both cases, and while the associations load, the summary already shown SHALL stay on screen.
+
+The per-association totals SHALL be computed with a fixed number of database queries, whatever the number of associations. The database groups the records per apartment, and the application combines the groups into one row per association, because Prisma cannot group by a field of a related record. Each apartment's counts are attributed to its association through the apartment list. The summary queries and the per-association queries SHALL run one group after the other, so they do not compete for the database connection pool.
+
+Only one layout SHALL be rendered at a time, chosen by the viewport and animated when it changes. The summary SHALL be a table from `sm` (640 px) and a stacked card per data type below it. The association table SHALL be shown from `lg` (1024 px), where all its columns fit without horizontal scrolling inside the 4xl page, and a stacked card per association below it. No table SHALL scroll horizontally on any viewport, and the page body SHALL NOT scroll horizontally.
+
+After an import the summary SHALL be read again. The per-association totals SHALL be read again only if they have been requested, so that an import does not load a section that the admin has not opened.
+
+#### Scenario: Summary rows
+
+- **GIVEN** stored charges for the periods January 2025 to December 2025
+- **WHEN** the import page is shown
+- **THEN** the charges row shows the count and the range `01.2025 – 12.2025`, and the apartments row shows the count with `aktywne: N` under it
+
+#### Scenario: Data type without a period or change date
+
+- **GIVEN** no notifications, or meter readings without a change date
+- **WHEN** the import page is shown
+- **THEN** the range and last change cells of those rows show a dash
+
+#### Scenario: Summary request on load
+
+- **GIVEN** an admin on the import page
+- **WHEN** the page loads
+- **THEN** one request, `GET /api/admin/stats` without a query parameter, is made, and no per-association request is made
+
+#### Scenario: Association section closed by default
+
+- **GIVEN** an admin on the import page
+- **WHEN** the page loads
+- **THEN** the `Według wspólnot` section is closed and its rows are not requested
+
+#### Scenario: Association section opened
+
+- **GIVEN** an admin on the import page with the section closed
+- **WHEN** the admin opens the `Według wspólnot` section
+- **THEN** a skeleton is shown, one request `GET /api/admin/stats?associations=true` is made, and the table fades in when the rows arrive
+
+#### Scenario: Association section opened again
+
+- **GIVEN** the associations were loaded and the section was then closed
+- **WHEN** the admin opens the section again
+- **THEN** the rows are shown without a new request
+
+#### Scenario: Association request fails
+
+- **GIVEN** an admin who opens the `Według wspólnot` section
+- **WHEN** the associations request fails
+- **THEN** the section shows the message `Nie udało się pobrać statystyk wspólnot` and the summary stays on screen
+
+#### Scenario: Other parameter values
+
+- **WHEN** `GET /api/admin/stats` is requested with `associations=1`, `associations=false` or any value other than `true`
+- **THEN** the response contains the summary without the per-association totals
+
+#### Scenario: Association data dates
+
+- **GIVEN** an association whose charges data date is unknown
+- **WHEN** its row is shown
+- **THEN** the apartments and notifications data dates are labelled with their dates and the charges data date shows a dash
+
+#### Scenario: Association data dates shared
+
+- **GIVEN** an association whose apartments, charges and notifications data dates are all the same day, or all unknown
+- **WHEN** its row is shown
+- **THEN** a single line `Dane na dzień` shows that day, or a dash when all three are unknown
+
+#### Scenario: Statistics failure
+
+- **WHEN** the summary cannot be loaded
+- **THEN** the card shows the message `Nie udało się pobrać statystyk` and no association section
+
+#### Scenario: Refresh after an import without associations opened
+
+- **GIVEN** an admin on the import page who has not opened the `Według wspólnot` section
+- **WHEN** an import finishes
+- **THEN** only the summary is read again
+
+#### Scenario: Refresh after an import with associations opened
+
+- **GIVEN** an admin who has opened the `Według wspólnot` section
+- **WHEN** an import finishes
+- **THEN** the summary and the per-association totals are read again, one request each
+
+#### Scenario: Charge figures from indexed lookups
+
+- **WHEN** the summary is computed
+- **THEN** the charge count comes from one count and the charge range and newest change from three indexed lookups, and no more than ten queries run at once
+
+#### Scenario: Fixed number of queries
+
+- **WHEN** the per-association totals are computed for several associations
+- **THEN** the number of database queries is the same as for one association, and the summary queries and the per-association queries run one group after the other
+
+#### Scenario: Summary on a phone
+
+- **GIVEN** a viewport narrower than 640 px
+- **WHEN** the summary is shown
+- **THEN** each data type is a stacked card with its count, range and last change, and no table is rendered
+
+#### Scenario: Associations on a tablet or phone
+
+- **GIVEN** a viewport narrower than 1024 px
+- **WHEN** the per-association statistics are shown
+- **THEN** each association is a stacked card with all its counts, its newest charge period and its data dates
+
+#### Scenario: Associations on a wide screen
+
+- **GIVEN** a viewport of 1024 px or wider
+- **WHEN** the per-association statistics are shown
+- **THEN** the table shows every column without horizontal scrolling and the data dates are shown under the association name
+
+#### Scenario: Counts with Polish grouping
+
+- **GIVEN** a data type with 12345 records
+- **WHEN** the count is shown
+- **THEN** it reads `12 345` with a non-breaking space, and a four-digit count has no separator (`1234`)
+
+#### Scenario: Admin only
+
+- **WHEN** a non-admin requests `GET /api/admin/stats`, with or without the associations parameter
+- **THEN** the request is rejected as unauthorized or forbidden
+
 ### Requirement: Naliczenia Import Validation Severity
 
 The system SHALL validate each entry in `nal_czynsz.txt` before committing to the database. The Wplaty closing-balance check SHALL abort the HOA import on failure. The line-total identity check (`totalAmount ≈ quantity × unitPrice`) SHALL be reported as a warning only and SHALL NOT abort the import.

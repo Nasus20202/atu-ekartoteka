@@ -1,6 +1,8 @@
 import { expect, type Page } from '@playwright/test';
 
 export const TEST_HOA = 'TEST01';
+// The name the statistics show for TEST_HOA (see e2e/test-data/seed/upsert-hoa.sql)
+export const TEST_HOA_NAME = 'Test HOA';
 export const SEEDED_APARTMENT_LABEL = 'ul. Testowa 1/1A';
 
 const HOA_APARTMENTS_URL = /\/admin\/apartments\/[a-f0-9-]+$/;

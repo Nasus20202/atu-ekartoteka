@@ -1,21 +1,10 @@
+import type { AssociationStatsDto } from '@/lib/admin/dto/association-stats-dto';
 import type {
   ImportError,
   ImportErrorItem,
 } from '@/lib/import/types/import-error';
 import type { ImportWarning } from '@/lib/import/types/import-warning';
 import type { YearBalanceRow } from '@/lib/import/types/year-balance';
-
-export interface DatabaseStats {
-  hoa: number;
-  apartments: number;
-  charges: number;
-  notifications: number;
-  payments: number;
-  users: number;
-  utilitySettlements: number;
-  meterReadings: number;
-  annualSettlements: number;
-}
 
 export interface EntityStats {
   created: number;
@@ -45,4 +34,12 @@ export interface ImportResponse {
   results: ImportResult[];
   errors: ImportError[];
   fullValidationSkipped?: boolean;
+}
+
+/** The per-association totals of the import page, loaded when the section is first opened. */
+export interface AssociationStatsState {
+  items: AssociationStatsDto[] | null;
+  loading: boolean;
+  failed: boolean;
+  request: () => void;
 }

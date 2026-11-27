@@ -6,26 +6,33 @@
 
 import { expect, test } from '../fixtures';
 
+const ADMIN_STATS_ROUTES = [
+  '/api/admin/stats',
+  '/api/admin/stats?associations=true',
+];
+
 test.describe('API auth guard', () => {
-  test('anonymous request to an admin route is rejected with 401', async ({
-    request,
-  }) => {
-    const response = await request.get('/api/admin/stats');
+  for (const route of ADMIN_STATS_ROUTES) {
+    test(`anonymous request to ${route} is rejected with 401`, async ({
+      request,
+    }) => {
+      const response = await request.get(route);
 
-    expect(response.status()).toBe(401);
-  });
+      expect(response.status()).toBe(401);
+    });
 
-  test('tenant request to an admin route is rejected with 403', async ({
-    userPage,
-  }) => {
-    const response = await userPage.request.get('/api/admin/stats');
+    test(`tenant request to ${route} is rejected with 403`, async ({
+      userPage,
+    }) => {
+      const response = await userPage.request.get(route);
 
-    expect(response.status()).toBe(403);
-  });
+      expect(response.status()).toBe(403);
+    });
 
-  test('admin request to an admin route is accepted', async ({ adminPage }) => {
-    const response = await adminPage.request.get('/api/admin/stats');
+    test(`admin request to ${route} is accepted`, async ({ adminPage }) => {
+      const response = await adminPage.request.get(route);
 
-    expect(response.status()).toBe(200);
-  });
+      expect(response.status()).toBe(200);
+    });
+  }
 });

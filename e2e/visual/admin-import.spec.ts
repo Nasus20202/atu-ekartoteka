@@ -2,6 +2,7 @@
  * Visual regression test for the admin import page.
  */
 
+import type { DatabaseStatsDto } from '../../src/lib/admin/dto/database-stats-dto';
 import { expect, test } from '../fixtures';
 import { expectNoHorizontalOverflow } from '../utils/expect-no-horizontal-overflow';
 import { selectImportFolder } from '../utils/select-import-folder';
@@ -24,10 +25,77 @@ const IMPORT_RESPONSE = {
   ],
 };
 
+// Fixed statistics: the database changes every day, so the screenshot would too
+const DATABASE_STATS: DatabaseStatsDto = {
+  hoa: {
+    count: 2,
+    rangeFrom: null,
+    rangeTo: null,
+    lastChangedAt: '2025-01-20T00:00:00.000Z',
+  },
+  apartments: {
+    count: 12,
+    active: 10,
+    rangeFrom: null,
+    rangeTo: null,
+    lastChangedAt: '2025-01-15T00:00:00.000Z',
+  },
+  users: {
+    count: 14,
+    rangeFrom: null,
+    rangeTo: null,
+    lastChangedAt: '2025-01-15T00:00:00.000Z',
+  },
+  charges: {
+    count: 40,
+    rangeFrom: '2025-01-01T00:00:00.000Z',
+    rangeTo: '2025-12-01T00:00:00.000Z',
+    lastChangedAt: '2025-01-20T00:00:00.000Z',
+  },
+  notifications: {
+    count: 3,
+    rangeFrom: null,
+    rangeTo: null,
+    lastChangedAt: '2025-01-20T00:00:00.000Z',
+  },
+  payments: {
+    count: 5,
+    rangeFrom: '2025-01-01T00:00:00.000Z',
+    rangeTo: '2025-12-31T00:00:00.000Z',
+    lastChangedAt: '2025-01-20T00:00:00.000Z',
+  },
+  utilitySettlements: {
+    count: 0,
+    rangeFrom: null,
+    rangeTo: null,
+    lastChangedAt: null,
+  },
+  meterReadings: {
+    count: 0,
+    rangeFrom: null,
+    rangeTo: null,
+    lastChangedAt: null,
+  },
+  annualSettlements: {
+    count: 0,
+    rangeFrom: null,
+    rangeTo: null,
+    lastChangedAt: null,
+  },
+};
+
 test.describe('Visual: admin import', () => {
   test('import page', async ({ visualAdminPage }) => {
+    // Matches the summary request with or without the associations parameter
+    await visualAdminPage.route(
+      (url) => url.pathname === '/api/admin/stats',
+      (route) => route.fulfill({ json: DATABASE_STATS })
+    );
     await visualAdminPage.goto('/admin/import');
-    await expect(visualAdminPage.getByRole('table')).toBeVisible();
+    // A text both the table and the phone cards show, so either layout waits
+    await expect(
+      visualAdminPage.getByText('Ostatnia zmiana').first()
+    ).toBeVisible();
     await expectNoHorizontalOverflow(visualAdminPage);
 
     await expect(visualAdminPage).toHaveScreenshot('import.png', {
