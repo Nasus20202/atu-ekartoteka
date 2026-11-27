@@ -12,6 +12,7 @@ import {
   REORDER_HOA_FIRST,
   REORDER_HOA_SECOND,
 } from '../../utils/reorder-hoas';
+import { waitForHydration } from '../../utils/wait-for-hydration';
 
 const REORDER_BUTTON = 'Zmień kolejność';
 const ORDER_STORAGE_KEY = 'atu:hoa-order';
@@ -33,12 +34,17 @@ async function openFreshList(page: Page) {
     (key) => window.localStorage.removeItem(key),
     ORDER_STORAGE_KEY
   );
-  await page.reload();
+  // Not reload(): goto() waits for the streamed content
+  await page.goto('/admin/apartments');
   await expect(
     page.getByRole('button', {
       name: `Zmień nazwę wspólnoty ${REORDER_HOA_FIRST}`,
     })
   ).toBeVisible();
+  // Text typed or a drag started before this is dropped
+  await waitForHydration(
+    page.getByPlaceholder('Wyszukaj...').filter({ visible: true })
+  );
 }
 
 function tableRows(page: Page) {

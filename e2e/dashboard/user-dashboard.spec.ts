@@ -8,242 +8,112 @@ import { expandNotifications } from '../utils/expand-notifications';
 import { openNavigationMenu } from '../utils/navigation';
 import { USER_NAME } from '../utils/test-credentials';
 
+const APARTMENT = 'ul. Testowa 1/1A';
+// The seeded balance and the charges of the current month
+const BALANCE = '-444,25 zł';
+const CHARGES_TOTAL = '444,25 zł';
+const MONTH_LINK = { name: new RegExp(CURRENT_MONTH_YEAR, 'i') };
+
 test.describe('Dashboard Home', () => {
-  test.describe('Welcome Section', () => {
-    test('user sees welcome message with their name', async ({ userPage }) => {
-      await userPage.goto('/dashboard');
+  test('greets the user and shows the apartment with its balance', async ({
+    userPage,
+  }) => {
+    await userPage.goto('/dashboard');
+    const visible = (text: string | RegExp) =>
+      userPage.getByText(text).filter({ visible: true }).first();
 
-      await expect(
-        userPage
-          .getByText(new RegExp(`Witaj.*${USER_NAME}`, 'i'))
-          .filter({ visible: true })
-      ).toBeVisible();
-    });
-
-    test('user sees their assigned apartment', async ({ userPage }) => {
-      await userPage.goto('/dashboard');
-
-      // Should see apartment address from seeded data
-      await expect(
-        userPage.getByText('ul. Testowa 1/1A').filter({ visible: true }).first()
-      ).toBeVisible();
-    });
+    await expect(visible(new RegExp(`Witaj.*${USER_NAME}`, 'i'))).toBeVisible();
+    await expect(visible(APARTMENT)).toBeVisible();
+    await expect(userPage.getByText(/Saldo wpłat/i).first()).toBeVisible();
+    // In single-HOA mode the HOA name labels the balance
+    await expect(visible('Test HOA')).toBeVisible();
+    const balance = userPage.getByText(BALANCE).first();
+    await expect(balance).toBeVisible();
+    await expect(balance).toHaveClass(/text-red/);
+    await expect(userPage.getByTestId('balance-history-chart')).toBeVisible();
   });
 
-  test.describe('Balance Widget', () => {
-    test('user sees balance widget', async ({ userPage }) => {
-      await userPage.goto('/dashboard');
+  test('summarises the current charges and the payments', async ({
+    userPage,
+  }) => {
+    await userPage.goto('/dashboard');
 
-      // Should see "Saldo wpłat" section
-      await expect(userPage.getByText(/Saldo wpłat/i).first()).toBeVisible();
-    });
-
-    test('user sees current balance amount', async ({ userPage }) => {
-      await userPage.goto('/dashboard');
-
-      // Should see balance information (seeded as -444.25)
-      await expect(userPage.getByText('-444,25 zł').first()).toBeVisible();
-    });
-
-    test('negative balance is highlighted in red', async ({ userPage }) => {
-      await userPage.goto('/dashboard');
-
-      // Balance should have red color class for negative amount
-      const balanceElement = userPage.getByText('-444,25 zł').first();
-      await expect(balanceElement).toBeVisible();
-      await expect(balanceElement).toHaveClass(/text-red/);
-    });
-
-    test('balance widget shows HOA name for single HOA user', async ({
-      userPage,
-    }) => {
-      await userPage.goto('/dashboard');
-
-      // Single-HOA mode: HOA name appears as the label next to the balance
-      await expect(
-        userPage.getByText('Test HOA').filter({ visible: true }).first()
-      ).toBeVisible();
-    });
-
-    test('user sees monthly balance chart', async ({ userPage }) => {
-      await userPage.goto('/dashboard');
-
-      await expect(userPage.getByTestId('balance-history-chart')).toBeVisible();
-    });
-
-    test('user can open apartment payments from the balance widget', async ({
-      userPage,
-    }) => {
-      await userPage.goto('/dashboard');
-
-      await userPage
-        .getByRole('link', { name: /ul\. Testowa 1\/1A/ })
+    await expect(userPage.getByRole('link', MONTH_LINK)).toContainText(
+      CHARGES_TOTAL
+    );
+    await expect(
+      userPage
+        .getByText(/Naliczenia z ostatnich 12 miesięcy/i)
+        .filter({ visible: true })
         .first()
-        .click();
-
-      await expect(userPage).toHaveURL(/\/dashboard\/payments\/[^/]+\/\d{4}/);
-    });
+    ).toBeVisible();
+    await expect(
+      userPage
+        .getByText(/Zobacz wszystkie wpłaty/i)
+        .filter({ visible: true })
+        .first()
+    ).toBeVisible();
   });
 
-  test.describe('Charges Widget', () => {
-    test('user sees charges section', async ({ userPage }) => {
+  test('lists the notifications with the amount due', async ({ userPage }) => {
+    await userPage.goto('/dashboard');
+    await expandNotifications(userPage);
+
+    await expect(userPage.getByText(/Powiadomienia/i)).toBeVisible();
+    await expect(userPage.getByText(/Bieżące naliczenia/i)).toBeVisible();
+    await expect(
+      userPage
+        .getByText(/Łączna kwota do zapłaty/i)
+        .filter({ visible: true })
+        .first()
+    ).toBeVisible();
+    await expect(userPage.getByText(CHARGES_TOTAL).first()).toBeVisible();
+    // A single HOA gets a flat list, with no section to open first
+    await expect(
+      userPage.getByText(/Zarządzanie Nieruchomością/i).first()
+    ).toBeVisible();
+  });
+
+  test('links to the payments, the charges and the account', async ({
+    userPage,
+  }) => {
+    const follow = async (link: () => Promise<void>, url: RegExp) => {
       await userPage.goto('/dashboard');
+      await link();
+      await expect(userPage).toHaveURL(url);
+    };
 
-      // Should see "Naliczenia" section
-      await expect(userPage.getByText(/Naliczenia/i).first()).toBeVisible();
-    });
-
-    test('user sees current month charges', async ({ userPage }) => {
-      await userPage.goto('/dashboard');
-
-      // The summary card and chart both render month labels, so target the card label.
-      await expect(
-        userPage.locator('p.font-medium', {
-          hasText: new RegExp(`^${CURRENT_MONTH_YEAR}$`, 'i'),
-        })
-      ).toBeVisible();
-    });
-
-    test('user sees total charges amount', async ({ userPage }) => {
-      await userPage.goto('/dashboard');
-
-      // Should see total charges (444.25 zł)
-      await expect(userPage.getByText('444,25 zł').first()).toBeVisible();
-    });
-
-    test('user can click to view all charges', async ({ userPage }) => {
-      await userPage.goto('/dashboard');
-
-      await userPage.getByText(/Zobacz wszystkie naliczenia/i).click();
-
-      await expect(userPage).toHaveURL(/\/dashboard\/charges/);
-    });
-
-    test('user can open current month charges from the summary', async ({
-      userPage,
-    }) => {
-      await userPage.goto('/dashboard');
-
-      await userPage
-        .getByRole('link', { name: new RegExp(CURRENT_MONTH_YEAR, 'i') })
-        .click();
-
-      await expect(userPage).toHaveURL(
-        /\/dashboard\/charges\?month=\d{4}-\d{2}/
-      );
-    });
-
-    test('user sees 12-month charges chart section', async ({ userPage }) => {
-      await userPage.goto('/dashboard');
-
-      await expect(
+    await follow(
+      () =>
         userPage
-          .getByText(/Naliczenia z ostatnich 12 miesięcy/i)
-          .filter({ visible: true })
+          .getByRole('link', { name: /ul\. Testowa 1\/1A/ })
           .first()
-      ).toBeVisible();
-    });
-  });
-
-  test.describe('Payments Widget', () => {
-    test('user sees payments section', async ({ userPage }) => {
-      await userPage.goto('/dashboard');
-
-      // Should see payments/balance section
-      await expect(
+          .click(),
+      /\/dashboard\/payments\/[^/]+\/\d{4}/
+    );
+    await follow(
+      () => userPage.getByText(/Zobacz wszystkie naliczenia/i).click(),
+      /\/dashboard\/charges/
+    );
+    await follow(
+      () => userPage.getByRole('link', MONTH_LINK).click(),
+      /\/dashboard\/charges\?month=\d{4}-\d{2}/
+    );
+    await follow(
+      () =>
         userPage
           .getByText(/Zobacz wszystkie wpłaty/i)
           .filter({ visible: true })
           .first()
-      ).toBeVisible();
-    });
-
-    test('user can click to view all payments', async ({ userPage }) => {
-      await userPage.goto('/dashboard');
-
-      await userPage
-        .getByText(/Zobacz wszystkie wpłaty/i)
-        .filter({ visible: true })
-        .first()
-        .click();
-
-      await expect(userPage).toHaveURL(/\/dashboard\/payments/);
-    });
-  });
-
-  test.describe('Notifications Widget', () => {
-    test('user sees notifications panel', async ({ userPage }) => {
-      await userPage.goto('/dashboard');
-
-      // Should see "Powiadomienia" section
-      await expect(userPage.getByText(/Powiadomienia/i)).toBeVisible();
-    });
-
-    test('notifications show current charges breakdown', async ({
-      userPage,
-    }) => {
-      await userPage.goto('/dashboard');
-
-      // Should see charge notification items
-      await expect(userPage.getByText(/Bieżące naliczenia/i)).toBeVisible();
-    });
-
-    test('notifications show total amount due', async ({ userPage }) => {
-      await userPage.goto('/dashboard');
-
-      // Should see "Łączna kwota do zapłaty"
-      await expect(
-        userPage
-          .getByText(/Łączna kwota do zapłaty/i)
-          .filter({ visible: true })
-          .first()
-      ).toBeVisible();
-      await expect(userPage.getByText('444,25 zł').first()).toBeVisible();
-    });
-
-    test('single-HOA mode renders flat notification list without collapsible HOA sections', async ({
-      userPage,
-    }) => {
-      await userPage.goto('/dashboard');
-      await expandNotifications(userPage);
-
-      // Single-HOA mode: individual charge rows are rendered directly (no per-HOA collapsible trigger)
-      // The notification card shows "Powiadomienia" heading and individual charge amounts
-      await expect(userPage.getByText(/Powiadomienia/i)).toBeVisible();
-
-      // The total is shown as a single block (not per-HOA subtotals)
-      await expect(
-        userPage
-          .getByText(/Łączna kwota do zapłaty/i)
-          .filter({ visible: true })
-          .first()
-      ).toBeVisible();
-
-      // Individual charge descriptions should appear in flat list
-      await expect(
-        userPage.getByText(/Zarządzanie Nieruchomością/i).first()
-      ).toBeVisible();
-    });
-  });
-
-  test.describe('Navigation', () => {
-    test('user can navigate to profile from header', async ({ userPage }) => {
-      await userPage.goto('/dashboard');
+          .click(),
+      /\/dashboard\/payments/
+    );
+    await follow(async () => {
       await openNavigationMenu(userPage);
-
-      await userPage.getByRole('link', { name: /Profil/i }).click();
-
-      await expect(userPage).toHaveURL(/\/dashboard\/profile/);
-    });
-
-    test('header shows logout option', async ({ userPage }) => {
-      await userPage.goto('/dashboard');
-      await openNavigationMenu(userPage);
-
-      // Should see logout button in header
       await expect(
         userPage.getByRole('button', { name: /Wyloguj/i })
       ).toBeVisible();
-    });
+      await userPage.getByRole('link', { name: /Profil/i }).click();
+    }, /\/dashboard\/profile/);
   });
 });

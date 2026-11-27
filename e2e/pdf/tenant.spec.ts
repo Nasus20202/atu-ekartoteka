@@ -26,18 +26,6 @@ async function getApartmentIdFromPaymentsPage(
 
 test.describe('PDF Download - Tenant', () => {
   test.describe('Charges PDF', () => {
-    test('charges detail page has PDF download button', async ({
-      userPage,
-    }) => {
-      const apartmentId = await getApartmentIdFromPaymentsPage(userPage);
-
-      await userPage.goto(`/dashboard/charges/${apartmentId}`);
-      await openChargesMonth(userPage, CURRENT_MONTH_YEAR);
-      await expect(
-        userPage.getByRole('button', { name: /Pobierz PDF/i }).first()
-      ).toBeVisible();
-    });
-
     test('tenant can download charges PDF', async ({ userPage }) => {
       const apartmentId = await getApartmentIdFromPaymentsPage(userPage);
 
@@ -80,26 +68,6 @@ test.describe('PDF Download - Tenant', () => {
   });
 
   test.describe('Payments PDF', () => {
-    test('payment detail page has PDF download button', async ({
-      userPage,
-    }) => {
-      await userPage.goto('/dashboard/payments');
-
-      const currentYear = new Date().getFullYear();
-      await userPage
-        .getByText(`Rok ${currentYear}`)
-        .filter({ visible: true })
-        .click();
-
-      await userPage.waitForURL(/\/dashboard\/payments\/[a-f0-9-]+\/\d{4}/, {
-        timeout: 10000,
-      });
-
-      await expect(
-        userPage.getByRole('button', { name: /Pobierz PDF/i })
-      ).toBeVisible();
-    });
-
     test('tenant can download payment PDF', async ({ userPage }) => {
       await userPage.goto('/dashboard/payments');
 

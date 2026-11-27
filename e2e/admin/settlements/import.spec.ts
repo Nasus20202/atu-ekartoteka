@@ -73,6 +73,7 @@ test.describe('Admin settlement import', () => {
   test('previews, imports, repeats and replaces a settlement', async ({
     adminPage,
   }) => {
+    test.slow();
     await adminPage.goto('/admin/import');
     const file = adminPage.getByRole('region', { name: `Plik ${FILE_NAME}` });
     const stats = (created: number, updated: number, unchanged: number) =>

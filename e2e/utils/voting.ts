@@ -12,7 +12,8 @@ import { loadSql } from './load-sql';
 
 const TEST_HOA_NAME = 'Test HOA';
 const MAX_MONTHS_AHEAD = 24;
-export const CLOSE_VOTING = 'Zakończ głosowanie';
+export const CHOICE_TIMEOUT_MS = 1000;
+const CLOSE_VOTING = 'Zakończ głosowanie';
 const VOTING_ID_PATTERN = /\/admin\/votings\/([^/?]+)$/;
 
 export interface DraftVoting {
@@ -147,11 +148,15 @@ export async function answerQuestion(
   choice: 'Za' | 'Przeciw' | 'Wstrzymał(a) się'
 ) {
   // One group per question, in their order
-  await scope
-    .locator('fieldset')
-    .nth(questionNumber - 1)
-    .getByText(choice, { exact: true })
-    .click();
+  const group = scope.locator('fieldset').nth(questionNumber - 1);
+  // A click made while the page still scrolls can miss, so it is repeated until
+  // the answer is chosen
+  await expect(async () => {
+    await group.getByText(choice, { exact: true }).click();
+    await expect(
+      group.getByRole('radio', { name: choice, exact: true })
+    ).toBeChecked({ timeout: CHOICE_TIMEOUT_MS });
+  }).toPass();
 }
 
 async function withClient<T>(run: (client: pg.Client) => Promise<T>) {
