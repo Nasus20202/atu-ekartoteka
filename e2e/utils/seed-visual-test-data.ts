@@ -11,6 +11,7 @@ import bcrypt from 'bcrypt';
 import * as pg from 'pg';
 
 import { loadSql } from './load-sql';
+import { seedVisualVotings } from './seed-visual-votings';
 import { seedYearHistory } from './seed-year-history';
 import {
   ADMIN_EMAIL,
@@ -255,6 +256,7 @@ async function seedRecords(client: pg.Client) {
     }
   );
 
+  await seedVisualVotings(client, hoaId);
   await seedYearHistory(client, VISUAL_YEAR);
   await pinCreationDates(client);
 }

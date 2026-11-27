@@ -9,6 +9,7 @@ import { VotingStatusActions } from '@/components/votings/voting-status-actions'
 import { VotingSummaryCard } from '@/components/votings/voting-summary-card';
 import { VotingVotersTable } from '@/components/votings/voting-voters-table';
 import { requireAdminAccess } from '@/lib/framework/auth/require-admin-access';
+import { getRequestNow } from '@/lib/framework/request-now';
 import { toEligibleVoterDto } from '@/lib/voting/dto/eligible-voter-dto';
 import {
   toQuestionResults,
@@ -34,10 +35,11 @@ export async function AdminVotingDetail({ votingId }: Props) {
   if (!found) notFound();
 
   const voting = toVotingDto(found);
-  const [counts, ballots, eligible] = await Promise.all([
+  const [counts, ballots, eligible, now] = await Promise.all([
     countVotingResults(votingId),
     findVotingBallots(votingId),
     findEligibleVoters(voting.hoaId, votingId),
+    getRequestNow(),
   ]);
 
   const voters = eligible.map(toEligibleVoterDto);
@@ -45,7 +47,7 @@ export async function AdminVotingDetail({ votingId }: Props) {
   const isDraft = voting.status === VotingStatus.DRAFT;
   const canNotify = isVotingOpen(
     { status: voting.status, endsAt: found.endsAt },
-    new Date()
+    now
   );
 
   return (

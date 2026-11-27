@@ -18,6 +18,9 @@ vi.mock('next/navigation', () => ({ notFound: mocks.notFound }));
 vi.mock('@/lib/framework/auth/require-admin-access', () => ({
   requireAdminAccess: mocks.requireAdminAccess,
 }));
+vi.mock('@/lib/framework/request-now', () => ({
+  getRequestNow: async () => new Date('2026-06-01T12:00:00Z'),
+}));
 vi.mock('@/lib/voting/queries/find-voting-by-id', () => ({
   findVotingById: mocks.findVotingById,
 }));
