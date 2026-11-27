@@ -50,7 +50,7 @@
 - **Dependencies**: Don't add useless dependencies to the codebase
 - **Delete old code**: If something is unused, just delete it
 - **Don't use magic numbers/strings**: Use types or constants instead
-- **Database queries**: Do all filtering, sorting, pagination (skip/take) and aggregation of database records in the Prisma query, never by loading rows and calling `.filter`/`.sort`/`.slice` in JavaScript
+- **Database queries**: Do all filtering, sorting, pagination (skip/take) and aggregation of database records in the Prisma query, never by loading rows and calling `.filter`/`.sort`/`.slice` in JavaScript. The one exception: when Prisma cannot express a grouping (such as by a field of a related record), combining database-grouped results in JavaScript is allowed with the user's approval, so ask first
 - **No raw SQL**: Do not use `$queryRaw`, `$executeRaw` or their `Unsafe` variants; use the Prisma query API (raw SQL belongs only in migration files)
 
 ## Components
