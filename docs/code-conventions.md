@@ -75,6 +75,9 @@ in [`AGENTS.md`](../AGENTS.md).
 
 - Filter, sort, paginate and aggregate in the Prisma query. Do not load rows and
   then `.filter`, `.sort` or `.slice` them in JavaScript.
+- When Prisma cannot express a grouping (such as by a field of a related record),
+  you may group as far as possible in the query and combine the results in
+  JavaScript, but only after the maintainer approves it.
 - No `$queryRaw` / `$executeRaw` **(lint)**. Raw SQL is for migration files.
 - Money is `Decimal`. Use the helpers in `src/lib/shared/utils/decimal`, not floats.
 - Do not read `legacy*` columns outside the import and payment queries **(lint)**;
