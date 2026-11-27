@@ -385,7 +385,7 @@ Data a Client Component fetches by itself SHALL be read with SWR through a `GET`
 
 ### Requirement: Client Writes Are Server Actions
 
-Mutations SHALL be Server Actions, except the stable JSON API write routes `/api/admin/import` and `/api/admin/import/validate`, which SHALL be sent with `useSWRMutation` using the shared `jsonPoster` fetcher. Public (signed-out) mutations SHALL be Server Actions that carry a file-level `eslint-disable local/require-action-auth-guard` comment stating the reason.
+Mutations SHALL be Server Actions, except the stable JSON API write routes `/api/admin/import`, `/api/admin/import/validate`, `/api/admin/import/settlements` and `/api/admin/import/settlements/preview`, which SHALL be sent with `useSWRMutation` using the shared `jsonPoster` fetcher. Public (signed-out) mutations SHALL be Server Actions that carry a file-level `eslint-disable local/require-action-auth-guard` comment stating the reason.
 
 #### Scenario: Validation route uses the shared poster
 
@@ -398,6 +398,12 @@ Mutations SHALL be Server Actions, except the stable JSON API write routes `/api
 - **GIVEN** a signed-out registration mutation
 - **WHEN** it is written
 - **THEN** it is a Server Action whose module carries the file-level disable comment with a reason
+
+#### Scenario: Settlement routes use the shared poster
+
+- **GIVEN** a Client Component that submits settlement files
+- **WHEN** the mutation is written
+- **THEN** it uses `useSWRMutation` with `jsonPoster`
 
 ### Requirement: E2E Mock Server
 

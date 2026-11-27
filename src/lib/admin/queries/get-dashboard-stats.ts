@@ -8,6 +8,9 @@ export async function getDashboardStats() {
     notificationCount,
     paymentCount,
     userCount,
+    utilitySettlementCount,
+    meterReadingCount,
+    annualSettlementCount,
   ] = await Promise.all([
     prisma.homeownersAssociation.count(),
     prisma.apartment.count(),
@@ -15,6 +18,9 @@ export async function getDashboardStats() {
     prisma.chargeNotification.count(),
     prisma.payment.count(),
     prisma.user.count(),
+    prisma.utilitySettlement.count(),
+    prisma.meterReading.count(),
+    prisma.annualCostSettlement.count(),
   ]);
 
   return {
@@ -24,5 +30,8 @@ export async function getDashboardStats() {
     notifications: notificationCount,
     payments: paymentCount,
     users: userCount,
+    utilitySettlements: utilitySettlementCount,
+    meterReadings: meterReadingCount,
+    annualSettlements: annualSettlementCount,
   };
 }

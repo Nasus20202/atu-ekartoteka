@@ -12,6 +12,18 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
+const COLUMNS: Array<{ key: keyof DatabaseStats; label: string }> = [
+  { key: 'hoa', label: 'Wspólnoty' },
+  { key: 'apartments', label: 'Mieszkania' },
+  { key: 'charges', label: 'Naliczenia' },
+  { key: 'notifications', label: 'Powiadomienia' },
+  { key: 'payments', label: 'Wpłaty' },
+  { key: 'users', label: 'Użytkownicy' },
+  { key: 'utilitySettlements', label: 'Rozliczenia mediów' },
+  { key: 'meterReadings', label: 'Odczyty liczników' },
+  { key: 'annualSettlements', label: 'Koszty rzeczywiste' },
+];
+
 interface DatabaseStatsCardProps {
   dbStats: DatabaseStats | null;
   statsLoading: boolean;
@@ -40,30 +52,18 @@ export function DatabaseStatsCard({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Wspólnoty</TableHead>
-                  <TableHead>Mieszkania</TableHead>
-                  <TableHead>Naliczenia</TableHead>
-                  <TableHead>Powiadomienia</TableHead>
-                  <TableHead>Wpłaty</TableHead>
-                  <TableHead>Użytkownicy</TableHead>
+                  {COLUMNS.map(({ key, label }) => (
+                    <TableHead key={key}>{label}</TableHead>
+                  ))}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 <TableRow>
-                  <TableCell className="font-medium">{dbStats.hoa}</TableCell>
-                  <TableCell className="font-medium">
-                    {dbStats.apartments}
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {dbStats.charges}
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {dbStats.notifications}
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {dbStats.payments}
-                  </TableCell>
-                  <TableCell className="font-medium">{dbStats.users}</TableCell>
+                  {COLUMNS.map(({ key }) => (
+                    <TableCell key={key} className="font-medium">
+                      {dbStats[key]}
+                    </TableCell>
+                  ))}
                 </TableRow>
               </TableBody>
             </Table>

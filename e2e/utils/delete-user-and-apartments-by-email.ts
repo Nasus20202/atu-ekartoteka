@@ -5,6 +5,7 @@
 
 import * as pg from 'pg';
 
+import { deleteSettlements } from './delete-settlements';
 import { loadSql } from './load-sql';
 
 export async function deleteUserAndApartmentsByEmail(
@@ -29,6 +30,7 @@ export async function deleteUserAndApartmentsByEmail(
     const apartmentIds = apartmentsResult.rows.map((row) => row.id as string);
 
     if (apartmentIds.length > 0) {
+      await deleteSettlements(client, apartmentIds);
       await client.query(loadSql('delete-charges-by-apartments.sql'), [
         apartmentIds,
       ]);

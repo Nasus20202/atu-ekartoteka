@@ -22,13 +22,13 @@ import {
   VISUAL_PASSWORD,
 } from './utils/test-credentials';
 import { stubTurnstileWidget } from './utils/turnstile-stub';
+import { REACT_PROPS_PREFIX } from './utils/wait-for-hydration';
 
 // React streams a section into a hidden segment first and swaps it in a moment
 // later, so right after a navigation the same text can exist twice in the DOM.
 const STREAMING_SEGMENT_SELECTOR = '[id^="S:"][hidden]';
 const STREAMING_SETTLE_TIMEOUT = 10000;
 const REACT_ROOT_KEY_PREFIX = '__reactContainer';
-const REACT_PROPS_PREFIX = '__reactProps';
 const LOGIN_PAGE = '/login';
 const SUBMIT_LABEL = 'Zaloguj się';
 const LOGIN_FORM_READY_TIMEOUT = 10_000;

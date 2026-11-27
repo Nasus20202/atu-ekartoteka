@@ -12,6 +12,9 @@ const { mockPrisma } = vi.hoisted(() => {
       chargeNotification: counter(4),
       payment: counter(5),
       user: counter(6),
+      utilitySettlement: counter(7),
+      meterReading: counter(8),
+      annualCostSettlement: counter(9),
     },
   };
 });
@@ -29,6 +32,9 @@ describe('getDashboardStats', () => {
       notifications: 4,
       payments: 5,
       users: 6,
+      utilitySettlements: 7,
+      meterReadings: 8,
+      annualSettlements: 9,
     });
   });
 });

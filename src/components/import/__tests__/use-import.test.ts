@@ -94,6 +94,22 @@ describe('useImport', () => {
     expect(mocks.startImport).not.toHaveBeenCalled();
   });
 
+  it('asks again before a clean import runs', async () => {
+    const { result } = renderHook(() => useImport(mocks.fetchStats));
+    await act(() => result.current.handleCleanImportChange(true));
+    act(() =>
+      result.current.handleFileChange(fileChange([new File(['x'], 'a.csv')]))
+    );
+    mocks.confirm.mockClear();
+
+    await act(() => result.current.handleImport());
+
+    expect(mocks.confirm).toHaveBeenCalledOnce();
+    expect(mocks.startImport).toHaveBeenCalledWith(
+      expect.objectContaining({ cleanImport: true })
+    );
+  });
+
   it('imports confirmed files and refreshes the stats after success', async () => {
     const { result } = renderHook(() => useImport(mocks.fetchStats));
     act(() =>

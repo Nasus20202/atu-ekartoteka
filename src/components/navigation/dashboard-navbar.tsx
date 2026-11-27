@@ -1,22 +1,17 @@
 'use client';
 
-import {
-  Building2,
-  Cog,
-  Home,
-  type LucideIcon,
-  Menu,
-  Settings,
-  Upload,
-  User,
-  Users,
-  X,
-} from 'lucide-react';
+import { Menu, Settings, User, X } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 import { LogoutButton } from '@/components/account/logout-button';
 import { NAVBAR_BREAKPOINT_CLASSES } from '@/components/navigation/navbar-breakpoints';
+import {
+  getNavigationItems,
+  isCurrentPath,
+  type NavbarMode,
+} from '@/components/navigation/navigation-items';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/shared/utils';
@@ -25,30 +20,13 @@ const MOBILE_MENU_ID = 'mobile-navigation';
 const MOBILE_MENU_LABEL = 'Menu';
 const SETTINGS_HREF = '/admin/settings';
 const SETTINGS_LABEL = 'Ustawienia';
-
-type NavItem = {
-  name: string;
-  href: string;
-  icon: LucideIcon;
-};
-
-type NavbarMode = 'dashboard' | 'admin';
+const PROFILE_HREF = '/dashboard/profile';
+const CURRENT_CLASSES = 'bg-accent text-accent-foreground';
 
 type DashboardNavbarProps = {
   mode?: NavbarMode;
   isAdmin?: boolean;
 };
-
-const adminNavigation: NavItem[] = [
-  { name: 'Panel klienta', href: '/dashboard', icon: Home },
-  { name: 'Mieszkania', href: '/admin/apartments', icon: Building2 },
-  { name: 'Import', href: '/admin/import', icon: Upload },
-  { name: 'Użytkownicy', href: '/admin/users', icon: Users },
-];
-
-const dashboardAdminNavigation: NavItem[] = [
-  { name: 'Panel administratora', href: '/admin', icon: Cog },
-];
 
 export function DashboardNavbar({
   mode = 'dashboard',
@@ -56,20 +34,23 @@ export function DashboardNavbar({
 }: DashboardNavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  // Determine navigation items based on mode
-  const navigationItems =
-    mode === 'admin'
-      ? adminNavigation
-      : isAdmin
-        ? dashboardAdminNavigation
-        : [];
+  const pathname = usePathname() ?? '';
+  const navigationItems = getNavigationItems(mode, isAdmin);
+  const currentPage = (href: string) =>
+    isCurrentPath(pathname, href) ? ('page' as const) : undefined;
 
   const showProfileLink = mode === 'dashboard';
   const breakpoint = NAVBAR_BREAKPOINT_CLASSES[mode];
   const settingsLink = mode === 'admin' && (
-    <Button variant="ghost" size="icon" asChild>
+    <Button
+      variant="ghost"
+      size="icon"
+      className={cn(currentPage(SETTINGS_HREF) && CURRENT_CLASSES)}
+      asChild
+    >
       <Link
         href={SETTINGS_HREF}
+        aria-current={currentPage(SETTINGS_HREF)}
         aria-label={SETTINGS_LABEL}
         title={SETTINGS_LABEL}
         onClick={() => setIsOpen(false)}
@@ -83,7 +64,6 @@ export function DashboardNavbar({
     <nav className="sticky top-0 z-50 border-b bg-card">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo and Desktop Navigation */}
           <div className="flex items-center gap-8">
             <Link
               href={mode === 'admin' ? '/admin' : '/dashboard'}
@@ -91,30 +71,39 @@ export function DashboardNavbar({
             >
               ATU Ekartoteka
             </Link>
-            {navigationItems.length > 0 && (
-              <div className={breakpoint.links}>
-                {navigationItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 hover:bg-accent hover:text-accent-foreground"
-                    >
-                      <Icon className="h-4 w-4" />
-                      {item.name}
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
+            <div className={breakpoint.links}>
+              {navigationItems.map((item) => {
+                const Icon = item.icon;
+                const current = currentPage(item.href);
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    aria-current={current}
+                    className={cn(
+                      'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 hover:bg-accent hover:text-accent-foreground',
+                      current && CURRENT_CLASSES
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Desktop Actions */}
           <div className={breakpoint.actions}>
             {showProfileLink && (
-              <Link href="/dashboard/profile">
-                <Button variant="ghost" size="sm">
+              <Link
+                href={PROFILE_HREF}
+                aria-current={currentPage(PROFILE_HREF)}
+              >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn(currentPage(PROFILE_HREF) && CURRENT_CLASSES)}
+                >
                   <User className="mr-2 h-4 w-4" />
                   Profil
                 </Button>
@@ -125,7 +114,6 @@ export function DashboardNavbar({
             <LogoutButton />
           </div>
 
-          {/* Mobile Menu Button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
             className={cn('rounded-md p-2 hover:bg-accent', breakpoint.toggle)}
@@ -137,7 +125,6 @@ export function DashboardNavbar({
           </button>
         </div>
 
-        {/* Mobile Menu */}
         <div
           id={MOBILE_MENU_ID}
           inert={!isOpen}
@@ -155,10 +142,17 @@ export function DashboardNavbar({
                   <Link
                     key={item.name}
                     href={item.href}
+                    aria-current={currentPage(item.href)}
                     onClick={() => setIsOpen(false)}
                     className="block"
                   >
-                    <Button variant="ghost" className="w-full justify-start">
+                    <Button
+                      variant="ghost"
+                      className={cn(
+                        'w-full justify-start',
+                        currentPage(item.href) && CURRENT_CLASSES
+                      )}
+                    >
                       <Icon className="mr-2 h-4 w-4" />
                       {item.name}
                     </Button>
@@ -167,11 +161,18 @@ export function DashboardNavbar({
               })}
               {showProfileLink && (
                 <Link
-                  href="/dashboard/profile"
+                  href={PROFILE_HREF}
+                  aria-current={currentPage(PROFILE_HREF)}
                   onClick={() => setIsOpen(false)}
                   className="block"
                 >
-                  <Button variant="ghost" className="w-full justify-start">
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      'w-full justify-start',
+                      currentPage(PROFILE_HREF) && CURRENT_CLASSES
+                    )}
+                  >
                     <User className="mr-2 h-4 w-4" />
                     Profil
                   </Button>

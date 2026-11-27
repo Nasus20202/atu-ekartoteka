@@ -97,13 +97,13 @@ describe('AdminImportPage', () => {
       expect(fetch).toHaveBeenCalledWith('/api/admin/stats');
     });
 
-    await user.click(screen.getByLabelText(/pomiń walidację/i));
+    await user.click(screen.getByLabelText(/pomiń walidację$/i));
 
     await waitFor(() => {
       expect(confirmMock).toHaveBeenCalledTimes(2);
     });
 
-    expect(screen.getByLabelText(/pomiń walidację/i)).toBeChecked();
+    expect(screen.getByLabelText(/pomiń walidację$/i)).toBeChecked();
   });
 
   it('keeps skip validation disabled when first confirmation is rejected', async () => {
@@ -116,13 +116,13 @@ describe('AdminImportPage', () => {
       expect(fetch).toHaveBeenCalledWith('/api/admin/stats');
     });
 
-    await user.click(screen.getByLabelText(/pomiń walidację/i));
+    await user.click(screen.getByLabelText(/pomiń walidację$/i));
 
     await waitFor(() => {
       expect(confirmMock).toHaveBeenCalledTimes(1);
     });
 
-    expect(screen.getByLabelText(/pomiń walidację/i)).not.toBeChecked();
+    expect(screen.getByLabelText(/pomiń walidację$/i)).not.toBeChecked();
   });
 
   it('keeps skip validation disabled when second confirmation is rejected', async () => {
@@ -135,13 +135,13 @@ describe('AdminImportPage', () => {
       expect(fetch).toHaveBeenCalledWith('/api/admin/stats');
     });
 
-    await user.click(screen.getByLabelText(/pomiń walidację/i));
+    await user.click(screen.getByLabelText(/pomiń walidację$/i));
 
     await waitFor(() => {
       expect(confirmMock).toHaveBeenCalledTimes(2);
     });
 
-    expect(screen.getByLabelText(/pomiń walidację/i)).not.toBeChecked();
+    expect(screen.getByLabelText(/pomiń walidację$/i)).not.toBeChecked();
   });
 
   it('allows disabling skip validation without confirmation', async () => {
@@ -152,16 +152,16 @@ describe('AdminImportPage', () => {
       expect(fetch).toHaveBeenCalledWith('/api/admin/stats');
     });
 
-    await user.click(screen.getByLabelText(/pomiń walidację/i));
+    await user.click(screen.getByLabelText(/pomiń walidację$/i));
     await waitFor(() => {
-      expect(screen.getByLabelText(/pomiń walidację/i)).toBeChecked();
+      expect(screen.getByLabelText(/pomiń walidację$/i)).toBeChecked();
     });
 
     confirmMock.mockClear();
-    await user.click(screen.getByLabelText(/pomiń walidację/i));
+    await user.click(screen.getByLabelText(/pomiń walidację$/i));
 
     expect(confirmMock).not.toHaveBeenCalled();
-    expect(screen.getByLabelText(/pomiń walidację/i)).not.toBeChecked();
+    expect(screen.getByLabelText(/pomiń walidację$/i)).not.toBeChecked();
   });
 
   it('asks for double confirmation before enabling clean import', async () => {
@@ -172,7 +172,7 @@ describe('AdminImportPage', () => {
       expect(fetch).toHaveBeenCalledWith('/api/admin/stats');
     });
 
-    await user.click(screen.getByLabelText(/czysty import/i));
+    await user.click(screen.getByLabelText(/czysty import \(/i));
 
     await waitFor(() => {
       expect(confirmMock).toHaveBeenCalledTimes(2);
@@ -184,7 +184,7 @@ describe('AdminImportPage', () => {
       'Potwierdzenie – czysty import'
     );
 
-    expect(screen.getByLabelText(/czysty import/i)).toBeChecked();
+    expect(screen.getByLabelText(/czysty import \(/i)).toBeChecked();
   });
 
   it('keeps clean import disabled when the warning is rejected', async () => {
@@ -197,13 +197,13 @@ describe('AdminImportPage', () => {
       expect(fetch).toHaveBeenCalledWith('/api/admin/stats');
     });
 
-    await user.click(screen.getByLabelText(/czysty import/i));
+    await user.click(screen.getByLabelText(/czysty import \(/i));
 
     await waitFor(() => {
       expect(confirmMock).toHaveBeenCalledTimes(1);
     });
 
-    expect(screen.getByLabelText(/czysty import/i)).not.toBeChecked();
+    expect(screen.getByLabelText(/czysty import \(/i)).not.toBeChecked();
   });
 
   it('keeps clean import disabled when the final confirmation is rejected', async () => {
@@ -216,13 +216,13 @@ describe('AdminImportPage', () => {
       expect(fetch).toHaveBeenCalledWith('/api/admin/stats');
     });
 
-    await user.click(screen.getByLabelText(/czysty import/i));
+    await user.click(screen.getByLabelText(/czysty import \(/i));
 
     await waitFor(() => {
       expect(confirmMock).toHaveBeenCalledTimes(2);
     });
 
-    expect(screen.getByLabelText(/czysty import/i)).not.toBeChecked();
+    expect(screen.getByLabelText(/czysty import \(/i)).not.toBeChecked();
   });
 
   it('allows disabling clean import without confirmation', async () => {
@@ -233,16 +233,16 @@ describe('AdminImportPage', () => {
       expect(fetch).toHaveBeenCalledWith('/api/admin/stats');
     });
 
-    await user.click(screen.getByLabelText(/czysty import/i));
+    await user.click(screen.getByLabelText(/czysty import \(/i));
     await waitFor(() => {
-      expect(screen.getByLabelText(/czysty import/i)).toBeChecked();
+      expect(screen.getByLabelText(/czysty import \(/i)).toBeChecked();
     });
 
     confirmMock.mockClear();
-    await user.click(screen.getByLabelText(/czysty import/i));
+    await user.click(screen.getByLabelText(/czysty import \(/i));
 
     expect(confirmMock).not.toHaveBeenCalled();
-    expect(screen.getByLabelText(/czysty import/i)).not.toBeChecked();
+    expect(screen.getByLabelText(/czysty import \(/i)).not.toBeChecked();
   });
 
   it('cancels the import when the clean import confirmation is rejected', async () => {
@@ -260,9 +260,9 @@ describe('AdminImportPage', () => {
     });
 
     fireEvent.change(input, { target: { files: [file] } });
-    await user.click(screen.getByLabelText(/czysty import/i));
+    await user.click(screen.getByLabelText(/czysty import \(/i));
     await waitFor(() => {
-      expect(screen.getByLabelText(/czysty import/i)).toBeChecked();
+      expect(screen.getByLabelText(/czysty import \(/i)).toBeChecked();
     });
 
     confirmMock.mockClear();

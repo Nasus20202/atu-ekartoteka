@@ -23,6 +23,10 @@
 - **OpenTelemetry** exports traces, metrics and logs when an endpoint is set.
   Logging itself is pino.
 - **`@react-pdf/renderer`** builds the PDFs in the browser.
+- **`unpdf`** reads uploaded settlement PDFs on the server. It ships a
+  self-contained build of PDF.js that Next bundles into the server code, so
+  there is no worker file to trace and nothing extra in the standalone build.
+  `pdfjs-dist` stays a development dependency for the visual PDF tests.
 
 ## The data model
 
@@ -35,6 +39,13 @@ Defined in `prisma/schema.prisma`:
   legacy owner ID plus legacy apartment ID. Can be inactive.
 - `Charge`, `ChargeNotification`, `Payment` - per apartment: monthly charge
   lines, the current notice lines, and one row per year with monthly payments.
+- `UtilitySettlement` - one utility settlement of an apartment and period, with
+  its summary rows (`UtilitySettlementSummary`), lines
+  (`UtilitySettlementLine`) and meter readings (`MeterReading`), as printed. No
+  utility type is stored: rows are grouped by the code in their names when they
+  are shown or checked.
+- `AnnualCostSettlement` - one annual cost settlement of an apartment and
+  period, with its items (`AnnualCostSettlementItem`).
 - `User` - role `ADMIN` or `TENANT`, status `PENDING`, `APPROVED` or
   `REJECTED`.
 - `EmailVerification`, `PasswordReset` - single-use, expiring tokens.
@@ -74,9 +85,15 @@ queries. [Importing data](importing-data.md) explains why.
    apartments; the owner is always taken from the session, never from the URL
    or request body.
 
-The import (and the database validation next to it) is the exception: it
-posts a gzipped JSON body to `/api/admin/import` instead of calling a Server
-Action.
+The imports (and the database validation next to them) are the exception: they
+post a JSON body with gzipped files to routes under `/api/admin/import` instead
+of calling a Server Action.
+
+The settlement views serve two readers with the same components. Which records
+they get is decided by two separate queries:
+`find-tenant-settlements.ts` takes the signed-in user and the history window,
+`find-admin-settlements.ts` takes only the apartment and is called after the
+admin check.
 
 ## Authorization
 
@@ -107,6 +124,8 @@ Consequences:
 | Request, cookie and cache glue | `src/lib/framework/`                                                         |
 | Logging, database, telemetry   | `src/lib/platform/`                                                          |
 | Import pipeline and parsers    | `src/lib/import/`, `src/lib/import/parsers/`, `src/lib/import/types/`        |
+| Settlements                    | `src/lib/settlements/`, `src/components/settlements/`                        |
+| Settlement import section      | `src/components/settlement-import/`                                          |
 | Scheduled jobs                 | `src/lib/cron/`                                                              |
 | Email components and sending   | `src/components/email/`, `src/lib/platform/email/`                           |
 | PDF documents                  | `src/components/pdf/`, `src/lib/platform/pdf/`                               |
@@ -156,8 +175,9 @@ do not import `platform/`, except logging. Domain code does not import
 
 ## PDFs
 
-Residents download three PDFs: charges for a month, payments for a year, and
-the current notice. They are generated in the browser, on demand, from
+Residents download charges for a month, payments for a year, the current
+notice, and from the settlements page the utility settlement, the meter readings
+and the annual costs. They are generated in the browser, on demand, from
 `@react-pdf/renderer` components in `src/components/pdf`. The PDF library is
 loaded only when someone clicks a download button, so it does not weigh on the
 first page load.

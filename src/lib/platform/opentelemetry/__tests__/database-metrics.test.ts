@@ -10,6 +10,9 @@ const { mockPrisma, mockLoggerError } = vi.hoisted(() => {
       charge: counter(),
       chargeNotification: counter(),
       payment: counter(),
+      utilitySettlement: counter(),
+      meterReading: counter(),
+      annualCostSettlement: counter(),
       user: counter(),
     },
     mockLoggerError: vi.fn(),
@@ -69,7 +72,10 @@ describe('registerDatabaseMetrics', () => {
       [2, { table: 'charge' }],
       [3, { table: 'chargeNotification' }],
       [4, { table: 'payment' }],
-      [5, { table: 'user' }],
+      [5, { table: 'utilitySettlement' }],
+      [6, { table: 'meterReading' }],
+      [7, { table: 'annualCostSettlement' }],
+      [8, { table: 'user' }],
     ]);
   });
 
@@ -93,6 +99,6 @@ describe('registerDatabaseMetrics', () => {
       'Failed to update count for table charge: db down'
     );
     expect(observe()).not.toContainEqual([2, { table: 'charge' }]);
-    expect(observe()).toHaveLength(5);
+    expect(observe()).toHaveLength(8);
   });
 });

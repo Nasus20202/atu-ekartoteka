@@ -9,6 +9,7 @@ import { useImport } from '@/components/import/use-import';
 import { ValidateDatabaseCard } from '@/components/import/validate-database-card';
 import { Page } from '@/components/layout/page';
 import { PageHeader } from '@/components/layout/page-header';
+import { SettlementImportCard } from '@/components/settlement-import/settlement-import-card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -151,6 +152,8 @@ export function AdminImportContent() {
           <ImportResults response={response} />
         </CardContent>
       </Card>
+
+      <SettlementImportCard onImported={fetchStats} />
     </Page>
   );
 }

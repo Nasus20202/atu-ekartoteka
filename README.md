@@ -5,9 +5,11 @@ apartments, owners, monthly charges and payments for each association, and lets
 residents check their own balance online. The interface is in Polish.
 
 - **Residents** sign in and see only their own apartments: charges, payments,
-  balance history, and PDFs of each.
+  balance history, utility and annual cost settlements with meter readings, and
+  PDFs of each.
 - **Administrators** approve new accounts, manage associations, apartments and
-  users, and import the data exported from the legacy accounting system.
+  users, and import the data exported from the legacy accounting system,
+  including its settlement printouts.
 
 Data comes from the legacy system, not from manual entry. The import is the
 main way charges and payments get into the app, so

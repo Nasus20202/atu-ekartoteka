@@ -28,51 +28,61 @@ for (const [name, value] of Object.entries(webStreamGlobals)) {
   }
 }
 
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: (query: string) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: () => {},
-    removeListener: () => {},
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    dispatchEvent: () => {},
-  }),
-});
+/** Browser APIs that jsdom lacks; files that run in Node have no window. */
+function mockMissingBrowserApis() {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => {},
+    }),
+  });
 
-// jsdom does not implement scrolling and logs a "Not implemented" error for it
-Object.defineProperty(window, 'scrollTo', { writable: true, value: () => {} });
+  // jsdom does not implement scrolling and logs a "Not implemented" error for it
+  Object.defineProperty(window, 'scrollTo', {
+    writable: true,
+    value: () => {},
+  });
 
-class ResizeObserverMock {
-  observe() {}
+  class ResizeObserverMock {
+    observe() {}
 
-  unobserve() {}
+    unobserve() {}
 
-  disconnect() {}
+    disconnect() {}
+  }
+
+  globalThis.ResizeObserver = ResizeObserverMock;
+
+  Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', {
+    configurable: true,
+    value() {
+      return {
+        width: 800,
+        height: 320,
+        top: 0,
+        right: 800,
+        bottom: 320,
+        left: 0,
+        x: 0,
+        y: 0,
+        toJSON() {
+          return this;
+        },
+      };
+    },
+  });
 }
 
-globalThis.ResizeObserver = ResizeObserverMock;
-
-Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', {
-  configurable: true,
-  value() {
-    return {
-      width: 800,
-      height: 320,
-      top: 0,
-      right: 800,
-      bottom: 320,
-      left: 0,
-      x: 0,
-      y: 0,
-      toJSON() {
-        return this;
-      },
-    };
-  },
-});
+if (typeof window !== 'undefined') {
+  mockMissingBrowserApis();
+}
 
 // SWR keeps a module-level cache and shares a request that is still pending
 // between identical keys; every test starts with neither and sees its own mocks.

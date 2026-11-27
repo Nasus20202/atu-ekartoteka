@@ -149,8 +149,8 @@ it. The grips and the button are hidden while a search is active.
 ### Clean import
 
 **Czysty import** deletes, for every association in the upload, its charges,
-notices and payments before writing the new ones. Apartments and user accounts
-are kept. It asks for two confirmations, and it cannot be undone.
+notices and payments before writing the new ones. Apartments, user accounts and
+[settlements](#settlements-pdf) are kept. It asks for two confirmations, and it cannot be undone.
 
 Use it when old charge, notice or payment lines must disappear. A normal import
 updates and adds records but never deletes charges, notices or payments, so
@@ -218,6 +218,110 @@ Two of these are expected on data from the legacy exporter:
   previous years an admin set on `/admin/settings` (default 2), and only months
   up to the current one. Admins see everything, including future months, so you can
   check an import before the month starts. Older data stays in the database.
+
+## Settlements (PDF)
+
+Utility settlements with meter readings, and annual cost settlements, come from
+the legacy system as PDF printouts. Upload them in the **Rozliczenia (PDF)**
+section of the same page, below the text file import.
+
+### Order
+
+1. Import `lok*.txt`, so every owner has an apartment record.
+2. Import the charges of the periods the settlements cover. Settlements are
+   compared with them; without them a record is imported as not verified.
+3. Import the settlements. When you load several periods, start with the
+   oldest so meter readings can be compared with the ones before.
+
+### Steps
+
+1. Under **Pliki PDF**, choose one or more files. Only the two report templates
+   of the legacy system are read: `Rozliczenie zaliczek za media` and the
+   annual `Rozliczenie kwoty proporcjonalnie`. The type is recognised from the
+   content, so the file name and title do not matter.
+2. Click **Sprawdź pliki**. Nothing is written. Each file shows its type, its
+   errors and warnings, and the records it contains (**Pokaż rozliczenia**) with
+   a status: new (`Nowe`), changed (`Zmienione`), unchanged (`Bez zmian`) or
+   blocked (`Zablokowane`).
+3. Tick the confirmations, if any are asked for:
+   - the printed owner name differs from the stored one only by a trailing
+     annotation such as `#5` or a single letter;
+   - the record replaces a stored settlement of the same apartment and period.
+4. Click **Importuj rozliczenia**. The server reads and checks the files again.
+   A file is written completely or not at all; a file with an error or a missing
+   confirmation is skipped and the others are still imported.
+
+### Options
+
+Switching an option on asks for confirmation twice. Changing one clears the
+preview, so check the files again.
+
+- **Czysty import rozliczeń** removes the stored settlements of the same kind
+  (utility or annual), association and exact period as those in the files, then
+  writes the files. Settlements of other periods are kept, but apartments that
+  are missing from the files lose their settlements of the imported periods. It
+  is all or nothing: while a file has an error or an unticked confirmation, the
+  import cannot be started and the screen names the files that block it. Fix them
+  or leave them out of the selection; settlements of the imported periods that
+  were only in a file you leave out are still removed. The preview shows how many
+  settlements would be removed, and replacing one needs no confirmation.
+- **Pomiń walidację rozliczeń** turns the findings of the checks (sums, charges,
+  stored settlements) into warnings, and the printed values are stored. These
+  still block: an unreadable or unknown document, unrecognised content, an
+  apartment that is not matched, a duplicate, a value that cannot be stored and a
+  missing confirmation.
+
+**Pobierz błędy i ostrzeżenia** downloads the findings with their file, page and
+apartment. The file contains owner names, so handle it like the printouts.
+
+Importing the same file again, or a reprint with a new issue date, writes
+nothing. A confirmation applies only to the content you previewed; choosing
+other files clears it. A settlement cannot be edited in the application, and
+only a clean import removes settlements.
+
+If the upload is too large for one request, send the files in smaller sets. The
+server rejects a request body above 200 MB with `Przesłane pliki są zbyt duże`,
+and a single file above 20 MB once decompressed.
+
+### Matching
+
+A utility record is matched by the apartment ID it prints, an annual record by
+street, building and flat number. The owner name must equal the stored one,
+ignoring letter case and repeated spaces, so a former owner's settlement stays
+with the former owner. The mailing address on the printout is not used. There is
+no approximate matching.
+
+### Findings
+
+Errors block the file (see [Options](#options) for an import without
+validation):
+
+| Problem                        | Meaning                                                                                       |
+| ------------------------------ | --------------------------------------------------------------------------------------------- |
+| Unreadable or unknown document | Not a PDF, or not one of the two templates                                                    |
+| Unrecognised content           | A row inside a record, or a value outside any record, that the reader does not know           |
+| Apartment not matched          | No apartment record, or more than one, has that apartment and owner                           |
+| Contradiction in the file      | Readings, quantities or an owner total do not add up, or an entry is printed twice            |
+| Charges differ                 | Quantities or a flat basis differ from the stored charges by more than 0.01                   |
+| Duplicate or overlap           | Another selected file has the same record, or the period overlaps a selected or stored period |
+
+Warnings are reported and the printed values are stored:
+
+| Problem             | Meaning                                                                                        |
+| ------------------- | ---------------------------------------------------------------------------------------------- |
+| Rounding difference | An amount or coefficient differs from its calculation; for amounts, by more than 0.01 zł       |
+| Not verified        | The charges needed for the comparison are missing                                              |
+| Meters differ       | Billed consumption differs from the meters, or meters of one utility use different units       |
+| Line without a code | A line cannot be assigned to a utility; quantity and charge comparisons of the record are left |
+| Community totals    | The community figures of an annual item differ from the year's charges by more than 0.05 zł    |
+| Meter history       | A reading differs from the stored one of the same day, or a serial number is in another flat   |
+| Owner period        | The settlement period reaches outside the owner's validity dates                               |
+
+For the comparison with charges, a charge belongs to a settlement line when it
+has the same name. Yearly allocation lines (December, unit price 1) are left out
+of utility settlements. In an annual settlement the flat basis is compared with
+the charges; the December allocation of an item is not required, as the amount
+may have been set off against an overpayment.
 
 ## File layouts
 
@@ -290,3 +394,9 @@ other `*-validation.ts` files, writes in `import-hoa-transaction.ts` and
 `importers/`). The page is `src/components/import/`, the routes are
 `src/app/api/admin/import/` and `.../import/validate/`. The behaviour is
 specified in `openspec/specs/data-import/spec.md`.
+
+The settlement import is in `src/lib/settlements/` (reading the PDF in
+`parsers/`, checks in `validation/`, the steps in `use-cases/`), its section in
+`src/components/settlement-import/` and its routes in
+`src/app/api/admin/import/settlements/`. It is specified in
+`openspec/specs/utility-settlements/spec.md`.

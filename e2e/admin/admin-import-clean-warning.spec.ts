@@ -10,14 +10,14 @@ test.describe('Clean import warnings', () => {
   }) => {
     await adminPage.goto('/admin/import');
 
-    await adminPage.getByLabel(/czysty import/i).click();
+    await adminPage.getByLabel(/czysty import \(/i).click();
 
     const dialog = adminPage.getByRole('dialog');
     await expect(dialog).toContainText('Ostrzeżenie – czysty import');
     await dialog.getByRole('button', { name: 'Anuluj', exact: true }).click();
 
     await expect(dialog).toBeHidden();
-    await expect(adminPage.getByLabel(/czysty import/i)).not.toBeChecked();
+    await expect(adminPage.getByLabel(/czysty import \(/i)).not.toBeChecked();
   });
 
   test('clean import is enabled only after both warnings are confirmed', async ({
@@ -25,7 +25,7 @@ test.describe('Clean import warnings', () => {
   }) => {
     await adminPage.goto('/admin/import');
 
-    await adminPage.getByLabel(/czysty import/i).click();
+    await adminPage.getByLabel(/czysty import \(/i).click();
 
     const dialog = adminPage.getByRole('dialog');
     await expect(dialog).toContainText('Ostrzeżenie – czysty import');
@@ -37,6 +37,6 @@ test.describe('Clean import warnings', () => {
       .click();
 
     await expect(dialog).toBeHidden();
-    await expect(adminPage.getByLabel(/czysty import/i)).toBeChecked();
+    await expect(adminPage.getByLabel(/czysty import \(/i)).toBeChecked();
   });
 });

@@ -11,6 +11,7 @@ import bcrypt from 'bcrypt';
 import * as pg from 'pg';
 
 import { loadSql } from './load-sql';
+import { seedSettlements } from './seed-settlements';
 import { seedYearHistory } from './seed-year-history';
 import {
   ADMIN_EMAIL,
@@ -136,6 +137,7 @@ async function seedTenant(
     passwordHash,
     name,
   ]);
+  const apartmentIds: string[] = [];
   for (const apartment of apartments) {
     const apartmentId = await upsertApartment(
       client,
@@ -145,7 +147,9 @@ async function seedTenant(
       apartment
     );
     await seedCharges(client, apartmentId);
+    apartmentIds.push(apartmentId);
   }
+  return apartmentIds;
 }
 
 async function seedAdmin(client: pg.Client) {
@@ -203,16 +207,25 @@ async function seedRecords(client: pg.Client) {
   );
 
   await seedAdmin(client);
-  await seedTenant(client, VISUAL_EMAIL, VISUAL_NAME, [
-    {
-      hoaId,
-      externalOwnerId: 'WVIS01',
-      externalApartmentId: 'TESTVIS-TESTVIS-00000-00001M',
-      address: 'ul. Testowa z Bardzo Długą Nazwą Ulicy E2E',
-      building: '11',
-      number: '1',
-    },
-  ]);
+  const [settledApartmentId] = await seedTenant(
+    client,
+    VISUAL_EMAIL,
+    VISUAL_NAME,
+    [
+      {
+        hoaId,
+        externalOwnerId: 'WVIS01',
+        externalApartmentId: 'TESTVIS-TESTVIS-00000-00001M',
+        address: 'ul. Testowa z Bardzo Długą Nazwą Ulicy E2E',
+        building: '11',
+        number: '1',
+      },
+    ]
+  );
+  await seedSettlements(client, settledApartmentId, {
+    utility: [VISUAL_YEAR, VISUAL_YEAR - 1],
+    annual: [VISUAL_YEAR - 1],
+  });
   await seedTenant(client, VISUAL_MULTI_EMAIL, VISUAL_MULTI_NAME, [
     {
       hoaId,

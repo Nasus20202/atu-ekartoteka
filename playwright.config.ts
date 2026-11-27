@@ -27,6 +27,7 @@ import {
 } from './e2e/config/patterns';
 import { webkitUse } from './e2e/config/webkit';
 import { getVisualDatabaseUrl } from './e2e/utils/database-urls';
+import { TIMEZONE_ID } from './e2e/utils/timezone';
 
 // Load environment variables from .env file
 dotenv.config({ path: fileURLToPath(new URL('./.env', import.meta.url)) });
@@ -38,7 +39,6 @@ const CI_RETRIES = 2,
   CI_WORKERS = 4;
 const MAX_SCREENSHOT_DIFF_RATIO = 0.01;
 
-const TIMEZONE_ID = 'Europe/Warsaw';
 const VISUAL_LOCALE = 'pl-PL';
 const VISUAL_SNAPSHOT_PATH =
   '{testDir}/visual/__screenshots__/{testFileName}/{arg}-{projectName}-{platform}{ext}';

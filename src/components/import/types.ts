@@ -12,6 +12,9 @@ export interface DatabaseStats {
   notifications: number;
   payments: number;
   users: number;
+  utilitySettlements: number;
+  meterReadings: number;
+  annualSettlements: number;
 }
 
 export interface EntityStats {

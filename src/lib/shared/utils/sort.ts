@@ -1,5 +1,8 @@
 export type SortDirection = 'asc' | 'desc';
 
+export const isSortDirection = (value: string): value is SortDirection =>
+  value === 'asc' || value === 'desc';
+
 export interface SortState<K extends string> {
   key: K;
   direction: SortDirection;

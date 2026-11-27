@@ -18,6 +18,7 @@ export const PAGE_TITLES = {
   chargesFallback: 'Naliczenia mieszkania',
   payments: 'Wpłaty',
   paymentsFallback: 'Wpłaty mieszkania',
+  settlements: 'Rozliczenia',
   hoaList: 'Wspólnoty mieszkaniowe',
   hoaApartmentsFallback: 'Mieszkania wspólnoty',
   apartment: 'Lokal',
