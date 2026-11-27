@@ -104,4 +104,12 @@ describe('Button', () => {
     const button = screen.getByRole('button', { name: 'Submit' });
     expect(button).toHaveAttribute('type', 'submit');
   });
+
+  it('does not resize when a full-width button is pressed', () => {
+    render(<Button className="w-full">Wide</Button>);
+    const button = screen.getByRole('button', { name: 'Wide' });
+
+    // The compound selector outranks the press scale of every button
+    expect(button).toHaveClass('[&.w-full:active]:scale-100', 'w-full');
+  });
 });
