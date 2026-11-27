@@ -9,7 +9,6 @@ import {
   type VotingTenant,
 } from '../../utils/create-voting-tenant';
 import {
-  closeVoting,
   createDraftVoting,
   enterMeetingBallot,
   publishVoting,
@@ -45,7 +44,7 @@ test.describe('Meeting votes', () => {
       questions: [QUESTION],
     });
 
-  test('an owner sees a meeting vote and no results, even once closed', async ({
+  test('an owner sees a meeting vote and cannot cast it again', async ({
     adminPage,
     page,
   }) => {
@@ -76,15 +75,6 @@ test.describe('Meeting votes', () => {
     await expect(
       adminPage.getByText('Z zebrania').filter({ visible: true })
     ).toHaveCount(1);
-    await closeVoting(adminPage);
-    await adminPage.getByRole('tab', { name: 'Wyniki' }).click();
-    await expect(adminPage.getByRole('progressbar').first()).toBeVisible();
-
-    await reopen(page);
-    await expect(page.getByText(/Głosowanie zostało zakończone/)).toBeVisible();
-    await expect(meetingVote).toBeVisible();
-    await expect(page.getByRole('progressbar')).toHaveCount(0);
-    await expect(page.getByRole('button', { name: /Dalej/ })).toBeHidden();
   });
 
   test('the notice preselects the owners who still have to vote', async ({

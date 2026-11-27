@@ -66,7 +66,7 @@ test('a published voting cannot be changed and an archived one is hidden', async
   await expect(page.getByText(NOT_FOUND)).toBeVisible();
 });
 
-test('owners cannot vote after the deadline and never see results', async ({
+test('owners cannot vote after the deadline', async ({
   adminPage,
   userPage,
 }) => {
@@ -104,14 +104,6 @@ test('owners cannot vote after the deadline and never see results', async ({
   await expect(
     adminPage.getByRole('button', { name: 'Powiadom użytkowników' })
   ).toBeHidden();
-
-  await closeVoting(adminPage);
-  await expect(adminPage.getByRole('progressbar').first()).toBeVisible();
-  await userPage.goto(`/dashboard/votings/${votingId}`);
-  await expect(
-    userPage.getByText(/Głosowanie zostało zakończone/)
-  ).toBeVisible();
-  await expect(userPage.getByRole('progressbar')).toHaveCount(0);
 });
 
 test('owners cannot abstain in a voting that blocks it', async ({

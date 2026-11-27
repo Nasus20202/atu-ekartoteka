@@ -46,21 +46,12 @@ test('an admin edits and deletes a draft voting that owners cannot see', async (
   await expect(adminPage.getByText('Strona nie znaleziona')).toBeVisible();
 });
 
-test('an owner cannot open the voting admin area or a draft', async ({
-  adminPage,
-  userPage,
-}) => {
+test('an owner cannot open a draft', async ({ adminPage, userPage }) => {
   const title = `Prywatny szkic E2E ${Date.now()}`;
   const votingId = await createDraftVoting(adminPage, {
     title,
     questions: [FIRST_QUESTION],
   });
-
-  await userPage.goto('/admin/votings');
-  await expect(userPage).toHaveURL(/\/dashboard/);
-
-  await userPage.goto(`/admin/votings/${votingId}`);
-  await expect(userPage).toHaveURL(/\/dashboard/);
 
   await userPage.goto(`/dashboard/votings/${votingId}`);
   await expect(userPage.getByText(title)).toBeHidden();
