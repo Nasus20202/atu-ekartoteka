@@ -183,6 +183,12 @@ The system SHALL have end-to-end tests covering all primary user flows.
 - **WHEN** it runs
 - **THEN** it covers: viewing assigned apartments, browsing charges and payments per apartment, and updating the user profile
 
+#### Scenario: Settlement import flows
+
+- **GIVEN** the admin E2E suite
+- **WHEN** it runs
+- **THEN** it uploads settlement PDFs that the tests generate from fictional printed rows, and covers utility and annual settlements, the findings of the checks, several files at once, the clean import, the import without validation and the way to the tenant's page
+
 ---
 
 ### Requirement: E2E Browser Target
