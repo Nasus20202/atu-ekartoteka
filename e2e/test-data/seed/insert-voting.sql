@@ -1,4 +1,4 @@
--- Insert a voting with a fixed id and dates for visual regression tests
+-- Insert a voting with a given id and dates
 -- Parameters: $1 = id, $2 = HOA id, $3 = title, $4 = description, $5 = status,
 --             $6 = deadline (may be NULL), $7 = created at
 INSERT INTO

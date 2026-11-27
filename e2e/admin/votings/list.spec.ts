@@ -4,6 +4,11 @@
 
 import { expect, test } from '../../fixtures';
 import { createDraftVoting } from '../../utils/voting';
+import {
+  createVotingHoa,
+  deleteVotingHoa,
+  type VotingHoa,
+} from '../../utils/voting-hoa';
 import { waitForHydration } from '../../utils/wait-for-hydration';
 
 test('filters, sorts and tabulates the votings', async ({ adminPage }) => {
@@ -39,4 +44,42 @@ test('filters, sorts and tabulates the votings', async ({ adminPage }) => {
   ).toHaveAttribute('aria-sort', 'ascending');
   const own = table.getByRole('row').filter({ hasText: prefix });
   await expect(own).toHaveText([/ A/, / B/]);
+});
+
+test.describe('Voting filters without a match', () => {
+  let hoa: VotingHoa;
+
+  // The list has to hold one voting only
+  test.beforeEach(async () => {
+    hoa = await createVotingHoa();
+  });
+
+  test.afterEach(async () => {
+    await deleteVotingHoa(hoa);
+  });
+
+  test('offers to clear filters that match nothing', async ({ adminPage }) => {
+    const title = `Filtry E2E ${Date.now()}`;
+    await createDraftVoting(adminPage, {
+      hoaName: hoa.externalId,
+      title,
+      questions: ['Czy?'],
+    });
+    const empty = adminPage.getByText('Brak pasujących głosowań');
+    const listed = adminPage.getByText(title).filter({ visible: true });
+
+    // An unknown status is ignored
+    await adminPage.goto(`/admin/votings?hoa=${hoa.hoaId}&status=NIEZNANY`);
+    await expect(listed).toBeVisible();
+
+    await adminPage.goto(`/admin/votings?hoa=${hoa.hoaId}&status=CLOSED`);
+    await expect(empty).toBeVisible();
+    const clear = adminPage.getByRole('button', { name: 'Wyczyść filtry' });
+    await waitForHydration(clear);
+    await clear.click();
+
+    await expect(adminPage).toHaveURL(/\/admin\/votings$/);
+    await expect(empty).toBeHidden();
+    await expect(listed).toBeVisible();
+  });
 });

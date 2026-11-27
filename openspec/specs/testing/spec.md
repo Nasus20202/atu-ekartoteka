@@ -93,6 +93,7 @@ The system SHALL store all end-to-end tests in the `e2e/` directory, organised b
   - `e2e/auth/` — login, registration, email verification, password reset, logout, orphaned session, access control
   - `e2e/admin/` — admin flows, grouped by topic in `apartments/`, `hoa/`, `import/`, `settlements/`, `users/` and `votings/`; pages that span topics stay in `e2e/admin/`
   - `e2e/dashboard/` — tenant dashboard, charges, payments, settlements, votings, profile
+  - `e2e/integrations/` — only flows that need a mocked external service
 
 #### Scenario: E2E file naming
 
@@ -188,6 +189,12 @@ The system SHALL have end-to-end tests covering all primary user flows.
 - **GIVEN** the admin E2E suite
 - **WHEN** it runs
 - **THEN** it uploads settlement PDFs that the tests generate from fictional printed rows, and covers utility and annual settlements, the findings of the checks, several files at once, the clean import, the import without validation and the way to the tenant's page
+
+#### Scenario: Voting flows
+
+- **GIVEN** the admin, dashboard and integrations E2E suites
+- **WHEN** they run
+- **THEN** they cover drafting, publishing, closing and archiving a voting, meeting votes, results, the notice to owners, who may open a voting, the tenant's badge, dashboard card and ballot, and in the integrations suite the voting emails
 
 ---
 
@@ -347,13 +354,20 @@ Email templates SHALL be covered by unit tests and visual screenshot tests.
 
 ### Requirement: Integration E2E Specs
 
-E2E specs in `e2e/integrations/` SHALL exercise SMTP, Google sign-in and Turnstile against local mocks.
+E2E specs in `e2e/integrations/` SHALL exercise SMTP, Google sign-in and Turnstile against local mocks. A flow that needs none of the mocked services SHALL be tested outside this directory.
 
 #### Scenario: Emails are delivered
 
 - **GIVEN** the integrations app with SMTP pointing at the mock
 - **WHEN** a user registers, requests a password reset, or an admin approves an account
 - **THEN** the spec reads the captured message for that recipient and follows its link to complete the flow
+
+#### Scenario: Voting emails
+
+- **GIVEN** the integrations app with SMTP pointing at the mock
+- **WHEN** an admin notifies owners of a voting, or an owner asks to cast a vote
+- **THEN** the specs read the notice and the confirmation email, and cover that the emailed link casts the vote, lists only the answered apartments, works once, only for its owner and only while it and the voting are open
+- **AND** specs about votes already cast write them to the database instead of sending an email
 
 #### Scenario: Google sign-in
 

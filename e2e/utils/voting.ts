@@ -15,6 +15,8 @@ export const CLOSE_VOTING = 'Zakończ głosowanie';
 const VOTING_ID_PATTERN = /\/admin\/votings\/([^/?]+)$/;
 
 export interface DraftVoting {
+  /** The test HOA unless named; another one is found by typing */
+  hoaName?: string;
   title: string;
   questions: string[];
   /** Local date and time of the deadline, e.g. 2026-12-31T10:00 */
@@ -25,12 +27,19 @@ export interface DraftVoting {
 /** Creates a draft for the test HOA through the form and returns its id. */
 export async function createDraftVoting(
   page: Page,
-  { title, questions, endsAt, blockAbstain }: DraftVoting
+  { hoaName, title, questions, endsAt, blockAbstain }: DraftVoting
 ): Promise<string> {
   await page.goto('/admin/votings/new');
   const hoaSelect = page.getByLabel('Wspólnota');
   await hoaSelect.click();
-  await page.getByRole('option', { name: TEST_HOA_NAME, exact: true }).click();
+  if (hoaName) {
+    await page
+      .getByRole('combobox', { name: 'Szukaj wspólnoty' })
+      .fill(hoaName);
+  }
+  await page
+    .getByRole('option', { name: hoaName ?? TEST_HOA_NAME, exact: true })
+    .click();
   // The closing list takes the focus back; typing before that can be lost
   await expect(hoaSelect).toBeFocused();
   await page.getByLabel('Tytuł').fill(title);
@@ -100,6 +109,24 @@ export async function closeVoting(page: Page) {
   await confirmAdminAction(page, CLOSE_VOTING);
   await expect(page.getByRole('button', { name: 'Zarchiwizuj' })).toBeVisible();
   await expect(page.getByRole('button', { name: CLOSE_VOTING })).toBeHidden();
+}
+
+/** Enters a meeting vote on a one-question draft, finding it by its owner. */
+export async function enterMeetingBallot(
+  page: Page,
+  owner: string,
+  apartmentNumber: string,
+  choice: 'Za' | 'Przeciw'
+) {
+  const form = page.getByRole('form', { name: 'Nowy głos z zebrania' });
+  await form.getByRole('button', { name: 'Lokal' }).click();
+  await page.getByRole('combobox').fill(owner);
+  // The list still shows other owners until the search has answered
+  await page
+    .getByRole('option', { name: `/${apartmentNumber} – ${owner}` })
+    .click();
+  await answerQuestion(page, 1, choice);
+  await form.getByRole('button', { name: 'Zapisz głos' }).click();
 }
 
 /** The ballot of one apartment, for an owner of several. */
