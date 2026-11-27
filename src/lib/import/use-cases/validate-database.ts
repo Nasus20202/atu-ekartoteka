@@ -1,4 +1,5 @@
 import { validateBalanceDrift } from '@/lib/import/pipeline/balance-drift-validation';
+import { databaseValidationSummary } from '@/lib/import/pipeline/import-run-summary';
 import {
   loadChargeEntries,
   loadPaymentRows,
@@ -16,6 +17,10 @@ import type {
 import { validateCrossYearBalances } from '@/lib/import/validation/cross-year-validation';
 import { withYearStatus } from '@/lib/import/validation/year-status';
 import { prisma } from '@/lib/platform/database/prisma';
+import {
+  IMPORT_METRIC_TYPE,
+  measureImportRun,
+} from '@/lib/platform/opentelemetry/import-metrics';
 
 type ApartmentKeys = { externalOwnerId: string; externalApartmentId: string };
 
@@ -93,9 +98,19 @@ export type DatabaseValidationResult = BatchImportResult & {
  * Runs the import checks against stored data without modifying anything. With
  * `skipFullValidation`, only the year balances are loaded and checked.
  */
-export async function validateDatabase({
+export async function validateDatabase(
+  options: ValidateDatabaseOptions = {}
+): Promise<DatabaseValidationResult> {
+  return measureImportRun(
+    IMPORT_METRIC_TYPE.DATABASE_VALIDATION,
+    () => runValidation(options),
+    databaseValidationSummary
+  );
+}
+
+async function runValidation({
   skipFullValidation = false,
-}: ValidateDatabaseOptions = {}): Promise<DatabaseValidationResult> {
+}: ValidateDatabaseOptions): Promise<DatabaseValidationResult> {
   const hoas = await prisma.homeownersAssociation.findMany({
     select: { id: true, externalId: true, name: true },
     orderBy: { externalId: 'asc' },

@@ -4,6 +4,9 @@
  * are pushed once a minute and counters only grow, so one export is enough.
  */
 
+import { row } from '@/__tests__/helpers/settlement-pdf/fixture-page';
+import { renderFixturePdf } from '@/__tests__/helpers/settlement-pdf/render-fixture-pdf';
+
 import { expect, test } from '../fixtures';
 import {
   expectLoginRejected,
@@ -13,6 +16,7 @@ import {
 import { createCredentialsUser } from '../utils/create-credentials-user';
 import {
   extractLink,
+  loginWithTurnstile,
   stubTurnstileWidget,
   TURNSTILE_INVALID_TOKEN,
   TURNSTILE_VALID_TOKEN,
@@ -26,7 +30,16 @@ import {
 } from '../utils/otlp';
 import { listMetrics } from '../utils/otlp-capture';
 import {
+  DB_SIZE_METRIC,
+  EXPECTED_POINTS,
+  hasImportRunOfType,
+  TRACKED_TABLES,
+  USER_TABLE,
+} from '../utils/otlp-metric-expectations';
+import { previewSettlementFile } from '../utils/settlement-preview';
+import {
   ADMIN_EMAIL,
+  ADMIN_PASSWORD,
   E2E_PASSWORD,
   RESET_NEW_PASSWORD,
   WRONG_PASSWORD,
@@ -38,39 +51,7 @@ const VERIFICATION_SUBJECT = 'Potwierdź swój adres email';
 const ADMIN_NOTICE_SUBJECT =
   'Nowa rejestracja użytkownika - wymaga zatwierdzenia';
 const RESET_SUBJECT = 'Resetowanie hasła';
-const DB_SIZE_METRIC = 'ekartoteka.db.size';
-const USER_TABLE = { table: 'user' };
-const TRACKED_TABLES = [
-  'homeownersAssociation',
-  'apartment',
-  'charge',
-  'chargeNotification',
-  'payment',
-  'user',
-];
-
-const CREDENTIALS = { provider: 'credentials' };
-const EXPECTED_POINTS: [string, Record<string, string>][] = [
-  ['ekartoteka.auth.login', { ...CREDENTIALS, result: 'success' }],
-  [
-    'ekartoteka.auth.login',
-    { ...CREDENTIALS, result: 'failure', reason: 'invalid_turnstile' },
-  ],
-  [
-    'ekartoteka.auth.login',
-    { ...CREDENTIALS, result: 'failure', reason: 'user_not_found' },
-  ],
-  [
-    'ekartoteka.auth.login',
-    { ...CREDENTIALS, result: 'failure', reason: 'invalid_credentials' },
-  ],
-  ['ekartoteka.auth.registration', { ...CREDENTIALS, result: 'success' }],
-  ['ekartoteka.auth.email_verification', { result: 'success' }],
-  ['ekartoteka.auth.password_reset', { result: 'success' }],
-  ['ekartoteka.email.sent', { type: 'verification', result: 'success' }],
-  ['ekartoteka.email.sent', { type: 'admin_notification', result: 'success' }],
-  ['ekartoteka.email.sent', { type: 'password_reset', result: 'success' }],
-];
+const SETTLEMENT_FILE_NAME = 'rozliczenie.pdf';
 
 const METRIC_TEST_TIMEOUT_MS = METRIC_EXPORT_TIMEOUT_MS + METRIC_TEST_MARGIN_MS;
 
@@ -149,13 +130,37 @@ test.describe('OpenTelemetry metrics', () => {
     ).toBeVisible();
   });
 
+  test('an import preview and a database validation are counted', async ({
+    page,
+  }) => {
+    await loginWithTurnstile(page, ADMIN_EMAIL, ADMIN_PASSWORD);
+
+    // A document that is not a settlement: the preview fails and writes nothing
+    await page.goto('/admin/import');
+    await previewSettlementFile(
+      page,
+      SETTLEMENT_FILE_NAME,
+      await renderFixturePdf([[row('Faktura VAT 1/2026')]])
+    );
+    await expect(page.getByText(/Nierozpoznany dokument:/)).toBeVisible();
+
+    await page.getByRole('button', { name: 'Waliduj dane' }).click();
+    await expect(
+      page.getByText(
+        /Walidacja (zakończona pomyślnie|z uwagami|nie powiodła się)/
+      )
+    ).toBeVisible();
+  });
+
   test('all custom metrics are exported', async ({ request }) => {
     const metrics = await pollUntil(async () => {
       const captured = await listMetrics(request);
       const complete =
         EXPECTED_POINTS.every(([name, attributes]) =>
           hasMetricPoint(captured, name, attributes)
-        ) && (latestPointValue(captured, DB_SIZE_METRIC, USER_TABLE) ?? 0) >= 1;
+        ) &&
+        (latestPointValue(captured, DB_SIZE_METRIC, USER_TABLE) ?? 0) >= 1 &&
+        hasImportRunOfType(captured, 'database_validation');
       return complete ? captured : undefined;
     }, METRIC_EXPORT_TIMEOUT_MS);
 

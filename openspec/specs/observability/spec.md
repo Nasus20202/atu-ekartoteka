@@ -163,6 +163,54 @@ Every email send attempt SHALL be counted (see also: `email-notifications/spec.m
 
 ---
 
+### Requirement: Import Metrics
+
+Import runs SHALL be counted, timed and summarised as OTLP metrics under the `ekartoteka.import` meter. The runs are `data` (text file import), `database_validation`, `settlement_preview` and `settlement` (settlement PDF import).
+
+#### Scenario: Run counter and duration
+
+- **GIVEN** an import run finishes
+- **WHEN** the run is measured
+- **THEN** the `ekartoteka.import.run` counter is incremented with:
+  - `type`: `data` | `database_validation` | `settlement_preview` | `settlement`
+  - `result`: `success` when the run is complete, `partial` when it stopped short but some of it succeeded, `failure` otherwise
+- **AND** the `ekartoteka.import.duration` histogram records the run's duration in seconds with the same attributes, using explicit bucket boundaries from 0.1 s to 300 s
+
+#### Scenario: Failed run
+
+- **GIVEN** an import run throws
+- **WHEN** the run is measured
+- **THEN** it is counted with `result` `failure` and the error is rethrown unchanged
+
+#### Scenario: Records written
+
+- **GIVEN** an import run writes records
+- **WHEN** the run is measured
+- **THEN** the `ekartoteka.import.records` counter is incremented by the number of records for each `entity` (`apartment`, `charge`, `notification`, `payment`, `utility_settlement`, `annual_settlement`) and `action` (`created`, `updated`, `skipped`, `deleted`, `unchanged`), and zero counts are not added
+- **AND** an HOA whose transaction was rolled back, or that was stopped before any write, counts no records
+- **AND** previews and database validation count no records
+
+#### Scenario: Findings
+
+- **GIVEN** an import run reports errors or warnings
+- **WHEN** the run is measured
+- **THEN** the `ekartoteka.import.findings` counter is incremented once per finding with `type`, `severity` (`error` | `warning`) and `kind` (the import error, import warning or settlement issue kind)
+- **AND** an association error copied into the batch error list is counted only once
+
+#### Scenario: Recording never changes the import
+
+- **GIVEN** a metric cannot be recorded
+- **WHEN** the run finishes
+- **THEN** the failure is logged and the run returns its result as usual
+
+#### Scenario: Imports on the dashboard
+
+- **GIVEN** the Grafana dashboard in `grafana/dashboards`
+- **WHEN** its Imports row is shown
+- **THEN** it has panels for runs by type and result, duration p50 and p95 by type, records by entity and action, and findings by severity and kind, counted over the selected time range
+
+---
+
 ### Requirement: Database Size Metrics
 
 Row counts for core database tables SHALL be exposed as an observable gauge.
@@ -172,7 +220,7 @@ Row counts for core database tables SHALL be exposed as an observable gauge.
 - **GIVEN** OpenTelemetry is initialised
 - **WHEN** the metric reader collects from the `ekartoteka.db.size` gauge
 - **THEN** it returns the cached row count for each of the following tables, each as a separate data point with a `table` attribute:
-  `homeownersAssociation`, `apartment`, `charge`, `chargeNotification`, `payment`, `user`
+  `homeownersAssociation`, `apartment`, `charge`, `chargeNotification`, `payment`, `user`, `utilitySettlement`, `meterReading`, `annualCostSettlement`
 
 #### Scenario: Count refresh interval
 
@@ -185,6 +233,12 @@ Row counts for core database tables SHALL be exposed as an observable gauge.
 - **GIVEN** the `PeriodicExportingMetricReader` configuration
 - **WHEN** the SDK is running
 - **THEN** metrics are pushed to the OTLP endpoint every 60 seconds
+
+#### Scenario: Counts on the dashboard
+
+- **GIVEN** the Grafana dashboard in `grafana/dashboards`
+- **WHEN** its overview is shown
+- **THEN** it has a count panel for utility settlements, meter readings and annual cost settlements
 
 ---
 

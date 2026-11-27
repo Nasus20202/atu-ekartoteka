@@ -1,5 +1,6 @@
 import { PrismaClient } from '@/generated/prisma/client';
 import { importHoaInTransaction } from '@/lib/import/pipeline/import-hoa-transaction';
+import { dataImportSummary } from '@/lib/import/pipeline/import-run-summary';
 import { parseHoaFiles } from '@/lib/import/pipeline/parse-hoa-files';
 import { validateHoaFiles } from '@/lib/import/pipeline/validate-hoa-files';
 import { IMPORT_HOA_CONCURRENCY } from '@/lib/import/rules/constants';
@@ -20,6 +21,10 @@ import {
 } from '@/lib/import/types/import-result';
 import { prisma } from '@/lib/platform/database/prisma';
 import { createLogger } from '@/lib/platform/logging/logger';
+import {
+  IMPORT_METRIC_TYPE,
+  measureImportRun,
+} from '@/lib/platform/opentelemetry/import-metrics';
 import { getErrorMessage } from '@/lib/shared/utils/error-message';
 
 const IMPORT_TRANSACTION_TIMEOUT_MS = 60000;
@@ -88,6 +93,17 @@ async function importSingleHOA(
 export async function processBatchImport(
   files: File[],
   options: ImportOptions = {}
+): Promise<BatchImportResult> {
+  return measureImportRun(
+    IMPORT_METRIC_TYPE.DATA,
+    () => runBatchImport(files, options),
+    dataImportSummary
+  );
+}
+
+async function runBatchImport(
+  files: File[],
+  options: ImportOptions
 ): Promise<BatchImportResult> {
   const errors: ImportError[] = [];
   const filesByHOA = groupFilesByHOA(files, errors);
