@@ -45,6 +45,11 @@ export async function createDraftVoting(
   return id;
 }
 
+/** Loads the current page again; unlike reload() it waits for streamed content. */
+export async function reopen(page: Page) {
+  await page.goto(page.url());
+}
+
 /** Confirms the dialog of an admin action button, e.g. "Opublikuj". */
 export async function confirmAdminAction(page: Page, label: string) {
   await page.getByRole('button', { name: label }).click();

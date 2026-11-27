@@ -9,6 +9,7 @@ import {
   createDraftVoting,
   expireVotingDeadline,
   publishVoting,
+  reopen,
   showVotingResults,
   tomorrowForDeadlineField,
 } from '../utils/voting';
@@ -33,7 +34,7 @@ test('owners cannot vote after the deadline and see results only once shown', as
   await expireVotingDeadline(votingId);
 
   // The deadline passed: no ballot form, no results, a clear explanation
-  await userPage.reload();
+  await reopen(userPage);
   await expect(userPage.getByText(/Zakończono:/)).toBeVisible();
   await expect(userPage.getByText(/Termin głosowania minął/)).toBeVisible();
   await expect(userPage.getByRole('button', { name: /Dalej/ })).toBeHidden();
@@ -46,7 +47,7 @@ test('owners cannot vote after the deadline and see results only once shown', as
   expect(await countBallots(votingId)).toBe(0);
 
   // The admin still sees it as active until the status changes
-  await adminPage.reload();
+  await reopen(adminPage);
   await expect(adminPage.getByText(/Zakończono:/)).toBeVisible();
   await expect(
     adminPage.getByRole('button', { name: 'Powiadom użytkowników' })

@@ -27,6 +27,46 @@ interface Props {
   questions: VotingQuestionDto[];
 }
 
+function AnswerChips({
+  voter,
+  questions,
+}: {
+  voter: VoterDto;
+  questions: VotingQuestionDto[];
+}) {
+  return (
+    <ul className="flex flex-wrap gap-1.5">
+      {questions.map((question, index) => {
+        const choice = voter.answers[question.id];
+
+        return (
+          <li
+            key={question.id}
+            title={question.text}
+            className={cn(
+              'whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium',
+              choice && CHOICE_CLASSES[choice]
+            )}
+          >
+            {index + 1}. {choice ? VOTE_CHOICE_LABELS[choice] : '—'}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+function Voter({ voter }: { voter: VoterDto }) {
+  return (
+    <>
+      <div className="font-medium">{voter.voterName}</div>
+      <div className="break-all text-xs text-muted-foreground">
+        {voter.voterEmail}
+      </div>
+    </>
+  );
+}
+
 export function VotingVotersTable({ voters, questions }: Props) {
   if (voters.length === 0) {
     return (
@@ -39,53 +79,54 @@ export function VotingVotersTable({ voters, questions }: Props) {
   }
 
   return (
-    <Card className="overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Właściciel</TableHead>
-            <TableHead>Lokal</TableHead>
-            <TableHead>Data głosu</TableHead>
-            <TableHead>Odpowiedzi</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {voters.map((voter) => (
-            <TableRow key={voter.ballotId}>
-              <TableCell>
-                <div className="font-medium">{voter.voterName}</div>
-                <div className="text-xs text-muted-foreground">
-                  {voter.voterEmail}
-                </div>
-              </TableCell>
-              <TableCell>{formatApartmentLabel(voter.apartment)}</TableCell>
-              <TableCell className="whitespace-nowrap">
-                {formatDateTime(voter.votedAt)}
-              </TableCell>
-              <TableCell>
-                <ul className="flex flex-wrap gap-1.5">
-                  {questions.map((question, index) => {
-                    const choice = voter.answers[question.id];
-
-                    return (
-                      <li
-                        key={question.id}
-                        title={question.text}
-                        className={cn(
-                          'rounded-full px-2 py-0.5 text-xs font-medium',
-                          choice && CHOICE_CLASSES[choice]
-                        )}
-                      >
-                        {index + 1}. {choice ? VOTE_CHOICE_LABELS[choice] : '—'}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </TableCell>
+    <>
+      {/* Narrow screens: one card per apartment instead of a clipped table */}
+      <ul className="space-y-3 md:hidden">
+        {voters.map((voter) => (
+          <li key={voter.ballotId}>
+            <Card>
+              <CardContent className="space-y-3 p-4">
+                <Voter voter={voter} />
+                <p className="text-sm">
+                  {formatApartmentLabel(voter.apartment)}
+                  <span className="block text-xs text-muted-foreground">
+                    {formatDateTime(voter.votedAt)}
+                  </span>
+                </p>
+                <AnswerChips voter={voter} questions={questions} />
+              </CardContent>
+            </Card>
+          </li>
+        ))}
+      </ul>
+      <Card className="hidden overflow-hidden md:block">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Właściciel</TableHead>
+              <TableHead>Lokal</TableHead>
+              <TableHead>Data głosu</TableHead>
+              <TableHead>Odpowiedzi</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </Card>
+          </TableHeader>
+          <TableBody>
+            {voters.map((voter) => (
+              <TableRow key={voter.ballotId}>
+                <TableCell>
+                  <Voter voter={voter} />
+                </TableCell>
+                <TableCell>{formatApartmentLabel(voter.apartment)}</TableCell>
+                <TableCell className="whitespace-nowrap">
+                  {formatDateTime(voter.votedAt)}
+                </TableCell>
+                <TableCell>
+                  <AnswerChips voter={voter} questions={questions} />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Card>
+    </>
   );
 }

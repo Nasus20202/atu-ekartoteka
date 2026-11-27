@@ -14,6 +14,7 @@ import {
   countBallots,
   createDraftVoting,
   publishVoting,
+  reopen,
 } from '../utils/voting';
 
 const CODE_SUBJECT = 'Kod potwierdzający głosowanie';
@@ -107,7 +108,7 @@ test('owners vote with an emailed code and see the published results', async ({
     expect(await countBallots(votingId)).toBe(2);
 
     // The vote is final: no form, own answers, no results while active
-    await owner.reload();
+    await reopen(owner);
     await expect(
       owner.getByText('Twój głos został oddany i potwierdzony')
     ).toBeVisible();
@@ -122,7 +123,7 @@ test('owners vote with an emailed code and see the published results', async ({
     await owner.goto(`/dashboard/votings/${votingId}`);
 
     // The admin sees who voted what, then shows the results
-    await page.reload();
+    await reopen(page);
     await page.getByRole('tab', { name: 'Kto jak głosował' }).click();
     await expect(page.getByText(tenant.email)).toHaveCount(2);
     await expect(page.getByText('1. Za')).toHaveCount(2);
@@ -133,7 +134,7 @@ test('owners vote with an emailed code and see the published results', async ({
     ).toBeVisible();
 
     // The owner now sees aggregate results without any voter names
-    await owner.reload();
+    await reopen(owner);
     await expect(owner.getByRole('progressbar').first()).toBeVisible();
     await expect(owner.getByText(tenant.email)).toBeHidden();
     await expect(owner.getByText('2 (100%)')).toHaveCount(2);

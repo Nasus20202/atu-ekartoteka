@@ -21,7 +21,14 @@ interface Props {
 
 export function VotingStatusBadge({ status, className }: Props) {
   return (
-    <Badge variant="outline" className={cn(STATUS_CLASSES[status], className)}>
+    <Badge
+      variant="outline"
+      className={cn(
+        'shrink-0 whitespace-nowrap',
+        STATUS_CLASSES[status],
+        className
+      )}
+    >
       {VOTING_STATUS_LABELS[status]}
     </Badge>
   );

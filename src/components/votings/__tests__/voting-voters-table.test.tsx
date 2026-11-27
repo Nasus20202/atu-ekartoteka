@@ -34,11 +34,16 @@ describe('VotingVotersTable', () => {
       />
     );
 
-    expect(screen.getByText('Anna Nowak')).toBeInTheDocument();
-    expect(screen.getByText('anna@example.com')).toBeInTheDocument();
-    expect(screen.getByText('ul. Lipowa 1/2')).toBeInTheDocument();
-    expect(screen.getByText('1. Za')).toHaveAttribute('title', 'Pierwsze');
+    // Both layouts are rendered; CSS shows the card list below md and the table above
+    expect(screen.getAllByText('Anna Nowak')).toHaveLength(2);
+    expect(screen.getAllByText('anna@example.com')).toHaveLength(2);
+    expect(screen.getAllByText('ul. Lipowa 1/2')).toHaveLength(2);
+    expect(screen.getAllByText('1. Za')[0]).toHaveAttribute(
+      'title',
+      'Pierwsze'
+    );
     // A question without a stored answer shows a dash instead of a choice
-    expect(screen.getByText('2. —')).toBeInTheDocument();
+    expect(screen.getAllByText('2. —')).toHaveLength(2);
+    expect(screen.getByRole('table')).toBeInTheDocument();
   });
 });
