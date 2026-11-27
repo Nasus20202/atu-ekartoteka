@@ -6,6 +6,45 @@ import AdminImportPage from '@/app/admin/import/page';
 
 const confirmMock = vi.fn();
 
+const DATABASE_STATS = {
+  associations: [],
+  hoa: { count: 1, rangeFrom: null, rangeTo: null, lastChangedAt: null },
+  apartments: {
+    count: 2,
+    active: 2,
+    rangeFrom: null,
+    rangeTo: null,
+    lastChangedAt: null,
+  },
+  users: { count: 6, rangeFrom: null, rangeTo: null, lastChangedAt: null },
+  charges: { count: 3, rangeFrom: null, rangeTo: null, lastChangedAt: null },
+  notifications: {
+    count: 0,
+    rangeFrom: null,
+    rangeTo: null,
+    lastChangedAt: null,
+  },
+  payments: { count: 0, rangeFrom: null, rangeTo: null, lastChangedAt: null },
+  utilitySettlements: {
+    count: 0,
+    rangeFrom: null,
+    rangeTo: null,
+    lastChangedAt: null,
+  },
+  meterReadings: {
+    count: 0,
+    rangeFrom: null,
+    rangeTo: null,
+    lastChangedAt: null,
+  },
+  annualSettlements: {
+    count: 0,
+    rangeFrom: null,
+    rangeTo: null,
+    lastChangedAt: null,
+  },
+};
+
 vi.mock('@/components/layout/page', () => ({
   Page: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
@@ -67,14 +106,7 @@ describe('AdminImportPage', () => {
     confirmMock.mockResolvedValue(true);
     vi.mocked(fetch).mockResolvedValue({
       ok: true,
-      json: async () => ({
-        hoa: 1,
-        apartments: 2,
-        charges: 3,
-        notifications: 4,
-        payments: 5,
-        users: 6,
-      }),
+      json: async () => DATABASE_STATS,
     } as Response);
   });
 
@@ -286,14 +318,7 @@ describe('AdminImportPage', () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({
-          hoa: 1,
-          apartments: 2,
-          charges: 3,
-          notifications: 4,
-          payments: 5,
-          users: 6,
-        }),
+        json: async () => DATABASE_STATS,
       } as Response)
       .mockResolvedValueOnce({
         ok: true,
@@ -305,14 +330,7 @@ describe('AdminImportPage', () => {
       } as Response)
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({
-          hoa: 1,
-          apartments: 2,
-          charges: 3,
-          notifications: 4,
-          payments: 5,
-          users: 6,
-        }),
+        json: async () => DATABASE_STATS,
       } as Response);
 
     render(await AdminImportPage());
@@ -345,14 +363,7 @@ describe('AdminImportPage', () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({
-          hoa: 1,
-          apartments: 2,
-          charges: 3,
-          notifications: 4,
-          payments: 5,
-          users: 6,
-        }),
+        json: async () => DATABASE_STATS,
       } as Response)
       .mockResolvedValueOnce({
         ok: false,

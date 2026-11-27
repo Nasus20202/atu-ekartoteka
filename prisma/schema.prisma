@@ -154,6 +154,7 @@ model Charge {
   @@index([apartmentId])
   @@index([period])
   @@index([dateFrom])
+  @@index([updatedAt])
 }
 
 model ChargeNotification {
