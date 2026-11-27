@@ -1,0 +1,202 @@
+import { toIsoString } from '@/lib/shared/iso-string';
+import { isVotingOpen } from '@/lib/voting/rules/voting-status';
+import type { VoteChoice, VotingStatus } from '@/lib/voting/types/voting';
+
+export interface VotingQuestionDto {
+  id: string;
+  position: number;
+  text: string;
+}
+
+export interface VotingListItemSource {
+  id: string;
+  title: string;
+  status: VotingStatus;
+  endsAt: Date | null;
+  createdAt: Date;
+  hoa: { id: string; name: string };
+  _count: { questions: number; ballots: number };
+}
+
+export interface VotingListItemDto {
+  id: string;
+  title: string;
+  status: VotingStatus;
+  endsAt: string | null;
+  createdAt: string;
+  hoaId: string;
+  hoaName: string;
+  questionCount: number;
+  ballotCount: number;
+}
+
+export function toVotingListItemDto(
+  voting: VotingListItemSource
+): VotingListItemDto {
+  return {
+    id: voting.id,
+    title: voting.title,
+    status: voting.status,
+    endsAt: voting.endsAt ? toIsoString(voting.endsAt) : null,
+    createdAt: toIsoString(voting.createdAt),
+    hoaId: voting.hoa.id,
+    hoaName: voting.hoa.name,
+    questionCount: voting._count.questions,
+    ballotCount: voting._count.ballots,
+  };
+}
+
+export interface VotingSource {
+  id: string;
+  title: string;
+  description: string | null;
+  status: VotingStatus;
+  endsAt: Date | null;
+  hoa: { id: string; name: string };
+  questions: VotingQuestionDto[];
+}
+
+export interface VotingDto {
+  id: string;
+  title: string;
+  description: string | null;
+  status: VotingStatus;
+  endsAt: string | null;
+  hoaId: string;
+  hoaName: string;
+  questions: VotingQuestionDto[];
+}
+
+export function toVotingDto(voting: VotingSource): VotingDto {
+  return {
+    id: voting.id,
+    title: voting.title,
+    description: voting.description,
+    status: voting.status,
+    endsAt: voting.endsAt ? toIsoString(voting.endsAt) : null,
+    hoaId: voting.hoa.id,
+    hoaName: voting.hoa.name,
+    questions: voting.questions.map(({ id, position, text }) => ({
+      id,
+      position,
+      text,
+    })),
+  };
+}
+
+export type ChoiceCounts = Record<VoteChoice, number>;
+
+export interface QuestionResultDto {
+  questionId: string;
+  text: string;
+  counts: ChoiceCounts;
+  total: number;
+}
+
+export interface VoteCountRow {
+  questionId: string;
+  choice: VoteChoice;
+  count: number;
+}
+
+/** Folds the grouped counts into one result per question, in question order. */
+export function toQuestionResults(
+  questions: VotingQuestionDto[],
+  rows: VoteCountRow[]
+): QuestionResultDto[] {
+  return questions.map((question) => {
+    const counts: ChoiceCounts = { FOR: 0, AGAINST: 0, ABSTAIN: 0 };
+
+    for (const row of rows) {
+      if (row.questionId === question.id) counts[row.choice] += row.count;
+    }
+
+    return {
+      questionId: question.id,
+      text: question.text,
+      counts,
+      total: counts.FOR + counts.AGAINST + counts.ABSTAIN,
+    };
+  });
+}
+
+export interface VoterSource {
+  id: string;
+  createdAt: Date;
+  user: { name: string | null; email: string };
+  apartment: {
+    address: string | null;
+    building: string | null;
+    number: string;
+  };
+  votes: { questionId: string; choice: VoteChoice }[];
+}
+
+export interface VoterDto {
+  ballotId: string;
+  voterName: string;
+  voterEmail: string;
+  apartment: {
+    address: string | null;
+    building: string | null;
+    number: string;
+  };
+  votedAt: string;
+  answers: Record<string, VoteChoice>;
+}
+
+export function toVoterDto(ballot: VoterSource): VoterDto {
+  return {
+    ballotId: ballot.id,
+    voterName: ballot.user.name ?? ballot.user.email,
+    voterEmail: ballot.user.email,
+    apartment: ballot.apartment,
+    votedAt: toIsoString(ballot.createdAt),
+    answers: Object.fromEntries(
+      ballot.votes.map((vote) => [vote.questionId, vote.choice])
+    ),
+  };
+}
+
+export interface TenantVotingSource {
+  id: string;
+  title: string;
+  status: VotingStatus;
+  endsAt: Date | null;
+  hoa: { name: string; _count: { apartments: number } };
+  _count: { questions: number; ballots: number };
+}
+
+export interface TenantVotingDto {
+  id: string;
+  title: string;
+  status: VotingStatus;
+  endsAt: string | null;
+  hoaName: string;
+  questionCount: number;
+  apartmentCount: number;
+  votedApartmentCount: number;
+  /** An open voting in which at least one of the user's apartments has not voted. */
+  awaitingVote: boolean;
+}
+
+export function toTenantVotingDto(
+  voting: TenantVotingSource,
+  now: Date
+): TenantVotingDto {
+  const apartmentCount = voting.hoa._count.apartments;
+  const votedApartmentCount = voting._count.ballots;
+
+  return {
+    id: voting.id,
+    title: voting.title,
+    status: voting.status,
+    endsAt: voting.endsAt ? toIsoString(voting.endsAt) : null,
+    hoaName: voting.hoa.name,
+    questionCount: voting._count.questions,
+    apartmentCount,
+    votedApartmentCount,
+    awaitingVote:
+      isVotingOpen(voting, now) && votedApartmentCount < apartmentCount,
+  };
+}

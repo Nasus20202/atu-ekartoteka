@@ -8,6 +8,8 @@ import {
   newUserAdminMessage,
   passwordResetMessage,
   verificationMessage,
+  voteConfirmationMessage,
+  votingNotificationMessage,
 } from '@/lib/platform/email/email-messages';
 import type {
   EmailOptions,
@@ -207,6 +209,31 @@ export class EmailService {
   ): Promise<EmailSendResult> {
     return this.deliver('admin_notification', adminEmail, () =>
       newUserAdminMessage(userEmail, userName, registrationDate)
+    );
+  }
+
+  async sendVoteConfirmationEmail(
+    to: string,
+    code: string,
+    votingTitle: string,
+    validForMinutes: number,
+    name?: string
+  ): Promise<EmailSendResult> {
+    return this.deliver('vote_confirmation', to, () =>
+      voteConfirmationMessage(code, votingTitle, validForMinutes, name)
+    );
+  }
+
+  async sendVotingNotificationEmail(
+    to: string,
+    votingId: string,
+    votingTitle: string,
+    hoaName: string,
+    endsAt?: string,
+    name?: string
+  ): Promise<EmailSendResult> {
+    return this.deliver('voting_notification', to, () =>
+      votingNotificationMessage(votingId, votingTitle, hoaName, endsAt, name)
     );
   }
 }

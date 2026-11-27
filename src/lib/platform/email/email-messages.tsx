@@ -21,6 +21,14 @@ import {
   VERIFICATION_EMAIL_SUBJECT,
   VerificationEmail,
 } from '@/components/email/emails/verification-email';
+import {
+  VOTE_CONFIRMATION_SUBJECT,
+  VoteConfirmationEmail,
+} from '@/components/email/emails/vote-confirmation';
+import {
+  VOTING_NOTIFICATION_SUBJECT,
+  VotingNotificationEmail,
+} from '@/components/email/emails/voting-notification';
 import { appUrl } from '@/lib/platform/email/app-url';
 
 const PLAIN_TEXT_OPTIONS: Parameters<typeof toPlainText>[1] = {
@@ -110,6 +118,43 @@ export async function newUserAdminMessage(
       userName={userName}
       userEmail={userEmail}
       registrationDate={registrationDate}
+      url={url}
+    />
+  );
+}
+
+export async function voteConfirmationMessage(
+  code: string,
+  votingTitle: string,
+  validForMinutes: number,
+  name?: string
+): Promise<EmailMessage> {
+  return buildMessage(
+    VOTE_CONFIRMATION_SUBJECT,
+    <VoteConfirmationEmail
+      name={name}
+      votingTitle={votingTitle}
+      code={code}
+      validForMinutes={validForMinutes}
+    />
+  );
+}
+
+export async function votingNotificationMessage(
+  votingId: string,
+  votingTitle: string,
+  hoaName: string,
+  endsAt?: string,
+  name?: string
+): Promise<EmailMessage> {
+  const url = appUrl(`/dashboard/votings/${votingId}`);
+  return buildMessage(
+    VOTING_NOTIFICATION_SUBJECT,
+    <VotingNotificationEmail
+      name={name}
+      votingTitle={votingTitle}
+      hoaName={hoaName}
+      endsAt={endsAt}
       url={url}
     />
   );

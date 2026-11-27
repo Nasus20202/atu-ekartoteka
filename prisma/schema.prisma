@@ -44,6 +44,7 @@ model HomeownersAssociation {
   updatedAt   DateTime @updatedAt
   
   apartments  Apartment[]
+  votings     Voting[]
   
   @@index([externalId])
 }
@@ -69,6 +70,8 @@ model User {
   apartments         Apartment[]
   emailVerifications EmailVerification[]
   passwordResets     PasswordReset[]
+  votingBallots      VotingBallot[]
+  votingConfirmations VotingConfirmation[]
   
   @@index([email])
   @@index([role])
@@ -116,6 +119,7 @@ model Apartment {
   charges               Charge[]
   chargeNotifications   ChargeNotification[]
   payments              Payment[]
+  votingBallots         VotingBallot[]
   
   @@unique([externalOwnerId, externalApartmentId])
   @@index([externalOwnerId])
@@ -265,6 +269,97 @@ model PasswordReset {
   
   @@index([userId])
   @@index([token])
+  @@index([expiresAt])
+}
+
+enum VotingStatus {
+  DRAFT // Wersja robocza: invisible to tenants, editable
+  ACTIVE // Aktywne: tenants vote
+  RESULTS_PUBLISHED // Pokaż wyniki: tenants see aggregate results
+  ARCHIVED // Zarchiwizowane: hidden from tenants
+}
+
+enum VoteChoice {
+  FOR // Za
+  AGAINST // Przeciw
+  ABSTAIN // Wstrzymał(a) się
+}
+
+model Voting {
+  id          String                @id @default(cuid())
+  hoaId       String
+  hoa         HomeownersAssociation @relation(fields: [hoaId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  status      VotingStatus          @default(DRAFT)
+  endsAt      DateTime? // optional deadline: no ballot is accepted after it
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  questions     VotingQuestion[]
+  ballots       VotingBallot[]
+  confirmations VotingConfirmation[]
+
+  @@index([hoaId])
+  @@index([status])
+}
+
+model VotingQuestion {
+  id       String @id @default(cuid())
+  votingId String
+  voting   Voting @relation(fields: [votingId], references: [id], onDelete: Cascade)
+  position Int
+  text     String
+
+  votes VotingVote[]
+
+  @@unique([votingId, position])
+}
+
+// One apartment's vote. The unique key is the guard against voting twice.
+model VotingBallot {
+  id          String    @id @default(cuid())
+  votingId    String
+  voting      Voting    @relation(fields: [votingId], references: [id], onDelete: Cascade)
+  apartmentId String
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  votes VotingVote[]
+
+  @@unique([votingId, apartmentId])
+  @@index([userId])
+}
+
+model VotingVote {
+  id         String         @id @default(cuid())
+  ballotId   String
+  ballot     VotingBallot   @relation(fields: [ballotId], references: [id], onDelete: Cascade)
+  questionId String
+  question   VotingQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  choice     VoteChoice
+
+  @@unique([ballotId, questionId])
+  @@index([questionId, choice])
+}
+
+// A submitted ballot waiting for its emailed one-time code; deleted when used.
+model VotingConfirmation {
+  id        String   @id @default(cuid())
+  votingId  String
+  voting    Voting   @relation(fields: [votingId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash  String
+  answers   Json // { [questionId]: VoteChoice }
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@unique([votingId, userId])
   @@index([expiresAt])
 }
 
