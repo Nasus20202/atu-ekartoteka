@@ -85,6 +85,18 @@ async function expectOnScreen(page: Page, ...boxes: Box[]) {
   }
 }
 
+/**
+ * The drag registers a move after the browser reports it, so releasing at once
+ * can drop the HOA short of its target. Waits for the screen reader message.
+ */
+async function expectDraggedOver(page: Page, position: number) {
+  await expect(
+    page
+      .getByRole('status')
+      .filter({ hasText: `jest nad pozycją ${position} z` })
+  ).toBeAttached();
+}
+
 test.describe('Admin HOA reordering', () => {
   test('shows the HOAs in a table with a grip and position', async ({
     adminPage,
@@ -157,6 +169,7 @@ test.describe('Admin HOA reordering', () => {
     await adminPage.mouse.move(to.x + to.width / 2, to.y + to.height / 2 + 10, {
       steps: DRAG_STEPS,
     });
+    await expectDraggedOver(adminPage, await tableRows(adminPage).count());
     await adminPage.mouse.up();
 
     await expect(tableRows(adminPage).last()).toContainText(REORDER_HOA_SECOND);
@@ -251,6 +264,7 @@ test.describe('Admin HOA reordering', () => {
     await adminPage.mouse.move(from.x + 5, to.y + to.height / 2 + 10, {
       steps: DRAG_STEPS,
     });
+    await expectDraggedOver(adminPage, await tableRows(adminPage).count());
     await adminPage.mouse.up();
 
     await expect(tableRows(adminPage).last()).toContainText(REORDER_HOA_SECOND);
@@ -279,6 +293,7 @@ test.describe('Admin HOA reordering', () => {
         steps: DRAG_STEPS,
       }
     );
+    await expectDraggedOver(adminPage, 2);
     await adminPage.mouse.up();
 
     await expect(cardNames(adminPage).nth(1)).toHaveAttribute(
