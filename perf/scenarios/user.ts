@@ -22,6 +22,8 @@ export function userScenario() {
       `/dashboard/payments/${apartmentId}/${randomPaymentYear()}`,
       'payment details',
     ],
+    // The section root only redirects, so the apartment page is requested
+    [`/dashboard/settlements/${apartmentId}`, '/dashboard/settlements/:id'],
     ['/dashboard/profile'],
   ];
   for (const [path, name] of pages) {

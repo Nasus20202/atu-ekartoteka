@@ -4,6 +4,7 @@
 
 import { expect, test } from '../fixtures';
 import { createAccountForApartment } from '../utils/bulk-account-fixtures';
+import { clickToCheck } from '../utils/click-to-check';
 import { createUnassignedApartment } from '../utils/create-unassigned-apartment';
 import { openTestHoaCard } from '../utils/open-test-hoa';
 import { isServerActionResponse } from '../utils/server-actions';
@@ -79,7 +80,7 @@ test.describe.serial('Admin Bulk User Creation', () => {
       .getByRole('checkbox', { name: /Zaznacz wszystkie/i })
       .first();
     await expect(hoaCheckbox).toBeVisible({ timeout: 5000 });
-    await hoaCheckbox.click();
+    await clickToCheck(hoaCheckbox, hoaCheckbox);
 
     await expect(
       adminPage.getByRole('button', { name: /Zaproś użytkowników/i })
@@ -105,7 +106,7 @@ test.describe.serial('Admin Bulk User Creation', () => {
       .locator('label', { hasText: UNASSIGNED_APARTMENT_EMAIL })
       .getByRole('checkbox');
     await expect(apartmentCheckbox).toBeVisible({ timeout: 5000 });
-    await apartmentCheckbox.click();
+    await clickToCheck(apartmentCheckbox, apartmentCheckbox);
 
     const confirmButton = adminPage.getByRole('button', {
       name: /Zaproś użytkowników/i,

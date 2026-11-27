@@ -18,6 +18,7 @@ const ENDPOINT_P95_LIMITS: Record<string, number> = {
   '/dashboard': 750,
   '/dashboard/charges': 675,
   '/dashboard/payments': 675,
+  '/dashboard/settlements/:id': 675,
   '/admin/apartments': 600,
   '/api/admin/apartments': 675,
   '/api/admin/users': 675,

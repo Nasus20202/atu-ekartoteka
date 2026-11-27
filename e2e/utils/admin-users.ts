@@ -2,6 +2,7 @@ import { expect, type Page } from '@playwright/test';
 
 import { clickToCheck } from './click-to-check';
 import { isServerActionResponse } from './server-actions';
+import { waitForHydration } from './wait-for-hydration';
 
 const LOAD_TIMEOUT_MS = 10000;
 
@@ -9,11 +10,18 @@ function isUsersResponse(url: string, status: number) {
   return url.includes('/api/admin/users') && status === 200;
 }
 
+function userSearchInput(page: Page) {
+  return page
+    .getByPlaceholder(/Szukaj po imieniu, emailu lub mieszkaniu/i)
+    .filter({ visible: true });
+}
+
 export async function openUsersPage(page: Page) {
   await page.goto('/admin/users');
   await expect(
     page.getByRole('heading', { name: /Użytkownicy/i })
   ).toBeVisible();
+  await waitForHydration(userSearchInput(page));
 }
 
 /** Switches the list to all users and waits for it to reload. */
@@ -36,15 +44,16 @@ export function userCard(page: Page, email: string) {
 
 /** Types into the user search and waits for the debounced request. */
 export async function searchUsers(page: Page, term: string) {
-  await page
-    .getByPlaceholder(/Szukaj po imieniu, emailu lub mieszkaniu/i)
-    .filter({ visible: true })
-    .fill(term);
-  await page.waitForResponse(
-    (resp) =>
-      isUsersResponse(resp.url(), resp.status()) &&
-      resp.url().includes('search=')
-  );
+  const input = userSearchInput(page);
+  await waitForHydration(input);
+  await Promise.all([
+    page.waitForResponse(
+      (resp) =>
+        isUsersResponse(resp.url(), resp.status()) &&
+        resp.url().includes('search=')
+    ),
+    input.fill(term),
+  ]);
 }
 
 /** Creates a pending user through the "Dodaj użytkownika" dialog. */

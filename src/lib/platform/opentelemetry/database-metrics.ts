@@ -18,6 +18,9 @@ const TABLE_COUNTS = {
   charge: () => prisma.charge.count(),
   chargeNotification: () => prisma.chargeNotification.count(),
   payment: () => prisma.payment.count(),
+  utilitySettlement: () => prisma.utilitySettlement.count(),
+  meterReading: () => prisma.meterReading.count(),
+  annualCostSettlement: () => prisma.annualCostSettlement.count(),
   user: () => prisma.user.count(),
 } as const;
 

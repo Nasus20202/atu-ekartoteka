@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 
 import { setApartmentActiveAction } from '@/actions/apartments/apartments';
 import { ApartmentInfoCard } from '@/components/apartments/apartment-info-card';
@@ -23,11 +23,14 @@ import { formatApartmentLabel } from '@/lib/shared/utils/apartment-label';
 interface ApartmentDetailsContentProps {
   apartmentId: string;
   initialApartment: ApartmentDetailDto;
+  /** Rendered on the server, where the settlements are read */
+  settlements?: ReactNode;
 }
 
 export function ApartmentDetailsContent({
   apartmentId,
   initialApartment,
+  settlements,
 }: ApartmentDetailsContentProps) {
   const confirm = useConfirm();
 
@@ -112,6 +115,7 @@ export function ApartmentDetailsContent({
             </CardContent>
           </Card>
         )}
+        {settlements}
       </div>
     </>
   );

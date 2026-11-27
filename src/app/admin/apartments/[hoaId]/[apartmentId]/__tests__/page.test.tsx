@@ -18,6 +18,7 @@ async function renderPage() {
   return renderSuspended(
     await ApartmentDetailsPage({
       params: Promise.resolve({ hoaId: 'hoa-1', apartmentId: 'apt-1' }),
+      searchParams: Promise.resolve({}),
     })
   );
 }

@@ -25,6 +25,10 @@ vi.mock('next/link', () => ({
   ),
 }));
 
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/dashboard',
+}));
+
 vi.mock('@/components/account/use-logout', () => ({
   useLogout: () => ({ logout: vi.fn(), pending: false }),
 }));

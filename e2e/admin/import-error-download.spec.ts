@@ -49,7 +49,9 @@ test.describe('Admin Import Error Download', () => {
       }))
     );
 
-    await expect(adminPage.getByText(/Wybrano plików/i)).toBeVisible();
+    await expect(fileInput).toHaveAccessibleDescription(
+      `Wybrano plików: ${filePayloads.length}`
+    );
 
     // Click import and wait for the API response
     await Promise.all([

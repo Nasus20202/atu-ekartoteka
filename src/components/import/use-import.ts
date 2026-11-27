@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import useSWRMutation from 'swr/mutation';
 
+import { confirmSteps } from '@/components/import/confirm-steps';
 import {
   CLEAN_IMPORT_CONFIRMATION,
   CLEAN_IMPORT_FINAL_CONFIRMATION,
@@ -15,10 +16,7 @@ import {
   prepareImportFiles,
 } from '@/components/import/prepare-import-files';
 import type { ImportResponse } from '@/components/import/types';
-import {
-  type ConfirmOptions,
-  useConfirm,
-} from '@/components/providers/confirm-dialog';
+import { useConfirm } from '@/components/providers/confirm-dialog';
 import { jsonPoster } from '@/lib/platform/swr/json-mutation';
 import { getErrorMessage } from '@/lib/shared/utils/error-message';
 
@@ -89,23 +87,10 @@ export function useImport(fetchStats: () => Promise<void>) {
     }
   }
 
-  // Each step is shown only after the previous one is confirmed
-  async function confirmSteps(steps: ConfirmOptions[]) {
-    for (const step of steps) {
-      const confirmed = await confirm(step);
-
-      if (!confirmed) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
   async function handleSkipValidationChange(checked: boolean) {
     if (
       checked &&
-      !(await confirmSteps([
+      !(await confirmSteps(confirm, [
         SKIP_VALIDATION_CONFIRMATION,
         SKIP_VALIDATION_FINAL_CONFIRMATION,
       ]))
@@ -119,7 +104,7 @@ export function useImport(fetchStats: () => Promise<void>) {
   async function handleCleanImportChange(checked: boolean) {
     if (
       checked &&
-      !(await confirmSteps([
+      !(await confirmSteps(confirm, [
         CLEAN_IMPORT_WARNING,
         CLEAN_IMPORT_FINAL_CONFIRMATION,
       ]))

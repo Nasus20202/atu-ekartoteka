@@ -441,6 +441,9 @@ importers:
       typescript:
         specifier: npm:@typescript/typescript6@6.0.2
         version: '@typescript/typescript6@6.0.2'
+      unpdf:
+        specifier: 2.2.0
+        version: 2.2.0(@napi-rs/canvas@1.2.0)(pdfjs-dist@6.5.438)
       vite:
         specifier: 8.3.8
         version: 8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)
@@ -5369,6 +5372,18 @@ packages:
   unicode-trie@3.0.0:
     resolution: {integrity: sha512-Cy+7EIpopVQ7ZCVZ8dFo1fmTk1lHMNxY62SeEhxsVEmISZEryEGgKSLzz6z6pquJXXopamfpi2AzsDCJ7KmAOA==}
     engines: {node: '>=20.17.0'}
+
+  unpdf@2.2.0:
+    resolution: {integrity: sha512-E33ir6FPxrLuRlhLJ3KbPwcOnHozd6ITe/uhr22+Oiis6e7YQ9N/9K7hfMe1aZ9yoO6eypgI1Cc7UuYP6BkyWw==}
+    engines: {node: '>=24'}
+    peerDependencies:
+      '@napi-rs/canvas': ^0.1.69 || ^1.0.0
+      pdfjs-dist: '*'
+    peerDependenciesMeta:
+      '@napi-rs/canvas':
+        optional: true
+      pdfjs-dist:
+        optional: true
 
   unrs-resolver@1.13.0:
     resolution: {integrity: sha512-mcPQo9Vm6kXd84d/WqMiYBi2CcA57QHBX/ev5PoUEb8b2oQzUvJ6xYsfseQblnCncgnVmCZGWiFwK7KkS5JZJA==}
@@ -10655,6 +10670,11 @@ snapshots:
   unicode-trie@3.0.0:
     dependencies:
       fflate: 0.8.3
+
+  unpdf@2.2.0(@napi-rs/canvas@1.2.0)(pdfjs-dist@6.5.438):
+    optionalDependencies:
+      '@napi-rs/canvas': 1.2.0
+      pdfjs-dist: 6.5.438
 
   unrs-resolver@1.13.0:
     dependencies:

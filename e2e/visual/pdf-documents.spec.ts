@@ -13,6 +13,12 @@ const CHARGES_PDF_BUTTON = /Pobierz PDF naliczeń/;
 // The year summary card shows the text button, not the icon-only row button
 const PAYMENTS_PDF_BUTTON = { name: 'Pobierz PDF', exact: true };
 const NOTICE_PDF_BUTTON = 'Pobierz PDF bieżących naliczeń';
+const SETTLEMENT_PDF_BUTTON = { name: 'Pobierz PDF', exact: true };
+const SETTLEMENT_PDFS = [
+  { tab: 'Media', name: 'utility-settlement-pdf' },
+  { tab: 'Liczniki', name: 'meters-pdf' },
+  { tab: 'Koszty rzeczywiste', name: 'annual-costs-pdf' },
+];
 
 /** Compares every page with its snapshot and returns the number of pages. */
 async function comparePages(pdf: Buffer, name: string): Promise<number> {
@@ -52,6 +58,19 @@ test.describe('Visual: PDF documents', () => {
 
     expect(await comparePages(pdf, 'payments-pdf')).toBeGreaterThan(0);
   });
+
+  for (const { tab, name } of SETTLEMENT_PDFS) {
+    test(`${name}`, async ({ visualPage }) => {
+      await visualPage.goto('/dashboard/settlements');
+      await visualPage.getByRole('tab', { name: tab }).click();
+
+      const pdf = await downloadBytes(
+        visualPage.getByRole('button', SETTLEMENT_PDF_BUTTON)
+      );
+
+      expect(await comparePages(pdf, name)).toBeGreaterThan(0);
+    });
+  }
 
   test('current notices PDF', async ({ visualPage }) => {
     await visualPage.goto('/dashboard');

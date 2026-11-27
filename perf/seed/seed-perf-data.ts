@@ -26,6 +26,10 @@ const CHARGE_MONTHS = Number(process.env.PERF_SEED_CHARGE_MONTHS || 40);
 const CHARGE_LINES_PER_MONTH = Number(process.env.PERF_SEED_CHARGE_LINES || 5);
 const NOTIFICATION_LINES = Number(process.env.PERF_SEED_NOTIFICATIONS || 3);
 const PAYMENT_YEARS = Number(process.env.PERF_SEED_PAYMENT_YEARS || 6);
+// Utility settlements a year; annual cost settlements come once a year
+const SETTLEMENT_PERIODS = Number(
+  process.env.PERF_SEED_SETTLEMENT_PERIODS || 2
+);
 // Must match TENANT_HISTORY_YEARS_BACK in perf/lib/config.ts
 const TENANT_HISTORY_YEARS_BACK = Number(
   process.env.PERF_SEED_TENANT_HISTORY_YEARS_BACK || 5
@@ -46,6 +50,12 @@ export async function seedPerfData(connectionString?: string) {
     ['apartments', [HOAS, APARTMENTS_PER_HOA, TENANTS]],
     ['notifications', [apartments, NOTIFICATION_LINES]],
     ['payments', [apartments, PAYMENT_YEARS]],
+    ['utility-settlements', [apartments, PAYMENT_YEARS, SETTLEMENT_PERIODS]],
+    ['utility-summaries', []],
+    ['utility-lines', []],
+    ['meter-readings', []],
+    ['annual-settlements', [apartments, PAYMENT_YEARS]],
+    ['annual-items', []],
     ['app-settings', [TENANT_HISTORY_YEARS_BACK]],
   ];
 

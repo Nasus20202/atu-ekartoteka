@@ -116,6 +116,8 @@ model Apartment {
   charges               Charge[]
   chargeNotifications   ChargeNotification[]
   payments              Payment[]
+  utilitySettlements    UtilitySettlement[]
+  annualCostSettlements AnnualCostSettlement[]
   
   @@unique([externalOwnerId, externalApartmentId])
   @@index([externalOwnerId])
@@ -234,6 +236,133 @@ model Payment {
   @@unique([apartmentId, year])
   @@index([apartmentId])
   @@index([year])
+}
+
+enum UtilitySettlementLineKind {
+  ADVANCE     // column "Zaliczka"
+  CONSUMPTION // column "Do zapłaty": the quantity is the consumption
+}
+
+// Imported from the utility settlement printout; values are stored as printed
+model UtilitySettlement {
+  id             String   @id @default(cuid())
+
+  apartment      Apartment @relation(fields: [apartmentId], references: [id])
+  apartmentId    String
+
+  periodFrom     DateTime
+  periodTo       DateTime
+  issuedOn       DateTime
+  printedOwner   String
+  sourceFileName String
+  totalAmount    Decimal  @db.Decimal(14, 4) // positive = to pay, negative = overpaid
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  summaries UtilitySettlementSummary[]
+  lines     UtilitySettlementLine[]
+  readings  MeterReading[]
+
+  @@unique([apartmentId, periodFrom, periodTo])
+}
+
+// One row of the summary block
+model UtilitySettlementSummary {
+  id              String  @id @default(cuid())
+  lineNo          Int
+
+  settlement      UtilitySettlement @relation(fields: [settlementId], references: [id], onDelete: Cascade)
+  settlementId    String
+
+  code            String // row label as printed, e.g. "CW"
+  consumption     Decimal @db.Decimal(14, 6)
+  advanceQuantity Decimal @db.Decimal(14, 6)
+  difference      Decimal @db.Decimal(14, 6)
+  amount          Decimal @db.Decimal(14, 4)
+
+  @@unique([settlementId, lineNo])
+}
+
+model UtilitySettlementLine {
+  id           String @id @default(cuid())
+  lineNo       Int
+
+  settlement   UtilitySettlement @relation(fields: [settlementId], references: [id], onDelete: Cascade)
+  settlementId String
+
+  kind         UtilitySettlementLineKind
+  description  String
+  dateFrom     DateTime
+  dateTo       DateTime
+  quantity     Decimal  @db.Decimal(14, 6)
+  unitPrice    Decimal  @db.Decimal(14, 4)
+  amount       Decimal  @db.Decimal(14, 4)
+
+  @@unique([settlementId, lineNo])
+}
+
+model MeterReading {
+  id           String @id @default(cuid())
+  lineNo       Int
+
+  settlement   UtilitySettlement @relation(fields: [settlementId], references: [id], onDelete: Cascade)
+  settlementId String
+
+  device       String // e.g. "CO 01"
+  serialNumber String
+  label        String // e.g. "CO mieszkania"
+  unit         String
+  startDate    DateTime
+  startValue   Decimal  @db.Decimal(14, 3)
+  endDate      DateTime
+  endValue     Decimal  @db.Decimal(14, 3)
+  consumption  Decimal  @db.Decimal(14, 3)
+
+  @@unique([settlementId, lineNo])
+  @@index([serialNumber])
+}
+
+// Imported from the annual cost settlement printout
+model AnnualCostSettlement {
+  id             String   @id @default(cuid())
+
+  apartment      Apartment @relation(fields: [apartmentId], references: [id])
+  apartmentId    String
+
+  periodFrom     DateTime
+  periodTo       DateTime
+  issuedOn       DateTime
+  printedOwner   String
+  sourceFileName String
+  totalAmount    Decimal  @db.Decimal(14, 4) // positive = to pay, negative = overpaid
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  items AnnualCostSettlementItem[]
+
+  @@unique([apartmentId, periodFrom, periodTo])
+}
+
+model AnnualCostSettlementItem {
+  id               String @id @default(cuid())
+  lineNo           Int
+
+  settlement       AnnualCostSettlement @relation(fields: [settlementId], references: [id], onDelete: Cascade)
+  settlementId     String
+
+  title            String
+  basisDescription String // "Współczynnik ustalony wg"
+  periodFrom       DateTime
+  periodTo         DateTime
+  communityAmount  Decimal  @db.Decimal(14, 4)
+  flatBasis        Decimal  @db.Decimal(14, 4)
+  communityBasis   Decimal  @db.Decimal(14, 4)
+  coefficient      Decimal  @db.Decimal(7, 4)
+  amount           Decimal  @db.Decimal(14, 4) // positive = to pay, negative = overpaid
+
+  @@unique([settlementId, lineNo])
 }
 
 model EmailVerification {

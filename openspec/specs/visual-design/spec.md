@@ -570,6 +570,20 @@ Changing the selected view SHALL animate the new content in, and the animation S
 - **WHEN** they switch views
 - **THEN** the new view appears immediately without animation
 
+### Requirement: Wide Controls Do Not Resize
+
+A press SHALL shrink a button slightly, except a full-width one, which SHALL keep its size and darken instead. A list that takes the width of its trigger SHALL open without zooming.
+
+#### Scenario: Full-width button pressed
+
+- **WHEN** a user holds a full-width button, such as a picker or the login button
+- **THEN** its width does not change
+
+#### Scenario: Picker opened
+
+- **WHEN** a user opens a select or a searchable picker
+- **THEN** the list appears at its full width
+
 ### Requirement: Every View Change Is Animated
 
 Every change of what a screen shows SHALL be animated and SHALL NOT swap abruptly: a mode that replaces content (the HOA cards and the reorder table), tab panels, results that appear after an action (import summary, validation results), the apartment picker list, content streamed in over a skeleton, and content that changes with another URL parameter (the charges month). The animation SHALL be skipped when the user prefers reduced motion.
@@ -654,6 +668,16 @@ Every table view SHALL sort from a column header click, expose the active sort d
 - **WHEN** scrolling appends the next page
 - **THEN** the new rows continue the descending order without gaps or duplicates
 
+### Requirement: Table Totals
+
+A total row of a table SHALL be separated from the other rows by a rule and set in a heavier weight. It SHALL NOT have a background of its own, not even on hover, so it does not show as a box inside a card.
+
+#### Scenario: Total row
+
+- **GIVEN** a table that ends with a total, such as the payment, utility settlement or annual cost table
+- **WHEN** it is shown
+- **THEN** a rule separates the total and the row has the background of its card
+
 ### Requirement: Page-Owned Skeletons
 
 Dashboard and admin routes SHALL NOT use a route-level loading state. Each page SHALL show its skeletons from its own Suspense boundaries, so the skeletons a page shows on reload are the ones it renders itself.
@@ -710,7 +734,8 @@ button submitting.
 
 Every route that loads data SHALL have a route loading state that mirrors the route's
 static layout (heading and skeletons), so that a client navigation shows the destination
-page at once while its data loads.
+page at once while its data loads. A route that only redirects is exempt and sends
+nothing before its redirect, so that no skeleton is shown twice.
 
 #### Scenario: Client navigation
 
@@ -718,3 +743,21 @@ page at once while its data loads.
 - **WHEN** they follow a link to the charges page
 - **THEN** the charges heading and skeletons are shown at once, before the server responds
 - **AND** the content replaces the skeletons when it arrives
+
+---
+
+### Requirement: Current Navigation Item
+
+The tenant and admin navbars SHALL visually mark the link of the current page, including its nested pages, and expose it to assistive technologies as the current page. This includes `Profil` and the admin `Ustawienia` icon.
+
+#### Scenario: Nested page of the admin panel
+
+- **GIVEN** an admin on the page of one apartment
+- **WHEN** the navbar or the mobile menu renders
+- **THEN** only the `Mieszkania` link is highlighted and marked as the current page
+
+#### Scenario: Page without a link
+
+- **GIVEN** a tenant on the dashboard home page
+- **WHEN** the navbar renders
+- **THEN** no link is marked

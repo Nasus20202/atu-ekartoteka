@@ -35,7 +35,7 @@ The load test SHALL exercise the main traffic types at the same time.
 
 - **GIVEN** a signed-in tenant (each virtual user signs in once, as its own tenant)
 - **WHEN** the `user_journey` scenario runs
-- **THEN** it visits the dashboard, charges, the tenant's apartment charges, payments, the tenant's payment details for a random seeded year and profile pages with think time between them, reading each streamed response to its end
+- **THEN** it visits the dashboard, charges, the tenant's apartment charges, payments, the tenant's payment details for a random seeded year, the tenant's apartment settlements and profile pages with think time between them, reading each streamed response to its end
 
 #### Scenario: Admin journey
 
@@ -51,7 +51,7 @@ The load test SHALL run against a dataset of production scale, so query cost ref
 
 - **GIVEN** the default seed
 - **WHEN** `perf/seed/seed-perf-data.ts` runs
-- **THEN** it creates 100 HOAs with 100 apartments each, 1000 tenants owning evenly spaced apartments, and 200 charges, 3 notifications and 6 payment years per apartment
+- **THEN** it creates 100 HOAs with 100 apartments each, 1000 tenants owning evenly spaced apartments, and 200 charges, 3 notifications, 6 payment years, 12 utility settlements (each with summaries, lines and meter readings) and 6 annual cost settlements with their items per apartment
 
 #### Scenario: Fast loading
 

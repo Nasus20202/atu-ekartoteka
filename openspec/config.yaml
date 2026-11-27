@@ -28,7 +28,7 @@ context: |
   - No magic numbers or strings — use constants or enums
   - No unused code — delete it
   - No toast library — use Alert component or inline state for user feedback
-  - Client reads (search, paging, pickers, config) use SWR with the shared options in src/lib/platform/swr; mutations are Server Actions in src/actions/<feature>/, public ones with a reasoned eslint-disable comment; only the admin import and validate API routes use useSWRMutation with jsonPoster from src/lib/platform/swr; no hand-written fetch/useEffect data hooks
+  - Client reads (search, paging, pickers, config) use SWR with the shared options in src/lib/platform/swr; mutations are Server Actions in src/actions/<feature>/, public ones with a reasoned eslint-disable comment; only the admin import, validate and settlement import API routes use useSWRMutation with jsonPoster from src/lib/platform/swr; no hand-written fetch/useEffect data hooks
   - Pre-commit hook runs lint-staged then vitest --run; commits are blocked on test or lint failures
 
   ## Domain
@@ -57,6 +57,7 @@ context: |
   - openspec/specs/testing/spec.md — test strategy, placement, infrastructure, coverage
   - openspec/specs/tooling/spec.md — pnpm, Next.js, Prettier, ESLint, Vite, Vitest, Playwright
   - openspec/specs/user-management/spec.md — user listing, approval, bulk creation, forced password change, notifications
+  - openspec/specs/utility-settlements/spec.md — settlement PDF import and checks, meter readings, tenant and admin settlement views
   - openspec/specs/visual-design/spec.md — shadcn/ui system, colour tokens, typography, spacing, accessibility baseline
 
 rules:

@@ -27,6 +27,12 @@ export const HOA_ACCUSATIVE_FORMS: PolishPluralForms = {
   many: 'wspólnot',
 };
 
+export const ITEM_FORMS: PolishPluralForms = {
+  one: 'pozycja',
+  few: 'pozycje',
+  many: 'pozycji',
+};
+
 export function pluralizePl(count: number, forms: PolishPluralForms): string {
   if (count === 1) return forms.one;
 

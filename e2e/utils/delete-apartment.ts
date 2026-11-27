@@ -7,6 +7,7 @@
 
 import * as pg from 'pg';
 
+import { deleteSettlements } from './delete-settlements';
 import { loadSql } from './load-sql';
 
 export async function deleteApartment(id: string): Promise<void> {
@@ -17,6 +18,7 @@ export async function deleteApartment(id: string): Promise<void> {
   try {
     await client.connect();
     const ids = [id];
+    await deleteSettlements(client, ids);
     await client.query(loadSql('delete-charges-by-apartments.sql'), [ids]);
     await client.query(
       loadSql('delete-charge-notifications-by-apartments.sql'),

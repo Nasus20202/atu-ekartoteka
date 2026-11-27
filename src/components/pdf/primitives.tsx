@@ -1,7 +1,15 @@
-import { Page as PdfPage, StyleSheet, Text, View } from '@react-pdf/renderer';
+import {
+  Page as PdfPage,
+  type Styles,
+  StyleSheet,
+  Text,
+  View,
+} from '@react-pdf/renderer';
 import type { ReactNode } from 'react';
 
 import { PDF_FONT_FAMILY } from '@/lib/platform/pdf/font-constants';
+
+export type PdfStyle = Styles[string];
 
 export const styles = StyleSheet.create({
   page: {

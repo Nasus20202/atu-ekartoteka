@@ -10,6 +10,7 @@
 import * as pg from 'pg';
 import { fileURLToPath } from 'url';
 
+import { deleteSettlements } from './delete-settlements';
 import { loadSql } from './load-sql';
 
 export async function cleanTestData(connectionString?: string) {
@@ -56,6 +57,7 @@ export async function cleanTestData(connectionString?: string) {
       const testApartmentIds = testApartments.rows.map((r) => r.id);
 
       if (testApartmentIds.length > 0) {
+        await deleteSettlements(client, testApartmentIds);
         // Delete charges/payments for test apartments (run each statement separately)
         await client.query(loadSql('delete-charges-by-apartments.sql'), [
           testApartmentIds,
