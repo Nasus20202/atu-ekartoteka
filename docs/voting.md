@@ -47,7 +47,8 @@ dashboard has a card with the same list.
    one vote per apartment, with the same answers, in one go.
 
 The code expires after 15 minutes, works once, and allows five attempts. A new
-code can be requested once per minute. SMTP must be configured (see
+code can be requested once per five minutes, the same limit as the email
+verification link. SMTP must be configured (see
 [Configuration](configuration.md)); without it the code is only written to the
 development log.
 

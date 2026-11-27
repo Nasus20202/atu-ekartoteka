@@ -50,7 +50,10 @@ export async function TenantVotingDetail({ votingId }: Props) {
 
   return (
     <div className={`space-y-6 ${REVEAL_CLASS}`}>
-      <VotingSummaryCard voting={voting} />
+      <VotingSummaryCard
+        voting={voting}
+        deadlinePassed={voting.status === VotingStatus.ACTIVE && !open}
+      />
       {showResults && (
         <VotingResults results={toQuestionResults(voting.questions, counts)} />
       )}
@@ -67,8 +70,8 @@ export async function TenantVotingDetail({ votingId }: Props) {
       {!showResults && !open && (
         <Alert>
           <AlertDescription>
-            To głosowanie zostało zakończone. Wyniki pojawią się, gdy
-            administrator je opublikuje.
+            Termin głosowania minął, więc nie można już oddać głosu. Wyniki
+            zobaczysz, gdy administrator je opublikuje.
           </AlertDescription>
         </Alert>
       )}

@@ -96,6 +96,30 @@ describe('VotingStatusActions', () => {
     expect(mocks.push).toHaveBeenCalledWith('/admin/votings');
   });
 
+  it('shows a generic message when the request itself fails', async () => {
+    mocks.changeStatus.mockRejectedValue(new Error('network'));
+    const user = userEvent.setup();
+    render(<VotingStatusActions votingId="v1" status="DRAFT" />);
+
+    await user.click(screen.getByRole('button', { name: 'Opublikuj' }));
+
+    expect(
+      await screen.findByText('Nie udało się wykonać operacji')
+    ).toBeVisible();
+  });
+
+  it('archives a published voting after confirmation', async () => {
+    const user = userEvent.setup();
+    render(<VotingStatusActions votingId="v1" status="RESULTS_PUBLISHED" />);
+
+    await user.click(screen.getByRole('button', { name: 'Zarchiwizuj' }));
+
+    expect(mocks.changeStatus).toHaveBeenCalledWith({
+      votingId: 'v1',
+      status: 'ARCHIVED',
+    });
+  });
+
   it('shows why a change was refused', async () => {
     mocks.changeStatus.mockResolvedValue({
       ok: false,

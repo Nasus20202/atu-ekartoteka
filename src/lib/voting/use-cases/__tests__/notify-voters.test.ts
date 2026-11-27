@@ -95,6 +95,31 @@ describe('notifyVoters', () => {
     }
   );
 
+  it('reports a missing voting and shows the deadline in the email', async () => {
+    mocks.findVotingById.mockResolvedValueOnce(null);
+    expect(await notifyVoters('admin-1', 'v1', ['u1'])).toMatchObject({
+      code: 'not-found',
+    });
+
+    mocks.findVotingById.mockResolvedValue({
+      ...ACTIVE,
+      endsAt: new Date('2099-07-01T10:00:00Z'),
+    });
+    mocks.findEligibleRecipients.mockResolvedValue([
+      { id: 'u1', name: null, email: 'jan@example.com' },
+    ]);
+    await notifyVoters('admin-1', 'v1', ['u1']);
+
+    expect(mocks.send).toHaveBeenCalledWith(
+      'jan@example.com',
+      'v1',
+      'Remont',
+      'Wspólnota',
+      '1 lipca 2099 12:00',
+      undefined
+    );
+  });
+
   it('logs ids and counts, not addresses', async () => {
     mocks.findEligibleRecipients.mockResolvedValue([
       { id: 'u1', name: 'Jan', email: 'jan@example.com' },

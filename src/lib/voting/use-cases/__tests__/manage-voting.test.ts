@@ -165,6 +165,51 @@ describe('manage voting', () => {
     });
   });
 
+  describe('gaps', () => {
+    it('rejects an update with an unknown HOA and a non-string id', async () => {
+      mocks.findVotingById.mockResolvedValue(voting('DRAFT'));
+      mocks.hoaExists.mockResolvedValue(false);
+
+      expect(await updateVotingUseCase('a', 'v1', INPUT)).toMatchObject({
+        message: 'Nie znaleziono wspólnoty',
+      });
+      expect(await updateVotingUseCase('a', 42, INPUT)).toMatchObject({
+        ok: false,
+      });
+      expect(await deleteVotingUseCase('a', 42)).toMatchObject({ ok: false });
+    });
+
+    it('reports a status change that lost a race and a missing voting', async () => {
+      mocks.findVotingById.mockResolvedValue(voting('DRAFT'));
+      mocks.changeVotingStatus.mockResolvedValue(false);
+      expect(
+        await changeVotingStatusUseCase('a', 'v1', 'ACTIVE')
+      ).toMatchObject({
+        code: 'invalid',
+      });
+
+      mocks.findVotingById.mockResolvedValue(null);
+      expect(
+        await changeVotingStatusUseCase('a', 'v1', 'ACTIVE')
+      ).toMatchObject({
+        code: 'not-found',
+      });
+    });
+
+    it('reports a missing draft and a delete that lost a race', async () => {
+      mocks.findVotingById.mockResolvedValue(null);
+      expect(await deleteVotingUseCase('a', 'v1')).toMatchObject({
+        code: 'not-found',
+      });
+
+      mocks.findVotingById.mockResolvedValue(voting('DRAFT'));
+      mocks.deleteDraftVoting.mockResolvedValue(false);
+      expect(await deleteVotingUseCase('a', 'v1')).toMatchObject({
+        code: 'failed',
+      });
+    });
+  });
+
   describe('delete', () => {
     it('deletes a draft only', async () => {
       mocks.findVotingById.mockResolvedValue(voting('DRAFT'));

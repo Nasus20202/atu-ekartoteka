@@ -19,11 +19,18 @@ interface Stat {
 
 interface Props {
   voting: VotingDto;
+  /** The deadline passed while the voting was still active. */
+  deadlinePassed?: boolean;
   stats?: Stat[];
   actions?: ReactNode;
 }
 
-export function VotingSummaryCard({ voting, stats = [], actions }: Props) {
+export function VotingSummaryCard({
+  voting,
+  deadlinePassed,
+  stats = [],
+  actions,
+}: Props) {
   return (
     <Card>
       <CardHeader>
@@ -38,7 +45,7 @@ export function VotingSummaryCard({ voting, stats = [], actions }: Props) {
             <Building2 className="h-4 w-4" aria-hidden />
             {voting.hoaName}
           </span>
-          <VotingDeadline endsAt={voting.endsAt} />
+          <VotingDeadline endsAt={voting.endsAt} passed={deadlinePassed} />
         </CardDescription>
       </CardHeader>
       {(voting.description || stats.length > 0 || actions) && (

@@ -89,7 +89,7 @@ A ballot SHALL be accepted only while the voting is `ACTIVE` and its deadline, w
 
 ### Requirement: Email Confirmation of a Ballot
 
-A ballot SHALL be counted only after the voter enters a six-digit one-time code emailed to the account address. The code SHALL be random, stored only as a hash, expire after fifteen minutes, be usable once and allow five attempts. A new code SHALL replace the previous one and SHALL NOT be issued more than once per minute for the same user and voting.
+A ballot SHALL be counted only after the voter enters a six-digit one-time code emailed to the account address. The code SHALL be random, stored only as a hash, expire after fifteen minutes, be usable once and allow five attempts. A user SHALL receive at most one code per five minutes, across all votings, like the resend of the email verification link; a new code SHALL replace the previous one for the same voting, and a code that could not be emailed SHALL NOT count towards the limit.
 
 #### Scenario: Correct code
 
@@ -101,7 +101,7 @@ A ballot SHALL be counted only after the voter enters a six-digit one-time code 
 
 - **WHEN** the tenant enters a wrong code
 - **THEN** no ballot is stored and the attempt is counted
-- **AND** after five wrong attempts the confirmation is deleted and a new code must be requested
+- **AND** after five wrong attempts even the right code is refused and a new code must be requested once the rate limit allows
 
 #### Scenario: Expired or reused code
 
@@ -110,8 +110,13 @@ A ballot SHALL be counted only after the voter enters a six-digit one-time code 
 
 #### Scenario: Resend too early
 
-- **WHEN** the tenant asks for a new code less than a minute after the previous one
-- **THEN** the request is rejected and no email is sent
+- **WHEN** the tenant asks for a new code less than five minutes after the previous one
+- **THEN** the request is rejected with "Poczekaj N min przed ponownym wysłaniem kodu" and no email is sent
+
+#### Scenario: Email could not be sent
+
+- **WHEN** the code email fails to send
+- **THEN** the pending confirmation is removed, so the tenant may try again immediately
 
 ### Requirement: Answers Are Complete
 

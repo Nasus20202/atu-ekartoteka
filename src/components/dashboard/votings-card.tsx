@@ -47,6 +47,7 @@ export function VotingsCard({ votings }: Props) {
           {votings.map((voting) => (
             <li
               key={voting.id}
+              data-testid={`dashboard-voting-${voting.id}`}
               className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
             >
               <div className="min-w-0 space-y-1">

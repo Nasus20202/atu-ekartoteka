@@ -24,7 +24,8 @@ import {
 const logger = createLogger('voting:confirm');
 
 const CODE_EXPIRED = 'Kod wygasł lub został już użyty. Poproś o nowy';
-const TOO_MANY_ATTEMPTS = 'Przekroczono liczbę prób. Poproś o nowy kod';
+const TOO_MANY_ATTEMPTS =
+  'Przekroczono liczbę prób. Poproś o nowy kod za kilka minut';
 const WRONG_CODE = 'Nieprawidłowy kod';
 
 const CAST_FAILURES = {
@@ -57,15 +58,14 @@ export async function confirmVote(
   const attempts = await registerConfirmationAttempt(pending.id);
   if (attempts === null) return invalidResult(CODE_EXPIRED);
 
+  // An exhausted code stays until it expires, so the rate limit keeps holding
   if (attempts > MAX_CONFIRMATION_ATTEMPTS) {
-    await deleteVoteConfirmation(pending.id);
     return invalidResult(TOO_MANY_ATTEMPTS);
   }
 
   if (!confirmationCodeMatches(pending.codeHash, pending.id, code)) {
     logger.warn({ userId, votingId: voting.id, attempts }, 'Wrong vote code');
     if (attempts >= MAX_CONFIRMATION_ATTEMPTS) {
-      await deleteVoteConfirmation(pending.id);
       return invalidResult(TOO_MANY_ATTEMPTS);
     }
     return invalidResult(WRONG_CODE);

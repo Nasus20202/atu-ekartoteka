@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import { toTenantVotingDto } from '@/lib/voting/dto/tenant-voting-dto';
-import { toQuestionResults, toVoterDto } from '@/lib/voting/dto/voting-dto';
+import {
+  toQuestionResults,
+  toVoterDto,
+  toVotingDto,
+  toVotingListItemDto,
+} from '@/lib/voting/dto/voting-dto';
 import { VoteChoice, VotingStatus } from '@/lib/voting/types/voting';
 
 const questions = [
@@ -81,7 +86,53 @@ describe('toTenantVotingDto', () => {
     const late = { ...base, endsAt: new Date('2026-05-01T00:00:00Z') };
     const published = { ...base, status: VotingStatus.RESULTS_PUBLISHED };
 
-    expect(toTenantVotingDto(late, now).awaitingVote).toBe(false);
+    expect(toTenantVotingDto(late, now)).toMatchObject({
+      open: false,
+      awaitingVote: false,
+    });
     expect(toTenantVotingDto(published, now).awaitingVote).toBe(false);
+  });
+});
+
+describe('voting DTOs', () => {
+  const createdAt = new Date('2026-06-01T12:00:00Z');
+
+  it('maps a list item with ISO dates and counts', () => {
+    expect(
+      toVotingListItemDto({
+        id: 'v1',
+        title: 'T',
+        status: 'ACTIVE',
+        endsAt: new Date('2026-07-01T12:00:00Z'),
+        createdAt,
+        hoa: { id: 'h1', name: 'Wspólnota' },
+        _count: { questions: 2, ballots: 5 },
+      })
+    ).toEqual({
+      id: 'v1',
+      title: 'T',
+      status: 'ACTIVE',
+      endsAt: '2026-07-01T12:00:00.000Z',
+      createdAt: '2026-06-01T12:00:00.000Z',
+      hoaId: 'h1',
+      hoaName: 'Wspólnota',
+      questionCount: 2,
+      ballotCount: 5,
+    });
+  });
+
+  it('maps a voting without a deadline', () => {
+    const dto = toVotingDto({
+      id: 'v1',
+      title: 'T',
+      description: null,
+      status: 'DRAFT',
+      endsAt: null,
+      hoa: { id: 'h1', name: 'W' },
+      questions: [{ id: 'q1', position: 0, text: 'Czy?' }],
+    });
+
+    expect(dto.endsAt).toBeNull();
+    expect(dto.questions).toEqual([{ id: 'q1', position: 0, text: 'Czy?' }]);
   });
 });

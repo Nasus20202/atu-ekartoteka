@@ -3,6 +3,7 @@
  */
 
 import { expect, test } from '../fixtures';
+import { createDraftVoting } from '../utils/voting';
 
 const FIRST_QUESTION = 'Czy zgadzasz się na remont dachu?';
 
@@ -13,22 +14,13 @@ test('an admin edits and deletes a draft voting that owners cannot see', async (
   const title = `Szkic E2E ${Date.now()}`;
   const editedTitle = `${title} (zmieniony)`;
 
-  await adminPage.goto('/admin/votings/new');
-  await adminPage.getByLabel('Wspólnota').click();
-  await adminPage.getByRole('menuitemradio', { name: 'Test HOA' }).click();
-  await adminPage.getByLabel('Tytuł').fill(title);
-  await adminPage
-    .getByRole('textbox', { name: 'Treść pytania 1' })
-    .fill(FIRST_QUESTION);
-  await adminPage.getByRole('button', { name: 'Utwórz głosowanie' }).click();
-  await expect(adminPage.getByRole('heading', { name: title })).toBeVisible();
+  const votingId = await createDraftVoting(adminPage, {
+    title,
+    questions: [FIRST_QUESTION],
+  });
   await expect(adminPage.getByText('Wersja robocza')).toBeVisible();
 
-  // Owners get a not-found page for it and no list entry
-  await userPage.goto(
-    adminPage.url().replace('/admin/votings/', '/dashboard/votings/')
-  );
-  await expect(userPage.getByText(title)).toBeHidden();
+  // Owners get no list entry for a draft
   await userPage.goto('/dashboard/votings');
   await expect(userPage.getByText(title)).toBeHidden();
 
@@ -43,4 +35,27 @@ test('an admin edits and deletes a draft voting that owners cannot see', async (
   await adminPage.getByRole('button', { name: 'Usuń' }).last().click();
   await expect(adminPage).toHaveURL(/\/admin\/votings$/);
   await expect(adminPage.getByText(editedTitle)).toBeHidden();
+  await adminPage.goto(`/admin/votings/${votingId}`);
+  await expect(adminPage.getByText('Strona nie znaleziona')).toBeVisible();
+});
+
+test('an owner cannot open the voting admin area or a draft', async ({
+  adminPage,
+  userPage,
+}) => {
+  const title = `Prywatny szkic E2E ${Date.now()}`;
+  const votingId = await createDraftVoting(adminPage, {
+    title,
+    questions: [FIRST_QUESTION],
+  });
+
+  await userPage.goto('/admin/votings');
+  await expect(userPage).toHaveURL(/\/dashboard/);
+
+  await userPage.goto(`/admin/votings/${votingId}`);
+  await expect(userPage).toHaveURL(/\/dashboard/);
+
+  await userPage.goto(`/dashboard/votings/${votingId}`);
+  await expect(userPage.getByText(title)).toBeHidden();
+  await expect(userPage.getByText('Strona nie znaleziona')).toBeVisible();
 });

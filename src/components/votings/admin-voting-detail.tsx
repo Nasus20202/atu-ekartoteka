@@ -52,6 +52,7 @@ export async function AdminVotingDetail({ votingId }: Props) {
     <div className={`space-y-6 ${REVEAL_CLASS}`}>
       <VotingSummaryCard
         voting={voting}
+        deadlinePassed={voting.status === VotingStatus.ACTIVE && !canNotify}
         stats={[
           { label: 'Oddane głosy', value: String(ballots.length) },
           { label: 'Uprawnione lokale', value: String(apartmentTotal) },

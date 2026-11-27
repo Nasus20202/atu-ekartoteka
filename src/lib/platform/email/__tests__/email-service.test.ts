@@ -422,6 +422,63 @@ describe('EmailService', () => {
     });
   });
 
+  describe('voting emails', () => {
+    beforeEach(() => {
+      process.env.SMTP_HOST = 'smtp.example.com';
+      emailService = new EmailService(mockConfig);
+    });
+
+    it('sends the vote confirmation code', async () => {
+      const result = await emailService.sendVoteConfirmationEmail(
+        'user@example.com',
+        '042917',
+        'Remont',
+        15,
+        'Anna'
+      );
+
+      expect(result).toEqual({ ok: true, delivery: 'sent' });
+      expect(mockSendMail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'user@example.com',
+          subject: 'Kod potwierdzający głosowanie',
+          text: expect.stringContaining('042917'),
+        })
+      );
+    });
+
+    it('sends the voting notification', async () => {
+      const result = await emailService.sendVotingNotificationEmail(
+        'user@example.com',
+        'v1',
+        'Remont',
+        'Wspólnota',
+        '1 grudnia 2026 12:00'
+      );
+
+      expect(result).toEqual({ ok: true, delivery: 'sent' });
+      expect(mockSendMail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          subject: 'Nowe głosowanie w Twojej wspólnocie',
+          text: expect.stringContaining('/dashboard/votings/v1'),
+        })
+      );
+    });
+
+    it('reports a failed delivery instead of throwing', async () => {
+      mockSendMail.mockRejectedValue(new Error('smtp down'));
+
+      expect(
+        await emailService.sendVoteConfirmationEmail(
+          'user@example.com',
+          '042917',
+          'Remont',
+          15
+        )
+      ).toEqual({ ok: false, reason: 'send-failed' });
+    });
+  });
+
   describe('sendAccountActivationEmail', () => {
     beforeEach(() => {
       process.env.SMTP_HOST = 'smtp.example.com';

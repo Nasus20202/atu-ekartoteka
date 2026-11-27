@@ -8,6 +8,13 @@ import { createVotingTenant } from '../utils/create-voting-tenant';
 import { expectDeliveredEmail } from '../utils/email-assertions';
 import { loginWithTurnstile, waitForMail } from '../utils/mock-server';
 import { ADMIN_EMAIL, ADMIN_PASSWORD } from '../utils/test-credentials';
+import {
+  answerQuestion,
+  confirmAdminAction,
+  countBallots,
+  createDraftVoting,
+  publishVoting,
+} from '../utils/voting';
 
 const CODE_SUBJECT = 'Kod potwierdzający głosowanie';
 const NOTIFICATION_SUBJECT = 'Nowe głosowanie w Twojej wspólnocie';
@@ -23,22 +30,11 @@ test('owners vote with an emailed code and see the published results', async ({
   const tenant = await createVotingTenant(2);
   const title = `Uchwała E2E ${Date.now()}`;
 
-  // The admin creates a draft for the test HOA
   await loginWithTurnstile(page, ADMIN_EMAIL, ADMIN_PASSWORD);
-  await page.goto('/admin/votings/new');
-  await page.getByLabel('Wspólnota').click();
-  await page.getByRole('menuitemradio', { name: 'Test HOA' }).click();
-  await page.getByLabel('Tytuł').fill(title);
-  await page
-    .getByRole('textbox', { name: 'Treść pytania 1' })
-    .fill('Czy zgadzasz się na remont dachu?');
-  await page.getByRole('button', { name: 'Dodaj pytanie' }).click();
-  await page
-    .getByRole('textbox', { name: 'Treść pytania 2' })
-    .fill('Czy wybieramy firmę A?');
-  await page.getByRole('button', { name: 'Utwórz głosowanie' }).click();
-
-  await expect(page.getByRole('heading', { name: title })).toBeVisible();
+  const votingId = await createDraftVoting(page, {
+    title,
+    questions: ['Czy zgadzasz się na remont dachu?', 'Czy wybieramy firmę A?'],
+  });
   await expect(page.getByText('Wersja robocza')).toBeVisible();
 
   // A draft stays invisible to owners
@@ -49,11 +45,8 @@ test('owners vote with an emailed code and see the published results', async ({
     await owner.goto('/dashboard/votings');
     await expect(owner.getByText(title)).toBeHidden();
 
-    // Publishing makes it visible and notifies the owner
-    await page.getByRole('button', { name: 'Opublikuj' }).click();
-    await page.getByRole('button', { name: 'Opublikuj' }).last().click();
-    await expect(page.getByText('Aktywne').first()).toBeVisible();
-
+    // Publishing makes it visible and the admin can notify the owner
+    await publishVoting(page);
     await page.getByRole('button', { name: 'Powiadom użytkowników' }).click();
     await page.getByRole('checkbox', { name: tenant.name }).check();
     await page.getByRole('button', { name: /^Wyślij/ }).click();
@@ -66,39 +59,37 @@ test('owners vote with an emailed code and see the published results', async ({
       subject: NOTIFICATION_SUBJECT,
       both: [title],
       html: ['Przejdź do głosowania'],
+      linkPath: `/dashboard/votings/${votingId}`,
     });
 
     // The owner sees the navbar badge and the dashboard card
     await owner.goto('/dashboard');
     await expect(
-      owner.getByRole('status', { name: /czekające na Twój głos: 1/ }).first()
+      owner
+        .getByRole('status', { name: /czekające na Twój głos: [1-9]/ })
+        .first()
     ).toBeVisible();
-    await expect(owner.getByText(title)).toBeVisible();
+    await expect(
+      owner.getByTestId(`dashboard-voting-${votingId}`).getByRole('link', {
+        name: 'Zagłosuj',
+      })
+    ).toBeVisible();
 
     // Voting needs every answer, then a code from the email
-    await owner.goto('/dashboard/votings');
-    await owner
-      .getByRole('link', { name: /Zagłosuj/ })
-      .first()
-      .click();
+    await owner.goto(`/dashboard/votings/${votingId}`);
     await expect(
       owner.getByText('Masz 2 lokale w tej wspólnocie')
     ).toBeVisible();
     const next = owner.getByRole('button', { name: /Dalej/ });
     await expect(next).toBeDisabled();
-    await owner
-      .getByRole('group', { name: /^1\./ })
-      .getByText('Za', { exact: true })
-      .click();
-    await owner
-      .getByRole('group', { name: /^2\./ })
-      .getByText('Przeciw', { exact: true })
-      .click();
+    await answerQuestion(owner, 1, 'Za');
+    await answerQuestion(owner, 2, 'Przeciw');
     await next.click();
 
     await owner.getByLabel('Kod z wiadomości').fill(WRONG_CODE);
     await owner.getByRole('button', { name: /Potwierdź i zagłosuj/ }).click();
     await expect(owner.getByText('Nieprawidłowy kod')).toBeVisible();
+    expect(await countBallots(votingId)).toBe(0);
 
     const mail = await waitForMail(request, tenant.email, {
       subject: CODE_SUBJECT,
@@ -113,26 +104,39 @@ test('owners vote with an emailed code and see the published results', async ({
     await owner.getByLabel('Kod z wiadomości').fill(code);
     await owner.getByRole('button', { name: /Potwierdź i zagłosuj/ }).click();
     await expect(owner.getByText('Dziękujemy, głos oddany')).toBeVisible();
+    expect(await countBallots(votingId)).toBe(2);
 
-    // The vote is final and no results are shown while the voting is active
+    // The vote is final: no form, own answers, no results while active
     await owner.reload();
     await expect(
       owner.getByText('Twój głos został oddany i potwierdzony')
     ).toBeVisible();
+    await expect(owner.getByRole('button', { name: /Dalej/ })).toBeHidden();
     await expect(owner.getByRole('progressbar')).toHaveCount(0);
+    await owner.goto('/dashboard');
+    await expect(
+      owner.getByTestId(`dashboard-voting-${votingId}`).getByRole('link', {
+        name: 'Zobacz',
+      })
+    ).toBeVisible();
+    await owner.goto(`/dashboard/votings/${votingId}`);
 
-    // The admin sees who voted what and publishes the results
+    // The admin sees who voted what, then shows the results
     await page.reload();
     await page.getByRole('tab', { name: 'Kto jak głosował' }).click();
     await expect(page.getByText(tenant.email)).toHaveCount(2);
-    await page.getByRole('button', { name: 'Pokaż wyniki' }).click();
-    await page.getByRole('button', { name: 'Pokaż wyniki' }).last().click();
-    await expect(page.getByText('Pokaż wyniki').first()).toBeVisible();
+    await expect(page.getByText('1. Za')).toHaveCount(2);
+    await expect(page.getByText('2. Przeciw')).toHaveCount(2);
+    await confirmAdminAction(page, 'Pokaż wyniki');
+    await expect(
+      page.getByRole('button', { name: 'Zarchiwizuj' })
+    ).toBeVisible();
 
     // The owner now sees aggregate results without any voter names
     await owner.reload();
     await expect(owner.getByRole('progressbar').first()).toBeVisible();
     await expect(owner.getByText(tenant.email)).toBeHidden();
+    await expect(owner.getByText('2 (100%)')).toHaveCount(2);
   } finally {
     await ownerContext.close();
   }

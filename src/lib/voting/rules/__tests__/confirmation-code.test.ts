@@ -6,7 +6,8 @@ import {
   generateConfirmationCode,
   hashConfirmationCode,
   isConfirmationCodeFormat,
-  isResendTooSoon,
+  minutesUntilNextCode,
+  rateLimitWindowStart,
 } from '@/lib/voting/rules/confirmation-code';
 
 describe('confirmation code', () => {
@@ -44,15 +45,29 @@ describe('confirmation code', () => {
     expect(confirmationExpiry(now)).toEqual(new Date('2026-06-01T12:15:00Z'));
   });
 
-  it('refuses a new code within a minute of the previous one', () => {
+  it('counts the minutes left in the five minute window, rounding up', () => {
     const issued = new Date('2026-06-01T12:00:00Z');
-    const expiresAt = confirmationExpiry(issued);
 
-    expect(isResendTooSoon(expiresAt, new Date('2026-06-01T12:00:30Z'))).toBe(
-      true
+    expect(minutesUntilNextCode(issued, new Date('2026-06-01T12:00:00Z'))).toBe(
+      5
     );
-    expect(isResendTooSoon(expiresAt, new Date('2026-06-01T12:01:00Z'))).toBe(
-      false
+    expect(minutesUntilNextCode(issued, new Date('2026-06-01T12:01:30Z'))).toBe(
+      4
+    );
+    expect(minutesUntilNextCode(issued, new Date('2026-06-01T12:04:59Z'))).toBe(
+      1
+    );
+    expect(minutesUntilNextCode(issued, new Date('2026-06-01T12:05:00Z'))).toBe(
+      0
+    );
+    expect(minutesUntilNextCode(issued, new Date('2026-06-01T13:00:00Z'))).toBe(
+      0
+    );
+  });
+
+  it('starts the window five minutes before now', () => {
+    expect(rateLimitWindowStart(new Date('2026-06-01T12:05:00Z'))).toEqual(
+      new Date('2026-06-01T12:00:00Z')
     );
   });
 });

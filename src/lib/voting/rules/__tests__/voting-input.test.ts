@@ -59,6 +59,19 @@ describe('parseVotingInput', () => {
       'Głosowanie może mieć maksymalnie 20 pytań',
     ],
     [null, 'Wybierz wspólnotę'],
+    [
+      { ...valid, description: 'x'.repeat(5001) },
+      'Opis może mieć maksymalnie 5000 znaków',
+    ],
+    [
+      { ...valid, questions: [{ text: 'x'.repeat(1001) }] },
+      'Pytanie może mieć maksymalnie 1000 znaków',
+    ],
+    [
+      { ...valid, questions: ['nie obiekt'] },
+      'Treść pytania nie może być pusta',
+    ],
+    [{ ...valid, endsAt: 12345 }, 'Nieprawidłowy termin głosowania'],
   ])('rejects %#', (input, message) => {
     expect(parseVotingInput(input)).toEqual({ ok: false, message });
   });

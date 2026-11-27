@@ -8,13 +8,13 @@ import {
 import { findUserById } from '@/lib/users/queries/find-user-by-id';
 import { saveVoteConfirmation } from '@/lib/voting/mutations/save-vote-confirmation';
 import { deleteVoteConfirmation } from '@/lib/voting/mutations/vote-confirmation-attempts';
-import { findVoteConfirmation } from '@/lib/voting/queries/find-vote-confirmation';
+import { findRecentVoteConfirmation } from '@/lib/voting/queries/find-recent-vote-confirmation';
 import { findVotableApartmentIds } from '@/lib/voting/queries/find-voter-apartments';
 import {
   confirmationExpiry,
   generateConfirmationCode,
   hashConfirmationCode,
-  isResendTooSoon,
+  minutesUntilNextCode,
   newConfirmationId,
 } from '@/lib/voting/rules/confirmation-code';
 import { CONFIRMATION_CODE_TTL_MINUTES } from '@/lib/voting/rules/voting-constants';
@@ -49,10 +49,10 @@ export async function requestVoteConfirmation(
   }
 
   const now = new Date();
-  const pending = await findVoteConfirmation(voting.id, userId);
-  if (pending && isResendTooSoon(pending.expiresAt, now)) {
+  const recent = await findRecentVoteConfirmation(userId, now);
+  if (recent) {
     return invalidResult(
-      'Kod został już wysłany. Poczekaj chwilę i spróbuj ponownie'
+      `Poczekaj ${minutesUntilNextCode(recent.createdAt, now)} min przed ponownym wysłaniem kodu`
     );
   }
 

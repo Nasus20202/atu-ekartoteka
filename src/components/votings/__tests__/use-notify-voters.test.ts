@@ -77,6 +77,19 @@ describe('useNotifyVoters', () => {
     });
   });
 
+  it('reports a failed request instead of throwing', async () => {
+    mocks.notify.mockRejectedValue(new Error('network'));
+    const { result } = renderHook(() => useNotifyVoters('v1', VOTERS));
+    act(() => result.current.openDialog());
+
+    await act(() => result.current.send());
+
+    expect(result.current.outcome).toEqual({
+      kind: 'error',
+      message: 'Nie udało się wysłać powiadomień',
+    });
+  });
+
   it('shows the error when sending is refused', async () => {
     mocks.notify.mockResolvedValue({ ok: false, error: 'Nie aktywne' });
     const { result } = renderHook(() => useNotifyVoters('v1', VOTERS));

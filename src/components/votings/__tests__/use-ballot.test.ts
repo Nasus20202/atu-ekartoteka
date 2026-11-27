@@ -96,6 +96,26 @@ describe('useBallot', () => {
     expect(result.current.pending).toBe(false);
   });
 
+  it('shows the refusal of the confirmation and a failed confirmation request', async () => {
+    const { result } = answered();
+    await act(() => result.current.requestCode());
+    mocks.confirm.mockRejectedValue(new Error('network'));
+
+    await act(() => result.current.confirm());
+
+    expect(result.current.stage).toBe('code');
+    expect(result.current.error).toBe('Coś poszło nie tak. Spróbuj ponownie');
+  });
+
+  it('uses the generic message when a refusal has no text', async () => {
+    mocks.request.mockResolvedValue({ ok: false, error: '' });
+    const { result } = answered();
+
+    await act(() => result.current.requestCode());
+
+    expect(result.current.error).toBe('Coś poszło nie tak. Spróbuj ponownie');
+  });
+
   it('goes back to the answers without losing them', async () => {
     const { result } = answered();
     await act(() => result.current.requestCode());

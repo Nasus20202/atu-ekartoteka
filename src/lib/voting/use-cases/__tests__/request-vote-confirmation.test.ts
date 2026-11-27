@@ -5,7 +5,7 @@ import { requestVoteConfirmation } from '@/lib/voting/use-cases/request-vote-con
 const mocks = vi.hoisted(() => ({
   resolveOpenVoting: vi.fn(),
   findVotableApartmentIds: vi.fn(),
-  findVoteConfirmation: vi.fn(),
+  findRecent: vi.fn(),
   saveVoteConfirmation: vi.fn(),
   deleteVoteConfirmation: vi.fn(),
   findUserById: vi.fn(),
@@ -18,8 +18,8 @@ vi.mock('@/lib/voting/use-cases/vote-access', () => ({
 vi.mock('@/lib/voting/queries/find-voter-apartments', () => ({
   findVotableApartmentIds: mocks.findVotableApartmentIds,
 }));
-vi.mock('@/lib/voting/queries/find-vote-confirmation', () => ({
-  findVoteConfirmation: mocks.findVoteConfirmation,
+vi.mock('@/lib/voting/queries/find-recent-vote-confirmation', () => ({
+  findRecentVoteConfirmation: mocks.findRecent,
 }));
 vi.mock('@/lib/voting/mutations/save-vote-confirmation', () => ({
   saveVoteConfirmation: mocks.saveVoteConfirmation,
@@ -52,7 +52,7 @@ describe('requestVoteConfirmation', () => {
     vi.clearAllMocks();
     mocks.resolveOpenVoting.mockResolvedValue(VOTING);
     mocks.findVotableApartmentIds.mockResolvedValue(['apt-1']);
-    mocks.findVoteConfirmation.mockResolvedValue(null);
+    mocks.findRecent.mockResolvedValue(null);
     mocks.findUserById.mockResolvedValue({
       email: 'jan@example.com',
       name: 'Jan',
@@ -108,16 +108,17 @@ describe('requestVoteConfirmation', () => {
     expect(mocks.send).not.toHaveBeenCalled();
   });
 
-  it('refuses a new code within the cooldown', async () => {
-    mocks.findVoteConfirmation.mockResolvedValue({
-      expiresAt: new Date(Date.now() + 14.5 * 60_000),
+  it('refuses a new code within the rate limit window and says how long to wait', async () => {
+    mocks.findRecent.mockResolvedValue({
+      createdAt: new Date(Date.now() - 60_000),
     });
 
-    expect(
-      await requestVoteConfirmation('user-1', 'v1', ANSWERS)
-    ).toMatchObject({
+    expect(await requestVoteConfirmation('user-1', 'v1', ANSWERS)).toEqual({
       ok: false,
+      code: 'invalid',
+      message: 'Poczekaj 4 min przed ponownym wysłaniem kodu',
     });
+    expect(mocks.saveVoteConfirmation).not.toHaveBeenCalled();
     expect(mocks.send).not.toHaveBeenCalled();
   });
 

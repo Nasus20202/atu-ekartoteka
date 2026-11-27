@@ -1,5 +1,6 @@
 import { cleanupExpiredPasswordResets } from '@/lib/cron/jobs/cleanup-password-resets';
 import { cleanupExpiredVerifications } from '@/lib/cron/jobs/cleanup-verifications';
+import { cleanupExpiredVoteConfirmations } from '@/lib/cron/jobs/cleanup-vote-confirmations';
 import { getCronScheduler } from '@/lib/cron/runtime/scheduler';
 import { createLogger } from '@/lib/platform/logging/logger';
 
@@ -24,6 +25,13 @@ export function initializeCronJobs(): void {
     'cleanup-password-resets',
     '0 * * * *', // Every hour
     cleanupExpiredPasswordResets
+  );
+
+  // Pending vote ballots whose emailed code expired - runs every hour
+  scheduler.scheduleTask(
+    'cleanup-vote-confirmations',
+    '0 * * * *', // Every hour
+    cleanupExpiredVoteConfirmations
   );
 
   logger.info('Cron jobs initialized');

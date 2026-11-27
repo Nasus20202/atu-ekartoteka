@@ -15,6 +15,7 @@ function voting(overrides: Partial<TenantVotingDto> = {}): TenantVotingDto {
     questionCount: 2,
     apartmentCount: 2,
     votedApartmentCount: 0,
+    open: true,
     awaitingVote: true,
     ...overrides,
   };
@@ -40,6 +41,21 @@ describe('TenantVotingCard', () => {
 
     expect(screen.queryByText('Czeka na Twój głos')).not.toBeInTheDocument();
     expect(screen.getByText(/Oddane głosy: 2 z 2/)).toBeInTheDocument();
+  });
+
+  it('says the voting has ended once the deadline passed, without inviting to vote', () => {
+    render(
+      <TenantVotingCard
+        voting={voting({
+          endsAt: '2026-05-01T10:00:00.000Z',
+          open: false,
+          awaitingVote: false,
+        })}
+      />
+    );
+
+    expect(screen.getByText(/Zakończono:/)).toBeInTheDocument();
+    expect(screen.queryByText('Czeka na Twój głos')).not.toBeInTheDocument();
   });
 
   it('links to the results when they are published', () => {

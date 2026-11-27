@@ -89,6 +89,17 @@ describe('admin voting actions', () => {
     }
   );
 
+  it('deletes and notifies as the admin from the session', async () => {
+    mocks.remove.mockResolvedValue({ ok: true, data: { id: 'v1' } });
+    mocks.notify.mockResolvedValue({ ok: true, data: { sent: 1, failed: 0 } });
+
+    await deleteVotingAction({ votingId: 'v1' });
+    await notifyVotersAction({ votingId: 'v1', userIds: ['u1'] });
+
+    expect(mocks.remove).toHaveBeenCalledWith('admin-1', 'v1');
+    expect(mocks.notify).toHaveBeenCalledWith('admin-1', 'v1', ['u1']);
+  });
+
   it('survives a non-object input', async () => {
     mocks.notify.mockResolvedValue({
       ok: false,

@@ -3,7 +3,10 @@ import { MailCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { CONFIRMATION_CODE_LENGTH } from '@/lib/voting/rules/voting-constants';
+import {
+  CONFIRMATION_CODE_LENGTH,
+  CONFIRMATION_RATE_LIMIT_MINUTES,
+} from '@/lib/voting/rules/voting-constants';
 
 interface Props {
   code: string;
@@ -57,6 +60,10 @@ export function BallotCodeStep({
           }
         />
       </div>
+      <p className="text-xs text-muted-foreground">
+        Kod nie dotarł? Sprawdź folder spam. Nowy kod możesz wysłać co{' '}
+        {CONFIRMATION_RATE_LIMIT_MINUTES} minut.
+      </p>
       <div className="flex flex-wrap gap-2">
         <Button
           type="submit"

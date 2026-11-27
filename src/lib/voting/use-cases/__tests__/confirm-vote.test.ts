@@ -85,13 +85,13 @@ describe('confirmVote', () => {
     expect(mocks.deleteConfirmation).not.toHaveBeenCalled();
   });
 
-  it('deletes the confirmation on the fifth wrong attempt', async () => {
+  it('locks the code on the fifth wrong attempt but keeps it for the rate limit', async () => {
     mocks.registerAttempt.mockResolvedValue(5);
 
     expect(await confirmVote('user-1', 'v1', '000000')).toMatchObject({
       message: expect.stringContaining('Przekroczono'),
     });
-    expect(mocks.deleteConfirmation).toHaveBeenCalledWith('c1');
+    expect(mocks.deleteConfirmation).not.toHaveBeenCalled();
   });
 
   it('refuses even the right code after the attempts are used up', async () => {
@@ -144,6 +144,35 @@ describe('confirmVote', () => {
     expect(await confirmVote('user-1', 'v1', CODE)).toMatchObject({
       ok: false,
       message,
+    });
+  });
+
+  it('drops a stored ballot whose answers no longer fit the questions', async () => {
+    mocks.findVoteConfirmation.mockResolvedValue(
+      pending({ answers: { other: 'FOR' } })
+    );
+
+    expect(await confirmVote('user-1', 'v1', CODE)).toMatchObject({
+      ok: false,
+    });
+    expect(mocks.deleteConfirmation).toHaveBeenCalledWith('c1');
+    expect(mocks.castBallots).not.toHaveBeenCalled();
+  });
+
+  it('treats a confirmation deleted meanwhile as expired', async () => {
+    mocks.registerAttempt.mockResolvedValue(null);
+
+    expect(await confirmVote('user-1', 'v1', CODE)).toMatchObject({
+      message: 'Kod wygasł lub został już użyty. Poproś o nowy',
+    });
+  });
+
+  it('reports a duplicate as a failure', async () => {
+    mocks.castBallots.mockResolvedValue({ ok: false, reason: 'duplicate' });
+
+    expect(await confirmVote('user-1', 'v1', CODE)).toMatchObject({
+      ok: false,
+      code: 'failed',
     });
   });
 

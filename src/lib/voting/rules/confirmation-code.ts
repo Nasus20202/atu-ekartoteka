@@ -3,12 +3,11 @@ import crypto from 'crypto';
 import {
   CONFIRMATION_CODE_LENGTH,
   CONFIRMATION_CODE_TTL_MINUTES,
-  CONFIRMATION_RESEND_COOLDOWN_SECONDS,
+  CONFIRMATION_RATE_LIMIT_MINUTES,
 } from '@/lib/voting/rules/voting-constants';
 
 const CODE_PATTERN = new RegExp(`^\\d{${CONFIRMATION_CODE_LENGTH}}$`);
 const MS_PER_MINUTE = 60_000;
-const MS_PER_SECOND = 1000;
 
 export function generateConfirmationCode(): string {
   return crypto
@@ -52,15 +51,21 @@ export function confirmationExpiry(now: Date): Date {
   );
 }
 
-/** The code was issued at `expiresAt` minus its lifetime. */
-export function isResendTooSoon(expiresAt: Date, now: Date): boolean {
-  const issuedAt =
-    expiresAt.getTime() - CONFIRMATION_CODE_TTL_MINUTES * MS_PER_MINUTE;
-
-  return (
-    now.getTime() - issuedAt <
-    CONFIRMATION_RESEND_COOLDOWN_SECONDS * MS_PER_SECOND
+/** Start of the window in which a user may have only one code. */
+export function rateLimitWindowStart(now: Date): Date {
+  return new Date(
+    now.getTime() - CONFIRMATION_RATE_LIMIT_MINUTES * MS_PER_MINUTE
   );
+}
+
+/** Whole minutes left before another code may be sent; zero once the window is over. */
+export function minutesUntilNextCode(issuedAt: Date, now: Date): number {
+  const msLeft =
+    issuedAt.getTime() +
+    CONFIRMATION_RATE_LIMIT_MINUTES * MS_PER_MINUTE -
+    now.getTime();
+
+  return Math.max(0, Math.ceil(msLeft / MS_PER_MINUTE));
 }
 
 export function newConfirmationId(): string {

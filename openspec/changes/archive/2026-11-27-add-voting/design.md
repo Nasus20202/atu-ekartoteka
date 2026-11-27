@@ -42,7 +42,7 @@ apartment in; drafts and archived votings are 404 for them.
    JSON, the SHA-256 of `confirmationId:code`, `expiresAt`, `attempts`) and
    emails a six-digit code from `crypto.randomInt`. A previous pending
    confirmation of the same user and voting is replaced; a new code cannot be
-   requested within a cooldown.
+   requested within five minutes (the same limit as the email verification resend).
 2. The tenant enters the code. The use case checks expiry, the attempt limit
    (the confirmation is deleted when it is reached), and compares hashes in
    constant time. A failed attempt is counted atomically in the database.
@@ -71,5 +71,5 @@ passed to the navbar as a count.
 ## Risks / Trade-offs
 
 - A six-digit code is guessable in principle: mitigated by 15-minute expiry,
-  five attempts, a per-user replacement cooldown and the authenticated session.
+  five attempts, a per-user five minute rate limit and the authenticated session.
 - Admins see who voted what by requirement; this is documented in the admin UI.

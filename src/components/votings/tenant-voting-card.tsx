@@ -38,7 +38,10 @@ function Action({ voting }: Props) {
 
 export function TenantVotingCard({ voting }: Props) {
   return (
-    <Card className={voting.awaitingVote ? 'border-primary/50' : undefined}>
+    <Card
+      data-testid={`voting-card-${voting.id}`}
+      className={voting.awaitingVote ? 'border-primary/50' : undefined}
+    >
       <CardHeader className="space-y-3 pb-3">
         <div className="flex flex-wrap items-center gap-2">
           <VotingStatusBadge status={voting.status} />
@@ -52,7 +55,10 @@ export function TenantVotingCard({ voting }: Props) {
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-sm text-muted-foreground">{voting.hoaName}</p>
-        <VotingDeadline endsAt={voting.endsAt} />
+        <VotingDeadline
+          endsAt={voting.endsAt}
+          passed={voting.status === VotingStatus.ACTIVE && !voting.open}
+        />
         {voting.status === VotingStatus.ACTIVE && (
           <p className="text-sm text-muted-foreground">
             Oddane głosy: {voting.votedApartmentCount} z {voting.apartmentCount}{' '}

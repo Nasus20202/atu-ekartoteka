@@ -13,6 +13,7 @@ vi.mock('@/lib/platform/logging/logger', () => ({
 
 import { cleanupExpiredPasswordResets } from '@/lib/cron/jobs/cleanup-password-resets';
 import { cleanupExpiredVerifications } from '@/lib/cron/jobs/cleanup-verifications';
+import { cleanupExpiredVoteConfirmations } from '@/lib/cron/jobs/cleanup-vote-confirmations';
 import {
   initializeCronJobs,
   stopCronJobs,
@@ -31,6 +32,11 @@ describe('cron init', () => {
     expect(mockScheduler.scheduleTask.mock.calls).toEqual([
       ['cleanup-verifications', EVERY_HOUR, cleanupExpiredVerifications],
       ['cleanup-password-resets', EVERY_HOUR, cleanupExpiredPasswordResets],
+      [
+        'cleanup-vote-confirmations',
+        EVERY_HOUR,
+        cleanupExpiredVoteConfirmations,
+      ],
     ]);
   });
 

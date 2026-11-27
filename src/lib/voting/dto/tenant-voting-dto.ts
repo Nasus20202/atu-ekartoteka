@@ -20,6 +20,8 @@ export interface TenantVotingDto {
   questionCount: number;
   apartmentCount: number;
   votedApartmentCount: number;
+  /** Active and before its deadline: ballots are still accepted. */
+  open: boolean;
   /** An open voting in which at least one of the user's apartments has not voted. */
   awaitingVote: boolean;
 }
@@ -30,6 +32,7 @@ export function toTenantVotingDto(
 ): TenantVotingDto {
   const apartmentCount = voting.hoa._count.apartments;
   const votedApartmentCount = voting._count.ballots;
+  const open = isVotingOpen(voting, now);
 
   return {
     id: voting.id,
@@ -40,7 +43,7 @@ export function toTenantVotingDto(
     questionCount: voting._count.questions,
     apartmentCount,
     votedApartmentCount,
-    awaitingVote:
-      isVotingOpen(voting, now) && votedApartmentCount < apartmentCount,
+    open,
+    awaitingVote: open && votedApartmentCount < apartmentCount,
   };
 }
