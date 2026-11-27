@@ -19,6 +19,15 @@ const FAKE_TURNSTILE_SCRIPT_URL = new URL(
 
 export type MockMail = CapturedMail;
 
+/** Every captured message for the recipient, newest first. */
+export async function listMail(
+  request: APIRequestContext,
+  to: string
+): Promise<MockMail[]> {
+  const response = await request.get(`${MOCK_URL}/mail`, { params: { to } });
+  return (await response.json()) as MockMail[];
+}
+
 export async function waitForMail(
   request: APIRequestContext,
   to: string,
@@ -28,11 +37,7 @@ export async function waitForMail(
   await expect
     .poll(
       async () => {
-        const response = await request.get(`${MOCK_URL}/mail`, {
-          params: { to },
-        });
-        const mails = (await response.json()) as MockMail[];
-        found = mails.find(
+        found = (await listMail(request, to)).find(
           (mail) =>
             (!subject || mail.subject === subject) &&
             (!contains || mail.text.includes(contains))
