@@ -71,6 +71,37 @@ describe('DashboardNavbar current page', () => {
     }
   );
 
+  it.each(['/dashboard/votings', '/dashboard/votings/v1'])(
+    'marks Głosowania on %s',
+    (pathname) => {
+      location.pathname = pathname;
+
+      render(<DashboardNavbar mode="dashboard" pendingVotings={0} />);
+
+      expect(links('Głosowania')).toHaveLength(2);
+      links('Głosowania').forEach((link) => {
+        expect(link).toHaveAttribute('href', '/dashboard/votings');
+        expect(link).toHaveAttribute('aria-current', 'page');
+      });
+      links('Profil').forEach((link) =>
+        expect(link).not.toHaveAttribute('aria-current')
+      );
+    }
+  );
+
+  it.each(['/dashboard', '/dashboard/votings-old'])(
+    'marks nothing as Głosowania on %s',
+    (pathname) => {
+      location.pathname = pathname;
+
+      render(<DashboardNavbar mode="dashboard" pendingVotings={0} isAdmin />);
+
+      links('Głosowania').forEach((link) =>
+        expect(link).not.toHaveAttribute('aria-current')
+      );
+    }
+  );
+
   it('marks the profile link on the profile page', () => {
     location.pathname = '/dashboard/profile';
 
@@ -85,6 +116,7 @@ describe('DashboardNavbar current page', () => {
     ['/admin/apartments/h1/a1', 'Mieszkania'],
     ['/admin/import', 'Import'],
     ['/admin/users/management', 'Użytkownicy'],
+    ['/admin/votings/v1', 'Głosowania'],
     ['/admin/settings', 'Ustawienia'],
   ])('marks the link of %s in the admin bar', (pathname, name) => {
     location.pathname = pathname;

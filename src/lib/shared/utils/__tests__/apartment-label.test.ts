@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatApartmentLabel } from '@/lib/shared/utils/apartment-label';
+import {
+  formatApartmentLabel,
+  formatOwnedApartmentLabel,
+} from '@/lib/shared/utils/apartment-label';
 
 describe('formatApartmentLabel', () => {
   it('joins address, building and number', () => {
@@ -19,5 +22,17 @@ describe('formatApartmentLabel', () => {
     expect(
       formatApartmentLabel({ address: null, building: '12', number: '3' })
     ).toBe('12/3');
+  });
+});
+
+describe('formatOwnedApartmentLabel', () => {
+  const apartment = { address: 'Lipowa', building: '1', number: '2' };
+
+  it.each([
+    ['Anna', 'Lipowa 1/2 – Anna'],
+    [null, 'Lipowa 1/2'],
+    ['', 'Lipowa 1/2'],
+  ])('adds the owner %j when there is one', (owner, label) => {
+    expect(formatOwnedApartmentLabel({ ...apartment, owner })).toBe(label);
   });
 });

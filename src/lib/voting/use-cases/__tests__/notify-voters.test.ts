@@ -1,0 +1,152 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { notifyVoters } from '@/lib/voting/use-cases/notify-voters';
+
+const mocks = vi.hoisted(() => ({
+  findVotingById: vi.fn(),
+  findEligibleRecipients: vi.fn(),
+  send: vi.fn(),
+  metrics: { recordNotifications: vi.fn() },
+  log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
+
+vi.mock('@/lib/voting/queries/find-voting-by-id', () => ({
+  findVotingById: mocks.findVotingById,
+}));
+vi.mock('@/lib/voting/queries/find-eligible-voters', () => ({
+  findEligibleRecipients: mocks.findEligibleRecipients,
+}));
+vi.mock('@/lib/platform/email/email-service', () => ({
+  getEmailService: () => ({ sendVotingNotificationEmail: mocks.send }),
+}));
+vi.mock('@/lib/platform/logging/logger', () => ({
+  createLogger: () => mocks.log,
+}));
+vi.mock('@/lib/platform/opentelemetry/voting-metrics', () => ({
+  votingMetrics: mocks.metrics,
+}));
+
+const ACTIVE = {
+  id: 'v1',
+  title: 'Remont',
+  status: 'ACTIVE',
+  endsAt: null,
+  hoa: { id: 'hoa-1', name: 'Wspólnota' },
+};
+
+describe('notifyVoters', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.findVotingById.mockResolvedValue(ACTIVE);
+    mocks.send.mockResolvedValue({ ok: true, delivery: 'sent' });
+  });
+
+  it('emails only the recipients that are eligible', async () => {
+    mocks.findEligibleRecipients.mockResolvedValue([
+      { id: 'u1', name: 'Jan', email: 'jan@example.com' },
+    ]);
+
+    const result = await notifyVoters('admin-1', 'v1', ['u1', 'forged', 'u1']);
+
+    expect(result).toEqual({ ok: true, data: { sent: 1, failed: 0 } });
+    expect(mocks.findEligibleRecipients).toHaveBeenCalledWith('hoa-1', [
+      'u1',
+      'forged',
+    ]);
+    expect(mocks.send).toHaveBeenCalledTimes(1);
+    expect(mocks.send).toHaveBeenCalledWith(
+      'jan@example.com',
+      'v1',
+      'Remont',
+      'Wspólnota',
+      undefined,
+      'Jan'
+    );
+  });
+
+  it('counts failed sends', async () => {
+    mocks.findEligibleRecipients.mockResolvedValue([
+      { id: 'u1', name: null, email: 'a@example.com' },
+      { id: 'u2', name: null, email: 'b@example.com' },
+    ]);
+    mocks.send
+      .mockResolvedValueOnce({ ok: true, delivery: 'sent' })
+      .mockResolvedValueOnce({ ok: false, reason: 'send-failed' });
+
+    expect(await notifyVoters('admin-1', 'v1', ['u1', 'u2'])).toEqual({
+      ok: true,
+      data: { sent: 1, failed: 1 },
+    });
+  });
+
+  it('counts sent and failed notifications', async () => {
+    mocks.findEligibleRecipients.mockResolvedValue([
+      { id: 'u1', name: null, email: 'a@example.com' },
+      { id: 'u2', name: null, email: 'b@example.com' },
+    ]);
+    mocks.send
+      .mockResolvedValueOnce({ ok: true, delivery: 'sent' })
+      .mockResolvedValueOnce({ ok: false, reason: 'send-failed' });
+
+    await notifyVoters('admin-1', 'v1', ['u1', 'u2']);
+
+    expect(mocks.metrics.recordNotifications).toHaveBeenCalledWith(1, 1);
+  });
+
+  it('refuses a voting that is not open', async () => {
+    mocks.findVotingById.mockResolvedValue({ ...ACTIVE, status: 'DRAFT' });
+
+    expect(await notifyVoters('admin-1', 'v1', ['u1'])).toMatchObject({
+      ok: false,
+      code: 'invalid',
+    });
+    expect(mocks.send).not.toHaveBeenCalled();
+  });
+
+  it.each([[undefined], [[]], [[1]], ['u1']])(
+    'rejects recipients %j',
+    async (ids) => {
+      expect(await notifyVoters('admin-1', 'v1', ids)).toMatchObject({
+        ok: false,
+        code: 'invalid',
+      });
+    }
+  );
+
+  it('reports a missing voting and shows the deadline in the email', async () => {
+    mocks.findVotingById.mockResolvedValueOnce(null);
+    expect(await notifyVoters('admin-1', 'v1', ['u1'])).toMatchObject({
+      code: 'not-found',
+    });
+
+    mocks.findVotingById.mockResolvedValue({
+      ...ACTIVE,
+      endsAt: new Date('2099-07-01T10:00:00Z'),
+    });
+    mocks.findEligibleRecipients.mockResolvedValue([
+      { id: 'u1', name: null, email: 'jan@example.com' },
+    ]);
+    await notifyVoters('admin-1', 'v1', ['u1']);
+
+    expect(mocks.send).toHaveBeenCalledWith(
+      'jan@example.com',
+      'v1',
+      'Remont',
+      'Wspólnota',
+      '1 lipca 2099 12:00',
+      undefined
+    );
+  });
+
+  it('logs ids and counts, not addresses', async () => {
+    mocks.findEligibleRecipients.mockResolvedValue([
+      { id: 'u1', name: 'Jan', email: 'jan@example.com' },
+    ]);
+
+    await notifyVoters('admin-1', 'v1', ['u1']);
+
+    expect(JSON.stringify(mocks.log.info.mock.calls)).not.toContain(
+      'jan@example.com'
+    );
+  });
+});

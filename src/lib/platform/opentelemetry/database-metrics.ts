@@ -22,7 +22,13 @@ const TABLE_COUNTS = {
   meterReading: () => prisma.meterReading.count(),
   annualCostSettlement: () => prisma.annualCostSettlement.count(),
   user: () => prisma.user.count(),
+  voting: () => prisma.voting.count(),
+  votingBallot: () => prisma.votingBallot.count(),
+  votingConfirmation: () => prisma.votingConfirmation.count(),
 } as const;
+
+/** How often the cached row counts and voting counts are refreshed. */
+export const COUNT_REFRESH_INTERVAL_MS = 30_000;
 
 export async function registerDatabaseMetrics(meter: Meter) {
   const dbSizeGauge = meter.createObservableGauge('ekartoteka.db.size', {
@@ -50,8 +56,7 @@ export async function registerDatabaseMetrics(meter: Meter) {
   // Initial count
   await updateCounts();
 
-  // Update counts every 30 seconds
-  setInterval(updateCounts, 30_000);
+  setInterval(updateCounts, COUNT_REFRESH_INTERVAL_MS);
 
   // Synchronous callback that reads from cache
   dbSizeGauge.addCallback((result) => {

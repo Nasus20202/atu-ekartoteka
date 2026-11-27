@@ -158,7 +158,7 @@ Every email send attempt SHALL be counted (see also: `email-notifications/spec.m
 - **GIVEN** `emailMetrics.recordEmailSent(type, result)` is called after any send attempt
 - **WHEN** the metric is exported
 - **THEN** the `ekartoteka.email.sent` counter is incremented with:
-  - `type`: one of `verification`, `password_reset`, `account_approved`, `account_activation`, `admin_notification`, `other`
+  - `type`: one of `verification`, `password_reset`, `account_approved`, `account_activation`, `admin_notification`, `vote_confirmation`, `voting_notification`, `other`
   - `result`: `success` | `failure` | `skipped`
 
 ---
@@ -220,7 +220,7 @@ Row counts for core database tables SHALL be exposed as an observable gauge.
 - **GIVEN** OpenTelemetry is initialised
 - **WHEN** the metric reader collects from the `ekartoteka.db.size` gauge
 - **THEN** it returns the cached row count for each of the following tables, each as a separate data point with a `table` attribute:
-  `homeownersAssociation`, `apartment`, `charge`, `chargeNotification`, `payment`, `user`, `utilitySettlement`, `meterReading`, `annualCostSettlement`
+  `homeownersAssociation`, `apartment`, `charge`, `chargeNotification`, `payment`, `user`, `utilitySettlement`, `meterReading`, `annualCostSettlement`, `voting`, `votingBallot`, `votingConfirmation`
 
 #### Scenario: Count refresh interval
 
@@ -239,6 +239,55 @@ Row counts for core database tables SHALL be exposed as an observable gauge.
 - **GIVEN** the Grafana dashboard in `grafana/dashboards`
 - **WHEN** its overview is shown
 - **THEN** it has a count panel for utility settlements, meter readings and annual cost settlements
+
+---
+
+### Requirement: Voting Metrics
+
+Voting lifecycle events SHALL be counted and exposed as OTLP metrics under the `ekartoteka.voting` meter. Recording a metric SHALL NOT change the outcome of a voting action, and no attribute SHALL carry a voting, owner or apartment identifier.
+
+#### Scenario: Status change counter
+
+- **GIVEN** a voting is created as a draft or a status transition succeeds
+- **WHEN** the use case records it
+- **THEN** the `ekartoteka.voting.status_change` counter is incremented with `status`: `draft`, `active`, `closed` or `archived`
+- **AND** a refused transition or a creation that failed is not counted
+
+#### Scenario: Confirmation counter
+
+- **GIVEN** an owner requests the emailed link of a vote or opens it
+- **WHEN** the step ends with one of the outcomes below
+- **THEN** the `ekartoteka.voting.confirmation` counter is incremented with `result`:
+  - `requested` when the email was sent, `email_failed` when it was not, `rate_limited` when a link was requested within the rate limit window
+  - `confirmed` when the ballots were stored
+  - `rejected` with a `reason`: `invalid_link` (malformed, unknown or already used link, or stored answers that no longer fit), `foreign_link`, `expired`, `closed` (voting closed or no longer visible to the owner), or `already_voted`
+- **AND** invalid input such as incomplete answers, and accounts without access to votings, are not counted
+
+#### Scenario: Ballot counter
+
+- **GIVEN** a confirmation stores ballots
+- **WHEN** the ballots are stored
+- **THEN** the `ekartoteka.voting.ballot` counter is incremented by the number of ballots, without attributes
+
+#### Scenario: Notification counter
+
+- **GIVEN** an administrator notifies owners about an active voting
+- **WHEN** the emails are sent
+- **THEN** the `ekartoteka.voting.notification` counter is incremented by the number of successful sends with `result` `success`, and by the number of failed sends with `result` `failure`; a count of zero is not recorded
+
+#### Scenario: Votings per status gauge
+
+- **GIVEN** the voting metrics are registered
+- **WHEN** the metric reader collects `ekartoteka.voting.count`
+- **THEN** it returns the number of votings for each `status` (`draft`, `active`, `closed`, `archived`), with 0 for a status without votings
+- **AND** the counts are read with one grouped query every 30 seconds and the callback reports the cached values
+
+#### Scenario: Voting dashboard
+
+- **GIVEN** the Grafana dashboard in `grafana/dashboards/ekartoteka.json`
+- **WHEN** it is opened for a namespace
+- **THEN** its Voting row shows the votings, ballots and pending confirmations counts, votings by status, status changes, ballots cast in the selected range, confirmation outcomes by result, rejections by reason and notification emails by result
+- **AND** every panel filters on `k8s_namespace_name` and the event counts use `increase` over the selected range
 
 ---
 

@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 import { LogoutButton } from '@/components/account/logout-button';
+import { NavBadge } from '@/components/navigation/nav-badge';
 import { NAVBAR_BREAKPOINT_CLASSES } from '@/components/navigation/navbar-breakpoints';
 import {
   getNavigationItems,
@@ -26,16 +27,19 @@ const CURRENT_CLASSES = 'bg-accent text-accent-foreground';
 type DashboardNavbarProps = {
   mode?: NavbarMode;
   isAdmin?: boolean;
+  /** Votings waiting for the user's vote; undefined hides the votings link. */
+  pendingVotings?: number;
 };
 
 export function DashboardNavbar({
   mode = 'dashboard',
   isAdmin = false,
+  pendingVotings,
 }: DashboardNavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const pathname = usePathname() ?? '';
-  const navigationItems = getNavigationItems(mode, isAdmin);
+  const navigationItems = getNavigationItems(mode, isAdmin, pendingVotings);
   const currentPage = (href: string) =>
     isCurrentPath(pathname, href) ? ('page' as const) : undefined;
 
@@ -71,26 +75,29 @@ export function DashboardNavbar({
             >
               ATU Ekartoteka
             </Link>
-            <div className={breakpoint.links}>
-              {navigationItems.map((item) => {
-                const Icon = item.icon;
-                const current = currentPage(item.href);
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    aria-current={current}
-                    className={cn(
-                      'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 hover:bg-accent hover:text-accent-foreground',
-                      current && CURRENT_CLASSES
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {item.name}
-                  </Link>
-                );
-              })}
-            </div>
+            {navigationItems.length > 0 && (
+              <div className={breakpoint.links}>
+                {navigationItems.map((item) => {
+                  const Icon = item.icon;
+                  const current = currentPage(item.href);
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      aria-current={current}
+                      className={cn(
+                        'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 hover:bg-accent hover:text-accent-foreground',
+                        current && CURRENT_CLASSES
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {item.name}
+                      <NavBadge count={item.badge} />
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div className={breakpoint.actions}>
@@ -155,6 +162,7 @@ export function DashboardNavbar({
                     >
                       <Icon className="mr-2 h-4 w-4" />
                       {item.name}
+                      <NavBadge count={item.badge} />
                     </Button>
                   </Link>
                 );

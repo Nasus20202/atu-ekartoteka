@@ -32,6 +32,9 @@ vi.mock('@/components/dashboard/sections/charges-section', () => ({
 vi.mock('@/components/dashboard/sections/apartments-list-section', () => ({
   ApartmentsListSection: section('apartments', 'apartments-loaded'),
 }));
+vi.mock('@/components/dashboard/sections/votings-section', () => ({
+  VotingsSection: section('votings', 'votings-loaded'),
+}));
 vi.mock('@/components/dashboard/sections/notifications-section', () => ({
   NotificationsSection: section('notifications', 'notifications-loaded'),
 }));
@@ -43,6 +46,7 @@ const SECTIONS = [
   'charges',
   'apartments',
   'notifications',
+  'votings',
 ];
 
 describe('DashboardPage', () => {

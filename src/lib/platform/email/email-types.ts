@@ -4,6 +4,8 @@ export type EmailType =
   | 'account_approved'
   | 'account_activation'
   | 'admin_notification'
+  | 'vote_confirmation'
+  | 'voting_notification'
   | 'other';
 
 export interface EmailOptions {

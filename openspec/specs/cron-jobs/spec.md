@@ -8,12 +8,12 @@ Defines the scheduled background jobs the application runs and guarantees that e
 
 ### Requirement: Scheduled Cleanup Jobs
 
-The system SHALL register two cleanup jobs when the server starts, each running every hour on the hour: one deleting expired email verification codes that were not verified, and one deleting expired or used password reset tokens.
+The system SHALL register three cleanup jobs when the server starts, each running every hour on the hour: one deleting expired email verification codes that were not verified, one deleting expired or used password reset tokens, and one deleting expired vote confirmations.
 
 #### Scenario: Jobs registered at startup
 
 - **WHEN** the server starts
-- **THEN** both cleanup jobs are scheduled with an hourly schedule
+- **THEN** all three cleanup jobs are scheduled with an hourly schedule
 
 #### Scenario: Expired verification codes removed
 
@@ -26,6 +26,12 @@ The system SHALL register two cleanup jobs when the server starts, each running 
 - **GIVEN** a password reset token that is expired or already used
 - **WHEN** the password reset cleanup runs
 - **THEN** the token is deleted and valid unused tokens are kept
+
+#### Scenario: Expired vote confirmations removed
+
+- **GIVEN** a pending vote confirmation past its expiry
+- **WHEN** the vote confirmation cleanup runs
+- **THEN** it is deleted and unexpired confirmations are kept
 
 ### Requirement: Each Scheduled Run Executes Once
 

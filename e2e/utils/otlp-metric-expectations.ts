@@ -19,7 +19,12 @@ export const TRACKED_TABLES = [
   'utilitySettlement',
   'meterReading',
   'annualCostSettlement',
+  'voting',
+  'votingBallot',
+  'votingConfirmation',
 ];
+export const VOTING_COUNT_METRIC = 'ekartoteka.voting.count';
+export const VOTING_STATUSES = ['draft', 'active', 'closed', 'archived'];
 
 const CREDENTIALS = { provider: 'credentials' };
 

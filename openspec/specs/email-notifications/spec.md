@@ -169,6 +169,27 @@ The system SHALL notify all admins by email when a new user self-registers or si
 
 ---
 
+### Requirement: Vote Confirmation Email
+
+The system SHALL email a voter a confirmation link before a ballot is counted. The message SHALL state that the link expires and works once, and that it must be ignored if the voter did not request it, and SHALL be recorded with email type `vote_confirmation`.
+
+#### Scenario: Link requested
+
+- **WHEN** a tenant submits a ballot
+- **THEN** one email with the confirmation link is sent to the account's address
+- **AND** the metric is recorded as `vote_confirmation`
+
+### Requirement: Voting Notification Email
+
+The system SHALL email an eligible user a notification that a voting is open, with a link to it, when an admin sends it. The message SHALL be recorded with email type `voting_notification`.
+
+#### Scenario: Admin notifies users
+
+- **WHEN** an admin notifies two eligible users about an active voting
+- **THEN** each of them receives one email linking to the voting
+
+---
+
 ### Requirement: Email Metrics
 
 Every email send attempt SHALL be recorded as a metric.
@@ -236,13 +257,15 @@ Every HTML email SHALL share one layout that matches the application's visual de
 
 ## Email types
 
-| Type                 | Subject (Polish)                                    | Trigger                                       |
-| -------------------- | --------------------------------------------------- | --------------------------------------------- |
-| `verification`       | Potwierdź swój adres email                          | New credentials registration, resend request  |
-| `password_reset`     | Resetowanie hasła                                   | Forgot-password request                       |
-| `account_approved`   | Twoje konto zostało zatwierdzone                    | Admin approves a tenant                       |
-| `account_activation` | Twoje konto zostało utworzone – ustaw nowe hasło    | Admin bulk-creates an account                 |
-| `admin_notification` | Nowa rejestracja użytkownika - wymaga zatwierdzenia | New self-registration or first Google sign-in |
+| Type                  | Subject (Polish)                                    | Trigger                                       |
+| --------------------- | --------------------------------------------------- | --------------------------------------------- |
+| `verification`        | Potwierdź swój adres email                          | New credentials registration, resend request  |
+| `password_reset`      | Resetowanie hasła                                   | Forgot-password request                       |
+| `account_approved`    | Twoje konto zostało zatwierdzone                    | Admin approves a tenant                       |
+| `account_activation`  | Twoje konto zostało utworzone – ustaw nowe hasło    | Admin bulk-creates an account                 |
+| `admin_notification`  | Nowa rejestracja użytkownika - wymaga zatwierdzenia | New self-registration or first Google sign-in |
+| `vote_confirmation`   | Potwierdź swój głos                                 | Tenant submits a ballot                       |
+| `voting_notification` | Nowe głosowanie w Twojej wspólnocie                 | Admin notifies selected users about a voting  |
 
 ## Templates
 
@@ -255,6 +278,8 @@ Each email type is a React component in `src/components/email/emails/` built fro
 | `account-approved`            | `account-approved.tsx`            |
 | `account-activation`          | `account-activation.tsx`          |
 | `new-user-registration-admin` | `new-user-registration-admin.tsx` |
+| `vote-confirmation`           | `vote-confirmation.tsx`           |
+| `voting-notification`         | `voting-notification.tsx`         |
 
 ## Environment variables
 

@@ -35,6 +35,8 @@ import {
   hasImportRunOfType,
   TRACKED_TABLES,
   USER_TABLE,
+  VOTING_COUNT_METRIC,
+  VOTING_STATUSES,
 } from '../utils/otlp-metric-expectations';
 import { previewSettlementFile } from '../utils/settlement-preview';
 import {
@@ -160,7 +162,12 @@ test.describe('OpenTelemetry metrics', () => {
           hasMetricPoint(captured, name, attributes)
         ) &&
         (latestPointValue(captured, DB_SIZE_METRIC, USER_TABLE) ?? 0) >= 1 &&
-        hasImportRunOfType(captured, 'database_validation');
+        hasImportRunOfType(captured, 'database_validation') &&
+        VOTING_STATUSES.every(
+          (status) =>
+            latestPointValue(captured, VOTING_COUNT_METRIC, { status }) !==
+            undefined
+        );
       return complete ? captured : undefined;
     }, METRIC_EXPORT_TIMEOUT_MS);
 
@@ -169,6 +176,11 @@ test.describe('OpenTelemetry metrics', () => {
       .flatMap((metric) => metric.points)
       .map((point) => point.attributes.table);
     expect(tables).toEqual(expect.arrayContaining(TRACKED_TABLES));
+    const statuses = metrics
+      .filter((metric) => metric.name === VOTING_COUNT_METRIC)
+      .flatMap((metric) => metric.points)
+      .map((point) => point.attributes.status);
+    expect(statuses).toEqual(expect.arrayContaining(VOTING_STATUSES));
     expect(
       latestPointValue(metrics, DB_SIZE_METRIC, USER_TABLE)
     ).toBeGreaterThanOrEqual(1);
