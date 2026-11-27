@@ -67,8 +67,9 @@ endings can be CRLF, LF or CR. Decimals use a comma (`45,89`) and dates in
 ### 2. Open the import page and pick the folder
 
 1. Go to `/admin/import`.
-2. Under **Importuj dane**, choose the parent folder (or a single association
-   folder). The page reports how many files it picked up.
+2. Under **Importuj dane**, click **Wybierz folder** and choose the parent
+   folder (or a single association folder). The field shows the folder name and
+   how many files it picked up.
 3. Leave **Czysty import** and **Pomiń walidację** unticked unless you have a
    reason, see [Options](#options).
 4. Click **Importuj**.
@@ -235,10 +236,11 @@ section of the same page, below the text file import.
 
 ### Steps
 
-1. Under **Pliki PDF**, choose one or more files. Only the two report templates
-   of the legacy system are read: `Rozliczenie zaliczek za media` and the
-   annual `Rozliczenie kwoty proporcjonalnie`. The type is recognised from the
-   content, so the file name and title do not matter.
+1. Under **Pliki PDF**, click **Wybierz pliki** and choose one or more files.
+   Only the two report templates of the legacy system are read:
+   `Rozliczenie zaliczek za media` and the annual
+   `Rozliczenie kwoty proporcjonalnie`. The type is recognised from the content,
+   so the file name and title do not matter.
 2. Click **Sprawdź pliki**. Nothing is written. Each file shows its type, its
    errors and warnings, and the records it contains (**Pokaż rozliczenia**) with
    a status: new (`Nowe`), changed (`Zmienione`), unchanged (`Bez zmian`) or

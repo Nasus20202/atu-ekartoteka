@@ -16,7 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { FileInput } from '@/components/ui/file-input';
 import { Label } from '@/components/ui/label';
 import { ViewTransition } from '@/components/ui/view-transition';
 
@@ -43,9 +43,9 @@ export function SettlementImportCard({ onImported }: Props) {
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="settlementFiles">Pliki PDF</Label>
-          <Input
+          <FileInput
             id="settlementFiles"
-            type="file"
+            files={files}
             accept=".pdf,application/pdf"
             multiple
             disabled={busy !== null}
