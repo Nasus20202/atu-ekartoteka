@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mock Google sign-in</title>
+    <link rel="stylesheet" href="/google/login-form.css" />
+    <script src="/google/login-form.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <h1>Mock Google sign-in</h1>
+      <p class="note">Local development only. No Google account is involved.</p>
+      <form method="get" action="/google/authorize">
+        <label
+          >Email <input type="email" name="login_email" required autofocus
+        /></label>
+        <label>Name (optional) <input type="text" name="login_name" /></label>
+        <button type="submit">Continue</button>
+      </form>
+    </main>
+  </body>
+</html>

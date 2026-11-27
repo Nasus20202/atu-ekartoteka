@@ -21,7 +21,7 @@ operate it.
 You need Node.js (see `.node-version`), pnpm and Docker (or your own PostgreSQL).
 
 ```bash
-docker compose up -d db  # PostgreSQL on localhost:5432, matches .env.example
+docker compose up -d db mocks  # PostgreSQL on localhost:5432, and the local mail/Google/captcha mocks
 pnpm install
 cp .env.example .env     # set AUTH_SECRET
 pnpm db:migrate

@@ -76,6 +76,25 @@ test('a returning user signs in to the existing account', async ({
   await expect(page.getByText('Existing Google User').first()).toBeVisible();
 });
 
+test('with no identity queued, the mock sign-in form signs the user in', async ({
+  page,
+}) => {
+  const email = `google-form-${Date.now()}@e2e-test.com`;
+  await stubTurnstileWidget(page, TURNSTILE_VALID_TOKEN);
+
+  await page.goto('/login');
+  await page.getByRole('button', { name: GOOGLE_BUTTON }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Mock Google sign-in' })
+  ).toBeVisible();
+
+  await page.getByLabel('Email').fill(email);
+  await page.getByLabel('Name (optional)').fill('Google Form User');
+  await page.getByRole('button', { name: 'Continue' }).click();
+
+  await expect(page).toHaveURL(/\/dashboard/);
+});
+
 test('the mock issues a signed Google id_token', async ({ request }) => {
   const issuer = `${MOCK_URL}/google`;
   const discovery = await (

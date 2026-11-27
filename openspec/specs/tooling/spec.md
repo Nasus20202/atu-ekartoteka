@@ -447,6 +447,45 @@ The repository SHALL contain a local mock server for E2E that Playwright and Doc
 - **WHEN** the page requests the Cloudflare widget script
 - **THEN** Playwright serves a mock script that issues a valid or an invalid token, so the production CSP is unchanged
 
+#### Scenario: Mail inbox UI
+
+- **GIVEN** the mock server is running
+- **WHEN** a developer opens `http://localhost:4010/inbox` (`/` redirects there)
+- **THEN** the page lists captured mail newest first and filters it by recipient or subject
+- **AND** it shows the HTML body in a sandboxed frame and the text body with clickable links
+- **AND** it refreshes itself and has a "Clear all" button that empties the inbox
+
+#### Scenario: Google sign-in form
+
+- **GIVEN** the mock server is running and no identity is queued through `POST /google/identity`
+- **WHEN** `GET /google/authorize` is called with a `redirect_uri`
+- **THEN** it answers 200 with the static sign-in page `e2e/mocks/google-login/index.html`, a form asking for an email (required) and a name (optional)
+- **AND** the page's script `login-form.js` adds every original query parameter to the form as a hidden field, setting the values as DOM properties rather than writing them into the HTML
+- **AND** submitting the form redirects back to `redirect_uri` with a code, as the queued flow does
+- **AND** the email is trimmed and lowercased, the name defaults to the part before `@`, and `sub` is derived from the email, so one address is always one Google account
+- **AND** a queued identity takes priority over the form, and a request without `redirect_uri` answers 400
+
+#### Scenario: Turnstile dummy token
+
+- **GIVEN** the Turnstile widget runs with Cloudflare's test site keys
+- **WHEN** it produces the dummy token `XXXX.DUMMY.TOKEN.XXXX` and the app verifies it at `/turnstile/siteverify`
+- **THEN** the mock reports success
+- **AND** any other unknown token is rejected
+
+#### Scenario: Development environment defaults
+
+- **GIVEN** a developer copies `.env.example` to `.env`
+- **WHEN** they start the app
+- **THEN** SMTP points at `localhost:1025` without AUTH or TLS, Turnstile uses Cloudflare's test keys with verification at the mock, and Google sign-in uses the mock issuer at `http://localhost:4010/google`
+- **AND** the example documents how to switch each one to a real service
+
+#### Scenario: Mocks service in Docker Compose
+
+- **GIVEN** `docker-compose.yaml`
+- **WHEN** `docker compose up -d db mocks` is run
+- **THEN** the `mocks` service is built from `docker/Dockerfile.mocks`, publishes ports 4010 (HTTP) and 1025 (SMTP) on all network interfaces (`4010:4010` and `1025:1025`), so the captured mail and its sign-in links are readable by anyone on the network, and restarts unless stopped
+- **AND** `pnpm mocks` starts the same server without Docker
+
 ### Requirement: No Personal Data In Log Calls
 
 ESLint SHALL fail on a logger call whose context object has a key that names personal data, so such fields cannot be added to logs unnoticed.

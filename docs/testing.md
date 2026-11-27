@@ -86,9 +86,10 @@ Three app instances run from the same build:
 - **Visual** (3001, database `e2e_visual`) accepts a fixed "now" so dates in
   screenshots do not change.
 - **Integrations** (3002) has SMTP, Turnstile, Google and OpenTelemetry
-  switched on and pointed at the mock server. The metrics spec runs its flows,
-  then waits for the first export that carries them, which is sent once a
-  minute, so it takes about two minutes.
+  switched on and pointed at the mock server. The metrics specs
+  (`opentelemetry-metrics` and `opentelemetry-voting-metrics`) run their flows,
+  then wait for the first export that carries them, which is sent once a
+  minute, so they take about two minutes.
 
 Global setup creates both databases if missing, applies migrations, removes
 earlier test data and seeds fresh data, so every run starts from the same
@@ -111,10 +112,10 @@ the redirected page, Firefox rejects it with `NS_ERROR_FAILURE`,
 `NS_BINDING_ABORTED` or, when it has no message for the code, `<unknown error>`.
 
 `e2e/mocks` is a small server Playwright starts for the integrations project: it
-captures email (SMTP on port 1025), fakes Google's OpenID endpoints and
-Turnstile verification, and receives OpenTelemetry exports as OTLP/HTTP JSON at
-`/otlp/v1/{traces,metrics,logs}` (HTTP on port 4010). The specs read them back
-from `/otlp/captured/{signal}`. It logs JSON lines to stdout; set
+captures email (SMTP on port 1025), serves a sign-in form for Google's OpenID
+endpoints and verifies Turnstile tokens, and receives OpenTelemetry exports as
+OTLP/HTTP JSON at `/otlp/v1/{traces,metrics,logs}` (HTTP on port 4010). The specs
+read them back from `/otlp/captured/{signal}`. It logs JSON lines to stdout; set
 `LOG_LEVEL` (default `info`) to change how much. `pnpm mocks` runs it on its own.
 Its dependencies are listed in
 `e2e/mocks/package.json`; `docker/Dockerfile.mocks` exports only that package
@@ -143,6 +144,36 @@ CI retries a failing test up to twice. `failOnFlakyTests` is enabled as well,
 so a test that only passes on a retry still fails the job and the flake gets
 fixed instead of staying hidden. Local runs do not retry, so nothing is marked
 flaky there.
+
+## Local mocks
+
+The same server runs for local development, so the app can send mail, sign in
+with Google and check the captcha without real accounts. `.env.example` points
+at it:
+
+```bash
+docker compose up -d db mocks   # or: pnpm mocks
+```
+
+Compose publishes the mock ports on all network interfaces (`4010:4010` and
+`1025:1025`), so other machines on the network can reach them.
+
+> **Warning:** anyone on the network can read the captured mail, including the
+> sign-in and password reset links in it. Use the mocks only on a network you
+> trust, and stop them with `docker compose stop mocks` when you do not need
+> them.
+
+- **Email** - SMTP on `localhost:1025`. Open http://localhost:4010/inbox to read
+  the captured mail, filter it by recipient or subject, and clear it.
+- **Google sign-in** - the Google button opens a form at
+  http://localhost:4010/google/authorize that asks for an email address and an
+  optional name. One address is always the same Google account. An identity
+  queued through `/google/identity` (the specs do this) takes priority over the
+  form.
+- **Captcha** - Cloudflare's test keys. The widget produces Cloudflare's dummy
+  token, which the mock accepts. The site key `2x00000000000000000000AB` makes
+  the widget fail every time, to try the refusal path. The widget script still
+  loads from Cloudflare, so the machine needs internet access for it.
 
 ## Visual snapshots
 
