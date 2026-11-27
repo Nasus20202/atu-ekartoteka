@@ -43,6 +43,7 @@ Full setup, including using your own PostgreSQL, is in
 | [Importing data](docs/importing-data.md)     | load an association's legacy export, step by step                 |
 | [Configuration](docs/configuration.md)       | look up an environment variable or turn email, Google, captcha on |
 | [Privacy policy](docs/privacy-policy.md)     | publish the privacy policy page from the built-in template        |
+| [Voting](docs/voting.md)                     | run a vote of the owners of an association                        |
 | [Deployment](docs/deployment.md)             | run the app with Docker, upgrade it, back it up, monitor it       |
 | [Architecture](docs/architecture.md)         | understand how a request is handled and where code lives          |
 | [Development](docs/development.md)           | change the schema, use the scripts, follow the contribution flow  |

@@ -8,6 +8,7 @@ const VALID_MODES: readonly string[] = Object.values(ListViewMode);
 export const LIST_VIEW_STORAGE_KEYS = {
   apartments: 'atu:list-view:apartments',
   users: 'atu:list-view:users',
+  votings: 'atu:list-view:votings',
 } as const;
 
 export const LIST_VIEW_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;

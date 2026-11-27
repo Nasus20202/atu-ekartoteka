@@ -8,11 +8,15 @@ import {
   newUserAdminMessage,
   passwordResetMessage,
   verificationMessage,
+  voteConfirmationMessage,
+  votingNotificationMessage,
 } from '../../src/lib/platform/email/email-messages';
 import { expect, test } from '../fixtures';
 
 const EMAIL_APP_URL = 'https://ekartoteka.example.com';
 const RECIPIENT_NAME = 'Anna Nowak';
+const VOTING_TITLE = 'Uchwała w sprawie remontu dachu';
+const LINK_VALID_MINUTES = 30;
 
 process.env.APP_URL = EMAIL_APP_URL;
 
@@ -38,6 +42,31 @@ const EMAILS = {
       'anna.nowak@example.com',
       RECIPIENT_NAME,
       '2026-01-15 10:30'
+    ),
+  'voting-notification': () =>
+    votingNotificationMessage(
+      'voting-id',
+      VOTING_TITLE,
+      'Wspólnota Testowa',
+      '31 stycznia 2026 12:00',
+      RECIPIENT_NAME
+    ),
+  'vote-confirmation': () =>
+    voteConfirmationMessage(
+      'token',
+      VOTING_TITLE,
+      [
+        {
+          apartment: 'ul. Testowa 11/1',
+          answers: [{ question: 'Czy remontujemy dach?', answer: 'Za' }],
+        },
+        {
+          apartment: 'ul. Testowa 11/2',
+          answers: [{ question: 'Czy remontujemy dach?', answer: 'Przeciw' }],
+        },
+      ],
+      LINK_VALID_MINUTES,
+      RECIPIENT_NAME
     ),
 };
 

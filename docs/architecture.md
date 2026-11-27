@@ -110,28 +110,28 @@ Consequences:
 
 ## Where things are
 
-| What                           | Where                                                                        |
-| ------------------------------ | ---------------------------------------------------------------------------- |
-| Pages and API routes           | `src/app/`                                                                   |
-| Server Actions                 | `src/actions/<feature>/`                                                     |
-| Feature components             | `src/components/<feature>/`                                                  |
-| shadcn/ui primitives           | `src/components/ui/`                                                         |
-| Domain slice                   | `src/lib/<domain>/` (`auth`, `users`, `apartments`, `payments`, ...)         |
-| Database queries and mutations | `src/lib/<domain>/queries`, `src/lib/<domain>/mutations`                     |
-| Domain models and DTOs         | `src/lib/<domain>/types/<entity>.ts`, `src/lib/<domain>/dto/<entity>-dto.ts` |
-| Use cases                      | `src/lib/<domain>/use-cases/`                                                |
-| Auth config and guards         | `src/auth.ts`, `src/lib/framework/auth/`                                     |
-| Request, cookie and cache glue | `src/lib/framework/`                                                         |
-| Logging, database, telemetry   | `src/lib/platform/`                                                          |
-| Import pipeline and parsers    | `src/lib/import/`, `src/lib/import/parsers/`, `src/lib/import/types/`        |
-| Settlements                    | `src/lib/settlements/`, `src/components/settlements/`                        |
-| Settlement import section      | `src/components/settlement-import/`                                          |
-| Scheduled jobs                 | `src/lib/cron/`                                                              |
-| Email components and sending   | `src/components/email/`, `src/lib/platform/email/`                           |
-| PDF documents                  | `src/components/pdf/`, `src/lib/platform/pdf/`                               |
-| Custom lint rules              | `eslint-rules/`                                                              |
-| Schema and migrations          | `prisma/`                                                                    |
-| Behaviour specifications       | `openspec/specs/`                                                            |
+| What                           | Where                                                                          |
+| ------------------------------ | ------------------------------------------------------------------------------ |
+| Pages and API routes           | `src/app/`                                                                     |
+| Server Actions                 | `src/actions/<feature>/`                                                       |
+| Feature components             | `src/components/<feature>/`                                                    |
+| shadcn/ui primitives           | `src/components/ui/`                                                           |
+| Domain slice                   | `src/lib/<domain>/` (`auth`, `users`, `apartments`, `payments`, `voting`, ...) |
+| Database queries and mutations | `src/lib/<domain>/queries`, `src/lib/<domain>/mutations`                       |
+| Domain models and DTOs         | `src/lib/<domain>/types/<entity>.ts`, `src/lib/<domain>/dto/<entity>-dto.ts`   |
+| Use cases                      | `src/lib/<domain>/use-cases/`                                                  |
+| Auth config and guards         | `src/auth.ts`, `src/lib/framework/auth/`                                       |
+| Request, cookie and cache glue | `src/lib/framework/`                                                           |
+| Logging, database, telemetry   | `src/lib/platform/`                                                            |
+| Import pipeline and parsers    | `src/lib/import/`, `src/lib/import/parsers/`, `src/lib/import/types/`          |
+| Settlements                    | `src/lib/settlements/`, `src/components/settlements/`                          |
+| Settlement import section      | `src/components/settlement-import/`                                            |
+| Scheduled jobs                 | `src/lib/cron/`                                                                |
+| Email components and sending   | `src/components/email/`, `src/lib/platform/email/`                             |
+| PDF documents                  | `src/components/pdf/`, `src/lib/platform/pdf/`                                 |
+| Custom lint rules              | `eslint-rules/`                                                                |
+| Schema and migrations          | `prisma/`                                                                      |
+| Behaviour specifications       | `openspec/specs/`                                                              |
 
 The domain slices (`src/lib/<domain>/`, `src/lib/import`, `src/lib/cron`) and
 the shared code in `src/lib/shared/` import no Next.js, React or Auth.js API. Anything that needs

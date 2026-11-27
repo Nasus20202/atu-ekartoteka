@@ -121,6 +121,9 @@ export async function initTracing() {
   const { registerDatabaseMetrics } =
     await import('@/lib/platform/opentelemetry/database-metrics');
   await registerDatabaseMetrics(meter);
+  const { registerVotingCountMetrics } =
+    await import('@/lib/platform/opentelemetry/voting-metrics');
+  await registerVotingCountMetrics(meter);
 
   logger.info('Database metrics registered');
 
