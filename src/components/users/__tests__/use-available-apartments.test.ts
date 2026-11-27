@@ -1,16 +1,7 @@
-import {
-  act,
-  renderHook,
-  type RenderHookResult,
-  waitFor,
-} from '@testing-library/react';
-import { createElement, Suspense } from 'react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  type AvailableApartments,
-  useAvailableApartments,
-} from '@/components/users/use-available-apartments';
+import { useAvailableApartments } from '@/components/users/use-available-apartments';
 import type { UserDto } from '@/lib/users/dto/user-dto';
 
 const selectedUser = { id: 'u1', apartments: [] } as unknown as UserDto;
@@ -32,20 +23,11 @@ function requestedParams(fetchMock: ReturnType<typeof vi.fn>) {
   return new URL(url, 'http://localhost').searchParams;
 }
 
-function withSuspense({ children }: { children: React.ReactNode }) {
-  return createElement(Suspense, { fallback: null }, children);
-}
-
-/** Renders inside async act so a suspended first load can resolve. */
-async function renderAvailable(props: Props) {
-  let rendered!: RenderHookResult<AvailableApartments, Props>;
-  await act(async () => {
-    rendered = renderHook(
-      ({ user, search }) => useAvailableApartments(user, search),
-      { initialProps: props, wrapper: withSuspense }
-    );
-  });
-  return rendered;
+function renderAvailable(props: Props) {
+  return renderHook(
+    ({ user, search }) => useAvailableApartments(user, search),
+    { initialProps: props }
+  );
 }
 
 describe('useAvailableApartments', () => {
@@ -53,27 +35,30 @@ describe('useAvailableApartments', () => {
     vi.unstubAllGlobals();
   });
 
-  it('loads nothing without a selected user', async () => {
+  it('loads nothing without a selected user', () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
 
-    const { result } = await renderAvailable({ user: null, search: '' });
+    const { result } = renderAvailable({ user: null, search: '' });
 
-    expect(result.current).toEqual({ apartments: [], failed: false });
+    expect(result.current).toEqual({
+      apartments: [],
+      failed: false,
+      loading: false,
+    });
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('suspends until the apartments assignable to the user arrive', async () => {
+  it('loads the apartments assignable to the user', async () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValue(json(true, { apartments: [apartment] }));
     vi.stubGlobal('fetch', fetchMock);
 
-    const { result } = await renderAvailable({
-      user: selectedUser,
-      search: '',
-    });
+    const { result } = renderAvailable({ user: selectedUser, search: '' });
 
+    expect(result.current.loading).toBe(true);
+    await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.apartments).toHaveLength(1);
     expect(result.current.failed).toBe(false);
     expect(fetchMock).toHaveBeenCalledOnce();
@@ -81,37 +66,46 @@ describe('useAvailableApartments', () => {
     expect(requestedParams(fetchMock).has('search')).toBe(false);
   });
 
-  it('sends the debounced search to the API', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(json(true, { apartments: [] }));
+  it('keeps the previous list while a debounced search loads', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(json(true, { apartments: [apartment] }))
+      .mockReturnValue(new Promise(() => {}));
     vi.stubGlobal('fetch', fetchMock);
-
-    const { result, rerender } = await renderAvailable({
-      user: selectedUser,
+    const { result, rerender } = renderAvailable({
+      user: { ...selectedUser, id: 'u2' },
       search: '',
     });
+    await waitFor(() => expect(result.current.apartments).toHaveLength(1));
+
     await act(async () => {
-      rerender({ user: selectedUser, search: ' 17/12 ' });
+      rerender({ user: { ...selectedUser, id: 'u2' }, search: ' 17/12 ' });
     });
 
     await waitFor(
       () => expect(requestedParams(fetchMock).get('search')).toBe('17/12'),
       { timeout: SEARCH_WAIT_MS }
     );
-    // SWR may repeat a request for an unchanged key; the search must be requested once.
-    const requested = new Set(fetchMock.mock.calls.map(([url]) => String(url)));
-    expect(requested.size).toBe(2);
-    expect(result.current.apartments).toEqual([]);
+    expect(result.current.loading).toBe(false);
+    expect(result.current.apartments).toHaveLength(1);
   });
 
   it('reports a failed request instead of throwing', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(json(false, { error: 'x' }));
-    vi.stubGlobal('fetch', fetchMock);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(json(false, { error: 'x' }))
+    );
 
-    const { result } = await renderAvailable({
-      user: selectedUser,
+    const { result } = renderAvailable({
+      user: { ...selectedUser, id: 'u3' },
       search: '',
     });
 
-    expect(result.current).toEqual({ apartments: [], failed: true });
+    await waitFor(() => expect(result.current.failed).toBe(true));
+    expect(result.current).toEqual({
+      apartments: [],
+      failed: true,
+      loading: false,
+    });
   });
 });

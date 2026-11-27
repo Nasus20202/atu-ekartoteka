@@ -1,5 +1,4 @@
 import { Check, Search } from 'lucide-react';
-import { Suspense } from 'react';
 
 import { useConfirm } from '@/components/providers/confirm-dialog';
 import { Button } from '@/components/ui/button';
@@ -18,7 +17,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ApartmentOptionsList } from '@/components/users/apartment-options-list';
-import { ApartmentOptionsLoading } from '@/components/users/apartment-options-loading';
 import { StatusChangePanel } from '@/components/users/status-change-panel';
 import type { EditMode } from '@/components/users/types';
 import { useRetainedValue } from '@/hooks/use-retained-value';
@@ -133,16 +131,14 @@ export function ApartmentSelectionDialog({
               </div>
 
               <div className="max-h-60 space-y-2 overflow-y-auto rounded-lg border p-2">
-                <Suspense fallback={<ApartmentOptionsLoading />}>
-                  <ApartmentOptionsList
-                    apartmentSearch={apartmentSearch}
-                    onApartmentCheckedChange={(apartment, checked) => {
-                      void handleApartmentCheckedChange(apartment, checked);
-                    }}
-                    selectedApartments={selectedApartments}
-                    user={user}
-                  />
-                </Suspense>
+                <ApartmentOptionsList
+                  apartmentSearch={apartmentSearch}
+                  onApartmentCheckedChange={(apartment, checked) => {
+                    void handleApartmentCheckedChange(apartment, checked);
+                  }}
+                  selectedApartments={selectedApartments}
+                  user={user}
+                />
               </div>
 
               <div className="flex gap-2">

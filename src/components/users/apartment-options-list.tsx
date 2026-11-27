@@ -2,6 +2,7 @@
 
 import { REVEAL_CLASS } from '@/components/layout/reveal';
 import { ApartmentOption } from '@/components/users/apartment-option';
+import { ApartmentOptionsLoading } from '@/components/users/apartment-options-loading';
 import { useAvailableApartments } from '@/components/users/use-available-apartments';
 import {
   isApartmentMatchingUser,
@@ -21,14 +22,20 @@ interface ApartmentOptionsListProps {
   user: UserDto;
 }
 
-/** Suspends while the user's assignable apartments load; render inside a Suspense boundary. */
 export function ApartmentOptionsList({
   apartmentSearch,
   onApartmentCheckedChange,
   selectedApartments,
   user,
 }: ApartmentOptionsListProps) {
-  const { apartments, failed } = useAvailableApartments(user, apartmentSearch);
+  const { apartments, failed, loading } = useAvailableApartments(
+    user,
+    apartmentSearch
+  );
+
+  if (loading) {
+    return <ApartmentOptionsLoading />;
+  }
 
   if (failed) {
     return (
