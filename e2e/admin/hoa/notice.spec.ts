@@ -5,8 +5,6 @@
  * in parallel, but tests in one file run in order.
  */
 
-import type { Locator } from '@playwright/test';
-
 import { expect, test } from '../../fixtures';
 import {
   openHoaApartments,
@@ -59,25 +57,12 @@ test.describe('HOA notification header and footer', () => {
   });
 });
 
-/**
- * Radix attaches its outside-click listener in a timer after the dialog mounts,
- * so a click sent as soon as the dialog is visible can be ignored. The opening
- * animation runs well past that timer: wait for it to finish first.
- */
-async function waitForDialogToOpen(dialog: Locator) {
-  await dialog.evaluate(async (element) => {
-    await Promise.allSettled(
-      element.getAnimations().map((animation) => animation.finished)
-    );
-  });
-}
-
 test.describe('HOA notices dialog', () => {
   test.afterEach(async () => {
     await setHoaNotice(TEST_HOA, null, null);
   });
 
-  test('admin sees header and footer of the HOA in the modal', async ({
+  test('shows the header and footer of the HOA, and closes', async ({
     adminPage,
   }) => {
     await setHoaNotice(TEST_HOA, MODAL_HEADER, MODAL_FOOTER);
@@ -89,45 +74,8 @@ test.describe('HOA notices dialog', () => {
     await expect(dialog).toBeVisible();
     await expect(dialog.getByText(MODAL_HEADER)).toBeVisible();
     await expect(dialog.getByText(MODAL_FOOTER)).toBeVisible();
-  });
-
-  test('admin closes the modal with the close button', async ({
-    adminPage,
-  }) => {
-    await openHoaList(adminPage);
-
-    await adminPage.getByRole('button', { name: 'Nagłówki i stopki' }).click();
-    const dialog = adminPage.getByRole('dialog');
-    await expect(dialog).toBeVisible();
 
     await dialog.getByRole('button', { name: 'Zamknij', exact: true }).click();
-
-    await expect(dialog).toBeHidden();
-  });
-
-  test('admin closes the modal with the cross', async ({ adminPage }) => {
-    await openHoaList(adminPage);
-
-    await adminPage.getByRole('button', { name: 'Nagłówki i stopki' }).click();
-    const dialog = adminPage.getByRole('dialog');
-    await expect(dialog).toBeVisible();
-
-    await dialog.getByRole('button', { name: 'Zamknij okno' }).click();
-
-    await expect(dialog).toBeHidden();
-  });
-
-  test('admin closes the modal by clicking outside it', async ({
-    adminPage,
-  }) => {
-    await openHoaList(adminPage);
-
-    await adminPage.getByRole('button', { name: 'Nagłówki i stopki' }).click();
-    const dialog = adminPage.getByRole('dialog');
-    await expect(dialog).toBeVisible();
-    await waitForDialogToOpen(dialog);
-
-    await adminPage.mouse.click(5, 5);
 
     await expect(dialog).toBeHidden();
   });

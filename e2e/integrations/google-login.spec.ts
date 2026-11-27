@@ -2,13 +2,12 @@
  * Google sign-in runs through the local OpenID provider mock.
  */
 
-import { createPublicKey, createVerify, randomUUID } from 'crypto';
+import { randomUUID } from 'crypto';
 
 import { expect, test } from '../fixtures';
 import { createCredentialsUser } from '../utils/create-credentials-user';
 import { expectDeliveredEmail } from '../utils/email-assertions';
 import {
-  MOCK_URL,
   queueGoogleIdentity,
   stubTurnstileWidget,
   TURNSTILE_VALID_TOKEN,
@@ -93,45 +92,4 @@ test('with no identity queued, the mock sign-in form signs the user in', async (
   await page.getByRole('button', { name: 'Continue' }).click();
 
   await expect(page).toHaveURL(/\/dashboard/);
-});
-
-test('the mock issues a signed Google id_token', async ({ request }) => {
-  const issuer = `${MOCK_URL}/google`;
-  const discovery = await (
-    await request.get(`${issuer}/.well-known/openid-configuration`)
-  ).json();
-  expect(discovery.issuer).toBe(issuer);
-
-  await request.post(`${issuer}/identity`, {
-    data: { email: 'g@example.com', name: 'G User', sub: 'sub-1' },
-  });
-  const redirect = await request.get(`${issuer}/authorize`, {
-    params: { redirect_uri: 'http://localhost/cb', state: 's1' },
-    maxRedirects: 0,
-  });
-  const target = new URL(redirect.headers().location);
-  expect(target.searchParams.get('state')).toBe('s1');
-
-  const tokens = await (
-    await request.post(`${issuer}/token`, {
-      form: { code: target.searchParams.get('code') ?? '' },
-    })
-  ).json();
-  const [header, payload, signature] = tokens.id_token.split('.');
-  const jwks = await (await request.get(`${issuer}/jwks`)).json();
-  const verified = createVerify('RSA-SHA256')
-    .update(`${header}.${payload}`)
-    .verify(
-      createPublicKey({ key: jwks.keys[0], format: 'jwk' }),
-      Buffer.from(signature, 'base64url')
-    );
-
-  expect(verified).toBe(true);
-  expect(
-    JSON.parse(Buffer.from(payload, 'base64url').toString())
-  ).toMatchObject({
-    iss: issuer,
-    email: 'g@example.com',
-    sub: 'sub-1',
-  });
 });

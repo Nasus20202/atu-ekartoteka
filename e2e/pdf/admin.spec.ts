@@ -41,17 +41,6 @@ async function navigateToApartmentDetail(adminPage: Page) {
 }
 
 test.describe('PDF Download - Admin', () => {
-  test('admin apartment detail page has charges PDF button', async ({
-    adminPage,
-  }) => {
-    await navigateToApartmentDetail(adminPage);
-    await expandCurrentChargesMonth(adminPage);
-
-    await expect(
-      adminPage.getByRole('button', CHARGES_PDF_BUTTON)
-    ).toBeVisible();
-  });
-
   test('admin can download charges PDF from apartment detail', async ({
     adminPage,
   }) => {
@@ -63,16 +52,6 @@ test.describe('PDF Download - Admin', () => {
     const download = await downloadPromise;
 
     expect(download.suggestedFilename()).toMatch(/^naliczenia-.+\.pdf$/);
-  });
-
-  test('admin apartment detail page has payment PDF button', async ({
-    adminPage,
-  }) => {
-    await navigateToApartmentDetail(adminPage);
-
-    await expect(
-      adminPage.getByRole('button', PAYMENT_PDF_BUTTON)
-    ).toBeVisible();
   });
 
   test('admin can download payment PDF from apartment detail', async ({
