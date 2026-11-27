@@ -142,7 +142,9 @@ test.describe('Visual: admin votings', () => {
     await visualAdminPage
       .getByRole('tab', { name: 'Kto jak głosował' })
       .click();
-    await expect(visualAdminPage.getByRole('table')).toBeVisible();
+    await expect(
+      visualAdminPage.getByText('visual@e2e-test.com').filter({ visible: true })
+    ).toBeVisible();
     await expectNoHorizontalOverflow(visualAdminPage);
 
     await expect(visualAdminPage).toHaveScreenshot('admin-voting-voters.png', {

@@ -125,9 +125,11 @@ test('owners vote with an emailed code and see the published results', async ({
     // The admin sees who voted what, then shows the results
     await reopen(page);
     await page.getByRole('tab', { name: 'Kto jak głosował' }).click();
-    await expect(page.getByText(tenant.email)).toHaveCount(2);
-    await expect(page.getByText('1. Za')).toHaveCount(2);
-    await expect(page.getByText('2. Przeciw')).toHaveCount(2);
+    // The voters render as a card list and a table, only one is visible
+    const visible = { visible: true };
+    await expect(page.getByText(tenant.email).filter(visible)).toHaveCount(2);
+    await expect(page.getByText('1. Za').filter(visible)).toHaveCount(2);
+    await expect(page.getByText('2. Przeciw').filter(visible)).toHaveCount(2);
     await confirmAdminAction(page, 'Pokaż wyniki');
     await expect(
       page.getByRole('button', { name: 'Zarchiwizuj' })
