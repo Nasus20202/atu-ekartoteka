@@ -91,8 +91,8 @@ The system SHALL store all end-to-end tests in the `e2e/` directory, organised b
 - **WHEN** new specs are added
 - **THEN** they are placed in a subdirectory matching the feature area:
   - `e2e/auth/` — login, registration, email verification, password reset, logout, orphaned session, access control
-  - `e2e/admin/` — user management, apartment management, HOA operations, data import
-  - `e2e/dashboard/` — tenant dashboard, charges, payments, profile
+  - `e2e/admin/` — admin flows, grouped by topic in `apartments/`, `hoa/`, `import/`, `settlements/`, `users/` and `votings/`; pages that span topics stay in `e2e/admin/`
+  - `e2e/dashboard/` — tenant dashboard, charges, payments, settlements, votings, profile
 
 #### Scenario: E2E file naming
 
