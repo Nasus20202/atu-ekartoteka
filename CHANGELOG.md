@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] - 2026-11-27
+
+- test(e2e): merge and drop redundant specs (#1013)
+- test(e2e): cover foreign apartments, status, rename and resend (#1012)
+- test(e2e): cover the settlement import and voting flows (#1011)
+- feat(voting): add votings with email-confirmed ballots
+- feat(dev): run mail, Google and Turnstile mocks in local development
+- fix(import): show the file pickers in Polish
+- feat(admin): show database statistics as tables with association totals
+- feat(telemetry): count import runs, duration, records and findings
+- feat(settlements): import and show utility and annual cost settlements
+- fix(ui): separate table totals and stop wide controls resizing
+- fix(users): load assignable apartments without SWR Suspense
+- docs: allow combining grouped query results in code with approval
+- chore(openspec): move the OpenSpec skills to the shared agents layout
+- chore(deps): update dependency lucide-react to v1.79.0 (#1009)
+- chore(deps): update dependency @react-pdf/renderer to v4.9.1 (#1006)
+- chore(deps): update dependency @types/k6 to v2.4.0 (#1007)
+- test(e2e): drop a dragged HOA only after it is over its target
+- chore(deps): update dependency recharts to v3.11.1 (#1002)
+
 ## [0.10.7] - 2026-11-26
 
 - fix(layout): keep scroll position on mount and stabilise e2e tests
