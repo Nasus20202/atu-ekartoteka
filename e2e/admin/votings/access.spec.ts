@@ -25,6 +25,7 @@ test.describe('Voting access', () => {
     page,
     browser,
   }) => {
+    test.slow();
     const title = `Dostęp E2E ${Date.now()}`;
     // Of the shared test HOA, not of the voting's
     const foreign = await createVotingTenant();

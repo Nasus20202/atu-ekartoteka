@@ -7,6 +7,7 @@ import * as pg from 'pg';
 
 import { formatLongDay } from '../../src/lib/shared/utils/calendar';
 import { splitDateTime } from '../../src/lib/shared/utils/date-time';
+import { chooseSearchedOption } from './choose-searched-option';
 import { loadSql } from './load-sql';
 
 const TEST_HOA_NAME = 'Test HOA';
@@ -33,13 +34,16 @@ export async function createDraftVoting(
   const hoaSelect = page.getByLabel('Wspólnota');
   await hoaSelect.click();
   if (hoaName) {
+    await chooseSearchedOption(
+      page.getByRole('combobox', { name: 'Szukaj wspólnoty' }),
+      hoaName,
+      page.getByRole('option', { name: hoaName, exact: true })
+    );
+  } else {
     await page
-      .getByRole('combobox', { name: 'Szukaj wspólnoty' })
-      .fill(hoaName);
+      .getByRole('option', { name: TEST_HOA_NAME, exact: true })
+      .click();
   }
-  await page
-    .getByRole('option', { name: hoaName ?? TEST_HOA_NAME, exact: true })
-    .click();
   // The closing list takes the focus back; typing before that can be lost
   await expect(hoaSelect).toBeFocused();
   await page.getByLabel('Tytuł').fill(title);
@@ -119,12 +123,14 @@ export async function enterMeetingBallot(
   choice: 'Za' | 'Przeciw'
 ) {
   const form = page.getByRole('form', { name: 'Nowy głos z zebrania' });
-  await form.getByRole('button', { name: 'Lokal' }).click();
-  await page.getByRole('combobox').fill(owner);
-  // The list still shows other owners until the search has answered
-  await page
-    .getByRole('option', { name: `/${apartmentNumber} – ${owner}` })
-    .click();
+  const apartment = form.getByRole('button', { name: 'Lokal' });
+  await apartment.click();
+  await chooseSearchedOption(
+    page.getByRole('combobox'),
+    owner,
+    page.getByRole('option', { name: `/${apartmentNumber} – ${owner}` })
+  );
+  await expect(apartment).toContainText(owner);
   await answerQuestion(page, 1, choice);
   await form.getByRole('button', { name: 'Zapisz głos' }).click();
 }

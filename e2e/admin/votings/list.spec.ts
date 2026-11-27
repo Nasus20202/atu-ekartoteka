@@ -3,6 +3,7 @@
  */
 
 import { expect, test } from '../../fixtures';
+import { chooseSearchedOption } from '../../utils/choose-searched-option';
 import { createDraftVoting } from '../../utils/voting';
 import {
   createVotingHoa,
@@ -27,12 +28,11 @@ test('filters, sorts and tabulates the votings', async ({ adminPage }) => {
   await expect(adminPage).toHaveURL(/status=DRAFT/);
 
   await adminPage.getByRole('button', { name: 'Filtr wspólnoty' }).click();
-  await adminPage
-    .getByRole('combobox', { name: 'Szukaj wspólnoty' })
-    .fill('Test HOA');
-  await adminPage
-    .getByRole('option', { name: 'Test HOA', exact: true })
-    .click();
+  await chooseSearchedOption(
+    adminPage.getByRole('combobox', { name: 'Szukaj wspólnoty' }),
+    'Test HOA',
+    adminPage.getByRole('option', { name: 'Test HOA', exact: true })
+  );
   await expect(adminPage).toHaveURL(/hoa=/);
 
   await adminPage.getByRole('button', { name: 'Tabela' }).click();

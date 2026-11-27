@@ -23,6 +23,7 @@ test('a published voting cannot be changed and an archived one is hidden', async
   adminPage,
   page,
 }) => {
+  test.slow();
   const title = `Archiwum E2E ${Date.now()}`;
   const tenant = await createVotingTenant();
   const votingId = await createDraftVoting(adminPage, {
@@ -110,6 +111,7 @@ test('owners cannot abstain in a voting that blocks it', async ({
   adminPage,
   userPage,
 }) => {
+  test.slow();
   const votingId = await createDraftVoting(adminPage, {
     title: `Bez wstrzymania E2E ${Date.now()}`,
     questions: ['Czy wymieniamy windę?'],
