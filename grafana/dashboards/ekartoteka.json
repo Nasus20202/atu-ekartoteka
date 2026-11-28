@@ -6142,7 +6142,7 @@
           "multi": false,
           "includeAll": false,
           "label": "Prometheus",
-          "hide": "hideVariable",
+          "hide": "inControlsMenu",
           "skipUrlSync": false,
           "allowCustomValue": true
         }
@@ -6162,7 +6162,7 @@
           "multi": false,
           "includeAll": false,
           "label": "Loki",
-          "hide": "dontHide",
+          "hide": "inControlsMenu",
           "skipUrlSync": false,
           "allowCustomValue": true
         }
