@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   add: vi.fn(),
   remove: vi.fn(),
   info: vi.fn(),
+  record: vi.fn(),
 }));
 
 vi.mock('@/lib/voting/queries/find-voting-by-id', () => ({
@@ -23,6 +24,10 @@ vi.mock('@/lib/voting/mutations/delete-meeting-ballot', () => ({
 }));
 vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => ({ info: mocks.info }),
+}));
+
+vi.mock('@/lib/platform/opentelemetry/voting-metrics', () => ({
+  votingMetrics: { recordMeetingBallot: mocks.record },
 }));
 
 const UPDATED_AT = new Date('2026-06-01T10:00:00Z');
@@ -92,6 +97,25 @@ describe('meeting ballot use cases', () => {
     expect(await add()).toMatchObject({
       message: expect.stringContaining(message),
     });
+  });
+
+  it('counts an entered and a removed ballot', async () => {
+    await add();
+    expect(mocks.record).toHaveBeenLastCalledWith('added');
+
+    await removeMeetingBallotUseCase('a', 'v1', 'b1');
+    expect(mocks.record).toHaveBeenLastCalledWith('removed');
+    expect(mocks.record).toHaveBeenCalledTimes(2);
+  });
+
+  it('counts nothing when a ballot is refused or not found', async () => {
+    mocks.add.mockResolvedValue({ ok: false, reason: 'duplicate' });
+    mocks.remove.mockResolvedValue(false);
+
+    await add();
+    await removeMeetingBallotUseCase('a', 'v1', 'b1');
+
+    expect(mocks.record).not.toHaveBeenCalled();
   });
 
   it('rejects a voting id that is not text', async () => {

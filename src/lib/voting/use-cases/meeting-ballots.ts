@@ -1,4 +1,5 @@
 import { createLogger } from '@/lib/platform/logging/logger';
+import { votingMetrics } from '@/lib/platform/opentelemetry/voting-metrics';
 import {
   invalidResult,
   notFoundResult,
@@ -64,6 +65,7 @@ export async function addMeetingBallotUseCase(
   if (!result.ok) return invalidResult(FAILURES[result.reason]);
 
   const { ballotId } = result;
+  votingMetrics.recordMeetingBallot('added');
   logger.info({ adminId, votingId, ballotId }, 'Meeting ballot entered');
 
   return { ok: true, data: { id: ballotId } };
@@ -82,6 +84,7 @@ export async function removeMeetingBallotUseCase(
     return notFoundResult(NO_BALLOT);
   }
 
+  votingMetrics.recordMeetingBallot('removed');
   logger.info({ adminId, votingId, ballotId }, 'Meeting ballot removed');
 
   return { ok: true, data: { id: ballotId } };

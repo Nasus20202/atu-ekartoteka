@@ -13,12 +13,14 @@ const {
   mockUpdateUserStatus,
   mockFindUserById,
   mockNotifyApproved,
+  mockRecordStatusChange,
 } = vi.hoisted(() => ({
   mockLog: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
   mockCountAvailability: vi.fn(),
   mockUpdateUserStatus: vi.fn(),
   mockFindUserById: vi.fn(),
   mockNotifyApproved: vi.fn(),
+  mockRecordStatusChange: vi.fn(),
 }));
 
 vi.mock('@/lib/apartments/queries/count-apartment-availability', () => ({
@@ -40,6 +42,10 @@ vi.mock('@/lib/users/use-cases/account-status', () => ({
 // Keeps the real admin-access helpers from loading the Prisma client
 vi.mock('@/lib/users/queries/find-user-session-fields', () => ({
   findUserSessionFields: vi.fn(),
+}));
+
+vi.mock('@/lib/platform/opentelemetry/auth-metrics', () => ({
+  authMetrics: { recordAccountStatusChange: mockRecordStatusChange },
 }));
 
 vi.mock('@/lib/platform/logging/logger', () => ({
@@ -338,6 +344,24 @@ describe('changeUserStatus', () => {
         expect(mockNotifyApproved).not.toHaveBeenCalled();
       }
     );
+  });
+
+  describe('metrics', () => {
+    it('counts a saved status change by its new status', async () => {
+      await changeUserStatus(change({ status: AccountStatus.REJECTED }));
+
+      expect(mockRecordStatusChange).toHaveBeenCalledExactlyOnceWith(
+        AccountStatus.REJECTED
+      );
+    });
+
+    it('counts nothing when the update fails', async () => {
+      mockUpdateUserStatus.mockRejectedValue(new Error('db down'));
+
+      await changeUserStatus(change());
+
+      expect(mockRecordStatusChange).not.toHaveBeenCalled();
+    });
   });
 
   describe('failures', () => {

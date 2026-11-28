@@ -124,6 +124,7 @@ export async function deleteVotingUseCase(
     return failedResult(CONFLICT);
   }
 
+  votingMetrics.recordDeletion();
   logger.info({ adminId, votingId }, 'Voting deleted');
 
   return { ok: true, data: { id: votingId } };

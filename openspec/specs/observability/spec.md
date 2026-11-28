@@ -158,11 +158,24 @@ Authentication events SHALL be counted and exposed as OTLP metrics under the `ek
   - `failure`: the account could not be created
 - **AND** the activation emails themselves are counted by `ekartoteka.email.sent` with type `account_activation`, and no attribute carries an e-mail address or an identifier
 
+#### Scenario: Account status counter
+
+- **GIVEN** an administrator changes the status of an account and the update is saved
+- **WHEN** `authMetrics.recordAccountStatusChange(status)` is called
+- **THEN** the `ekartoteka.auth.account_status` counter is incremented with `status`: `pending`, `approved` or `rejected`
+- **AND** a refused or failed update is not counted
+
+#### Scenario: Assignment counter
+
+- **GIVEN** an administrator assigns unassigned apartments to existing accounts
+- **WHEN** `authMetrics.recordAssignments(counts)` is called once for the batch
+- **THEN** the `ekartoteka.auth.assignment` counter is incremented by the number of apartments for each `result` above zero: `success`, `skipped` (no account for the e-mail, or already assigned) or `failure`
+
 #### Scenario: Invites on the dashboard
 
 - **GIVEN** the Grafana dashboard in `grafana/dashboards/ekartoteka.json`
 - **WHEN** its Authentication row is shown
-- **THEN** it has a User Invites panel with the invites by `result` over time
+- **THEN** it has panels with the invites by `result`, account status changes by `status` and apartment assignments by `result` over time
 
 ---
 
@@ -269,6 +282,14 @@ Voting lifecycle events SHALL be counted and exposed as OTLP metrics under the `
 - **WHEN** the use case records it
 - **THEN** the `ekartoteka.voting.status_change` counter is incremented with `status`: `draft`, `active`, `closed` or `archived`
 - **AND** a refused transition or a creation that failed is not counted
+- **AND** deleting a draft is counted with `status` `deleted`
+
+#### Scenario: Meeting ballot counter
+
+- **GIVEN** an administrator enters or removes a ballot cast at a meeting
+- **WHEN** the change is stored
+- **THEN** the `ekartoteka.voting.meeting_ballot` counter is incremented with `action`: `added` or `removed`
+- **AND** a refused or not found ballot is not counted
 
 #### Scenario: Confirmation counter
 
@@ -298,7 +319,7 @@ Voting lifecycle events SHALL be counted and exposed as OTLP metrics under the `
 
 - **GIVEN** the Grafana dashboard in `grafana/dashboards/ekartoteka.json`
 - **WHEN** it is opened for a namespace
-- **THEN** its Voting row shows the votings, ballots and pending confirmations counts, votings by status, status changes, ballots cast in the selected range, confirmation outcomes by result and rejections by reason
+- **THEN** its Voting row shows the votings, ballots and pending confirmations counts, votings by status, status changes, ballots cast in the selected range, meeting ballots by action, confirmation outcomes by result and rejections by reason
 - **AND** every panel filters on `k8s_namespace_name` and the event counts use `increase` over the selected range
 
 ---

@@ -213,6 +213,12 @@ export async function bulkAssignAccounts(
       }
     }
 
+    authMetrics.recordAssignments({
+      success: assigned,
+      skipped,
+      failure: errors,
+    });
+
     return { ok: true, data: { assigned, skipped, errors } };
   } catch (error) {
     logger.error({ error }, 'Bulk assign failed');

@@ -106,6 +106,24 @@ describe('votingMetrics', () => {
     });
   });
 
+  it('counts a deleted voting as a status change', () => {
+    votingMetrics.recordDeletion();
+
+    expect(adds('ekartoteka.voting.status_change')).toHaveBeenCalledWith(1, {
+      status: 'deleted',
+    });
+  });
+
+  it('counts meeting ballots by action', () => {
+    votingMetrics.recordMeetingBallot('added');
+    votingMetrics.recordMeetingBallot('removed');
+
+    expect(adds('ekartoteka.voting.meeting_ballot').mock.calls).toEqual([
+      [1, { action: 'added' }],
+      [1, { action: 'removed' }],
+    ]);
+  });
+
   it('adds the ballots stored by a confirmation', () => {
     votingMetrics.recordBallots(3);
 

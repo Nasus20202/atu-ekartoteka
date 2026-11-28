@@ -6,6 +6,8 @@
 
 import { metrics } from '@opentelemetry/api';
 
+import { AccountStatus } from '@/lib/auth/types/account';
+
 const AUTH_METER_NAME = 'ekartoteka.auth';
 
 type AuthProvider = 'credentials' | 'google';
@@ -13,6 +15,16 @@ type AuthResult = 'success' | 'failure';
 type InviteResult = 'success' | 'email_failed' | 'skipped' | 'failure';
 
 export type InviteCounts = Record<InviteResult, number>;
+export type AssignmentCounts = Record<
+  'success' | 'skipped' | 'failure',
+  number
+>;
+
+const STATUS_LABELS: Record<AccountStatus, string> = {
+  [AccountStatus.PENDING]: 'pending',
+  [AccountStatus.APPROVED]: 'approved',
+  [AccountStatus.REJECTED]: 'rejected',
+};
 type FailureReason =
   | 'invalid_credentials'
   | 'user_not_found'
@@ -58,6 +70,19 @@ const inviteCounter = meter.createCounter('ekartoteka.auth.invite', {
   description: 'Number of accounts invited by an admin, by result',
 });
 
+// Counter for accounts an admin moves to another status
+const accountStatusCounter = meter.createCounter(
+  'ekartoteka.auth.account_status',
+  {
+    description: 'Number of account status changes made by an admin',
+  }
+);
+
+// Counter for apartments an admin assigns to existing accounts
+const assignmentCounter = meter.createCounter('ekartoteka.auth.assignment', {
+  description: 'Number of apartments assigned to existing accounts, by result',
+});
+
 export const authMetrics = {
   recordLogin(
     provider: AuthProvider,
@@ -86,6 +111,16 @@ export const authMetrics = {
   recordInvites(counts: InviteCounts) {
     for (const [result, count] of Object.entries(counts)) {
       if (count > 0) inviteCounter.add(count, { result });
+    }
+  },
+
+  recordAccountStatusChange(status: AccountStatus) {
+    accountStatusCounter.add(1, { status: STATUS_LABELS[status] });
+  },
+
+  recordAssignments(counts: AssignmentCounts) {
+    for (const [result, count] of Object.entries(counts)) {
+      if (count > 0) assignmentCounter.add(count, { result });
     }
   },
 };

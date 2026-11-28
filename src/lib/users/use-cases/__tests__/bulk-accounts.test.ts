@@ -17,6 +17,7 @@ const {
   mockAssignApartmentsToUser,
   mockSendActivationEmail,
   mockRecordInvites,
+  mockRecordAssignments,
 } = vi.hoisted(() => ({
   mockLog: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
   mockBcryptHash: vi.fn(),
@@ -28,6 +29,7 @@ const {
   mockAssignApartmentsToUser: vi.fn(),
   mockSendActivationEmail: vi.fn(),
   mockRecordInvites: vi.fn(),
+  mockRecordAssignments: vi.fn(),
 }));
 
 vi.mock('bcrypt', () => ({ default: { hash: mockBcryptHash } }));
@@ -64,7 +66,10 @@ vi.mock('@/lib/platform/email/email-service', () => ({
 }));
 
 vi.mock('@/lib/platform/opentelemetry/auth-metrics', () => ({
-  authMetrics: { recordInvites: mockRecordInvites },
+  authMetrics: {
+    recordInvites: mockRecordInvites,
+    recordAssignments: mockRecordAssignments,
+  },
 }));
 
 vi.mock('@/lib/platform/logging/logger', () => ({
@@ -391,6 +396,30 @@ describe('bulkAssignAccounts', () => {
       'apt-2',
     ]);
     expect(mockCreateUserWithApartments).not.toHaveBeenCalled();
+  });
+
+  it('records the assignment outcomes as a metric', async () => {
+    mockFindUnassignedForAssign.mockResolvedValueOnce([
+      apartment('apt-1', 'owner@example.com'),
+      apartment('apt-2', 'owner@example.com'),
+      apartment('apt-3', 'nobody@example.com'),
+      apartment('apt-4', 'broken@example.com'),
+    ]);
+    mockFindUserByEmail
+      .mockResolvedValueOnce({ id: 'user-1' })
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: 'user-2' });
+    mockAssignApartmentsToUser
+      .mockResolvedValueOnce(1)
+      .mockRejectedValueOnce(new Error('db down'));
+
+    await bulkAssignAccounts(['apt-1', 'apt-2', 'apt-3', 'apt-4']);
+
+    expect(mockRecordAssignments).toHaveBeenCalledExactlyOnceWith({
+      success: 1,
+      skipped: 2,
+      failure: 1,
+    });
   });
 
   it('assigns addresses that differ only in case to one existing account', async () => {

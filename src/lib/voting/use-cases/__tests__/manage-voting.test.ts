@@ -14,7 +14,7 @@ const mocks = vi.hoisted(() => ({
   deleteDraftVoting: vi.fn(),
   findVotingById: vi.fn(),
   hoaExists: vi.fn(),
-  metrics: { recordStatusChange: vi.fn() },
+  metrics: { recordStatusChange: vi.fn(), recordDeletion: vi.fn() },
 }));
 
 vi.mock('@/lib/voting/mutations/create-voting', () => ({
@@ -259,6 +259,17 @@ describe('manage voting', () => {
       mocks.findVotingById.mockResolvedValue(voting('ACTIVE'));
       expect(await deleteVotingUseCase('a', 'v1')).toMatchObject({ ok: false });
       expect(mocks.deleteDraftVoting).toHaveBeenCalledTimes(1);
+    });
+
+    it('counts a deleted draft, and nothing when the delete fails', async () => {
+      mocks.findVotingById.mockResolvedValue(voting('DRAFT'));
+      await deleteVotingUseCase('a', 'v1');
+      expect(mocks.metrics.recordDeletion).toHaveBeenCalledTimes(1);
+
+      mocks.metrics.recordDeletion.mockClear();
+      mocks.deleteDraftVoting.mockResolvedValue(false);
+      await deleteVotingUseCase('a', 'v1');
+      expect(mocks.metrics.recordDeletion).not.toHaveBeenCalled();
     });
   });
 });

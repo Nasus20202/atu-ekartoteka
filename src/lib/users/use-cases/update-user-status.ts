@@ -3,6 +3,7 @@ import { isApprovedStatus } from '@/lib/auth/rules/account-access';
 import { isAdminRole } from '@/lib/auth/rules/admin-access';
 import { AccountStatus } from '@/lib/auth/types/account';
 import { createLogger } from '@/lib/platform/logging/logger';
+import { authMetrics } from '@/lib/platform/opentelemetry/auth-metrics';
 import {
   failedResult,
   invalidResult,
@@ -94,6 +95,7 @@ export async function changeUserStatus({
       apartmentIds: nextApartmentIds,
     });
 
+    authMetrics.recordAccountStatusChange(status);
     logger.info(
       {
         adminId,
