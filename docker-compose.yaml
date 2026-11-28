@@ -91,6 +91,7 @@ services:
 
       # OpenTelemetry (optional)
       OTEL_EXPORTER_ENDPOINT: ${OTEL_EXPORTER_ENDPOINT:-http://otel-lgtm:4318}
+      OTEL_METRIC_EXPORT_INTERVAL: ${OTEL_METRIC_EXPORT_INTERVAL:-60000}
       OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME:-atu-ekartoteka}
     env_file:
       - .env

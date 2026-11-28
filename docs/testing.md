@@ -144,7 +144,9 @@ The WebKit projects render at a device scale factor of 1: the Safari profiles
 default to 2x and 3x, which software rendering on the runner cannot keep up
 with (`e2e/config/webkit.ts`).
 `docker compose -f docker-compose.e2e.yaml up --build --wait` runs the same stack
-locally.
+locally. It sets `OTEL_METRIC_EXPORT_INTERVAL` to 2 seconds on the
+integrations app, like `playwright.config.ts`, so the metrics specs do not
+wait a minute for an export.
 
 CI retries a failing test up to twice. `failOnFlakyTests` is enabled as well,
 so a test that only passes on a retry still fails the job and the flake gets

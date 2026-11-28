@@ -134,7 +134,8 @@ unreachable the app keeps working and the data is dropped.
 The compose files default `OTEL_EXPORTER_ENDPOINT` to `http://otel-lgtm:4318`,
 the service from the `otel` profile. Without that service the export fails
 quietly and the app is unaffected; set the variable to your own collector to
-send the data elsewhere.
+send the data elsewhere. Metrics are pushed every 60 seconds; set
+`OTEL_METRIC_EXPORT_INTERVAL` (milliseconds) to change that.
 
 ## Email
 
