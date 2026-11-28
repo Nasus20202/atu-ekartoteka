@@ -2,7 +2,8 @@
  * Voting Metrics
  *
  * Tracks the voting lifecycle: status changes, the steps of the emailed ballot
- * confirmation, ballots stored, notification emails and votings per status.
+ * confirmation, ballots stored and votings per status. Voting emails are
+ * counted by the email metrics.
  * Attributes carry no ids, names or e-mail addresses.
  *
  * NOTE: Logger is imported lazily, like in database-metrics.
@@ -52,13 +53,6 @@ const ballotCounter = meter.createCounter('ekartoteka.voting.ballot', {
   description: 'Number of ballots stored',
 });
 
-const notificationCounter = meter.createCounter(
-  'ekartoteka.voting.notification',
-  {
-    description: 'Voting notification emails by result',
-  }
-);
-
 export const votingMetrics = {
   recordStatusChange(status: VotingStatus) {
     statusChangeCounter.add(1, { status: STATUS_LABELS[status] });
@@ -70,11 +64,6 @@ export const votingMetrics = {
 
   recordBallots(count: number) {
     ballotCounter.add(count);
-  },
-
-  recordNotifications(sent: number, failed: number) {
-    if (sent > 0) notificationCounter.add(sent, { result: 'success' });
-    if (failed > 0) notificationCounter.add(failed, { result: 'failure' });
   },
 };
 

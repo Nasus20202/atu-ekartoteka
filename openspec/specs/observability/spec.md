@@ -147,6 +147,23 @@ Authentication events SHALL be counted and exposed as OTLP metrics under the `ek
 - **WHEN** `authMetrics.recordEmailVerification(result)` is called
 - **THEN** the `ekartoteka.auth.email_verification` counter is incremented with `result`
 
+#### Scenario: Invite counter
+
+- **GIVEN** an administrator invites the owners of unassigned apartments and the accounts are created
+- **WHEN** `authMetrics.recordInvites(counts)` is called once for the batch
+- **THEN** the `ekartoteka.auth.invite` counter is incremented by the number of accounts for each `result` above zero:
+  - `success`: the account was created and its activation email delivered
+  - `email_failed`: the account was created but the activation email was not delivered
+  - `skipped`: an account for the e-mail address already existed
+  - `failure`: the account could not be created
+- **AND** the activation emails themselves are counted by `ekartoteka.email.sent` with type `account_activation`, and no attribute carries an e-mail address or an identifier
+
+#### Scenario: Invites on the dashboard
+
+- **GIVEN** the Grafana dashboard in `grafana/dashboards/ekartoteka.json`
+- **WHEN** its Authentication row is shown
+- **THEN** it has a User Invites panel with the invites by `result` over time
+
 ---
 
 ### Requirement: Email Metrics
@@ -244,7 +261,7 @@ Row counts for core database tables SHALL be exposed as an observable gauge.
 
 ### Requirement: Voting Metrics
 
-Voting lifecycle events SHALL be counted and exposed as OTLP metrics under the `ekartoteka.voting` meter. Recording a metric SHALL NOT change the outcome of a voting action, and no attribute SHALL carry a voting, owner or apartment identifier.
+Voting lifecycle events SHALL be counted and exposed as OTLP metrics under the `ekartoteka.voting` meter. Voting emails are counted by the email metrics (`ekartoteka.email.sent` with type `vote_confirmation` or `voting_notification`), not by a voting counter. Recording a metric SHALL NOT change the outcome of a voting action, and no attribute SHALL carry a voting, owner or apartment identifier.
 
 #### Scenario: Status change counter
 
@@ -269,24 +286,19 @@ Voting lifecycle events SHALL be counted and exposed as OTLP metrics under the `
 - **WHEN** the ballots are stored
 - **THEN** the `ekartoteka.voting.ballot` counter is incremented by the number of ballots, without attributes
 
-#### Scenario: Notification counter
-
-- **GIVEN** an administrator notifies owners about an active voting
-- **WHEN** the emails are sent
-- **THEN** the `ekartoteka.voting.notification` counter is incremented by the number of successful sends with `result` `success`, and by the number of failed sends with `result` `failure`; a count of zero is not recorded
-
 #### Scenario: Votings per status gauge
 
 - **GIVEN** the voting metrics are registered
 - **WHEN** the metric reader collects `ekartoteka.voting.count`
 - **THEN** it returns the number of votings for each `status` (`draft`, `active`, `closed`, `archived`), with 0 for a status without votings
 - **AND** the counts are read with one grouped query every 30 seconds and the callback reports the cached values
+- **AND** every replica reports the same counts, so the dashboard reads them with `max by (status)`, never `sum`
 
 #### Scenario: Voting dashboard
 
 - **GIVEN** the Grafana dashboard in `grafana/dashboards/ekartoteka.json`
 - **WHEN** it is opened for a namespace
-- **THEN** its Voting row shows the votings, ballots and pending confirmations counts, votings by status, status changes, ballots cast in the selected range, confirmation outcomes by result, rejections by reason and notification emails by result
+- **THEN** its Voting row shows the votings, ballots and pending confirmations counts, votings by status, status changes, ballots cast in the selected range, confirmation outcomes by result and rejections by reason
 - **AND** every panel filters on `k8s_namespace_name` and the event counts use `increase` over the selected range
 
 ---

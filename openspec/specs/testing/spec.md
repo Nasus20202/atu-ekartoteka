@@ -422,6 +422,12 @@ E2E specs in `e2e/integrations/` SHALL verify that the integrations app, with Op
 - **WHEN** the metric export arrives
 - **THEN** `ekartoteka.auth.registration`, `ekartoteka.auth.email_verification` and `ekartoteka.auth.password_reset` each count the success
 
+#### Scenario: Invite metric is exported
+
+- **GIVEN** an administrator invites the owner of an unassigned apartment
+- **WHEN** the metric export arrives
+- **THEN** `ekartoteka.auth.invite` has a `success` point
+
 #### Scenario: Email metrics are exported
 
 - **GIVEN** the verification, admin notification and password reset emails sent during the flows above

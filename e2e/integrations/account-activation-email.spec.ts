@@ -6,9 +6,8 @@
 import { expect, test } from '../fixtures';
 import { createUniqueUnassignedApartment } from '../utils/create-unique-unassigned-apartment';
 import { expectDeliveredEmail } from '../utils/email-assertions';
+import { inviteOwner } from '../utils/invite-owner';
 import { loginWithTurnstile, waitForMail } from '../utils/mock-server';
-import { openTestHoaCard } from '../utils/open-test-hoa';
-import { isServerActionResponse } from '../utils/server-actions';
 import { ADMIN_EMAIL, ADMIN_PASSWORD } from '../utils/test-credentials';
 
 const ACTIVATION_SUBJECT = 'Twoje konto zostało utworzone – ustaw nowe hasło';
@@ -22,18 +21,7 @@ test('the owner receives the login email and a temporary password', async ({
   const apartment = await createUniqueUnassignedApartment();
   await loginWithTurnstile(page, ADMIN_EMAIL, ADMIN_PASSWORD);
 
-  await page.goto('/admin/users/management');
-  await openTestHoaCard(page);
-  await page.locator(`#apt-${apartment.id}`).click();
-  await page.getByRole('button', { name: /Zaproś użytkowników/i }).click();
-  await page.getByRole('button', { name: 'Dalej' }).click();
-  await Promise.all([
-    page.waitForResponse(isServerActionResponse),
-    page
-      .getByRole('dialog')
-      .getByRole('button', { name: 'Zaproś użytkowników' })
-      .click(),
-  ]);
+  await inviteOwner(page, apartment.id);
   await expect(page.getByText(/Utworzono \d+ kont/i)).toBeVisible();
 
   const mail = await waitForMail(request, apartment.email, {

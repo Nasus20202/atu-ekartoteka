@@ -14,6 +14,8 @@ import {
   submitRegistrationForm,
 } from '../utils/auth-forms';
 import { createCredentialsUser } from '../utils/create-credentials-user';
+import { createUniqueUnassignedApartment } from '../utils/create-unique-unassigned-apartment';
+import { inviteOwner } from '../utils/invite-owner';
 import {
   extractLink,
   loginWithTurnstile,
@@ -130,6 +132,14 @@ test.describe('OpenTelemetry metrics', () => {
     await expect(
       page.getByText(/Hasło.*zmienione|sukces|zaloguj/i).first()
     ).toBeVisible();
+  });
+
+  test('an invitation is counted', async ({ page }) => {
+    const apartment = await createUniqueUnassignedApartment();
+    await loginWithTurnstile(page, ADMIN_EMAIL, ADMIN_PASSWORD);
+
+    await inviteOwner(page, apartment.id);
+    await expect(page.getByText(/Utworzono \d+ kont/i)).toBeVisible();
   });
 
   test('an import preview and a database validation are counted', async ({

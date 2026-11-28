@@ -8,6 +8,7 @@ import { BCRYPT_COST } from '@/lib/auth/rules/bcrypt-cost';
 import { normalizeEmail } from '@/lib/auth/rules/email';
 import { getEmailService } from '@/lib/platform/email/email-service';
 import { createLogger } from '@/lib/platform/logging/logger';
+import { authMetrics } from '@/lib/platform/opentelemetry/auth-metrics';
 import { failedResult, type UseCaseResult } from '@/lib/shared/use-case-result';
 import { createUserWithApartments } from '@/lib/users/mutations/create-user-with-apartments';
 import { findUserByEmail } from '@/lib/users/queries/find-user-by-email';
@@ -150,6 +151,12 @@ export async function bulkCreateAccounts(
     }
 
     const emailFailed = await sendActivationEmails(pending);
+    authMetrics.recordInvites({
+      success: created - emailFailed,
+      email_failed: emailFailed,
+      skipped,
+      failure: errors,
+    });
 
     return { ok: true, data: { created, skipped, errors, emailFailed } };
   } catch (error) {

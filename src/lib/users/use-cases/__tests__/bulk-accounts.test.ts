@@ -16,6 +16,7 @@ const {
   mockCreateUserWithApartments,
   mockAssignApartmentsToUser,
   mockSendActivationEmail,
+  mockRecordInvites,
 } = vi.hoisted(() => ({
   mockLog: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
   mockBcryptHash: vi.fn(),
@@ -26,6 +27,7 @@ const {
   mockCreateUserWithApartments: vi.fn(),
   mockAssignApartmentsToUser: vi.fn(),
   mockSendActivationEmail: vi.fn(),
+  mockRecordInvites: vi.fn(),
 }));
 
 vi.mock('bcrypt', () => ({ default: { hash: mockBcryptHash } }));
@@ -59,6 +61,10 @@ vi.mock('@/lib/platform/email/email-service', () => ({
   getEmailService: () => ({
     sendAccountActivationEmail: mockSendActivationEmail,
   }),
+}));
+
+vi.mock('@/lib/platform/opentelemetry/auth-metrics', () => ({
+  authMetrics: { recordInvites: mockRecordInvites },
 }));
 
 vi.mock('@/lib/platform/logging/logger', () => ({
@@ -257,6 +263,36 @@ describe('bulkCreateAccounts', () => {
       { apartmentIds: ['apt-1'], reason: 'send-failed' },
       'Failed to send activation email'
     );
+  });
+
+  it('records every invite outcome as a metric', async () => {
+    mockFindUnassignedByIds.mockResolvedValueOnce([
+      apartment('apt-1', 'ok@example.com'),
+      apartment('apt-2', 'unsent@example.com'),
+      apartment('apt-3', 'existing@example.com'),
+      apartment('apt-4', 'broken@example.com'),
+    ]);
+    mockFindUserByEmail
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: 'existing-user' })
+      .mockResolvedValueOnce(null);
+    mockCreateUserWithApartments
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(undefined)
+      .mockRejectedValueOnce(new Error('Unique constraint failed'));
+    mockSendActivationEmail
+      .mockResolvedValueOnce({ ok: true, delivery: 'sent' })
+      .mockResolvedValueOnce({ ok: false, reason: 'send-failed' });
+
+    await bulkCreateAccounts(['apt-1', 'apt-2', 'apt-3', 'apt-4']);
+
+    expect(mockRecordInvites).toHaveBeenCalledExactlyOnceWith({
+      success: 1,
+      email_failed: 1,
+      skipped: 1,
+      failure: 1,
+    });
   });
 
   it('sends activation emails in chunks of five, after all accounts exist', async () => {

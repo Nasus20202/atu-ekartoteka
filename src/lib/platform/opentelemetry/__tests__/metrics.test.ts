@@ -48,6 +48,24 @@ describe('authMetrics', () => {
   });
 });
 
+describe('authMetrics.recordInvites', () => {
+  it('counts each invite result above zero', () => {
+    mockAdd.mockClear();
+    authMetrics.recordInvites({
+      success: 3,
+      email_failed: 1,
+      skipped: 0,
+      failure: 2,
+    });
+
+    expect(mockAdd.mock.calls).toEqual([
+      [3, { result: 'success' }],
+      [1, { result: 'email_failed' }],
+      [2, { result: 'failure' }],
+    ]);
+  });
+});
+
 describe('emailMetrics', () => {
   it('records a sent email', () => {
     mockAdd.mockClear();

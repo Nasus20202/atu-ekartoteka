@@ -10,6 +10,9 @@ const AUTH_METER_NAME = 'ekartoteka.auth';
 
 type AuthProvider = 'credentials' | 'google';
 type AuthResult = 'success' | 'failure';
+type InviteResult = 'success' | 'email_failed' | 'skipped' | 'failure';
+
+export type InviteCounts = Record<InviteResult, number>;
 type FailureReason =
   | 'invalid_credentials'
   | 'user_not_found'
@@ -50,6 +53,11 @@ const emailVerificationCounter = meter.createCounter(
   }
 );
 
+// Counter for accounts an admin invites by e-mail
+const inviteCounter = meter.createCounter('ekartoteka.auth.invite', {
+  description: 'Number of accounts invited by an admin, by result',
+});
+
 export const authMetrics = {
   recordLogin(
     provider: AuthProvider,
@@ -73,5 +81,11 @@ export const authMetrics = {
 
   recordEmailVerification(result: AuthResult) {
     emailVerificationCounter.add(1, { result });
+  },
+
+  recordInvites(counts: InviteCounts) {
+    for (const [result, count] of Object.entries(counts)) {
+      if (count > 0) inviteCounter.add(count, { result });
+    }
   },
 };

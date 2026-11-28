@@ -1,12 +1,11 @@
 /**
  * The voting metrics are exported after the voting flows ran: an admin takes a
- * voting through its lifecycle and notifies an owner, the owner requests and
- * confirms the emailed link, and stale links are refused. Counters only grow,
- * so one export that carries every point is enough.
+ * voting through its lifecycle, the owner requests and confirms the emailed
+ * link, and stale links are refused. Counters only grow, so one export that
+ * carries every point is enough.
  */
 
 import { expect, test } from '../fixtures';
-import { createVotingTenant } from '../utils/create-voting-tenant';
 import { loginWithTurnstile } from '../utils/mock-server';
 import {
   hasMetricPoint,
@@ -81,22 +80,6 @@ test.describe('OpenTelemetry voting metrics', () => {
     } finally {
       await ownerContext.close();
     }
-  });
-
-  test('a notification to eligible owners is counted', async ({ page }) => {
-    test.slow();
-    const tenant = await createVotingTenant();
-    await loginWithTurnstile(page, ADMIN_EMAIL, ADMIN_PASSWORD);
-    await createDraftVoting(page, {
-      title: `Powiadomienie E2E ${Date.now()}`,
-      questions: ['Czy?'],
-    });
-    await publishVoting(page);
-
-    await page.getByRole('button', { name: 'Powiadom użytkowników' }).click();
-    await page.getByRole('checkbox', { name: tenant.name }).check();
-    await page.getByRole('button', { name: /^Wyślij/ }).click();
-    await expect(page.getByText(/Wysłano: \d+/)).toBeVisible();
   });
 
   test('an expired link is counted as expired', async ({
