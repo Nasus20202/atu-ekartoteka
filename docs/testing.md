@@ -91,9 +91,11 @@ Three app instances run from the same build:
   screenshots do not change.
 - **Integrations** (3002) has SMTP, Turnstile, Google and OpenTelemetry
   switched on and pointed at the mock server. The metrics specs
-  (`opentelemetry-metrics` and `opentelemetry-voting-metrics`) run their flows,
-  then wait for the first export that carries them, which is sent once a
-  minute, so they take about two minutes.
+  (`opentelemetry-metrics`, `opentelemetry-voting-metrics` and
+  `opentelemetry-admin-metrics`) run their flows,
+  then wait for the first export that carries them. The server pushes metrics
+  every 2 seconds (`OTEL_METRIC_EXPORT_INTERVAL` in `playwright.config.ts`)
+  instead of every minute, so the wait is short.
 
 Global setup creates both databases if missing, applies migrations, removes
 earlier test data and seeds fresh data, so every run starts from the same

@@ -120,6 +120,8 @@ const integrationEnv = {
   GOOGLE_ISSUER_URL: `${MOCK_SERVER_URL}${MOCK_ENDPOINT_PATHS.google}`,
   // Traces, metrics and logs are exported to the mock, so every integration spec runs with OpenTelemetry on
   OTEL_EXPORTER_ENDPOINT: `${MOCK_SERVER_URL}${MOCK_ENDPOINT_PATHS.otlp}`,
+  // Metrics are pushed every few seconds instead of every minute, so the metrics specs do not wait
+  OTEL_METRIC_EXPORT_INTERVAL: '2000',
 };
 
 const mockServer = {

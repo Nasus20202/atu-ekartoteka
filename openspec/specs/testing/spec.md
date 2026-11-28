@@ -422,6 +422,18 @@ E2E specs in `e2e/integrations/` SHALL verify that the integrations app, with Op
 - **WHEN** the metric export arrives
 - **THEN** `ekartoteka.auth.registration`, `ekartoteka.auth.email_verification` and `ekartoteka.auth.password_reset` each count the success
 
+#### Scenario: Admin action metrics are exported
+
+- **GIVEN** an admin approves an account, assigns an apartment to an existing account, enters a meeting ballot and deletes a draft voting
+- **WHEN** the metric export arrives
+- **THEN** `ekartoteka.auth.account_status` has an `approved` point, `ekartoteka.auth.assignment` a `success` point, `ekartoteka.voting.meeting_ballot` an `added` point and `ekartoteka.voting.status_change` a `deleted` point
+
+#### Scenario: Metrics are pushed quickly in the integration tests
+
+- **GIVEN** the integrations app instance
+- **WHEN** it starts
+- **THEN** `OTEL_METRIC_EXPORT_INTERVAL` is a few seconds, so the metrics specs wait seconds for an export instead of a minute
+
 #### Scenario: Invite metric is exported
 
 - **GIVEN** an administrator invites the owner of an unassigned apartment

@@ -32,7 +32,8 @@ import {
 } from '../utils/voting-metric-points';
 
 const SECOND_MS = 1000;
-const METRIC_TEST_MARGIN_MS = 30 * SECOND_MS;
+// Room for the flows before the export wait: the cap costs nothing when they are fast
+const METRIC_TEST_MARGIN_MS = 100 * SECOND_MS;
 const METRIC_TEST_TIMEOUT_MS = METRIC_EXPORT_TIMEOUT_MS + METRIC_TEST_MARGIN_MS;
 
 const UNKNOWN_TOKEN = 'A'.repeat(43);

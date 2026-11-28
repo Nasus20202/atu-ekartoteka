@@ -263,6 +263,7 @@ Row counts for core database tables SHALL be exposed as an observable gauge.
 - **GIVEN** the `PeriodicExportingMetricReader` configuration
 - **WHEN** the SDK is running
 - **THEN** metrics are pushed to the OTLP endpoint every 60 seconds
+- **AND** `OTEL_METRIC_EXPORT_INTERVAL` (milliseconds, a positive integer) overrides the interval, and the export timeout never exceeds it; an invalid value falls back to 60 seconds
 
 #### Scenario: Counts on the dashboard
 

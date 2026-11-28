@@ -104,13 +104,14 @@ it (see [privacy policy](privacy-policy.md)).
 
 ## Logging and telemetry
 
-| Variable                   | Default                                  | Notes                                                                          |
-| -------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------ |
-| `LOG_LEVEL`                | `debug` in development, `info` otherwise | `debug`, `info`, `warn`, `error`.                                              |
-| `ENABLE_TEST_LOGS`         | `false`                                  | Test runs are silent unless this is `true`.                                    |
-| `OTEL_EXPORTER_ENDPOINT`   | unset                                    | OTLP/HTTP endpoint for traces, metrics and logs, e.g. `http://localhost:4318`. |
-| `OTEL_SERVICE_NAME`        | `atu-ekartoteka`                         | Service name in the telemetry backend.                                         |
-| `OTEL_RESOURCE_ATTRIBUTES` | unset                                    | Extra resource attributes, standard OpenTelemetry format.                      |
+| Variable                      | Default                                  | Notes                                                                          |
+| ----------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------ |
+| `LOG_LEVEL`                   | `debug` in development, `info` otherwise | `debug`, `info`, `warn`, `error`.                                              |
+| `ENABLE_TEST_LOGS`            | `false`                                  | Test runs are silent unless this is `true`.                                    |
+| `OTEL_EXPORTER_ENDPOINT`      | unset                                    | OTLP/HTTP endpoint for traces, metrics and logs, e.g. `http://localhost:4318`. |
+| `OTEL_METRIC_EXPORT_INTERVAL` | `60000`                                  | How often metrics are pushed, in milliseconds.                                 |
+| `OTEL_SERVICE_NAME`           | `atu-ekartoteka`                         | Service name in the telemetry backend.                                         |
+| `OTEL_RESOURCE_ATTRIBUTES`    | unset                                    | Extra resource attributes, standard OpenTelemetry format.                      |
 
 ## Docker only
 

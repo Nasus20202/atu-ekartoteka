@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildResourceAttributes,
   mergeResourceAttributes,
+  metricExportOptions,
   normalizeSpanPath,
   shouldIgnoreRequest,
 } from '@/lib/platform/opentelemetry/tracing-utils';
@@ -63,4 +64,28 @@ describe('mergeResourceAttributes', () => {
   it('skips missing existing attributes', () => {
     expect(mergeResourceAttributes(undefined, { a: '1' })).toBe('a=1');
   });
+});
+
+describe('metricExportOptions', () => {
+  it('pushes every 60 seconds by default', () => {
+    expect(metricExportOptions({})).toEqual({
+      exportIntervalMillis: 60_000,
+      exportTimeoutMillis: 30_000,
+    });
+  });
+
+  it('follows OTEL_METRIC_EXPORT_INTERVAL and keeps the timeout within it', () => {
+    expect(
+      metricExportOptions({ OTEL_METRIC_EXPORT_INTERVAL: '2000' })
+    ).toEqual({ exportIntervalMillis: 2000, exportTimeoutMillis: 2000 });
+  });
+
+  it.each(['', 'abc', '0', '-5', '1.5'])(
+    'falls back to the default for %j',
+    (value) => {
+      expect(
+        metricExportOptions({ OTEL_METRIC_EXPORT_INTERVAL: value })
+      ).toMatchObject({ exportIntervalMillis: 60_000 });
+    }
+  );
 });
