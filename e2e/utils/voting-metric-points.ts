@@ -7,7 +7,6 @@ export const CONFIRMATION = 'ekartoteka.voting.confirmation';
 export const STATUS_CHANGE = 'ekartoteka.voting.status_change';
 export const VOTING_COUNT = 'ekartoteka.voting.count';
 export const BALLOT = 'ekartoteka.voting.ballot';
-export const NOTIFICATION = 'ekartoteka.voting.notification';
 
 export const VOTING_STATUSES = [
   'draft',
@@ -27,6 +26,5 @@ export const EXPECTED_POINTS: [string, Record<string, string>][] = [
   [CONFIRMATION, { result: 'rejected', reason: 'invalid_link' }],
   [CONFIRMATION, { result: 'rejected', reason: 'expired' }],
   [CONFIRMATION, { result: 'rejected', reason: 'closed' }],
-  [NOTIFICATION, { result: 'success' }],
   [BALLOT, {}],
 ];

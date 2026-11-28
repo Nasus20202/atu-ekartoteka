@@ -46,6 +46,7 @@ export const EXPECTED_POINTS: [string, Record<string, string>][] = [
   ['ekartoteka.auth.registration', { ...CREDENTIALS, result: 'success' }],
   ['ekartoteka.auth.email_verification', { result: 'success' }],
   ['ekartoteka.auth.password_reset', { result: 'success' }],
+  ['ekartoteka.auth.invite', { result: 'success' }],
   ['ekartoteka.email.sent', { type: 'verification', result: 'success' }],
   ['ekartoteka.email.sent', { type: 'admin_notification', result: 'success' }],
   ['ekartoteka.email.sent', { type: 'password_reset', result: 'success' }],

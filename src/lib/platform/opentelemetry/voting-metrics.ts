@@ -2,7 +2,8 @@
  * Voting Metrics
  *
  * Tracks the voting lifecycle: status changes, the steps of the emailed ballot
- * confirmation, ballots stored, notification emails and votings per status.
+ * confirmation, ballots stored, meeting ballots and votings per status. Voting emails are
+ * counted by the email metrics.
  * Attributes carry no ids, names or e-mail addresses.
  *
  * NOTE: Logger is imported lazily, like in database-metrics.
@@ -37,7 +38,7 @@ const meter = metrics.getMeter(VOTING_METER_NAME);
 const statusChangeCounter = meter.createCounter(
   'ekartoteka.voting.status_change',
   {
-    description: 'Votings created as drafts and status transitions',
+    description: 'Votings created as drafts, status transitions and deletions',
   }
 );
 
@@ -52,10 +53,10 @@ const ballotCounter = meter.createCounter('ekartoteka.voting.ballot', {
   description: 'Number of ballots stored',
 });
 
-const notificationCounter = meter.createCounter(
-  'ekartoteka.voting.notification',
+const meetingBallotCounter = meter.createCounter(
+  'ekartoteka.voting.meeting_ballot',
   {
-    description: 'Voting notification emails by result',
+    description: 'Meeting ballots entered or removed by an admin',
   }
 );
 
@@ -64,17 +65,20 @@ export const votingMetrics = {
     statusChangeCounter.add(1, { status: STATUS_LABELS[status] });
   },
 
+  recordDeletion() {
+    statusChangeCounter.add(1, { status: 'deleted' });
+  },
+
+  recordMeetingBallot(action: 'added' | 'removed') {
+    meetingBallotCounter.add(1, { action });
+  },
+
   recordConfirmation(outcome: ConfirmationOutcome) {
     confirmationCounter.add(1, outcome);
   },
 
   recordBallots(count: number) {
     ballotCounter.add(count);
-  },
-
-  recordNotifications(sent: number, failed: number) {
-    if (sent > 0) notificationCounter.add(sent, { result: 'success' });
-    if (failed > 0) notificationCounter.add(failed, { result: 'failure' });
   },
 };
 

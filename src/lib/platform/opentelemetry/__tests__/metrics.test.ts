@@ -8,6 +8,7 @@ vi.mock('@opentelemetry/api', () => ({
   },
 }));
 
+import { AccountStatus } from '@/lib/auth/types/account';
 import { authMetrics } from '@/lib/platform/opentelemetry/auth-metrics';
 import { emailMetrics } from '@/lib/platform/opentelemetry/email-metrics';
 
@@ -44,6 +45,45 @@ describe('authMetrics', () => {
       [1, { provider: 'credentials', result: 'success' }],
       [1, { result: 'failure' }],
       [1, { result: 'success' }],
+    ]);
+  });
+});
+
+describe('authMetrics.recordInvites', () => {
+  it('counts each invite result above zero', () => {
+    mockAdd.mockClear();
+    authMetrics.recordInvites({
+      success: 3,
+      email_failed: 1,
+      skipped: 0,
+      failure: 2,
+    });
+
+    expect(mockAdd.mock.calls).toEqual([
+      [3, { result: 'success' }],
+      [1, { result: 'email_failed' }],
+      [2, { result: 'failure' }],
+    ]);
+  });
+});
+
+describe('authMetrics account changes', () => {
+  beforeEach(() => {
+    mockAdd.mockClear();
+  });
+
+  it('counts a status change by its label', () => {
+    authMetrics.recordAccountStatusChange(AccountStatus.APPROVED);
+
+    expect(mockAdd).toHaveBeenCalledWith(1, { status: 'approved' });
+  });
+
+  it('counts each assignment result above zero', () => {
+    authMetrics.recordAssignments({ success: 2, skipped: 0, failure: 1 });
+
+    expect(mockAdd.mock.calls).toEqual([
+      [2, { result: 'success' }],
+      [1, { result: 'failure' }],
     ]);
   });
 });

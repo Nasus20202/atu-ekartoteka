@@ -16,6 +16,8 @@ const {
   mockCreateUserWithApartments,
   mockAssignApartmentsToUser,
   mockSendActivationEmail,
+  mockRecordInvites,
+  mockRecordAssignments,
 } = vi.hoisted(() => ({
   mockLog: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
   mockBcryptHash: vi.fn(),
@@ -26,6 +28,8 @@ const {
   mockCreateUserWithApartments: vi.fn(),
   mockAssignApartmentsToUser: vi.fn(),
   mockSendActivationEmail: vi.fn(),
+  mockRecordInvites: vi.fn(),
+  mockRecordAssignments: vi.fn(),
 }));
 
 vi.mock('bcrypt', () => ({ default: { hash: mockBcryptHash } }));
@@ -59,6 +63,13 @@ vi.mock('@/lib/platform/email/email-service', () => ({
   getEmailService: () => ({
     sendAccountActivationEmail: mockSendActivationEmail,
   }),
+}));
+
+vi.mock('@/lib/platform/opentelemetry/auth-metrics', () => ({
+  authMetrics: {
+    recordInvites: mockRecordInvites,
+    recordAssignments: mockRecordAssignments,
+  },
 }));
 
 vi.mock('@/lib/platform/logging/logger', () => ({
@@ -259,6 +270,36 @@ describe('bulkCreateAccounts', () => {
     );
   });
 
+  it('records every invite outcome as a metric', async () => {
+    mockFindUnassignedByIds.mockResolvedValueOnce([
+      apartment('apt-1', 'ok@example.com'),
+      apartment('apt-2', 'unsent@example.com'),
+      apartment('apt-3', 'existing@example.com'),
+      apartment('apt-4', 'broken@example.com'),
+    ]);
+    mockFindUserByEmail
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: 'existing-user' })
+      .mockResolvedValueOnce(null);
+    mockCreateUserWithApartments
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(undefined)
+      .mockRejectedValueOnce(new Error('Unique constraint failed'));
+    mockSendActivationEmail
+      .mockResolvedValueOnce({ ok: true, delivery: 'sent' })
+      .mockResolvedValueOnce({ ok: false, reason: 'send-failed' });
+
+    await bulkCreateAccounts(['apt-1', 'apt-2', 'apt-3', 'apt-4']);
+
+    expect(mockRecordInvites).toHaveBeenCalledExactlyOnceWith({
+      success: 1,
+      email_failed: 1,
+      skipped: 1,
+      failure: 1,
+    });
+  });
+
   it('sends activation emails in chunks of five, after all accounts exist', async () => {
     const apartments = Array.from({ length: 12 }, (_, i) =>
       apartment(`apt-${i}`, `u${i}@example.com`, `Owner ${i}`)
@@ -355,6 +396,30 @@ describe('bulkAssignAccounts', () => {
       'apt-2',
     ]);
     expect(mockCreateUserWithApartments).not.toHaveBeenCalled();
+  });
+
+  it('records the assignment outcomes as a metric', async () => {
+    mockFindUnassignedForAssign.mockResolvedValueOnce([
+      apartment('apt-1', 'owner@example.com'),
+      apartment('apt-2', 'owner@example.com'),
+      apartment('apt-3', 'nobody@example.com'),
+      apartment('apt-4', 'broken@example.com'),
+    ]);
+    mockFindUserByEmail
+      .mockResolvedValueOnce({ id: 'user-1' })
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: 'user-2' });
+    mockAssignApartmentsToUser
+      .mockResolvedValueOnce(1)
+      .mockRejectedValueOnce(new Error('db down'));
+
+    await bulkAssignAccounts(['apt-1', 'apt-2', 'apt-3', 'apt-4']);
+
+    expect(mockRecordAssignments).toHaveBeenCalledExactlyOnceWith({
+      success: 1,
+      skipped: 2,
+      failure: 1,
+    });
   });
 
   it('assigns addresses that differ only in case to one existing account', async () => {

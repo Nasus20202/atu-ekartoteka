@@ -1,6 +1,5 @@
 import { getEmailService } from '@/lib/platform/email/email-service';
 import { createLogger } from '@/lib/platform/logging/logger';
-import { votingMetrics } from '@/lib/platform/opentelemetry/voting-metrics';
 import {
   invalidResult,
   notFoundResult,
@@ -63,7 +62,6 @@ export async function notifyVoters(
 
   const sent = results.filter((result) => result.ok).length;
   const failed = results.length - sent;
-  votingMetrics.recordNotifications(sent, failed);
   logger.info({ adminId, votingId, sent, failed }, 'Voting notifications sent');
 
   return { ok: true, data: { sent, failed } };

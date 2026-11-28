@@ -106,21 +106,28 @@ describe('votingMetrics', () => {
     });
   });
 
+  it('counts a deleted voting as a status change', () => {
+    votingMetrics.recordDeletion();
+
+    expect(adds('ekartoteka.voting.status_change')).toHaveBeenCalledWith(1, {
+      status: 'deleted',
+    });
+  });
+
+  it('counts meeting ballots by action', () => {
+    votingMetrics.recordMeetingBallot('added');
+    votingMetrics.recordMeetingBallot('removed');
+
+    expect(adds('ekartoteka.voting.meeting_ballot').mock.calls).toEqual([
+      [1, { action: 'added' }],
+      [1, { action: 'removed' }],
+    ]);
+  });
+
   it('adds the ballots stored by a confirmation', () => {
     votingMetrics.recordBallots(3);
 
     expect(adds('ekartoteka.voting.ballot')).toHaveBeenCalledWith(3);
-  });
-
-  it('counts sent and failed notifications only when they are above zero', () => {
-    votingMetrics.recordNotifications(2, 0);
-    votingMetrics.recordNotifications(0, 1);
-    votingMetrics.recordNotifications(0, 0);
-
-    expect(adds('ekartoteka.voting.notification').mock.calls).toEqual([
-      [2, { result: 'success' }],
-      [1, { result: 'failure' }],
-    ]);
   });
 });
 

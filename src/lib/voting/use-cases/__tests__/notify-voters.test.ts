@@ -6,7 +6,6 @@ const mocks = vi.hoisted(() => ({
   findVotingById: vi.fn(),
   findEligibleRecipients: vi.fn(),
   send: vi.fn(),
-  metrics: { recordNotifications: vi.fn() },
   log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
@@ -21,9 +20,6 @@ vi.mock('@/lib/platform/email/email-service', () => ({
 }));
 vi.mock('@/lib/platform/logging/logger', () => ({
   createLogger: () => mocks.log,
-}));
-vi.mock('@/lib/platform/opentelemetry/voting-metrics', () => ({
-  votingMetrics: mocks.metrics,
 }));
 
 const ACTIVE = {
@@ -77,20 +73,6 @@ describe('notifyVoters', () => {
       ok: true,
       data: { sent: 1, failed: 1 },
     });
-  });
-
-  it('counts sent and failed notifications', async () => {
-    mocks.findEligibleRecipients.mockResolvedValue([
-      { id: 'u1', name: null, email: 'a@example.com' },
-      { id: 'u2', name: null, email: 'b@example.com' },
-    ]);
-    mocks.send
-      .mockResolvedValueOnce({ ok: true, delivery: 'sent' })
-      .mockResolvedValueOnce({ ok: false, reason: 'send-failed' });
-
-    await notifyVoters('admin-1', 'v1', ['u1', 'u2']);
-
-    expect(mocks.metrics.recordNotifications).toHaveBeenCalledWith(1, 1);
   });
 
   it('refuses a voting that is not open', async () => {

@@ -9,8 +9,8 @@ import type { CapturedMetric } from './otlp-capture';
 
 const SECOND_MS = 1000;
 export const EXPORT_TIMEOUT_MS = 20 * SECOND_MS;
-// Metrics are pushed every 60 seconds, so the first export can take a minute
-export const METRIC_EXPORT_TIMEOUT_MS = 90 * SECOND_MS;
+// The integrations server pushes metrics every 2 seconds, see playwright.config.ts
+export const METRIC_EXPORT_TIMEOUT_MS = 20 * SECOND_MS;
 
 export const SERVICE_NAME = 'atu-ekartoteka';
 export const SERVER_SPAN_KIND = 2;

@@ -13,6 +13,7 @@ import { withSanitizedSpans } from '@/lib/platform/opentelemetry/sanitizing-span
 import {
   buildResourceAttributes,
   mergeResourceAttributes,
+  metricExportOptions,
   normalizeSpanPath,
   shouldIgnoreRequest,
 } from '@/lib/platform/opentelemetry/tracing-utils';
@@ -77,7 +78,7 @@ export async function initTracing() {
         exporter: new OTLPMetricExporter({
           url: `${collectorEndpoint}/v1/metrics`,
         }),
-        exportIntervalMillis: 60000, // Export metrics every 60 seconds
+        ...metricExportOptions(process.env),
       }),
     ],
     logRecordProcessors: [

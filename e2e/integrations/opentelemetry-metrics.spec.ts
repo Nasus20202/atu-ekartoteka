@@ -1,7 +1,7 @@
 /**
  * Every custom metric the app records is exported. The flows run first, in
  * order, then the spec waits for an export that carries all of them. Metrics
- * are pushed once a minute and counters only grow, so one export is enough.
+ * are pushed every few seconds and counters only grow, so one export is enough.
  */
 
 import { row } from '@/__tests__/helpers/settlement-pdf/fixture-page';
@@ -14,6 +14,8 @@ import {
   submitRegistrationForm,
 } from '../utils/auth-forms';
 import { createCredentialsUser } from '../utils/create-credentials-user';
+import { createUniqueUnassignedApartment } from '../utils/create-unique-unassigned-apartment';
+import { inviteOwner } from '../utils/invite-owner';
 import {
   extractLink,
   loginWithTurnstile,
@@ -48,7 +50,8 @@ import {
 } from '../utils/test-credentials';
 
 const SECOND_MS = 1000;
-const METRIC_TEST_MARGIN_MS = 30 * SECOND_MS;
+// Room for the flows before the export wait: the cap costs nothing when they are fast
+const METRIC_TEST_MARGIN_MS = 100 * SECOND_MS;
 const VERIFICATION_SUBJECT = 'Potwierdź swój adres email';
 const ADMIN_NOTICE_SUBJECT =
   'Nowa rejestracja użytkownika - wymaga zatwierdzenia';
@@ -130,6 +133,14 @@ test.describe('OpenTelemetry metrics', () => {
     await expect(
       page.getByText(/Hasło.*zmienione|sukces|zaloguj/i).first()
     ).toBeVisible();
+  });
+
+  test('an invitation is counted', async ({ page }) => {
+    const apartment = await createUniqueUnassignedApartment();
+    await loginWithTurnstile(page, ADMIN_EMAIL, ADMIN_PASSWORD);
+
+    await inviteOwner(page, apartment.id);
+    await expect(page.getByText(/Utworzono \d+ kont/i)).toBeVisible();
   });
 
   test('an import preview and a database validation are counted', async ({

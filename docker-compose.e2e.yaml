@@ -127,5 +127,7 @@ services:
       GOOGLE_CLIENT_SECRET: mock-google-client-secret
       GOOGLE_ISSUER_URL: http://mocks:4010/google
       OTEL_EXPORTER_ENDPOINT: http://mocks:4010/otlp
+      # Same as playwright.config.ts: the metrics specs wait for an export
+      OTEL_METRIC_EXPORT_INTERVAL: '2000'
     ports:
       - '3002:3000'

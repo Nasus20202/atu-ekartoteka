@@ -6,6 +6,35 @@ const UUID_SEGMENT =
 const CUID_SEGMENT = /\/c[a-z0-9]{20,}/gi;
 const NUMERIC_SEGMENT = /\/\d+/g;
 const DYNAMIC_SEGMENT_PLACEHOLDER = '/*';
+const DEFAULT_METRIC_EXPORT_INTERVAL_MS = 60_000;
+const MAX_METRIC_EXPORT_TIMEOUT_MS = 30_000;
+
+export interface MetricExportOptions {
+  exportIntervalMillis: number;
+  exportTimeoutMillis: number;
+}
+
+/**
+ * Metric push schedule from the standard OTEL_METRIC_EXPORT_INTERVAL (ms). The
+ * reader refuses a timeout longer than the interval, so the timeout follows it.
+ */
+export function metricExportOptions(
+  env: Record<string, string | undefined>
+): MetricExportOptions {
+  const requested = Number(env.OTEL_METRIC_EXPORT_INTERVAL);
+  const exportIntervalMillis =
+    Number.isInteger(requested) && requested > 0
+      ? requested
+      : DEFAULT_METRIC_EXPORT_INTERVAL_MS;
+
+  return {
+    exportIntervalMillis,
+    exportTimeoutMillis: Math.min(
+      exportIntervalMillis,
+      MAX_METRIC_EXPORT_TIMEOUT_MS
+    ),
+  };
+}
 
 export function shouldIgnoreRequest(url: string | undefined): boolean {
   const path = url || '';
