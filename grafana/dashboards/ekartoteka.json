@@ -6162,7 +6162,7 @@
           "multi": false,
           "includeAll": false,
           "label": "Loki",
-          "hide": "hideVariable",
+          "hide": "dontHide",
           "skipUrlSync": false,
           "allowCustomValue": true
         }

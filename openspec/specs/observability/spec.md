@@ -265,6 +265,13 @@ Row counts for core database tables SHALL be exposed as an observable gauge.
 - **THEN** metrics are pushed to the OTLP endpoint every 60 seconds
 - **AND** `OTEL_METRIC_EXPORT_INTERVAL` (milliseconds, a positive integer) overrides the interval, and the export timeout never exceeds it; an invalid value falls back to 60 seconds
 
+#### Scenario: Choosing the logs datasource
+
+- **GIVEN** a Grafana stack with more than one Loki datasource
+- **WHEN** the dashboard is opened
+- **THEN** a Loki dropdown is shown, and choosing another datasource reloads the Application Logs panel without reloading the page
+- **AND** the Prometheus datasource variable stays hidden and uses the first Prometheus datasource
+
 #### Scenario: Counts on the dashboard
 
 - **GIVEN** the Grafana dashboard in `grafana/dashboards`
