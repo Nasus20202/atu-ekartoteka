@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.1] - 2026-11-28
+
+- feat(observability): add invite and admin action metrics, fix voting gauge
+- chore(deps): update dependency lucide-react to v1.80.0 (#1020)
+- chore(deps): update dependency @types/node to v26.6.9 (#1019)
+- chore(deps): update dependency unpdf to v2.2.2 (#1018)
+- chore(deps): update dependency @types/react to v19.3.1 (#1017)
+- chore(deps): update dependency @types/node to v26.6.7 (#1016)
+- docs(env): leave optional sign-in services off in the docker example
+- chore(grafana): give the overview tiles one size
+
 ## [0.11.0] - 2026-11-27
 
 - test(e2e): merge and drop redundant specs (#1013)
